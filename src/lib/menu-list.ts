@@ -4,7 +4,7 @@ import {
   Settings,
   Bookmark,
   SquarePen,
-  LayoutGrid
+  LayoutGrid,
 } from "lucide-react";
 
 type Submenu = {
@@ -36,46 +36,46 @@ export function getMenuList(pathname: string): Group[] {
           label: "Dashboard",
           active: pathname.includes("/dashboard"),
           icon: LayoutGrid,
-          submenus: []
-        }
-      ]
+          submenus: [],
+        },
+      ],
     },
     {
-      groupLabel: "Contents",
+      groupLabel: "Products",
       menus: [
         {
           href: "",
-          label: "Posts",
+          label: "Products",
           active: pathname.includes("/posts"),
           icon: SquarePen,
           submenus: [
             {
               href: "/posts",
-              label: "All Posts",
-              active: pathname === "/posts"
+              label: "All Products",
+              active: pathname === "/posts",
             },
             {
               href: "/posts/new",
-              label: "New Post",
-              active: pathname === "/posts/new"
-            }
-          ]
+              label: "New Product",
+              active: pathname === "/posts/new",
+            },
+          ],
         },
         {
           href: "/categories",
           label: "Categories",
           active: pathname.includes("/categories"),
           icon: Bookmark,
-          submenus: []
+          submenus: [],
         },
         {
           href: "/tags",
           label: "Tags",
           active: pathname.includes("/tags"),
           icon: Tag,
-          submenus: []
-        }
-      ]
+          submenus: [],
+        },
+      ],
     },
     {
       groupLabel: "Settings",
@@ -85,16 +85,16 @@ export function getMenuList(pathname: string): Group[] {
           label: "Users",
           active: pathname.includes("/users"),
           icon: Users,
-          submenus: []
+          submenus: [],
         },
         {
           href: "/account",
           label: "Account",
           active: pathname.includes("/account"),
           icon: Settings,
-          submenus: []
-        }
-      ]
-    }
+          submenus: [],
+        },
+      ],
+    },
   ];
 }
