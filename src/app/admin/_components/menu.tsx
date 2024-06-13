@@ -8,13 +8,13 @@ import { cn } from "@/lib/utils";
 import { getMenuList } from "@/lib/menu-list";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { CollapseMenuButton } from "@/components/admin-panel/collapse-menu-button";
 import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
-  TooltipProvider
+  TooltipProvider,
 } from "@/components/ui/tooltip";
+import { CollapseMenuButton } from "./collapse-menu-button";
 
 interface MenuProps {
   isOpen: boolean | undefined;
@@ -73,7 +73,7 @@ export function Menu({ isOpen }: MenuProps) {
                                     "max-w-[200px] truncate",
                                     isOpen === false
                                       ? "-translate-x-96 opacity-0"
-                                      : "translate-x-0 opacity-100"
+                                      : "translate-x-0 opacity-100",
                                   )}
                                 >
                                   {label}
@@ -99,7 +99,7 @@ export function Menu({ isOpen }: MenuProps) {
                         isOpen={isOpen}
                       />
                     </div>
-                  )
+                  ),
               )}
             </li>
           ))}
@@ -118,7 +118,7 @@ export function Menu({ isOpen }: MenuProps) {
                     <p
                       className={cn(
                         "whitespace-nowrap",
-                        isOpen === false ? "opacity-0 hidden" : "opacity-100"
+                        isOpen === false ? "opacity-0 hidden" : "opacity-100",
                       )}
                     >
                       Sign out

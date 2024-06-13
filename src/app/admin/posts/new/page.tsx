@@ -1,19 +1,19 @@
 import Link from "next/link";
 
-import PlaceholderContent from "@/components/demo/placeholder-content";
-import { ContentLayout } from "@/components/admin-panel/content-layout";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
-  BreadcrumbSeparator
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { ContentLayout } from "../../_components/content-layout";
+import PlaceholderContent from "../../_components/placeholder-content";
 
-export default function TagsPage() {
+export default function NewPostPage() {
   return (
-    <ContentLayout title="Tags">
+    <ContentLayout title="New Post">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -29,7 +29,13 @@ export default function TagsPage() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Tags</BreadcrumbPage>
+            <BreadcrumbLink asChild>
+              <Link href="/posts">Posts</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>New</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
