@@ -56,7 +56,7 @@ export function getMenuList(pathname: string): Group[] {
             },
             {
               href: "/posts/new",
-              label: "New Product",
+              label: "Create Product",
               active: pathname === "/posts/new",
             },
           ],
