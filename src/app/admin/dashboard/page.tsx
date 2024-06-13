@@ -1,15 +1,15 @@
 import Link from "next/link";
 
-import PlaceholderContent from "@/components/demo/placeholder-content";
-import { ContentLayout } from "@/components/admin-panel/content-layout";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
-  BreadcrumbSeparator
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { ContentLayout } from "../_components/content-layout";
+import PlaceholderContent from "../_components/placeholder-content";
 
 export default function DashboardPage() {
   return (
