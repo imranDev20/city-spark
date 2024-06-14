@@ -16,11 +16,14 @@ export default function ChangePostcodeDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="py-6 items-center ml-10">
-          <MapPin />
+        <Button
+          variant="ghost"
+          className="py-6 items-center ml-10 hover:bg-primary/10"
+        >
+          <MapPin className="text-primary" />
           <div className="flex flex-col items-start ml-2">
             <p className="text-xs text-neutral-500 font-light">Deliver to</p>
-            <p className="text-sm">IG11 7YA</p>
+            <p className="text-sm">E3 4SY</p>
           </div>
         </Button>
       </DialogTrigger>
