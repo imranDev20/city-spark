@@ -1,3 +1,4 @@
+"use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +17,10 @@ export default function AuthDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="py-6 items-center ml-10 mr-2">
+        <Button
+          variant="ghost"
+          className="py-6 items-center ml-10 mr-2 hover:bg-primary/10"
+        >
           <Avatar>
             <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
             <AvatarFallback>CN</AvatarFallback>
@@ -27,7 +31,12 @@ export default function AuthDialog() {
           </div>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        className="sm:max-w-[425px]"
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>
           <DialogDescription>
