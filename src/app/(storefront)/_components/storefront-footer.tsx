@@ -1,13 +1,16 @@
 import Link from "next/link";
+import React from "react";
 
-export function StorefrontFooter() {
+const StorefrontFooter: React.FC = () => {
   return (
     <footer className="bg-gray-100 py-12 dark:bg-gray-800">
       <div className="container grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4 lg:gap-12">
         <div className="flex flex-col items-start gap-4">
-          <Link className="flex items-center gap-2" href="#">
-            <MountainIcon className="h-6 w-6" />
-            <span className="text-lg font-semibold">Acme Store</span>
+          <Link href="#">
+            <a className="flex items-center gap-2">
+              <MountainIcon className="h-6 w-6" />
+              <span className="text-lg font-semibold">Acme Store</span>
+            </a>
           </Link>
           <p className="text-gray-500 dark:text-gray-400">
             Your one-stop shop for quality products.
@@ -27,144 +30,128 @@ export function StorefrontFooter() {
         </div>
         <div className="grid gap-2">
           <h4 className="text-lg font-semibold">Shop</h4>
-          <Link
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-            href="#"
-          >
-            All Products
+          <Link href="#">
+            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
+              All Products
+            </a>
           </Link>
-          <Link
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-            href="#"
-          >
-            Clothing
+          <Link href="#">
+            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
+              Clothing
+            </a>
           </Link>
-          <Link
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-            href="#"
-          >
-            Electronics
+          <Link href="#">
+            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
+              Electronics
+            </a>
           </Link>
-          <Link
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-            href="#"
-          >
-            Home & Garden
+          <Link href="#">
+            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
+              Home & Garden
+            </a>
           </Link>
         </div>
         <div className="grid gap-2">
           <h4 className="text-lg font-semibold">Company</h4>
-          <Link
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-            href="#"
-          >
-            About Us
+          <Link href="#">
+            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
+              About Us
+            </a>
           </Link>
-          <Link
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-            href="#"
-          >
-            Careers
+          <Link href="#">
+            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
+              Careers
+            </a>
           </Link>
-          <Link
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-            href="#"
-          >
-            Blog
+          <Link href="#">
+            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
+              Blog
+            </a>
           </Link>
-          <Link
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-            href="#"
-          >
-            Contact
+          <Link href="#">
+            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
+              Contact
+            </a>
           </Link>
         </div>
         <div className="grid gap-2">
           <h4 className="text-lg font-semibold">Legal</h4>
-          <Link
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-            href="#"
-          >
-            Terms of Service
+          <Link href="#">
+            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
+              Terms of Service
+            </a>
           </Link>
-          <Link
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-            href="#"
-          >
-            Privacy Policy
+          <Link href="#">
+            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
+              Privacy Policy
+            </a>
           </Link>
-          <Link
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-            href="#"
-          >
-            Refund Policy
+          <Link href="#">
+            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
+              Refund Policy
+            </a>
           </Link>
-          <Link
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-            href="#"
-          >
-            Shipping Info
+          <Link href="#">
+            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
+              Shipping Info
+            </a>
           </Link>
         </div>
       </div>
     </footer>
   );
-}
+};
 
-function MailOpenIcon(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M21.2 8.4c.5.38.8.97.8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 .8-1.6l8-6a2 2 0 0 1 2.4 0l8 6Z" />
-      <path d="m22 10-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 10" />
-    </svg>
-  );
-}
+const MailOpenIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21.2 8.4c.5.38.8.97.8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 .8-1.6l8-6a2 2 0 0 1 2.4 0l8 6Z" />
+    <path d="m22 10-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 10" />
+  </svg>
+);
 
-function MountainIcon(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
-    </svg>
-  );
-}
+const MountainIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+  </svg>
+);
 
-function PhoneIcon(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-    </svg>
-  );
-}
+const PhoneIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+  </svg>
+);
+
+export default StorefrontFooter;
