@@ -5,6 +5,10 @@ import {
   Bookmark,
   SquarePen,
   LayoutGrid,
+  Package2,
+  Network,
+  ShoppingCart,
+  Award,
 } from "lucide-react";
 
 type Submenu = {
@@ -46,16 +50,16 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: "",
           label: "Products",
-          active: pathname.includes("/posts"),
-          icon: SquarePen,
+          active: pathname.includes("/products"),
+          icon: Package2,
           submenus: [
             {
-              href: "/posts",
+              href: "/products",
               label: "All Products",
               active: pathname === "/posts",
             },
             {
-              href: "/posts/new",
+              href: "/products/new",
               label: "Create Product",
               active: pathname === "/posts/new",
             },
@@ -65,7 +69,7 @@ export function getMenuList(pathname: string): Group[] {
           href: "",
           label: "Brands",
           active: pathname.includes("/brands"),
-          icon: SquarePen,
+          icon: Award,
           submenus: [
             {
               href: "/posts",
@@ -83,26 +87,19 @@ export function getMenuList(pathname: string): Group[] {
           href: "/categories",
           label: "Categories",
           active: pathname.includes("/categories"),
-          icon: Bookmark,
+          icon: Network,
           submenus: [
             {
-              href: "/posts",
-              label: "All Brands",
+              href: "/categories",
+              label: "All Categories",
               active: pathname === "/posts",
             },
             {
-              href: "/posts/new",
-              label: "Create Brand",
+              href: "/categories/new",
+              label: "Create Category",
               active: pathname === "/posts/new",
             },
           ],
-        },
-        {
-          href: "/tags",
-          label: "Tags",
-          active: pathname.includes("/tags"),
-          icon: Tag,
-          submenus: [],
         },
       ],
     },
@@ -113,7 +110,7 @@ export function getMenuList(pathname: string): Group[] {
           href: "/users",
           label: "Orders",
           active: pathname.includes("/users"),
-          icon: Users,
+          icon: ShoppingCart,
           submenus: [
             {
               href: "/posts",
