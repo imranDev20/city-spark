@@ -1,9 +1,5 @@
 import {
-  Tag,
   Users,
-  Settings,
-  Bookmark,
-  SquarePen,
   LayoutGrid,
   Package2,
   Network,
@@ -38,7 +34,7 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: "/dashboard",
           label: "Dashboard",
-          active: pathname.includes("/dashboard"),
+          active: pathname === "/admin" || pathname.includes("/dashboard"),
           icon: LayoutGrid,
           submenus: [],
         },
