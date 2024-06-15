@@ -27,5 +27,5 @@ export default function AdminPage({
   }
 
   // For any other sub-routes, render an error message
-  return renderContent("Error");
+  throw new Error("Page not found");
 }
