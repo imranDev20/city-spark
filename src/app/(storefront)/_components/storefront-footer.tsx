@@ -1,16 +1,13 @@
 import Link from "next/link";
 import React from "react";
-
 const StorefrontFooter: React.FC = () => {
   return (
     <footer className="bg-gray-100 py-12 dark:bg-gray-800">
       <div className="container grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4 lg:gap-12">
         <div className="flex flex-col items-start gap-4">
-          <Link href="#">
-            <a className="flex items-center gap-2">
-              <MountainIcon className="h-6 w-6" />
-              <span className="text-lg font-semibold">Acme Store</span>
-            </a>
+          <Link href="#" className="flex items-center gap-2">
+            <MountainIcon className="h-6 w-6" />
+            <span className="text-lg font-semibold">Acme Store</span>
           </Link>
           <p className="text-gray-500 dark:text-gray-400">
             Your one-stop shop for quality products.
@@ -30,71 +27,83 @@ const StorefrontFooter: React.FC = () => {
         </div>
         <div className="grid gap-2">
           <h4 className="text-lg font-semibold">Shop</h4>
-          <Link href="#">
-            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
-              All Products
-            </a>
+          <Link
+            href="#"
+            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+          >
+            All Products
           </Link>
-          <Link href="#">
-            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
-              Clothing
-            </a>
+          <Link
+            href="#"
+            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+          >
+            Clothing
           </Link>
-          <Link href="#">
-            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
-              Electronics
-            </a>
+          <Link
+            href="#"
+            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+          >
+            Electronics
           </Link>
-          <Link href="#">
-            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
-              Home & Garden
-            </a>
+          <Link
+            href="#"
+            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+          >
+            Home & Garden
           </Link>
         </div>
         <div className="grid gap-2">
           <h4 className="text-lg font-semibold">Company</h4>
-          <Link href="#">
-            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
-              About Us
-            </a>
+          <Link
+            href="#"
+            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+          >
+            About Us
           </Link>
-          <Link href="#">
-            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
-              Careers
-            </a>
+          <Link
+            href="#"
+            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+          >
+            Careers
           </Link>
-          <Link href="#">
-            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
-              Blog
-            </a>
+          <Link
+            href="#"
+            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+          >
+            Blog
           </Link>
-          <Link href="#">
-            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
-              Contact
-            </a>
+          <Link
+            href="#"
+            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+          >
+            Contact
           </Link>
         </div>
         <div className="grid gap-2">
           <h4 className="text-lg font-semibold">Legal</h4>
-          <Link href="#">
-            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
-              Terms of Service
-            </a>
+          <Link
+            href="#"
+            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+          >
+            Terms of Service
           </Link>
-          <Link href="#">
-            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
-              Privacy Policy
-            </a>
+          <Link
+            href="#"
+            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+          >
+            Privacy Policy
           </Link>
-          <Link href="#">
-            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
-              Refund Policy
-            </a>
+          <Link
+            href="#"
+            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+          >
+            Refund Policy
           </Link>
-          <Link href="#">
-            <a className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50">
-              Shipping Info
-            </a>
+          <Link
+            href="#"
+            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+          >
+            Shipping Info
           </Link>
         </div>
       </div>

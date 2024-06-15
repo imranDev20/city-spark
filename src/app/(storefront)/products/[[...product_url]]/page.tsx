@@ -16,7 +16,7 @@ export default function ProductsPage({
   // remove the use client later. We will add it on individual components
 
   return (
-    <div>
+    <div className="container mx-auto">
       <h1 className="text-3xl font-bold">Root products page</h1>
       <p>show all the product categories here</p>
       <a

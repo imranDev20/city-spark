@@ -43,7 +43,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={GeistSans.className}>
-        <Analytics />
         {/* <ThemeProvider attribute="class" defaultTheme="light" enableSystem> */}
         <ThemeProvider attribute="class" defaultTheme="light">
           {children}
