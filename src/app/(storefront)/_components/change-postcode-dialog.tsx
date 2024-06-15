@@ -8,9 +8,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { MapPin } from "lucide-react";
+import PostcodeAutocomplete from "./postcode-autocomplete";
 
 export default function ChangePostcodeDialog() {
   return (
@@ -27,38 +26,24 @@ export default function ChangePostcodeDialog() {
           </div>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Edit profile</DialogTitle>
-          <DialogDescription>
-            Make changes to your profile here. Click save when you&lsquo;re
-            done.
+          <DialogTitle className="flex items-center">
+            <MapPin className="mr-1 text-primary" /> Select a Delivery Postcode
+          </DialogTitle>
+          <DialogDescription className="mt-4">
+            Enter your delivery postcode below to see the products available for
+            delivery to your location.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <Input
-              id="name"
-              defaultValue="Pedro Duarte"
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="username" className="text-right">
-              Username
-            </Label>
-            <Input
-              id="username"
-              defaultValue="@peduarte"
-              className="col-span-3"
-            />
-          </div>
-        </div>
+
+        <PostcodeAutocomplete />
+
         <DialogFooter>
-          <Button type="submit">Save changes</Button>
+          <Button variant="outline" type="submit">
+            Cancel
+          </Button>
+          <Button type="submit">Apply</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
