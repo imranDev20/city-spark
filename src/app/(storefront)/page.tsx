@@ -1,6 +1,5 @@
 import Header from "./_components/header";
-import Footer from "./_components/footer";
-import { StorefrontFooter } from "./_components/storefront-footer";
+import StorefrontFooter from "./_components/storefront-footer";
 
 export default function HomePage() {
   return (
