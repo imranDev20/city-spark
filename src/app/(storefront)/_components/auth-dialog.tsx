@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import LoginForm from "./login-form";
 
 export default function AuthDialog() {
   return (
@@ -26,49 +27,38 @@ export default function AuthDialog() {
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           <div className="flex flex-col items-start ml-2">
-            <p className="text-xs text-neutral-500 font-light">Hello, User</p>
+            <p className="text-xs text-neutral-500">Hello, User</p>
             <p className="text-sm">Account & Orders</p>
           </div>
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="sm:max-w-[425px]"
+        className="max-w-[800px] p-0"
         onInteractOutside={(e) => {
           e.preventDefault();
         }}
       >
-        <DialogHeader>
-          <DialogTitle>Edit profile</DialogTitle>
-          <DialogDescription>
-            Make changes to your profile here. Click save when you&lsquo;re
-            done.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <Input
-              id="name"
-              defaultValue="Pedro Duarte"
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="username" className="text-right">
-              Username
-            </Label>
-            <Input
-              id="username"
-              defaultValue="@peduarte"
-              className="col-span-3"
-            />
+        <div className="grid grid-cols-2">
+          <div className="bg-primary/10">1</div>
+          <div className="p-10">
+            <DialogHeader className="mb-6">
+              <DialogTitle className="mb-4 text-2xl">Login</DialogTitle>
+              <DialogDescription>
+                Login to make an order, access your orders, special offers,
+                health tips, and more!
+              </DialogDescription>
+            </DialogHeader>
+
+            <LoginForm />
+
+            <p className="text-sm text-neutral-500 mt-5">
+              By continuing you agree to{" "}
+              <span className="text-primary">Terms & Conditions</span>,{" "}
+              <span className="text-primary">Privacy Policy</span> &
+              <span className="text-primary"> Refund-Return Policy</span>
+            </p>
           </div>
         </div>
-        <DialogFooter>
-          <Button type="submit">Save changes</Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -23,7 +23,7 @@ export default function CartDrawer() {
         >
           <ShoppingCartIcon className="text-primary" />
           <div className="flex flex-col items-start ml-2">
-            <p className="text-xs text-neutral-500 font-light">Basket</p>
+            <p className="text-xs text-neutral-500 ">Basket</p>
             <p className="text-sm">0 items</p>
           </div>
         </Button>

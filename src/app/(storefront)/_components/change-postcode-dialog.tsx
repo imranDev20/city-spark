@@ -21,17 +21,17 @@ export default function ChangePostcodeDialog() {
         >
           <MapPin className="text-primary" />
           <div className="flex flex-col items-start ml-2">
-            <p className="text-xs text-neutral-500 font-light">Deliver to</p>
+            <p className="text-xs text-neutral-500">Deliver to</p>
             <p className="text-sm">E3 4SY</p>
           </div>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[750px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center text-2xl">
+          <DialogTitle className="flex items-center text-2xl mb-4">
             <MapPin className="mr-1 text-primary" /> Select a Delivery Postcode
           </DialogTitle>
-          <DialogDescription className="mt-4">
+          <DialogDescription>
             Enter your delivery postcode below to see the products available for
             delivery to your location.
           </DialogDescription>
