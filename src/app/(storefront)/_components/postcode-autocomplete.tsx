@@ -1,9 +1,6 @@
 "use client";
 import Autocomplete, { type Option } from "@/components/custom/autocomplete";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { getAllPostcodes } from "@/services/woosmap.services";
-import { Input } from "@/components/ui/input";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Navigation } from "lucide-react";
 
@@ -55,7 +52,7 @@ export default function PostcodeAutocomplete() {
     <div className="grid grid-cols-4 gap-3 mt-5 mb-3">
       <div className="col-span-3">
         <Autocomplete
-          options={FRAMEWORKS}
+          options={[]}
           onChange={handleChange}
           emptyMessage="No resulsts."
           placeholder="Find something"
