@@ -26,9 +26,9 @@ export default function ChangePostcodeDialog() {
           </div>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[750px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center">
+          <DialogTitle className="flex items-center text-2xl">
             <MapPin className="mr-1 text-primary" /> Select a Delivery Postcode
           </DialogTitle>
           <DialogDescription className="mt-4">

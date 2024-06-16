@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { getAllPostcodes } from "@/services/woosmap.services";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Navigation } from "lucide-react";
 
 const FRAMEWORKS = [
   {
@@ -45,21 +47,30 @@ export default function PostcodeAutocomplete() {
   const [isDisabled, setDisbled] = useState(false);
   const [value, setValue] = useState<Option>();
 
-  const handleValueChange = (e) => {
+  const handleChange = (e: string) => {
     console.log(e);
   };
 
   return (
-    <div className="not-prose mt-4 flex flex-col gap-4">
-      <Autocomplete
-        options={FRAMEWORKS}
-        emptyMessage="No resulsts."
-        placeholder="Find something"
-        isLoading={isLoading}
-        onValueChange={handleValueChange}
-        value={value}
-        disabled={isDisabled}
-      />
+    <div className="grid grid-cols-4 gap-3 mt-5 mb-3">
+      <div className="col-span-3">
+        <Autocomplete
+          options={FRAMEWORKS}
+          onChange={handleChange}
+          emptyMessage="No resulsts."
+          placeholder="Find something"
+          isLoading={isLoading}
+          // onValueChange={handleValueChange}
+          value={value}
+          disabled={isDisabled}
+        />
+      </div>
+      <div className="col-span-1">
+        <Button className="h-[46px] w-full" variant="outline">
+          <Navigation className="mr-1" />
+          Use My Location
+        </Button>
+      </div>
     </div>
   );
 }
