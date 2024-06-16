@@ -41,6 +41,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "@/components/ui/use-toast";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
+import TemplateSelect from "../_components/template-select";
 
 const breadcrumbItems = [
   { label: "Home", href: "/admin" },
@@ -202,6 +203,23 @@ export default function Dashboard() {
                         <Input id="width" placeholder="Width" />
                         <Input id="height" placeholder="Height" />
                       </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Templates</CardTitle>
+                  <CardDescription>
+                    Please provide the physical specifications.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-6 sm:grid-cols-6">
+                    <div className="grid gap-3 col-span-6">
+                      <Label htmlFor="unit">Templates</Label>
+                      <TemplateSelect />
                     </div>
                   </div>
                 </CardContent>
