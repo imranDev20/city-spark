@@ -5,6 +5,7 @@ import {
   Network,
   ShoppingCart,
   Award,
+  Blocks,
 } from "lucide-react";
 
 type Submenu = {
@@ -52,11 +53,29 @@ export function getMenuList(pathname: string): Group[] {
             {
               href: "/products",
               label: "All Products",
-              active: pathname === "/posts",
+              active: pathname === "/products",
             },
             {
               href: "/products/new",
               label: "Create Product",
+              active: pathname === "/products/new",
+            },
+          ],
+        },
+        {
+          href: "",
+          label: "Templates",
+          active: pathname.includes("/templates"),
+          icon: Blocks,
+          submenus: [
+            {
+              href: "/templates",
+              label: "All Templates",
+              active: pathname === "/posts",
+            },
+            {
+              href: "/products/new",
+              label: "Create Template",
               active: pathname === "/posts/new",
             },
           ],

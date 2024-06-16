@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, PlusCircle, Upload } from "lucide-react";
+import { ChevronLeft, PlusCircle, Trash, Upload } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -111,7 +111,7 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle>Product Details</CardTitle>
                   <CardDescription>
-                    Lipsum dolor sit amet, consectetur adipiscing elit
+                    Please provide the product name and description.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -123,6 +123,7 @@ export default function Dashboard() {
                         type="text"
                         className="w-full"
                         defaultValue="Gamer Gear Pro Controller"
+                        placeholder="Enter product name"
                       />
                     </div>
                     <div className="grid gap-3">
@@ -131,6 +132,7 @@ export default function Dashboard() {
                         id="description"
                         defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl nec ultricies ultricies, nunc nisl ultricies nunc, nec ultricies nunc nisl nec nunc."
                         className="min-h-32"
+                        placeholder="Enter product description"
                       />
                     </div>
                   </div>
@@ -140,39 +142,119 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle>Price</CardTitle>
                   <CardDescription>
-                    Lipsum dolor sit amet, consectetur adipiscing elit
+                    Please provide the pricing details.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-6 sm:grid-cols-3">
                     <div className="grid gap-3">
-                      <Label htmlFor="category">Trade Price</Label>
-                      <Input />
+                      <Label htmlFor="trade-price">Trade Price</Label>
+                      <Input id="trade-price" placeholder="Enter trade price" />
                     </div>
                     <div className="grid gap-3">
-                      <Label htmlFor="subcategory">Contract Price</Label>
-                      <Input />
+                      <Label htmlFor="contract-price">Contract Price</Label>
+                      <Input
+                        id="contract-price"
+                        placeholder="Enter contract price"
+                      />
                     </div>
-
                     <div className="grid gap-3">
-                      <Label htmlFor="subcategory">Promotional Price</Label>
-                      <Input />
+                      <Label htmlFor="promotional-price">
+                        Promotional Price
+                      </Label>
+                      <Input
+                        id="promotional-price"
+                        placeholder="Enter promotional price"
+                      />
                     </div>
                   </div>
                 </CardContent>
               </Card>
-              <Card x-chunk="dashboard-07-chunk-2">
+
+              <Card>
                 <CardHeader>
-                  <CardTitle>Product Category</CardTitle>
+                  <CardTitle>Physical Specifications</CardTitle>
+                  <CardDescription>
+                    Please provide the physical specifications.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-6 sm:grid-cols-3">
                     <div className="grid gap-3">
-                      <Label htmlFor="category">Primary</Label>
+                      <Label htmlFor="unit">Unit of Measurement</Label>
+                      <Input
+                        id="unit"
+                        placeholder="e.g. kg, lb, meter, piece"
+                      />
+                    </div>
+                    <div className="grid gap-3">
+                      <Label htmlFor="weight">Weight</Label>
+                      <Input id="weight" placeholder="Enter weight" />
+                    </div>
+                    <div className="grid gap-3">
+                      <Label htmlFor="weight">Colour</Label>
+                      <Input id="weight" placeholder="Enter colour" />
+                    </div>
+                    <div className="grid gap-3 col-span-2">
+                      <Label htmlFor="dimensions">Dimensions (in meters)</Label>
+                      <div className="grid gap-3 grid-cols-3">
+                        <Input id="length" placeholder="Length" />
+                        <Input id="width" placeholder="Width" />
+                        <Input id="height" placeholder="Height" />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Features & Benefits</CardTitle>
+                  <CardDescription>
+                    Please list the features and benefits.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3 space-y-1">
+                    <div className="grid gap-3 sm:grid-cols-8">
+                      <div className="grid gap-3 col-span-7">
+                        <Input placeholder="Enter feature" />
+                      </div>
+                      <div className="grid gap-3 col-span-1">
+                        <Button variant="ghost">
+                          <Trash className="w-4 h-4 text-primary" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-8">
+                      <div className="grid gap-3 col-span-7">
+                        <Input placeholder="Enter feature" />
+                      </div>
+                      <div className="grid gap-3 col-span-1">
+                        <Button variant="ghost">
+                          <Trash className="w-4 h-4 text-primary" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <Button>Add new</Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card x-chunk="dashboard-07-chunk-2">
+                <CardHeader>
+                  <CardTitle>Categories</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-6 sm:grid-cols-3">
+                    <div className="grid gap-3">
+                      <Label htmlFor="primary-category">Primary</Label>
                       <Select>
                         <SelectTrigger
-                          id="category"
-                          aria-label="Select category"
+                          id="primary-category"
+                          aria-label="Select primary category"
                         >
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
@@ -188,49 +270,53 @@ export default function Dashboard() {
                       </Select>
                     </div>
                     <div className="grid gap-3">
-                      <Label htmlFor="subcategory">Secondary (optional)</Label>
-                      <Select>
-                        <SelectTrigger
-                          id="subcategory"
-                          aria-label="Select subcategory"
-                        >
-                          <SelectValue placeholder="Select subcategory" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="t-shirts">T-Shirts</SelectItem>
-                          <SelectItem value="hoodies">Hoodies</SelectItem>
-                          <SelectItem value="sweatshirts">
-                            Sweatshirts
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-3">
-                      <Label htmlFor="subcategory">Tertiary (optional)</Label>
-                      <Select>
-                        <SelectTrigger
-                          id="subcategory"
-                          aria-label="Select subcategory"
-                        >
-                          <SelectValue placeholder="Select subcategory" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="t-shirts">T-Shirts</SelectItem>
-                          <SelectItem value="hoodies">Hoodies</SelectItem>
-                          <SelectItem value="sweatshirts">
-                            Sweatshirts
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-3">
-                      <Label htmlFor="subcategory">
-                        Quarternary (optional)
+                      <Label htmlFor="secondary-category">
+                        Secondary (optional)
                       </Label>
                       <Select>
                         <SelectTrigger
-                          id="subcategory"
-                          aria-label="Select subcategory"
+                          id="secondary-category"
+                          aria-label="Select secondary category"
+                        >
+                          <SelectValue placeholder="Select subcategory" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="t-shirts">T-Shirts</SelectItem>
+                          <SelectItem value="hoodies">Hoodies</SelectItem>
+                          <SelectItem value="sweatshirts">
+                            Sweatshirts
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-3">
+                      <Label htmlFor="tertiary-category">
+                        Tertiary (optional)
+                      </Label>
+                      <Select>
+                        <SelectTrigger
+                          id="tertiary-category"
+                          aria-label="Select tertiary category"
+                        >
+                          <SelectValue placeholder="Select subcategory" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="t-shirts">T-Shirts</SelectItem>
+                          <SelectItem value="hoodies">Hoodies</SelectItem>
+                          <SelectItem value="sweatshirts">
+                            Sweatshirts
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-3">
+                      <Label htmlFor="quaternary-category">
+                        Quaternary (optional)
+                      </Label>
+                      <Select>
+                        <SelectTrigger
+                          id="quaternary-category"
+                          aria-label="Select quaternary category"
                         >
                           <SelectValue placeholder="Select subcategory" />
                         </SelectTrigger>
@@ -250,7 +336,7 @@ export default function Dashboard() {
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
               <Card x-chunk="dashboard-07-chunk-3">
                 <CardHeader>
-                  <CardTitle>Product Status</CardTitle>
+                  <CardTitle>Status</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-6">
@@ -272,10 +358,8 @@ export default function Dashboard() {
               </Card>
               <Card className="overflow-hidden" x-chunk="dashboard-07-chunk-4">
                 <CardHeader>
-                  <CardTitle>Product Images</CardTitle>
-                  <CardDescription>
-                    Lipsum dolor sit amet, consectetur adipiscing elit
-                  </CardDescription>
+                  <CardTitle>Images</CardTitle>
+                  <CardDescription>Upload product images here.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-2">
@@ -317,7 +401,7 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle>Archive Product</CardTitle>
                   <CardDescription>
-                    Lipsum dolor sit amet, consectetur adipiscing elit.
+                    Archive this product if it&apos;s no longer available.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
