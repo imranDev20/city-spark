@@ -25,6 +25,7 @@ type AutoCompleteProps = {
   emptyMessage: string;
   value?: Option;
   onValueChange?: (value: Option) => void;
+  onChange: (value: string) => void;
   isLoading?: boolean;
   disabled?: boolean;
   placeholder?: string;
@@ -36,6 +37,7 @@ export const Autocomplete = ({
   emptyMessage,
   value,
   onValueChange,
+  onChange,
   disabled,
   isLoading = false,
 }: AutoCompleteProps) => {
@@ -103,7 +105,7 @@ export const Autocomplete = ({
           ref={inputRef}
           value={inputValue}
           onChangeCapture={(e: ChangeEvent<HTMLInputElement>) =>
-            console.log(e.target.value)
+            onChange(e.target.value)
           }
           onValueChange={isLoading ? undefined : setInputValue}
           onBlur={handleBlur}
