@@ -66,10 +66,6 @@ export default function TemplateSelect() {
           </ul>
         </div>
       )}
-
-      <div className="mt-3">
-        <Chip />
-      </div>
     </div>
   );
 }
