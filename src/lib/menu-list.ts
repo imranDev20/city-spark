@@ -161,26 +161,6 @@ export function getMenuList(pathname: string): Group[] {
     },
 
     {
-      groupLabel: "Analytics",
-      menus: [
-        {
-          href: "/users",
-          label: "Sales Report",
-          active: pathname.includes("/users"),
-          icon: Users,
-          submenus: [],
-        },
-        {
-          href: "/users",
-          label: "Customer Report",
-          active: pathname.includes("/users"),
-          icon: Users,
-          submenus: [],
-        },
-      ],
-    },
-
-    {
       groupLabel: "Others",
       menus: [
         {

@@ -137,7 +137,8 @@ export default function CreateTemplatePage() {
                 <CardHeader>
                   <CardTitle>Fields & Values</CardTitle>
                   <CardDescription>
-                    Please provide the template name and description.
+                    Please provide the necessary fields and their corresponding
+                    values.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -149,16 +150,16 @@ export default function CreateTemplatePage() {
                       <div className="grid gap-3 col-span-4">
                         <Select>
                           <SelectTrigger id="status" aria-label="Field Type">
-                            <SelectValue placeholder="Field Type" />
+                            <SelectValue placeholder="Select Field Type" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="draft">Text</SelectItem>
-                            <SelectItem value="published">Select</SelectItem>
+                            <SelectItem value="text">Text</SelectItem>
+                            <SelectItem value="select">Select</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="grid gap-3 col-span-8">
-                        <Input placeholder="Enter feature" />
+                        <Input placeholder="Enter Value" />
                       </div>
                       <div className="col-span-1 flex justify-end items-center">
                         <Button variant="ghost">
@@ -176,16 +177,16 @@ export default function CreateTemplatePage() {
                       <div className="grid gap-3 col-span-4">
                         <Select>
                           <SelectTrigger id="status" aria-label="Field Type">
-                            <SelectValue placeholder="Field Type" />
+                            <SelectValue placeholder="Select Field Type" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="draft">Text</SelectItem>
-                            <SelectItem value="published">Select</SelectItem>
+                            <SelectItem value="text">Text</SelectItem>
+                            <SelectItem value="select">Select</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="grid gap-3 col-span-8">
-                        <Input placeholder="Enter feature" />
+                        <Input placeholder="Enter Value" />
                       </div>
                       <div className="col-span-1 flex justify-end items-center">
                         <Button variant="ghost">
@@ -212,7 +213,7 @@ export default function CreateTemplatePage() {
                       <Label htmlFor="status">Status</Label>
                       <Select>
                         <SelectTrigger id="status" aria-label="Select status">
-                          <SelectValue placeholder="Select status" />
+                          <SelectValue placeholder="Select Status" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="draft">Draft</SelectItem>
@@ -231,7 +232,7 @@ export default function CreateTemplatePage() {
             <Button variant="outline" size="sm">
               Discard
             </Button>
-            <Button size="sm">Save Product</Button>
+            <Button size="sm">Save Template</Button>
           </div>
         </form>
       </Form>
