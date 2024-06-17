@@ -42,6 +42,7 @@ import { z } from "zod";
 import { toast } from "@/components/ui/use-toast";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import TemplateSelect from "../_components/template-select";
+import ManualsInstructionsUpload from "../_components/manuals-instructions-upload";
 
 const breadcrumbItems = [
   { label: "Home", href: "/admin" },
@@ -139,6 +140,45 @@ export default function Dashboard() {
                   </div>
                 </CardContent>
               </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Brand Specifications</CardTitle>
+                  <CardDescription>
+                    Please provide the brand specifications.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-6 sm:grid-cols-3">
+                    <div className="grid gap-3">
+                      <Label htmlFor="trade-price">Brand Name</Label>
+                      <Input id="trade-price" placeholder="Enter brand name" />
+                    </div>
+                    <div className="grid gap-3">
+                      <Label htmlFor="contract-price">Model</Label>
+                      <Input id="contract-price" placeholder="Enter model" />
+                    </div>
+                    <div className="grid gap-3">
+                      <Label htmlFor="promotional-price">Type</Label>
+                      <Input id="promotional-price" placeholder="Enter type" />
+                    </div>
+                    <div className="grid gap-3">
+                      <Label htmlFor="promotional-price">Warranty</Label>
+                      <Input id="promotional-price" placeholder="Enter type" />
+                    </div>
+                    <div className="grid gap-3">
+                      <Label htmlFor="promotional-price">
+                        Years Guaranteed
+                      </Label>
+                      <Input
+                        id="promotional-price"
+                        placeholder="Enter years guaranteed"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardHeader>
                   <CardTitle>Price</CardTitle>
@@ -204,6 +244,10 @@ export default function Dashboard() {
                         <Input id="height" placeholder="Height" />
                       </div>
                     </div>
+                    <div className="grid gap-3">
+                      <Label htmlFor="weight">Material</Label>
+                      <Input id="weight" placeholder="Enter material" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -218,7 +262,6 @@ export default function Dashboard() {
                 <CardContent>
                   <div className="grid gap-6 sm:grid-cols-6">
                     <div className="grid gap-3 col-span-6">
-                      <Label htmlFor="unit">Templates</Label>
                       <TemplateSelect />
                     </div>
                   </div>
@@ -413,6 +456,18 @@ export default function Dashboard() {
                       </button>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card x-chunk="dashboard-07-chunk-5">
+                <CardHeader>
+                  <CardTitle>Manuals & Instructions</CardTitle>
+                  <CardDescription>
+                    Archive this product if it&apos;s no longer available.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ManualsInstructionsUpload />
                 </CardContent>
               </Card>
               <Card x-chunk="dashboard-07-chunk-5">
