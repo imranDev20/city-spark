@@ -2,8 +2,8 @@ import { ContentLayout } from "../_components/content-layout";
 import DynamicBreadcrumb from "../_components/dynamic-breadcrumb";
 
 const breadcrumbItems = [
-  { label: "Home", href: "/" },
-  { label: "Dashboard", href: "/dashboard", isCurrentPage: true },
+  { label: "Dashboard", href: "/admin" },
+  { label: "Products", href: "/admin/products", isCurrentPage: true },
 ];
 
 export default function AdminProductsPage() {

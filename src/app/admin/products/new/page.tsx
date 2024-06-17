@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, PlusCircle, Trash, Upload } from "lucide-react";
+import { ChevronLeft, Trash, Upload } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -23,16 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ContentLayout } from "../../_components/content-layout";
 import { Form } from "@/components/ui/form";
 
@@ -45,7 +35,7 @@ import TemplateSelect from "../_components/template-select";
 import ManualsInstructionsUpload from "../_components/manuals-instructions-upload";
 
 const breadcrumbItems = [
-  { label: "Home", href: "/admin" },
+  { label: "Dashboard", href: "/admin" },
   { label: "Products", href: "/admin/products" },
   { label: "Create Product", href: "/admin/products/new", isCurrentPage: true },
 ];
@@ -60,7 +50,7 @@ const FormSchema = z.object({
   }),
 });
 
-export default function Dashboard() {
+export default function CreateProductPage() {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -107,6 +97,7 @@ export default function Dashboard() {
               <Button size="sm">Save Product</Button>
             </div>
           </div>
+
           <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
             <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
               <Card x-chunk="dashboard-07-chunk-0">
@@ -417,6 +408,7 @@ export default function Dashboard() {
                   </div>
                 </CardContent>
               </Card>
+
               <Card className="overflow-hidden" x-chunk="dashboard-07-chunk-4">
                 <CardHeader>
                   <CardTitle>Images</CardTitle>

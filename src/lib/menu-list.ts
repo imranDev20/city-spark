@@ -71,12 +71,12 @@ export function getMenuList(pathname: string): Group[] {
             {
               href: "/templates",
               label: "All Templates",
-              active: pathname === "/posts",
+              active: pathname === "/templates",
             },
             {
-              href: "/products/new",
+              href: "/templates/new",
               label: "Create Template",
-              active: pathname === "/posts/new",
+              active: pathname === "/templates/new",
             },
           ],
         },
@@ -87,14 +87,14 @@ export function getMenuList(pathname: string): Group[] {
           icon: Award,
           submenus: [
             {
-              href: "/posts",
+              href: "/brands",
               label: "All Brands",
-              active: pathname === "/posts",
+              active: pathname === "/brands",
             },
             {
-              href: "/posts/new",
+              href: "/brands/new",
               label: "Create Brand",
-              active: pathname === "/posts/new",
+              active: pathname === "/brands/new",
             },
           ],
         },
@@ -107,12 +107,12 @@ export function getMenuList(pathname: string): Group[] {
             {
               href: "/categories",
               label: "All Categories",
-              active: pathname === "/posts",
+              active: pathname === "/categories",
             },
             {
               href: "/categories/new",
               label: "Create Category",
-              active: pathname === "/posts/new",
+              active: pathname === "/categories/new",
             },
           ],
         },
