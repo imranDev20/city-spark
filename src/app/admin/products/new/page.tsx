@@ -13,6 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+import { useRef } from "react";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -24,15 +26,24 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ContentLayout } from "../../_components/content-layout";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { toast } from "@/components/ui/use-toast";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import TemplateSelect from "../_components/template-select";
 import ManualsInstructionsUpload from "../_components/manuals-instructions-upload";
+import { productSchema } from "./schema";
+import { createProductAction } from "./actions";
+import { useFormState } from "react-dom";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -40,42 +51,34 @@ const breadcrumbItems = [
   { label: "Create Product", href: "/admin/products/new", isCurrentPage: true },
 ];
 
-const FormSchema = z.object({
-  email: z.string().min(2, {
-    message: "email must be at least 2 characters.",
-  }),
-
-  password: z.string().min(2, {
-    message: "email must be at least 2 characters.",
-  }),
-});
+const defaultValues = {
+  name: "",
+  description: "",
+  features: [],
+};
 
 export default function CreateProductPage() {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+  const [state, formAction] = useFormState(createProductAction, {
+    message: "",
   });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
-  }
+  const form = useForm<z.infer<typeof productSchema>>({
+    resolver: zodResolver(productSchema),
+    defaultValues,
+    mode: "all",
+  });
+
+  const formRef = useRef<HTMLFormElement>(null);
 
   return (
     <ContentLayout title="Create Product">
+      <DynamicBreadcrumb items={breadcrumbItems} />
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <DynamicBreadcrumb items={breadcrumbItems} />
-
+        <form
+          ref={formRef}
+          action={formAction}
+          // onSubmit={form.handleSubmit(() => formRef.current?.submit())}
+        >
           <div className="flex items-center gap-4 mb-5 mt-7">
             <Link href="/admin/products">
               <Button variant="outline" size="icon" className="h-7 w-7">
@@ -94,7 +97,13 @@ export default function CreateProductPage() {
               <Button variant="outline" size="sm">
                 Discard
               </Button>
-              <Button size="sm">Save Product</Button>
+              <Button
+                size="sm"
+                type="submit"
+                disabled={!form.formState.isValid}
+              >
+                Save Product
+              </Button>
             </div>
           </div>
 
@@ -110,22 +119,41 @@ export default function CreateProductPage() {
                 <CardContent>
                   <div className="grid gap-6">
                     <div className="grid gap-3">
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        id="name"
-                        type="text"
-                        className="w-full"
-                        defaultValue="Gamer Gear Pro Controller"
-                        placeholder="Enter product name"
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Name</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Enter product name"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
                     <div className="grid gap-3">
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea
-                        id="description"
-                        defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl nec ultricies ultricies, nunc nisl ultricies nunc, nec ultricies nunc nisl nec nunc."
-                        className="min-h-32"
-                        placeholder="Enter product description"
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                id="description"
+                                className="min-h-32"
+                                placeholder="Enter product description"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
                   </div>
@@ -142,28 +170,84 @@ export default function CreateProductPage() {
                 <CardContent>
                   <div className="grid gap-6 sm:grid-cols-3">
                     <div className="grid gap-3">
-                      <Label htmlFor="trade-price">Brand Name</Label>
-                      <Input id="trade-price" placeholder="Enter brand name" />
+                      <FormField
+                        control={form.control}
+                        name="brandName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Brand Name</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Enter brand name"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                     <div className="grid gap-3">
-                      <Label htmlFor="contract-price">Model</Label>
-                      <Input id="contract-price" placeholder="Enter model" />
+                      <FormField
+                        control={form.control}
+                        name="model"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Model</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter model" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                     <div className="grid gap-3">
-                      <Label htmlFor="promotional-price">Type</Label>
-                      <Input id="promotional-price" placeholder="Enter type" />
+                      <FormField
+                        control={form.control}
+                        name="type"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Type</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter type" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                     <div className="grid gap-3">
-                      <Label htmlFor="promotional-price">Warranty</Label>
-                      <Input id="promotional-price" placeholder="Enter type" />
+                      <FormField
+                        control={form.control}
+                        name="warranty"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Warranty</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter warranty" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                     <div className="grid gap-3">
-                      <Label htmlFor="promotional-price">
-                        Years Guaranteed
-                      </Label>
-                      <Input
-                        id="promotional-price"
-                        placeholder="Enter years guaranteed"
+                      <FormField
+                        control={form.control}
+                        name="yearsGuaranteed"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Years Guaranteed</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Enter years guaranteed"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
                   </div>
@@ -180,23 +264,57 @@ export default function CreateProductPage() {
                 <CardContent>
                   <div className="grid gap-6 sm:grid-cols-3">
                     <div className="grid gap-3">
-                      <Label htmlFor="trade-price">Trade Price</Label>
-                      <Input id="trade-price" placeholder="Enter trade price" />
-                    </div>
-                    <div className="grid gap-3">
-                      <Label htmlFor="contract-price">Contract Price</Label>
-                      <Input
-                        id="contract-price"
-                        placeholder="Enter contract price"
+                      <FormField
+                        control={form.control}
+                        name="tradePrice"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Trade Price</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Enter trade price"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
                     <div className="grid gap-3">
-                      <Label htmlFor="promotional-price">
-                        Promotional Price
-                      </Label>
-                      <Input
-                        id="promotional-price"
-                        placeholder="Enter promotional price"
+                      <FormField
+                        control={form.control}
+                        name="contractPrice"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Contract Price</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Enter contract price"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="grid gap-3">
+                      <FormField
+                        control={form.control}
+                        name="promotionalPrice"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Promotional Price</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Enter promotional price"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
                   </div>
@@ -213,25 +331,83 @@ export default function CreateProductPage() {
                 <CardContent>
                   <div className="grid gap-6 sm:grid-cols-3">
                     <div className="grid gap-3">
-                      <Label htmlFor="unit">Unit of Measurement</Label>
-                      <Input
-                        id="unit"
-                        placeholder="e.g. kg, lb, meter, piece"
+                      <FormField
+                        control={form.control}
+                        name="unit"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Unit of Measurement</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="e.g. kg, lb, meter, piece"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
                     <div className="grid gap-3">
-                      <Label htmlFor="weight">Weight</Label>
-                      <Input id="weight" placeholder="Enter weight" />
+                      <FormField
+                        control={form.control}
+                        name="weight"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Weight</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter weight" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                     <div className="grid gap-3">
-                      <Label htmlFor="weight">Colour</Label>
-                      <Input id="weight" placeholder="Enter colour" />
+                      <FormField
+                        control={form.control}
+                        name="color"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Color</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter color" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                     <div className="grid gap-3 col-span-2">
                       <Label htmlFor="dimensions">Dimensions (in meters)</Label>
                       <div className="grid gap-3 grid-cols-3">
-                        <Input id="length" placeholder="Length" />
-                        <Input id="width" placeholder="Width" />
+                        <FormField
+                          control={form.control}
+                          name="length"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Length</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter length" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="width"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Width</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter width" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
                         <Input id="height" placeholder="Height" />
                       </div>
                     </div>

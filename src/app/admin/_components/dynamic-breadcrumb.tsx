@@ -25,7 +25,7 @@ const DynamicBreadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
     <Breadcrumb>
       <BreadcrumbList>
         {items.map((item, index) => (
-          <>
+          <React.Fragment key={item.href}>
             <BreadcrumbItem>
               {item.isCurrentPage ? (
                 <BreadcrumbPage>{item.label}</BreadcrumbPage>
@@ -37,7 +37,7 @@ const DynamicBreadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
             </BreadcrumbItem>
 
             {items.length - 1 !== index && <BreadcrumbSeparator />}
-          </>
+          </React.Fragment>
         ))}
       </BreadcrumbList>
     </Breadcrumb>
