@@ -1,5 +1,3 @@
-// schema.prisma
-
 generator client {
     provider = "prisma-client-js"
 }
@@ -20,18 +18,78 @@ model Post {
 }
 
 model User {
-    id        String   @id @default(cuid())
-    name      String?
-    email     String?  @unique
-    createdAt DateTime @default(now()) @map(name: "created_at")
-    updatedAt DateTime @updatedAt @map(name: "updated_at")
-    posts     Post[]
+    id             String          @id @default(cuid())
+    name           String
+    email          String          @unique
+    password       String
+    wishlist       WishlistItem[]
+    paymentMethods PaymentMethod[]
+    orders         Order[]
+    address        Address[]
+    createdAt      DateTime        @default(now()) @map(name: "created_at")
+    updatedAt      DateTime        @updatedAt @map(name: "updated_at")
+    Post           Post[]
 
     @@map(name: "users")
 }
 
+model WishlistItem {
+    id        Int     @id @default(autoincrement())
+    product   Product @relation(fields: [productId], references: [id])
+    productId Int
+    user      User    @relation(fields: [userId], references: [id])
+    userId    String
+}
+
+model PaymentMethod {
+    id               Int      @id @default(autoincrement())
+    type             String
+    cardNumber       String
+    cardExpiryDate   DateTime
+    cardCvv          String
+    billingAddress   Address? @relation(fields: [billingAddressId], references: [id])
+    billingAddressId Int?
+    user             User     @relation(fields: [userId], references: [id])
+    userId           String
+}
+
+model Order {
+    id                Int         @id @default(autoincrement())
+    totalAmount       Float
+    status            OrderStatus
+    items             OrderItem[]
+    user              User        @relation(fields: [userId], references: [id])
+    userId            String
+    shippingAddress   Address?    @relation(fields: [shippingAddressId], references: [id])
+    shippingAddressId Int?
+    createdAt         DateTime    @default(now()) @map(name: "created_at")
+    updatedAt         DateTime    @updatedAt @map(name: "updated_at")
+}
+
+model OrderItem {
+    id        Int     @id @default(autoincrement())
+    quantity  Int
+    price     Float
+    product   Product @relation(fields: [productId], references: [id])
+    productId Int
+    order     Order   @relation(fields: [orderId], references: [id])
+    orderId   Int
+}
+
+model Address {
+    id             Int             @id @default(autoincrement())
+    street         String
+    city           String
+    state          String
+    postalCode     String
+    country        String
+    users          User[]
+    paymentMethods PaymentMethod[]
+    orders         Order[]
+}
+
 model Product {
-    id                Int        @id @default(autoincrement())
+    id                Int            @id @default(autoincrement())
     name              String
     description       String?
     tradePrice        Float?
@@ -44,10 +102,14 @@ model Product {
     height            Float?
     features          Feature[]
     categories        Category[]
-    status            Status     @default(DRAFT)
+    status            Status         @default(DRAFT)
     images            Image[]
-    createdAt         DateTime   @default(now())
-    updatedAt         DateTime   @updatedAt
+    brand             Brand?         @relation(fields: [brandId], references: [id])
+    brandId           Int?
+    createdAt         DateTime       @default(now())
+    updatedAt         DateTime       @updatedAt
+    WishlistItem      WishlistItem[]
+    OrderItem         OrderItem[]
 }
 
 model Feature {
@@ -58,20 +120,47 @@ model Feature {
 }
 
 model Category {
-    id       Int       @id @default(autoincrement())
+    id       Int        @id @default(autoincrement())
     name     String
+    parentId Int?
+    parent   Category?  @relation("CategoryToParent", fields: [parentId], references: [id])
+    children Category[] @relation("CategoryToParent")
+    image    Image?
     products Product[]
+
+    @@map(name: "categories")
 }
 
 model Image {
-    id        Int     @id @default(autoincrement())
-    url       String
-    productId Int
-    product   Product @relation(fields: [productId], references: [id])
+    id         Int       @id @default(autoincrement())
+    url        String
+    productId  Int?
+    product    Product?  @relation(fields: [productId], references: [id])
+    categoryId Int?      @unique
+    category   Category? @relation(fields: [categoryId], references: [id])
+}
+
+model Brand {
+    id              Int       @id @default(autoincrement())
+    name            String
+    image           String?
+    countryOfOrigin String
+    website         String?
+    products        Product[]
+    createdAt       DateTime  @default(now())
+    updatedAt       DateTime  @updatedAt
 }
 
 enum Status {
     DRAFT
     ACTIVE
     ARCHIVED
+}
+
+enum OrderStatus {
+    PENDING
+    PROCESSING
+    SHIPPED
+    DELIVERED
+    CANCELLED
 }

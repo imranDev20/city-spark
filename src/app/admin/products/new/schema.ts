@@ -1,13 +1,16 @@
 import { z } from "zod";
 
 export const productSchema = z.object({
-  name: z.string().max(10, "Name must be at most 10 characters long"),
-  description: z.string(),
+  name: z.string().min(1, "Product name is required and can't be left blank"),
+  description: z
+    .string()
+    .min(1, "Product description is required and can't be left blank"),
+
   brandName: z.string().optional(),
   model: z.string().optional(),
   type: z.string().optional(),
   warranty: z.string().optional(),
-  yearsGuaranteed: z.string().optional(),
+  guarantee: z.string().optional(),
   tradePrice: z.string().optional(),
   contractPrice: z.string().optional(),
   promotionalPrice: z.string().optional(),

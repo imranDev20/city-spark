@@ -65,7 +65,7 @@ export default function CreateProductPage() {
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
     defaultValues,
-    mode: "all",
+    // mode: "all",
   });
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -77,7 +77,12 @@ export default function CreateProductPage() {
         <form
           ref={formRef}
           action={formAction}
-          // onSubmit={form.handleSubmit(() => formRef.current?.submit())}
+          onSubmit={(e) => {
+            e.preventDefault();
+            return form.handleSubmit(() => {
+              formAction(new FormData(formRef.current!));
+            })(e);
+          }}
         >
           <div className="flex items-center gap-4 mb-5 mt-7">
             <Link href="/admin/products">
@@ -100,7 +105,7 @@ export default function CreateProductPage() {
               <Button
                 size="sm"
                 type="submit"
-                disabled={!form.formState.isValid}
+                // disabled={!form.formState.isValid}
               >
                 Save Product
               </Button>
@@ -225,7 +230,10 @@ export default function CreateProductPage() {
                           <FormItem>
                             <FormLabel>Warranty</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter warranty" {...field} />
+                              <Input
+                                placeholder="Enter warranty in months"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -235,13 +243,13 @@ export default function CreateProductPage() {
                     <div className="grid gap-3">
                       <FormField
                         control={form.control}
-                        name="yearsGuaranteed"
+                        name="guarantee"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Years Guaranteed</FormLabel>
+                            <FormLabel>Guarantee</FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="Enter years guaranteed"
+                                placeholder="Enter guarantee in months"
                                 {...field}
                               />
                             </FormControl>
