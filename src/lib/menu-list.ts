@@ -6,6 +6,7 @@ import {
   ShoppingCart,
   Award,
   Blocks,
+  PackagePlus,
 } from "lucide-react";
 
 type Submenu = {
@@ -17,7 +18,7 @@ type Submenu = {
 type Menu = {
   href: string;
   label: string;
-  active: boolean;
+  active?: boolean;
   icon: any;
   submenus: Submenu[];
 };
@@ -47,74 +48,82 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: "",
           label: "Products",
-          active: pathname.includes("/products"),
+          // active: pathname.includes("/products"),
           icon: Package2,
           submenus: [
             {
               href: "/products",
               label: "All Products",
-              active: pathname === "/products",
+              active: pathname === "/admin/products",
             },
             {
               href: "/products/new",
               label: "Create Product",
-              active: pathname === "/products/new",
+              active: pathname === "/admin/products/new",
             },
           ],
         },
         {
           href: "",
           label: "Templates",
-          active: pathname.includes("/templates"),
+          // active: pathname.includes("/templates"),
           icon: Blocks,
           submenus: [
             {
               href: "/templates",
               label: "All Templates",
-              active: pathname === "/templates",
+              active: pathname === "/admin/templates",
             },
             {
               href: "/templates/new",
               label: "Create Template",
-              active: pathname === "/templates/new",
+              active: pathname === "/admin/templates/new",
             },
           ],
         },
         {
           href: "",
           label: "Brands",
-          active: pathname.includes("/brands"),
+          // active: pathname.includes("/brands"),
           icon: Award,
           submenus: [
             {
               href: "/brands",
               label: "All Brands",
-              active: pathname === "/brands",
+              active: pathname === "/admin/brands",
             },
             {
               href: "/brands/new",
               label: "Create Brand",
-              active: pathname === "/brands/new",
+              active: pathname === "/admin/brands/new",
             },
           ],
         },
         {
           href: "/categories",
           label: "Categories",
-          active: pathname.includes("/categories"),
+          // active: pathname.includes("/categories"),
           icon: Network,
           submenus: [
             {
               href: "/categories",
               label: "All Categories",
-              active: pathname === "/categories",
+              active: pathname === "/admin/categories",
             },
             {
               href: "/categories/new",
               label: "Create Category",
-              active: pathname === "/categories/new",
+              active: pathname === "/admin/categories/new",
             },
           ],
+        },
+
+        {
+          href: "/inventory",
+          label: "Inventory",
+          active: pathname.includes("/inventory"),
+          icon: PackagePlus,
+          submenus: [],
         },
       ],
     },
@@ -142,18 +151,18 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: "/users",
           label: "Users",
-          active: pathname.includes("/users"),
+          // active: pathname.includes("/users"),
           icon: Users,
           submenus: [
             {
-              href: "/posts",
+              href: "/users",
               label: "All Users",
-              active: pathname === "/posts",
+              active: pathname === "/admin/users",
             },
             {
-              href: "/posts",
-              label: "All Users",
-              active: pathname === "/posts",
+              href: "/users/new",
+              label: "Create User",
+              active: pathname === "/admin/users/new",
             },
           ],
         },
@@ -164,9 +173,9 @@ export function getMenuList(pathname: string): Group[] {
       groupLabel: "Others",
       menus: [
         {
-          href: "/users",
+          href: "/settings",
           label: "Settings",
-          active: pathname.includes("/users"),
+          active: pathname.includes("/settings"),
           icon: Users,
           submenus: [],
         },
