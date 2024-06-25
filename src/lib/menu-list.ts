@@ -131,20 +131,20 @@ export function getMenuList(pathname: string): Group[] {
       groupLabel: "Sales",
       menus: [
         {
-          href: "/users",
+          href: "/orders",
           label: "Orders",
-          active: pathname.includes("/users"),
+          // active: pathname.includes("/orders"),
           icon: ShoppingCart,
           submenus: [
             {
-              href: "/posts",
-              label: "All Users",
-              active: pathname === "/posts",
+              href: "/orders",
+              label: "All Orders",
+              active: pathname === "/admin/orders",
             },
             {
-              href: "/posts",
-              label: "All Users",
-              active: pathname === "/posts",
+              href: "/orders/new",
+              label: "Create Order",
+              active: pathname === "/admin/new",
             },
           ],
         },

@@ -54,16 +54,19 @@ model PaymentMethod {
 }
 
 model Order {
-    id                Int         @id @default(autoincrement())
+    id                Int             @id @default(autoincrement())
     totalAmount       Float
     status            OrderStatus
     items             OrderItem[]
-    user              User        @relation(fields: [userId], references: [id])
+    user              User            @relation(fields: [userId], references: [id])
     userId            String
-    shippingAddress   Address?    @relation(fields: [shippingAddressId], references: [id])
+    shippingAddress   Address?        @relation(fields: [shippingAddressId], references: [id])
     shippingAddressId Int?
-    createdAt         DateTime    @default(now()) @map(name: "created_at")
-    updatedAt         DateTime    @updatedAt @map(name: "updated_at")
+    activities        OrderActivity[]
+    customerNote      String?
+    createdAt         DateTime        @default(now()) @map(name: "created_at")
+    updatedAt         DateTime        @updatedAt @map(name: "updated_at")
+    Shipment          Shipment?
 }
 
 model OrderItem {
@@ -76,6 +79,36 @@ model OrderItem {
     orderId   Int
 }
 
+model OrderActivity {
+    id        Int          @id @default(autoincrement())
+    orderId   Int
+    order     Order        @relation(fields: [orderId], references: [id])
+    type      ActivityType
+    message   String
+    timestamp DateTime     @default(now())
+
+    @@map(name: "order_activities")
+}
+
+enum ActivityType {
+    ORDER_PLACED
+    ORDER_CONFIRMED
+    PAYMENT_RECEIVED
+    ORDER_PREPARING
+    ORDER_DISPATCHED
+    OUT_FOR_DELIVERY
+    DELIVERED
+    ORDER_CANCELLED
+    RETURN_REQUESTED
+    RETURN_APPROVED
+    RETURN_REJECTED
+    ITEM_RETURNED
+    REFUND_INITIATED
+    REFUND_COMPLETED
+    CUSTOMER_NOTE
+    ADMIN_NOTE
+}
+
 model Address {
     id             Int             @id @default(autoincrement())
     street         String
@@ -86,6 +119,7 @@ model Address {
     users          User[]
     paymentMethods PaymentMethod[]
     orders         Order[]
+    Shipment       Shipment[]
 }
 
 model Product {
@@ -161,6 +195,27 @@ enum OrderStatus {
     PENDING
     PROCESSING
     SHIPPED
+    DELIVERED
+    CANCELLED
+}
+
+model Shipment {
+    id                Int            @id @default(autoincrement())
+    orderId           Int            @unique
+    order             Order          @relation(fields: [orderId], references: [id])
+    trackingNumber    String
+    carrier           String
+    shippedAt         DateTime?
+    deliveredAt       DateTime?
+    shipmentStatus    ShipmentStatus
+    shippingAddress   Address        @relation(fields: [shippingAddressId], references: [id])
+    shippingAddressId Int
+}
+
+enum ShipmentStatus {
+    PENDING
+    SHIPPED
+    OUT_FOR_DELIVERY
     DELIVERED
     CANCELLED
 }
