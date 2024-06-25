@@ -73,7 +73,7 @@ export function Menu({ isOpen }: MenuProps) {
                                     "max-w-[200px] truncate",
                                     isOpen === false
                                       ? "-translate-x-96 opacity-0"
-                                      : "translate-x-0 opacity-100",
+                                      : "translate-x-0 opacity-100"
                                   )}
                                 >
                                   {label}
@@ -91,15 +91,17 @@ export function Menu({ isOpen }: MenuProps) {
                     </div>
                   ) : (
                     <div className="w-full" key={index}>
-                      <CollapseMenuButton
-                        icon={Icon}
-                        label={label}
-                        active={active}
-                        submenus={submenus}
-                        isOpen={isOpen}
-                      />
+                      {active && (
+                        <CollapseMenuButton
+                          icon={Icon}
+                          label={label}
+                          active={active}
+                          submenus={submenus}
+                          isOpen={isOpen}
+                        />
+                      )}
                     </div>
-                  ),
+                  )
               )}
             </li>
           ))}
@@ -118,7 +120,7 @@ export function Menu({ isOpen }: MenuProps) {
                     <p
                       className={cn(
                         "whitespace-nowrap",
-                        isOpen === false ? "opacity-0 hidden" : "opacity-100",
+                        isOpen === false ? "opacity-0 hidden" : "opacity-100"
                       )}
                     >
                       Sign out
