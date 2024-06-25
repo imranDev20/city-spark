@@ -91,15 +91,13 @@ export function Menu({ isOpen }: MenuProps) {
                     </div>
                   ) : (
                     <div className="w-full" key={index}>
-                      {active && (
-                        <CollapseMenuButton
-                          icon={Icon}
-                          label={label}
-                          active={active}
-                          submenus={submenus}
-                          isOpen={isOpen}
-                        />
-                      )}
+                      <CollapseMenuButton
+                        icon={Icon}
+                        label={label}
+                        active={active}
+                        submenus={submenus}
+                        isOpen={isOpen}
+                      />
                     </div>
                   )
               )}
