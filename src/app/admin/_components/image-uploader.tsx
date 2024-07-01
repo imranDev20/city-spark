@@ -72,14 +72,14 @@ export const ImageUploader: React.FC = () => {
           control={form.control}
           name="image"
           render={() => (
-            <FormItem className="mx-auto md:w-1/2">
+            <FormItem className="mx-auto ">
               <FormLabel
                 className={`${
                   fileRejections.length !== 0 && "text-destructive"
                 }`}
               >
                 <h2 className="text-xl font-semibold tracking-tight">
-                  Upload your image
+                
                   <span
                     className={
                       form.formState.errors.image || fileRejections.length !== 0
@@ -98,11 +98,11 @@ export const ImageUploader: React.FC = () => {
                     <img
                       src={preview as string}
                       alt="Uploaded image"
-                      className="max-h-[400px] rounded-lg"
+                      className="max-h-[400px]  rounded-lg"
                     />
                   )}
                   <ImagePlus
-                    className={`size-40 ${preview ? "hidden" : "block"}`}
+                    className={`size-20 ${preview ? "hidden" : "block"}`}
                   />
                   <Input {...getInputProps()} type="file" />
                   {isDragActive ? (
