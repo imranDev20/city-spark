@@ -68,6 +68,9 @@ export default function BrandsList() {
               <SelectItem value="draft">Draft</SelectItem>
             </SelectContent>
           </Select>
+          <Button variant="outline" >
+              Download Excel
+            </Button>
         </div>
         <Link href="brands/new">
           {" "}
