@@ -50,13 +50,8 @@ const breadcrumbItems = [
   },
 ];
 
-// Define default values and types
-const defaultValues = {
-  name: "",
-  description: "",
-  fields: [{ fieldName: "", fieldType: "select", fieldValue: "" }],
-  status: "draft"
-};
+
+
 
 type FormInputType = z.infer<typeof templateSchema>;
 
@@ -65,7 +60,12 @@ export default function CreateTemplatePage() {
   // Initialize form using useForm and zodResolver for validation
   const form = useForm<FormInputType>({
     resolver: zodResolver(templateSchema),
-    defaultValues,
+    defaultValues: {
+      name: "",
+      description: "",
+      fields: [{ fieldName: "", fieldType: "select", fieldValue: "" }],
+      status: "draft",
+    },
   });
 
   const { control, handleSubmit } = form;
@@ -127,8 +127,9 @@ export default function CreateTemplatePage() {
                           <FormLabel htmlFor="name">Name</FormLabel>
                           <FormControl>
                             <Input                            
-                            {...field}                    
+                                         
                               placeholder="Enter template name"
+                              {...field}     
                             />
                           </FormControl>
                           <FormMessage />
@@ -183,6 +184,7 @@ export default function CreateTemplatePage() {
                                     placeholder="Enter Field Name"
                                   />
                                 </FormControl>
+                                <FormMessage />
                               </FormItem>
                             )}
                           />
@@ -208,6 +210,7 @@ export default function CreateTemplatePage() {
                                     </SelectContent>
                                   </Select>
                                 </FormControl>
+                                <FormMessage />
                               </FormItem>
                             )}
                           />
@@ -225,6 +228,7 @@ export default function CreateTemplatePage() {
                                     placeholder="Enter Value"
                                   />
                                 </FormControl>
+                                <FormMessage />
                               </FormItem>
                             )}
                           />
