@@ -1,17 +1,23 @@
+// Import necessary components and libraries
 "use client";
-import React from "react";
+import React, { Fragment } from "react";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Trash } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Form } from "@/components/ui/form";
-
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
-import { toast } from "@/components/ui/use-toast";
 import {
   Card,
   CardContent,
@@ -30,7 +36,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { templateSchema } from "./schema";
 
+
+// Define breadcrumb items
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
   { label: "Templates", href: "/admin/templates" },
@@ -41,40 +50,40 @@ const breadcrumbItems = [
   },
 ];
 
-const FormSchema = z.object({
-  email: z.string().min(2, {
-    message: "email must be at least 2 characters.",
-  }),
+// Define default values and types
+const defaultValues = {
+  name: "",
+  description: "",
+  fields: [{ fieldName: "", fieldType: "select", fieldValue: "" }],
+  status: "draft"
+};
 
-  password: z.string().min(2, {
-    message: "email must be at least 2 characters.",
-  }),
-});
+type FormInputType = z.infer<typeof templateSchema>;
 
+// Component definition
 export default function CreateTemplatePage() {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+  // Initialize form using useForm and zodResolver for validation
+  const form = useForm<FormInputType>({
+    resolver: zodResolver(templateSchema),
+    defaultValues,
   });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
-  }
+  const { control, handleSubmit } = form;
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "fields",
+  });
+
+  // Handle form submission
+  const onCreateTemplateSubmit: SubmitHandler<FormInputType> = async (data) => {
+    console.log(data);
+  };
+
 
   return (
     <ContentLayout title="Create Template">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onCreateTemplateSubmit)}>
           <DynamicBreadcrumb items={breadcrumbItems} />
 
           <div className="flex items-center gap-4 mb-5 mt-7">
@@ -86,7 +95,7 @@ export default function CreateTemplatePage() {
             </Link>
 
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-              Pro Controller Template
+              Create Template
             </h1>
             <Badge variant="outline" className="ml-auto sm:ml-0">
               Active
@@ -101,7 +110,7 @@ export default function CreateTemplatePage() {
 
           <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
             <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
-              <Card x-chunk="dashboard-07-chunk-0">
+              <Card>
                 <CardHeader>
                   <CardTitle>Template Details</CardTitle>
                   <CardDescription>
@@ -110,30 +119,46 @@ export default function CreateTemplatePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-6">
-                    <div className="grid gap-3">
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        id="name"
-                        type="text"
-                        className="w-full"
-                        defaultValue="Gamer Gear Pro Controller"
-                        placeholder="Enter template name"
-                      />
-                    </div>
-                    <div className="grid gap-3">
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea
-                        id="description"
-                        defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl nec ultricies ultricies, nunc nisl ultricies nunc, nec ultricies nunc nisl nec nunc."
-                        className="min-h-32"
-                        placeholder="Enter the purpose of this template"
-                      />
-                    </div>
+                    <FormField
+                      name="name"
+                      control={control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel htmlFor="name">Name</FormLabel>
+                          <FormControl>
+                            <Input                            
+                            {...field}                    
+                              placeholder="Enter template name"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  
+                    <FormField
+                      name="description"
+                      control={control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel htmlFor="description">
+                            Description
+                          </FormLabel>
+                          <FormControl>
+                            <Textarea
+                            {...field}
+                              placeholder="Enter the purpose of this template"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card x-chunk="dashboard-07-chunk-0">
+              <Card>
                 <CardHeader>
                   <CardTitle>Fields & Values</CardTitle>
                   <CardDescription>
@@ -143,85 +168,134 @@ export default function CreateTemplatePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3 space-y-4">
-                    <div className="grid gap-3 sm:grid-cols-9">
-                      <div className="grid gap-3 col-span-4">
-                        <Input placeholder="Enter Field Name" />
-                      </div>
-                      <div className="grid gap-3 col-span-4">
-                        <Select>
-                          <SelectTrigger id="status" aria-label="Field Type">
-                            <SelectValue placeholder="Select Field Type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="text">Text</SelectItem>
-                            <SelectItem value="select">Select</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="grid gap-3 col-span-8">
-                        <Input placeholder="Enter Value" />
-                      </div>
-                      <div className="col-span-1 flex justify-end items-center">
-                        <Button variant="ghost">
-                          <Trash className="w-4 h-4 text-primary" />
-                        </Button>
-                      </div>
-                    </div>
+                    {fields.map((field, index) => (
+                      <Fragment key={field.id}>
+                      <div key={field.id} className="grid gap-3 sm:grid-cols-9">
+                        <div className="grid gap-3 col-span-4">
+                          <FormField
+                            name={`fields.${index}.fieldName`}
+                            control={control}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                  {...field}
+                                    placeholder="Enter Field Name"
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div className="grid gap-3 col-span-4">
+                          <FormField
+                            name={`fields.${index}.fieldType`}
+                            control={control}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Select>
+                                    <SelectTrigger                                    
+                                      aria-label="Field Type"
+                                    >
+                                      <SelectValue placeholder="Select Field Type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="text">Text</SelectItem>
+                                      <SelectItem value="select">
+                                        Select
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
 
-                    <Separator />
+                        <div className="grid gap-3 col-span-8">
+                          <FormField
+                            name={`fields.${index}.fieldValue`}
+                            control={control}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                   {...field}
+                                    placeholder="Enter Value"
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
 
-                    <div className="grid gap-3 sm:grid-cols-9">
-                      <div className="grid gap-3 col-span-4">
-                        <Input placeholder="Enter Field Name" />
+                        <div className="col-span-1 flex justify-end items-center">
+                          <Button  disabled={fields.length === 1} variant="ghost" onClick={() => remove(index)}>
+                            <Trash className="w-4 h-4 text-primary" />
+                          </Button>
+                        </div>                    
                       </div>
-                      <div className="grid gap-3 col-span-4">
-                        <Select>
-                          <SelectTrigger id="status" aria-label="Field Type">
-                            <SelectValue placeholder="Select Field Type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="text">Text</SelectItem>
-                            <SelectItem value="select">Select</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="grid gap-3 col-span-8">
-                        <Input placeholder="Enter Value" />
-                      </div>
-                      <div className="col-span-1 flex justify-end items-center">
-                        <Button variant="ghost">
-                          <Trash className="w-4 h-4 text-primary" />
-                        </Button>
-                      </div>
-                    </div>
+
+                     {fields.length - 1 !== index && <Separator />} 
+                      </Fragment>
+                    ))}
+
+                  
 
                     <div>
-                      <Button>Add new</Button>
+                      <Button type="button"
+                        onClick={() =>
+                          append({
+                            fieldName: "",
+                            fieldType: "select",
+                            fieldValue: "",
+                          })
+                        }
+                      >
+                        Add new
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
+
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-              <Card x-chunk="dashboard-07-chunk-3">
+              <Card>
                 <CardHeader>
                   <CardTitle>Status</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-6">
-                    <div className="grid gap-3">
-                      <Label htmlFor="status">Status</Label>
-                      <Select>
-                        <SelectTrigger id="status" aria-label="Select status">
-                          <SelectValue placeholder="Select Status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="draft">Draft</SelectItem>
-                          <SelectItem value="published">Active</SelectItem>
-                          <SelectItem value="archived">Archived</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <FormField
+                      name="status"
+                      control={control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel htmlFor="status">Status</FormLabel>
+                          <FormControl>
+                            <Select>
+                              <SelectTrigger
+                                id="status"
+                                aria-label="Select status"
+                              >
+                                <SelectValue placeholder="Select Status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="draft">Draft</SelectItem>
+                                <SelectItem value="published">
+                                  Active
+                                </SelectItem>
+                                <SelectItem value="archived">
+                                  Archived
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -232,7 +306,7 @@ export default function CreateTemplatePage() {
             <Button variant="outline" size="sm">
               Discard
             </Button>
-            <Button size="sm">Save Template</Button>
+            <Button type="submit" size="sm">Save Template</Button>
           </div>
         </form>
       </Form>
