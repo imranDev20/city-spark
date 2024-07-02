@@ -22,7 +22,16 @@ export const productSchema = z.object({
   height: z.string().optional(),
   material: z.string().optional(),
   template: z.string().optional(),
-  features: z.array(z.string()).optional(),
+
+  // changed it to an object
+  features: z
+    .array(
+      z.object({
+        feature: z.string(),
+      })
+    )
+    .optional(),
+
   primaryCategory: z.string().optional(),
   secondaryCategory: z.string().optional(),
   tertiaryCategory: z.string().optional(),

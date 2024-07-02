@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useFieldArray, useForm } from "react-hook-form";
+import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import TemplateSelect from "../_components/template-select";
@@ -54,26 +54,39 @@ const breadcrumbItems = [
 const defaultValues = {
   name: "",
   description: "",
-  features: [],
+  features: [
+    {
+      feature: "",
+    },
+  ],
 };
 
+type FormInputType = z.infer<typeof productSchema>;
+
 export default function CreateProductPage() {
-  const form = useForm<z.infer<typeof productSchema>>({
+  const form = useForm<FormInputType>({
     resolver: zodResolver(productSchema),
     defaultValues,
-    // mode: "all",
   });
 
-  const { fields } = useFieldArray({
-    control: form.control,
-    name: "features",
-  });
+  const { control, handleSubmit } = form;
+
+  const { fields, append, prepend, remove, swap, move, insert } = useFieldArray(
+    {
+      control, // control props comes from useForm (optional: if you are using FormProvider)
+      name: "features", // unique name for your Field Array
+    }
+  );
+
+  const onCreateProductSubmit: SubmitHandler<FormInputType> = async (data) => {
+    console.log(data);
+  };
 
   return (
     <ContentLayout title="Create Product">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <Form {...form}>
-        <form>
+        <form onSubmit={handleSubmit(onCreateProductSubmit)}>
           <div className="flex items-center gap-4 mb-5 mt-7">
             <Link href="/admin/products">
               <Button variant="outline" size="icon" className="h-7 w-7">
@@ -115,7 +128,7 @@ export default function CreateProductPage() {
                   <div className="grid gap-6">
                     <div className="grid gap-3">
                       <FormField
-                        control={form.control}
+                        control={control}
                         name="name"
                         render={({ field }) => (
                           <FormItem>
@@ -133,7 +146,7 @@ export default function CreateProductPage() {
                     </div>
                     <div className="grid gap-3">
                       <FormField
-                        control={form.control}
+                        control={control}
                         name="description"
                         render={({ field }) => (
                           <FormItem>
@@ -166,7 +179,7 @@ export default function CreateProductPage() {
                   <div className="grid gap-6 sm:grid-cols-3">
                     <div className="grid gap-3">
                       <FormField
-                        control={form.control}
+                        control={control}
                         name="brandName"
                         render={({ field }) => (
                           <FormItem>
@@ -184,7 +197,7 @@ export default function CreateProductPage() {
                     </div>
                     <div className="grid gap-3">
                       <FormField
-                        control={form.control}
+                        control={control}
                         name="model"
                         render={({ field }) => (
                           <FormItem>
@@ -199,7 +212,7 @@ export default function CreateProductPage() {
                     </div>
                     <div className="grid gap-3">
                       <FormField
-                        control={form.control}
+                        control={control}
                         name="type"
                         render={({ field }) => (
                           <FormItem>
@@ -214,7 +227,7 @@ export default function CreateProductPage() {
                     </div>
                     <div className="grid gap-3">
                       <FormField
-                        control={form.control}
+                        control={control}
                         name="warranty"
                         render={({ field }) => (
                           <FormItem>
@@ -232,7 +245,7 @@ export default function CreateProductPage() {
                     </div>
                     <div className="grid gap-3">
                       <FormField
-                        control={form.control}
+                        control={control}
                         name="guarantee"
                         render={({ field }) => (
                           <FormItem>
@@ -263,7 +276,7 @@ export default function CreateProductPage() {
                   <div className="grid gap-6 sm:grid-cols-3">
                     <div className="grid gap-3">
                       <FormField
-                        control={form.control}
+                        control={control}
                         name="tradePrice"
                         render={({ field }) => (
                           <FormItem>
@@ -281,7 +294,7 @@ export default function CreateProductPage() {
                     </div>
                     <div className="grid gap-3">
                       <FormField
-                        control={form.control}
+                        control={control}
                         name="contractPrice"
                         render={({ field }) => (
                           <FormItem>
@@ -299,7 +312,7 @@ export default function CreateProductPage() {
                     </div>
                     <div className="grid gap-3">
                       <FormField
-                        control={form.control}
+                        control={control}
                         name="promotionalPrice"
                         render={({ field }) => (
                           <FormItem>
@@ -330,7 +343,7 @@ export default function CreateProductPage() {
                   <div className="grid gap-6 sm:grid-cols-3">
                     <div className="grid gap-3">
                       <FormField
-                        control={form.control}
+                        control={control}
                         name="unit"
                         render={({ field }) => (
                           <FormItem>
@@ -348,7 +361,7 @@ export default function CreateProductPage() {
                     </div>
                     <div className="grid gap-3">
                       <FormField
-                        control={form.control}
+                        control={control}
                         name="weight"
                         render={({ field }) => (
                           <FormItem>
@@ -363,7 +376,7 @@ export default function CreateProductPage() {
                     </div>
                     <div className="grid gap-3">
                       <FormField
-                        control={form.control}
+                        control={control}
                         name="color"
                         render={({ field }) => (
                           <FormItem>
@@ -380,7 +393,7 @@ export default function CreateProductPage() {
                       <Label htmlFor="dimensions">Dimensions (in meters)</Label>
                       <div className="grid gap-3 grid-cols-4">
                         <FormField
-                          control={form.control}
+                          control={control}
                           name="length"
                           render={({ field }) => (
                             <FormItem>
@@ -393,7 +406,7 @@ export default function CreateProductPage() {
                           )}
                         />
                         <FormField
-                          control={form.control}
+                          control={control}
                           name="width"
                           render={({ field }) => (
                             <FormItem>
@@ -406,7 +419,7 @@ export default function CreateProductPage() {
                           )}
                         />
                         <FormField
-                          control={form.control}
+                          control={control}
                           name="height"
                           render={({ field }) => (
                             <FormItem>
@@ -420,13 +433,16 @@ export default function CreateProductPage() {
                         />
 
                         <FormField
-                          control={form.control}
+                          control={control}
                           name="material"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Material</FormLabel>
                               <FormControl>
-                                <Input placeholder="Enter material" {...field} />
+                                <Input
+                                  placeholder="Enter material"
+                                  {...field}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -434,7 +450,6 @@ export default function CreateProductPage() {
                         />
                       </div>
                     </div>
-                   
                   </div>
                 </CardContent>
               </Card>
