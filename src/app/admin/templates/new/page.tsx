@@ -38,7 +38,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { templateSchema } from "./schema";
 
-
 // Define breadcrumb items
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -50,8 +49,13 @@ const breadcrumbItems = [
   },
 ];
 
-
-
+// Define default values and types
+const defaultValues = {
+  name: "",
+  description: "",
+  fields: [{ fieldName: "", fieldType: "select", fieldValue: "" }],
+  status: "draft"
+};
 
 type FormInputType = z.infer<typeof templateSchema>;
 
@@ -60,12 +64,7 @@ export default function CreateTemplatePage() {
   // Initialize form using useForm and zodResolver for validation
   const form = useForm<FormInputType>({
     resolver: zodResolver(templateSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      fields: [{ fieldName: "", fieldType: "select", fieldValue: "" }],
-      status: "draft",
-    },
+    defaultValues,
   });
 
   const { control, handleSubmit } = form;
@@ -78,7 +77,6 @@ export default function CreateTemplatePage() {
   const onCreateTemplateSubmit: SubmitHandler<FormInputType> = async (data) => {
     console.log(data);
   };
-
 
   return (
     <ContentLayout title="Create Template">
@@ -127,7 +125,7 @@ export default function CreateTemplatePage() {
                           <FormLabel htmlFor="name">Name</FormLabel>
                           <FormControl>
                             <Input                            
-                                         
+                            {...field}                    
                               placeholder="Enter template name"
                               {...field}     
                             />
@@ -136,7 +134,7 @@ export default function CreateTemplatePage() {
                         </FormItem>
                       )}
                     />
-                  
+
                     <FormField
                       name="description"
                       control={control}
@@ -147,7 +145,7 @@ export default function CreateTemplatePage() {
                           </FormLabel>
                           <FormControl>
                             <Textarea
-                            {...field}
+                              {...field}
                               placeholder="Enter the purpose of this template"
                             />
                           </FormControl>
@@ -184,7 +182,6 @@ export default function CreateTemplatePage() {
                                     placeholder="Enter Field Name"
                                   />
                                 </FormControl>
-                                <FormMessage />
                               </FormItem>
                             )}
                           />
@@ -210,7 +207,6 @@ export default function CreateTemplatePage() {
                                     </SelectContent>
                                   </Select>
                                 </FormControl>
-                                <FormMessage />
                               </FormItem>
                             )}
                           />
@@ -228,27 +224,29 @@ export default function CreateTemplatePage() {
                                     placeholder="Enter Value"
                                   />
                                 </FormControl>
-                                <FormMessage />
                               </FormItem>
                             )}
                           />
                         </div>
 
-                        <div className="col-span-1 flex justify-end items-center">
-                          <Button  disabled={fields.length === 1} variant="ghost" onClick={() => remove(index)}>
-                            <Trash className="w-4 h-4 text-primary" />
-                          </Button>
-                        </div>                    
-                      </div>
+                          <div className="col-span-1 flex justify-end items-center">
+                            <Button
+                              disabled={fields.length === 1}
+                              variant="ghost"
+                              onClick={() => remove(index)}
+                            >
+                              <Trash className="w-4 h-4 text-primary" />
+                            </Button>
+                          </div>
+                        </div>
 
-                     {fields.length - 1 !== index && <Separator />} 
+                        {fields.length - 1 !== index && <Separator />}
                       </Fragment>
                     ))}
 
-                  
-
                     <div>
-                      <Button type="button"
+                      <Button
+                        type="button"
                         onClick={() =>
                           append({
                             fieldName: "",
@@ -310,7 +308,9 @@ export default function CreateTemplatePage() {
             <Button variant="outline" size="sm">
               Discard
             </Button>
-            <Button type="submit" size="sm">Save Template</Button>
+            <Button type="submit" size="sm">
+              Save Template
+            </Button>
           </div>
         </form>
       </Form>
