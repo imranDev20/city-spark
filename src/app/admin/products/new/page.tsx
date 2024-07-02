@@ -2,7 +2,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, Trash, Upload } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,9 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-import { useRef } from "react";
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -36,14 +32,12 @@ import {
 } from "@/components/ui/form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
+import {SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import TemplateSelect from "../_components/template-select";
 import ManualsInstructionsUpload from "../_components/manuals-instructions-upload";
 import { productSchema } from "./schema";
-import { createProductAction } from "./actions";
-import { useFormState } from "react-dom";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -62,6 +56,9 @@ const defaultValues = {
 };
 
 type FormInputType = z.infer<typeof productSchema>;
+interface Feature {
+    feature: string;
+  }
 
 export default function CreateProductPage() {
   const form = useForm<FormInputType>({
@@ -71,7 +68,7 @@ export default function CreateProductPage() {
 
   const { control, handleSubmit } = form;
 
-  const { fields, append, prepend, remove, swap, move, insert } = useFieldArray(
+  const { fields, append, remove,} = useFieldArray(
     {
       control, // control props comes from useForm (optional: if you are using FormProvider)
       name: "features", // unique name for your Field Array
@@ -143,6 +140,8 @@ export default function CreateProductPage() {
                           </FormItem>
                         )}
                       />
+                     
+
                     </div>
                     <div className="grid gap-3">
                       <FormField
@@ -479,39 +478,44 @@ export default function CreateProductPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3 space-y-1">
-                    {fields.map((field, index) => {
-                      return (
-                        <div
-                          key={field.id}
-                          className="grid gap-3 sm:grid-cols-8"
-                        >
-                          <div className="grid gap-3 col-span-7">
-                            <FormField
-                              name="features"
-                              render={({ field }) => (
+                    {fields.map((field, index) => (
+                      <div key={field.id} className="grid gap-3 sm:grid-cols-8">
+                        <div className="grid gap-3 col-span-7">
+                          <FormField
+                            name={`features.${index}.feature`}
+                            control={control}
+                            render={({ field }) => (
                                 <FormItem>
                                   <FormControl>
                                     <Input
                                       placeholder="Enter features and benefits"
+                                      defaultValue={field.value || ""}
                                       {...field}
                                     />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
                               )}
-                            />
-                          </div>
-                          <div className="grid gap-3 col-span-1">
-                            <Button variant="ghost">
-                              <Trash className="w-4 h-4 text-primary" />
-                            </Button>
-                          </div>
+                          />
                         </div>
-                      );
-                    })}
-
+                        <div className="grid gap-3 col-span-1">
+                          <Button
+                            variant="ghost"
+                            type="button"
+                            onClick={() => remove(index)} // Remove the feature at the specified index
+                          >
+                            <Trash className="w-4 h-4 text-primary" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                     <div>
-                      <Button>Add new</Button>
+                      <Button
+                        type="button"
+                        onClick={() => append({ feature: "" })} // Append a new feature with empty string
+                      >
+                        Add new
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
