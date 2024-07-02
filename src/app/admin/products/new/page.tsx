@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import TemplateSelect from "../_components/template-select";
@@ -58,32 +58,22 @@ const defaultValues = {
 };
 
 export default function CreateProductPage() {
-  const [state, formAction] = useFormState(createProductAction, {
-    message: "",
-  });
-
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
     defaultValues,
     // mode: "all",
   });
 
-  const formRef = useRef<HTMLFormElement>(null);
+  const { fields } = useFieldArray({
+    control: form.control,
+    name: "features",
+  });
 
   return (
     <ContentLayout title="Create Product">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <Form {...form}>
-        <form
-          ref={formRef}
-          action={formAction}
-          onSubmit={(e) => {
-            e.preventDefault();
-            return form.handleSubmit(() => {
-              formAction(new FormData(formRef.current!));
-            })(e);
-          }}
-        >
+        <form>
           <div className="flex items-center gap-4 mb-5 mt-7">
             <Link href="/admin/products">
               <Button variant="outline" size="icon" className="h-7 w-7">
@@ -386,9 +376,9 @@ export default function CreateProductPage() {
                         )}
                       />
                     </div>
-                    <div className="grid gap-3 col-span-2">
+                    <div className="grid gap-3 col-span-3">
                       <Label htmlFor="dimensions">Dimensions (in meters)</Label>
-                      <div className="grid gap-3 grid-cols-3">
+                      <div className="grid gap-3 grid-cols-4">
                         <FormField
                           control={form.control}
                           name="length"
@@ -415,14 +405,36 @@ export default function CreateProductPage() {
                             </FormItem>
                           )}
                         />
+                        <FormField
+                          control={form.control}
+                          name="height"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Height</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter height" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                        <Input id="height" placeholder="Height" />
+                        <FormField
+                          control={form.control}
+                          name="material"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Material</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter material" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
                     </div>
-                    <div className="grid gap-3">
-                      <Label htmlFor="weight">Material</Label>
-                      <Input id="weight" placeholder="Enter material" />
-                    </div>
+                   
                   </div>
                 </CardContent>
               </Card>
@@ -452,26 +464,37 @@ export default function CreateProductPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3 space-y-1">
-                    <div className="grid gap-3 sm:grid-cols-8">
-                      <div className="grid gap-3 col-span-7">
-                        <Input placeholder="Enter feature" />
-                      </div>
-                      <div className="grid gap-3 col-span-1">
-                        <Button variant="ghost">
-                          <Trash className="w-4 h-4 text-primary" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="grid gap-3 sm:grid-cols-8">
-                      <div className="grid gap-3 col-span-7">
-                        <Input placeholder="Enter feature" />
-                      </div>
-                      <div className="grid gap-3 col-span-1">
-                        <Button variant="ghost">
-                          <Trash className="w-4 h-4 text-primary" />
-                        </Button>
-                      </div>
-                    </div>
+                    {fields.map((field, index) => {
+                      return (
+                        <div
+                          key={field.id}
+                          className="grid gap-3 sm:grid-cols-8"
+                        >
+                          <div className="grid gap-3 col-span-7">
+                            <FormField
+                              name="features"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="Enter features and benefits"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div className="grid gap-3 col-span-1">
+                            <Button variant="ghost">
+                              <Trash className="w-4 h-4 text-primary" />
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+
                     <div>
                       <Button>Add new</Button>
                     </div>
