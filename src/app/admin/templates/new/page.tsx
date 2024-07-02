@@ -50,12 +50,7 @@ const breadcrumbItems = [
 ];
 
 // Define default values and types
-const defaultValues = {
-  name: "",
-  description: "",
-  fields: [{ fieldName: "", fieldType: "select", fieldValue: "" }],
-  status: "draft"
-};
+
 
 type FormInputType = z.infer<typeof templateSchema>;
 
@@ -64,7 +59,12 @@ export default function CreateTemplatePage() {
   // Initialize form using useForm and zodResolver for validation
   const form = useForm<FormInputType>({
     resolver: zodResolver(templateSchema),
-    defaultValues,
+    defaultValues :{
+      name: "",
+      description: "",
+      fields: [{ fieldName: "", fieldType: "select", fieldValue: "" }],
+      status: "draft"
+    }
   });
 
   const { control, handleSubmit } = form;
