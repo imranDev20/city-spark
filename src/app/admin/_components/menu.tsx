@@ -94,7 +94,7 @@ export function Menu({ isOpen }: MenuProps) {
                       <CollapseMenuButton
                         icon={Icon}
                         label={label}
-                        active={active}
+                        active={active as boolean}
                         submenus={submenus}
                         isOpen={isOpen}
                       />
