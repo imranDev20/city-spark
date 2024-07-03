@@ -7,10 +7,10 @@ export const templateSchema = z.object({
     .array(
       z.object({
         fieldName: z.string().min(1,'Field Name is required'),
-        fieldType: z.enum(["text", "select"]),
-        fieldValue: z.string().min(1,'Field value is required').max(255),
+        fieldType: z.string().min(1,'Select value is required'),
+        fieldValue: z.string().max(255),
       })
     )
-    .min(1, "Minimum one Fields & Values are required"),
+    .min(1),
     status: z.enum(['draft','active','archive']).optional() // At least one field must be submitted
 });

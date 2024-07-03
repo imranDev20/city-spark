@@ -1,6 +1,6 @@
 // Import necessary components and libraries
 "use client";
-import React, { Fragment } from "react";
+import React, { Fragment, useState } from "react";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import Link from "next/link";
@@ -61,7 +61,7 @@ export default function CreateTemplatePage() {
     defaultValues: {
       name: "",
       description: "",
-      fields: [{ fieldName: "", fieldType: "select", fieldValue: "" }],
+      fields: [{ fieldName: "", fieldType: "", fieldValue: "" }],
       status: "draft",
     },
   });
@@ -71,6 +71,15 @@ export default function CreateTemplatePage() {
     control,
     name: "fields",
   });
+  const [fieldTypes, setFieldTypes] = useState(
+    fields.map((field) => field.fieldType)
+  );
+
+  const handleFieldTypeChange = (index: number, value: string) => {
+    const newFieldTypes = [...fieldTypes];
+    newFieldTypes[index] = value;
+    setFieldTypes(newFieldTypes);
+  };
 
   // Handle form submission
   const onCreateTemplateSubmit: SubmitHandler<FormInputType> = async (data) => {
@@ -203,11 +212,18 @@ export default function CreateTemplatePage() {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormControl>
-                                    <Select >
+                                    <Select
+                                      onValueChange={(value) => {
+                                        field.onChange(value);
+                                        handleFieldTypeChange(index, value);
+                                      }}
+                                      defaultValue={field.value}
+                                      value={fieldTypes[index]}
+                                    >
                                       <SelectTrigger aria-label="Field Type">
                                         <SelectValue placeholder="Select Field Type" />
                                       </SelectTrigger>
-                                      <SelectContent>                                       
+                                      <SelectContent>
                                         <SelectItem value="text">
                                           Text
                                         </SelectItem>
@@ -223,23 +239,25 @@ export default function CreateTemplatePage() {
                             />
                           </div>
 
-                          <div className="grid gap-3 col-span-8">
-                            <FormField
-                              name={`fields.${index}.fieldValue`}
-                              control={control}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      placeholder="Enter Value"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
+                          {fieldTypes[index] === "select" && (
+                            <div className="grid gap-3 col-span-8">
+                              <FormField
+                                name={`fields.${index}.fieldValue`}
+                                control={control}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input
+                                        {...field}
+                                        placeholder="Enter Value"
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          )}
 
                           <div className="col-span-1 flex justify-end items-center">
                             <Button
