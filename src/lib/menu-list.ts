@@ -1,10 +1,12 @@
 import {
-  Tag,
   Users,
-  Settings,
-  Bookmark,
-  SquarePen,
   LayoutGrid,
+  Package2,
+  Network,
+  ShoppingCart,
+  Award,
+  Blocks,
+  PackagePlus,
 } from "lucide-react";
 
 type Submenu = {
@@ -16,7 +18,7 @@ type Submenu = {
 type Menu = {
   href: string;
   label: string;
-  active: boolean;
+  active?: boolean;
   icon: any;
   submenus: Submenu[];
 };
@@ -34,7 +36,7 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: "/dashboard",
           label: "Dashboard",
-          active: pathname.includes("/dashboard"),
+          active: pathname === "/admin" || pathname.includes("/dashboard"),
           icon: LayoutGrid,
           submenus: [],
         },
@@ -46,62 +48,81 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: "",
           label: "Products",
-          active: pathname.includes("/posts"),
-          icon: SquarePen,
+          // active: pathname.includes("/products"),
+          icon: Package2,
           submenus: [
             {
-              href: "/posts",
+              href: "/products",
               label: "All Products",
-              active: pathname === "/posts",
+              active: pathname === "/admin/products",
             },
             {
-              href: "/posts/new",
+              href: "/products/new",
               label: "Create Product",
-              active: pathname === "/posts/new",
+              active: pathname === "/admin/products/new",
+            },
+          ],
+        },
+        {
+          href: "",
+          label: "Templates",
+          // active: pathname.includes("/templates"),
+          icon: Blocks,
+          submenus: [
+            {
+              href: "/templates",
+              label: "All Templates",
+              active: pathname === "/admin/templates",
+            },
+            {
+              href: "/templates/new",
+              label: "Create Template",
+              active: pathname === "/admin/templates/new",
             },
           ],
         },
         {
           href: "",
           label: "Brands",
-          active: pathname.includes("/brands"),
-          icon: SquarePen,
+          // active: pathname.includes("/brands"),
+          icon: Award,
           submenus: [
             {
-              href: "/posts",
+              href: "/brands",
               label: "All Brands",
-              active: pathname === "/posts",
+              active: pathname === "/admin/brands",
             },
             {
-              href: "/posts/new",
+              href: "/brands/new",
               label: "Create Brand",
-              active: pathname === "/posts/new",
+              active: pathname === "/admin/brands/new",
             },
           ],
         },
         {
           href: "/categories",
           label: "Categories",
-          active: pathname.includes("/categories"),
-          icon: Bookmark,
+          // active: pathname.includes("/categories"),
+          icon: Network,
           submenus: [
             {
-              href: "/posts",
-              label: "All Brands",
-              active: pathname === "/posts",
+              href: "/categories",
+              label: "All Categories",
+              active: pathname === "/admin/categories",
             },
             {
-              href: "/posts/new",
-              label: "Create Brand",
-              active: pathname === "/posts/new",
+              href: "/categories/new",
+              label: "Create Category",
+              active: pathname === "/admin/categories/new",
             },
           ],
         },
+
         {
-          href: "/tags",
-          label: "Tags",
-          active: pathname.includes("/tags"),
-          icon: Tag,
+          href: "/inventory",
+          label: "Inventory",
+          active: pathname.includes("/inventory"),
+          icon: PackagePlus,
           submenus: [],
         },
       ],
@@ -110,60 +131,40 @@ export function getMenuList(pathname: string): Group[] {
       groupLabel: "Sales",
       menus: [
         {
-          href: "/users",
+          href: "/orders",
           label: "Orders",
-          active: pathname.includes("/users"),
-          icon: Users,
+          // active: pathname.includes("/orders"),
+          icon: ShoppingCart,
           submenus: [
             {
-              href: "/posts",
-              label: "All Users",
-              active: pathname === "/posts",
+              href: "/orders",
+              label: "All Orders",
+              active: pathname === "/admin/orders",
             },
             {
-              href: "/posts",
-              label: "All Users",
-              active: pathname === "/posts",
+              href: "/orders/new",
+              label: "Create Order",
+              active: pathname === "/admin/new",
             },
           ],
         },
         {
           href: "/users",
           label: "Users",
-          active: pathname.includes("/users"),
+          // active: pathname.includes("/users"),
           icon: Users,
           submenus: [
             {
-              href: "/posts",
+              href: "/users",
               label: "All Users",
-              active: pathname === "/posts",
+              active: pathname === "/admin/users",
             },
             {
-              href: "/posts",
-              label: "All Users",
-              active: pathname === "/posts",
+              href: "/users/new",
+              label: "Create User",
+              active: pathname === "/admin/users/new",
             },
           ],
-        },
-      ],
-    },
-
-    {
-      groupLabel: "Analytics",
-      menus: [
-        {
-          href: "/users",
-          label: "Sales Report",
-          active: pathname.includes("/users"),
-          icon: Users,
-          submenus: [],
-        },
-        {
-          href: "/users",
-          label: "Customer Report",
-          active: pathname.includes("/users"),
-          icon: Users,
-          submenus: [],
         },
       ],
     },
@@ -172,9 +173,9 @@ export function getMenuList(pathname: string): Group[] {
       groupLabel: "Others",
       menus: [
         {
-          href: "/users",
+          href: "/settings",
           label: "Settings",
-          active: pathname.includes("/users"),
+          active: pathname.includes("/settings"),
           icon: Users,
           submenus: [],
         },

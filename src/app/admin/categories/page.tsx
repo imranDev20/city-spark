@@ -1,39 +1,22 @@
-import Link from "next/link";
-
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { ContentLayout } from "../_components/content-layout";
-import PlaceholderContent from "../_components/placeholder-content";
+import DynamicBreadcrumb from "../_components/dynamic-breadcrumb";
+import CategoriesList from "./_components/categories-list";
+import { CategoriesPagination } from "./_components/categories-pagination";
 
-export default function CategoriesPage() {
+const breadcrumbItems = [
+  { label: "Dashboard", href: "/admin" },
+  {
+    label: "Categories",
+    href: "/admin/categories",
+    isCurrentPage: true,
+  },
+];
+export default function AdminCreateProductPage() {
   return (
-    <ContentLayout title="Categories">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/">Home</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/dashboard">Dashboard</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Categories</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-      <PlaceholderContent />
+    <ContentLayout title="Brands">
+      <DynamicBreadcrumb items={breadcrumbItems} />
+      <CategoriesList />
+      <CategoriesPagination />
     </ContentLayout>
   );
 }

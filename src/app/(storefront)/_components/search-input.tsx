@@ -52,7 +52,7 @@ export default function SearchInput() {
 
   return (
     <>
-      <div className="has-[:focus-visible]:ring-1 has-[:focus-visible]:ring-ring  ring-primary flex-1 h-11 ml-10 flex items-center overflow-hidden rounded-lg bg-primary/10 shadow-sm">
+      <div className="has-[:focus-visible]:ring-1 has-[:focus-visible]:ring-ring  ring-primary flex-1 h-11 ml-10 flex items-center overflow-hidden rounded-lg bg-gray-500/10 shadow-sm">
         <Input
           className="w-full border-0 h-full py-5 rounded-none focus-visible:ring-0 typing-placeholder"
           placeholder={placeholder}
