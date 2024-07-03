@@ -203,11 +203,11 @@ export default function CreateTemplatePage() {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormControl>
-                                    <Select>
+                                    <Select >
                                       <SelectTrigger aria-label="Field Type">
                                         <SelectValue placeholder="Select Field Type" />
                                       </SelectTrigger>
-                                      <SelectContent>
+                                      <SelectContent>                                       
                                         <SelectItem value="text">
                                           Text
                                         </SelectItem>

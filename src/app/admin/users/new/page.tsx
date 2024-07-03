@@ -38,7 +38,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ImageUploader } from "../../_components/image-uploader";
+import  ImageUploader  from "../../_components/image-uploader";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -88,7 +88,7 @@ export default function CreateUserPage() {
   return (
     <ContentLayout title="Create User">
       <DynamicBreadcrumb items={breadcrumbItems} />
-      <FormProvider>
+     
         <Form {...form}>
           <form onSubmit={handleSubmit(onCreateUserSubmit)}>
             <div className="flex items-center gap-4 mb-5 mt-7">
@@ -259,14 +259,37 @@ export default function CreateUserPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <ImageUploader />
+                    <FormField
+                      control={form.control}
+                      name="avatar"
+                      render={({field}) => (
+                        <FormItem className="mx-auto ">
+                          <FormLabel                           
+                          >
+                            <h2 className="text-xl font-semibold tracking-tight">
+                            
+                            </h2>
+                          </FormLabel>
+                          <FormControl>
+                            <ImageUploader {...field} />
+                          </FormControl>
+                          {/* <FormMessage>
+                {fileRejections.length !== 0 && (
+                  <p>
+                    Image must be less than 1MB and of type png, jpg, or jpeg
+                  </p>
+                )}
+              </FormMessage> */}
+                        </FormItem>
+                      )}
+                    />
                   </CardContent>
                 </Card>
               </div>
             </div>
           </form>
         </Form>
-      </FormProvider>
+      
     </ContentLayout>
   );
 }
