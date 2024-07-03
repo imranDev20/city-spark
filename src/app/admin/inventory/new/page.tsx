@@ -39,7 +39,6 @@ import { productSchema } from "../../products/new/schema";
 
 import { useRef } from "react";
 import { useFormState } from "react-dom";
-import { createProductAction } from "../../products/new/actions";
 import { Switch } from "@/components/ui/switch";
 
 const breadcrumbItems = [
@@ -59,10 +58,6 @@ const defaultValues = {
 };
 
 export default function CreateInventoryPage() {
-  const [state, formAction] = useFormState(createProductAction, {
-    message: "",
-  });
-
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
     defaultValues,
@@ -75,16 +70,7 @@ export default function CreateInventoryPage() {
     <ContentLayout title="Add Inventory Item">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <Form {...form}>
-        <form
-          ref={formRef}
-          action={formAction}
-          onSubmit={(e) => {
-            e.preventDefault();
-            return form.handleSubmit(() => {
-              formAction(new FormData(formRef.current!));
-            })(e);
-          }}
-        >
+        <form>
           <div className="flex items-center gap-4 mb-5 mt-7">
             <Link href="/admin/products">
               <Button variant="outline" size="icon" className="h-7 w-7">
