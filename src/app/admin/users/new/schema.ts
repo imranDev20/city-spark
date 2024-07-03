@@ -1,7 +1,14 @@
-import { z } from "zod";
+import { z } from 'zod';
+
+// Custom validation function for file
+const fileValidation = z.custom((file) => {
+  return file instanceof File;
+}, {
+  message: "Invalid file",
+});
 
 export const userSchema = z.object({
-  avatar: z.string().optional(),
+  avatar: fileValidation.optional(),
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
   phone: z.string().min(1, "Phone number is required"),
