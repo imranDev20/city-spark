@@ -1,39 +1,19 @@
-import Link from "next/link";
-
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import React from "react";
 import { ContentLayout } from "../_components/content-layout";
-import PlaceholderContent from "../_components/placeholder-content";
+import DynamicBreadcrumb from "../_components/dynamic-breadcrumb";
+import UserList from "./_components/users-list";
+import { UserPagination } from "./_components/user-pagination";
 
-export default function UsersPage() {
+const breadcrumbItems = [
+  { label: "Dashboard", href: "/admin" },
+  { label: "Users", href: "/admin/users", isCurrentPage: true },
+];
+export default function AdminUsersPage() {
   return (
     <ContentLayout title="Users">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/">Home</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/dashboard">Dashboard</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Users</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-      <PlaceholderContent />
+      <DynamicBreadcrumb items={breadcrumbItems} />
+      <UserList />
+      <UserPagination />
     </ContentLayout>
   );
 }

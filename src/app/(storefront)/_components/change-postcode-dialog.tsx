@@ -8,9 +8,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { MapPin } from "lucide-react";
+import PostcodeAutocomplete from "./postcode-autocomplete";
 
 export default function ChangePostcodeDialog() {
   return (
@@ -22,42 +21,29 @@ export default function ChangePostcodeDialog() {
         >
           <MapPin className="text-primary" />
           <div className="flex flex-col items-start ml-2">
-            <p className="text-xs text-neutral-500 font-light">Deliver to</p>
+            <p className="text-xs text-neutral-500">Deliver to</p>
             <p className="text-sm">E3 4SY</p>
           </div>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[750px]">
         <DialogHeader>
-          <DialogTitle>Edit profile</DialogTitle>
+          <DialogTitle className="flex items-center text-2xl mb-4">
+            <MapPin className="mr-1 text-primary" /> Select a Delivery Postcode
+          </DialogTitle>
           <DialogDescription>
-            Make changes to your profile here. Click save when you're done.
+            Enter your delivery postcode below to see the products available for
+            delivery to your location.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <Input
-              id="name"
-              defaultValue="Pedro Duarte"
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="username" className="text-right">
-              Username
-            </Label>
-            <Input
-              id="username"
-              defaultValue="@peduarte"
-              className="col-span-3"
-            />
-          </div>
-        </div>
+
+        <PostcodeAutocomplete />
+
         <DialogFooter>
-          <Button type="submit">Save changes</Button>
+          <Button variant="outline" type="submit">
+            Cancel
+          </Button>
+          <Button type="submit">Apply</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
