@@ -10,5 +10,5 @@ export const userSchema = z.object({
     postcode: z.string().min(1, "Postcode is required"),
     city: z.string().min(1, "City is required"),
   }),
- 
+  status: z.enum(['draft','active','archive']).optional() 
 });
