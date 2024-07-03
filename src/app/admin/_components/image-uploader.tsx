@@ -1,6 +1,6 @@
 "use-client";
-import React from "react";
-import { useForm } from "react-hook-form";
+import React, { useContext } from "react";
+import { useForm, useFormContext } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDropzone } from "react-dropzone";
 import { z } from "zod";
@@ -17,10 +17,11 @@ import {
 import { ImagePlus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { userSchema } from "../users/new/schema";
 
 export const ImageUploader: React.FC = () => {
   const [preview, setPreview] = React.useState<string | ArrayBuffer | null>("");
-
+   const  {control,} = useFormContext<z.infer<typeof userSchema>>();
   const formSchema = z.object({
     image: z
       //Rest of validations done via react dropzone
@@ -44,6 +45,7 @@ export const ImageUploader: React.FC = () => {
         reader.readAsDataURL(acceptedFiles[0]);
         form.setValue("image", acceptedFiles[0]);
         form.clearErrors("image");
+        console.log(`acceptedFiles`, acceptedFiles);
       } catch (error) {
         setPreview(null);
         form.resetField("image");
@@ -66,8 +68,8 @@ export const ImageUploader: React.FC = () => {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+ 
+    
         <FormField
           control={form.control}
           name="image"
@@ -108,7 +110,7 @@ export const ImageUploader: React.FC = () => {
                   {isDragActive ? (
                     <p>Drop the image!</p>
                   ) : (
-                    <p>Click here or drag an image to upload it</p>
+                    <p className={`${preview ? "hidden" : "block"}`}>Click here or drag an image to upload it</p>
                   )}
                 </div>
               </FormControl>
@@ -122,9 +124,6 @@ export const ImageUploader: React.FC = () => {
             </FormItem>
           )}
         />
-       
-      </form>
-    </Form>
   );
 };
 

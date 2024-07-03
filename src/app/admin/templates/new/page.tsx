@@ -51,7 +51,6 @@ const breadcrumbItems = [
 
 // Define default values and types
 
-
 type FormInputType = z.infer<typeof templateSchema>;
 
 // Component definition
@@ -59,12 +58,12 @@ export default function CreateTemplatePage() {
   // Initialize form using useForm and zodResolver for validation
   const form = useForm<FormInputType>({
     resolver: zodResolver(templateSchema),
-    defaultValues :{
+    defaultValues: {
       name: "",
       description: "",
       fields: [{ fieldName: "", fieldType: "select", fieldValue: "" }],
-      status: "draft"
-    }
+      status: "draft",
+    },
   });
 
   const { control, handleSubmit } = form;
@@ -75,7 +74,14 @@ export default function CreateTemplatePage() {
 
   // Handle form submission
   const onCreateTemplateSubmit: SubmitHandler<FormInputType> = async (data) => {
-    console.log(data);
+    const { name, status, fields, description } = data;
+    const payload = {
+      name,
+      status,
+      fields,
+      description,
+    };
+    console.log(`payload`, payload);
   };
 
   return (
@@ -124,10 +130,10 @@ export default function CreateTemplatePage() {
                         <FormItem>
                           <FormLabel htmlFor="name">Name</FormLabel>
                           <FormControl>
-                            <Input                            
-                            {...field}                    
+                            <Input
+                              {...field}
                               placeholder="Enter template name"
-                              {...field}     
+                              {...field}
                             />
                           </FormControl>
                           <FormMessage />
@@ -169,65 +175,71 @@ export default function CreateTemplatePage() {
                   <div className="grid gap-3 space-y-4">
                     {fields.map((field, index) => (
                       <Fragment key={field.id}>
-                      <div key={field.id} className="grid gap-3 sm:grid-cols-9">
-                        <div className="grid gap-3 col-span-4">
-                          <FormField
-                            name={`fields.${index}.fieldName`}
-                            control={control}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input
-                                  {...field}
-                                    placeholder="Enter Field Name"
-                                  />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <div className="grid gap-3 col-span-4">
-                          <FormField
-                            name={`fields.${index}.fieldType`}
-                            control={control}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Select>
-                                    <SelectTrigger                                    
-                                      aria-label="Field Type"
-                                    >
-                                      <SelectValue placeholder="Select Field Type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="text">Text</SelectItem>
-                                      <SelectItem value="select">
-                                        Select
-                                      </SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                        <div
+                          key={field.id}
+                          className="grid gap-3 sm:grid-cols-9"
+                        >
+                          <div className="grid gap-3 col-span-4">
+                            <FormField
+                              name={`fields.${index}.fieldName`}
+                              control={control}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Enter Field Name"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div className="grid gap-3 col-span-4">
+                            <FormField
+                              name={`fields.${index}.fieldType`}
+                              control={control}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Select>
+                                      <SelectTrigger aria-label="Field Type">
+                                        <SelectValue placeholder="Select Field Type" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="text">
+                                          Text
+                                        </SelectItem>
+                                        <SelectItem value="select">
+                                          Select
+                                        </SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
 
-                        <div className="grid gap-3 col-span-8">
-                          <FormField
-                            name={`fields.${index}.fieldValue`}
-                            control={control}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input
-                                   {...field}
-                                    placeholder="Enter Value"
-                                  />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                          <div className="grid gap-3 col-span-8">
+                            <FormField
+                              name={`fields.${index}.fieldValue`}
+                              control={control}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Enter Value"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
 
                           <div className="col-span-1 flex justify-end items-center">
                             <Button

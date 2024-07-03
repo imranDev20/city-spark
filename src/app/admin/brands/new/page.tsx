@@ -1,12 +1,9 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import React, { useRef } from "react";
 import { ChevronLeft, Trash, Upload } from "lucide-react";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
-import { createBrandAction } from "./actions";
-import { useFormState } from "react-dom";
 import {
   Form,
   FormControl,
@@ -34,15 +31,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { brandSchema } from "./schema";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ImageUploader } from "../../_components/image-uploader";
-
-
-
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -56,37 +50,35 @@ const defaultValues = {
   brandName: "",
   website: "",
   email: "",
-  phone: "",  
+  phone: "",
   productCategories: [],
   brandStory: "",
   ambassador: "",
   tagline: "",
 };
-
+type FormInputType = z.infer<typeof brandSchema>;
 export default function CreateBrandPage() {
-  const [state, formAction] = useFormState(createBrandAction, {
-    message: "",
-  });
-  const form = useForm<z.infer<typeof brandSchema>>({
+  const form = useForm<FormInputType>({
     resolver: zodResolver(brandSchema),
     defaultValues,
   });
-  const formRef = useRef<HTMLFormElement>(null);
-
+  const { control, handleSubmit } = form;
+  const onCreateBrandSubmit: SubmitHandler<FormInputType> = async (data) => {
+    console.log(data);
+    const { brandName, website, image, status } = data;
+    const payload = {
+      brandName,
+      website,
+      image,
+      status,
+    };
+    console.log(`payload`, payload);
+  };
   return (
     <ContentLayout title="Create Brands">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <Form {...form}>
-        <form
-          ref={formRef}
-          action={formAction}
-          onSubmit={(e) => {
-            e.preventDefault();
-            return form.handleSubmit(() => {
-              formAction(new FormData(formRef.current!));
-            })(e);
-          }}
-        >
+        <form onSubmit={handleSubmit(onCreateBrandSubmit)}>
           <div className="flex items-center gap-4 mb-5 mt-7">
             <Link href="/admin/brands">
               <Button variant="outline" size="icon" className="h-7 w-7">
@@ -178,12 +170,10 @@ export default function CreateBrandPage() {
                           <FormMessage />
                         </FormItem>
                       )}
-                    />                                                        
+                    />
                   </div>
                 </CardContent>
               </Card>
-          
-            
             </div>
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
               <Card x-chunk="dashboard-07-chunk-3">
@@ -193,21 +183,39 @@ export default function CreateBrandPage() {
                 <CardContent>
                   <div className="grid gap-6">
                     <div className="grid gap-3">
-                      <Label htmlFor="status">Status</Label>
-                      <Select>
-                        <SelectTrigger id="status" aria-label="Select status">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="draft">Draft</SelectItem>
-                          <SelectItem value="published">Active</SelectItem>
-                          <SelectItem value="archived">Archived</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Status</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="draft">Draft</SelectItem>
+                                <SelectItem value="active">
+                                  Active
+                                </SelectItem>
+                                <SelectItem value="archived">
+                                  Archived
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>                            
+                          </FormItem>
+                        )}
+                      />
+                     
                     </div>
                   </div>
                 </CardContent>
-              </Card>   
+              </Card>
               <Card x-chunk="dashboard-07-chunk-5">
                 <CardHeader>
                   <CardTitle>Manuals & Instructions</CardTitle>
@@ -216,10 +224,10 @@ export default function CreateBrandPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                <ImageUploader />
+                  <ImageUploader />
                 </CardContent>
-              </Card>                            
-            </div>                                                             
+              </Card>
+            </div>
           </div>
         </form>
       </Form>
