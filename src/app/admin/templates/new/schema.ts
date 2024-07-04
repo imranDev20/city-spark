@@ -12,5 +12,5 @@ export const templateSchema = z.object({
       })
     )
     .min(1),
-    status: z.enum(['draft','active','archive']).optional() // At least one field must be submitted
+  status: z.enum(["draft", "active", "archive"]).optional(), // At least one field must be submitted
 });

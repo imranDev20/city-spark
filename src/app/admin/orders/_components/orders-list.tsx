@@ -55,7 +55,7 @@ export default function OrderList() {
               <SelectItem value="status">Status</SelectItem>
               <SelectItem value="price">Price</SelectItem>
               <SelectItem value="totalSales">Total Sales</SelectItem>
-              <SelectItem value="createdAt">Created at</SelectItem>
+              <SelectItem value="createdAt">Create at</SelectItem>
             </SelectContent>
           </Select>
           <Select>
@@ -68,9 +68,7 @@ export default function OrderList() {
               <SelectItem value="draft">Draft</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" >
-              Download Excel
-            </Button>
+          <Button variant="outline">Download Excel</Button>
         </div>
         <Link href="orders/new">
           {" "}
