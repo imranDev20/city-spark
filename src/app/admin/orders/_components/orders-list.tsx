@@ -55,7 +55,7 @@ export default function OrderList() {
               <SelectItem value="status">Status</SelectItem>
               <SelectItem value="price">Price</SelectItem>
               <SelectItem value="totalSales">Total Sales</SelectItem>
-              <SelectItem value="createdAt">Create at</SelectItem>
+              <SelectItem value="createdAt">Created at</SelectItem>
             </SelectContent>
           </Select>
           <Select>
