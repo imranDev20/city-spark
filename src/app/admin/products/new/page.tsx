@@ -38,6 +38,7 @@ import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import TemplateSelect from "../_components/template-select";
 import ManualsInstructionsUpload from "../_components/manuals-instructions-upload";
 import { productSchema } from "./schema";
+import ImageUploader from "../_components/image-uploader";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -77,7 +78,7 @@ export default function CreateProductPage() {
 
   const onCreateProductSubmit: SubmitHandler<FormInputType> = async (data) => {
     console.log(data);
-    const {brandName,color, description, features,length, guarantee, height,material,model,name,tradePrice, type, unit, warranty, weight, width, status} = data;
+    const {brandName,color, description,images, features,length, guarantee, height,material,model,name,tradePrice, type, unit, warranty, weight, width, status} = data;
      const payload = {
       brandName,
       color:color ,
@@ -96,6 +97,7 @@ export default function CreateProductPage() {
       weight,
       width,
       status,
+      images
      }            
      console.log(`payload`, payload);
   };
@@ -125,8 +127,7 @@ export default function CreateProductPage() {
               </Button>
               <Button
                 size="sm"
-                type="submit"
-                // disabled={!form.formState.isValid}
+                type="submit"              
               >
                 Save Product
               </Button>
@@ -679,39 +680,23 @@ export default function CreateProductPage() {
                   <CardDescription>Upload product images here.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-2">
-                    <Image
-                      alt="Product image"
-                      className="aspect-square w-full rounded-md object-cover"
-                      height="300"
-                      src="/placeholder.svg"
-                      width="300"
+                <FormField
+                      control={form.control}
+                      name="images"
+                      render={({field}) => (
+                        <FormItem className="mx-auto ">
+                          <FormLabel                           
+                          >
+                            <h2 className="text-xl font-semibold tracking-tight">
+                            
+                            </h2>
+                          </FormLabel>
+                          <FormControl>
+                            <ImageUploader {...field} />
+                          </FormControl>                       
+                        </FormItem>
+                      )}
                     />
-                    <div className="grid grid-cols-3 gap-2">
-                      <button>
-                        <Image
-                          alt="Product image"
-                          className="aspect-square w-full rounded-md object-cover"
-                          height="84"
-                          src="/placeholder.svg"
-                          width="84"
-                        />
-                      </button>
-                      <button>
-                        <Image
-                          alt="Product image"
-                          className="aspect-square w-full rounded-md object-cover"
-                          height="84"
-                          src="/placeholder.svg"
-                          width="84"
-                        />
-                      </button>
-                      <button className="flex aspect-square w-full items-center justify-center rounded-md border border-dashed">
-                        <Upload className="h-4 w-4 text-muted-foreground" />
-                        <span className="sr-only">Upload</span>
-                      </button>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
 
