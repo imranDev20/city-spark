@@ -38,7 +38,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import  ImageUploader  from "../../_components/image-uploader";
+import ImageUploader from "../_components/image-uploader";
+
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -272,14 +273,7 @@ export default function CreateUserPage() {
                           </FormLabel>
                           <FormControl>
                             <ImageUploader {...field} />
-                          </FormControl>
-                          {/* <FormMessage>
-                {fileRejections.length !== 0 && (
-                  <p>
-                    Image must be less than 1MB and of type png, jpg, or jpeg
-                  </p>
-                )}
-              </FormMessage> */}
+                          </FormControl>                       
                         </FormItem>
                       )}
                     />
