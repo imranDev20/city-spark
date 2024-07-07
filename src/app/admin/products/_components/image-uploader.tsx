@@ -1,24 +1,34 @@
 "use-client";
 import React from "react";
 import { ControllerRenderProps } from "react-hook-form";
-import { useDropzone } from "react-dropzone";
+import { FileRejection, useDropzone } from "react-dropzone";
 import { Input } from "@/components/ui/input";
-import { CirclePlus, ImagePlus, Trash  } from "lucide-react";
+import { CirclePlus, ImagePlus, Trash, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
 
 export default function ImageUploader(props: ControllerRenderProps) {
   const [previews, setPreviews] = React.useState<(string | ArrayBuffer)[]>([]);
-  const [selectedPreview, setSelectedPreview] = React.useState<string | ArrayBuffer | null>(null);
+  const [selectedPreview, setSelectedPreview] = React.useState<
+    string | ArrayBuffer | null
+  >(null);
   const [error, setError] = React.useState<string | null>(null);
 
   const { onChange } = props;
 
   const onDrop = React.useCallback(
-    (acceptedFiles: File[]) => {
+    (acceptedFiles: File[], fileRejections: FileRejection[]) => {
+      console.log(`fileRejection`, fileRejections);
       if (previews.length + acceptedFiles.length > 5) {
         setError("You can only upload a maximum of 5 images.");
         return;
+      }
+
+      if (fileRejections.length > 0) {
+        let errorMessage = fileRejections[0]["errors"][0]["message"];
+        setError(errorMessage);
+      }
+      if (fileRejections.length == 0) {
+        setError(null);
       }
 
       const newPreviews = [...previews];
@@ -34,10 +44,11 @@ export default function ImageUploader(props: ControllerRenderProps) {
         reader.readAsDataURL(file);
       });
       onChange(newPreviews);
-      setError(null);
+      // setError(null);
     },
     [previews, selectedPreview, onChange]
   );
+  console.log(`error`, error);
 
   const deleteImage = (index: number) => {
     const newPreviews = previews.filter((_, i) => i !== index);
@@ -55,6 +66,17 @@ export default function ImageUploader(props: ControllerRenderProps) {
     accept: { "image/png": [], "image/jpg": [], "image/jpeg": [] },
     noClick: true,
   });
+  const dragDropError = (errorMessage: string) => {
+    setError(errorMessage);
+    return;
+  };
+  const handleClickOpen = () => {
+    if (previews.length > 5) {
+      setError("You can only upload a maximum of 5 images.");
+      return;
+    }
+    open();
+  };
 
   return (
     <div className="flex flex-col items-center">
@@ -81,9 +103,11 @@ export default function ImageUploader(props: ControllerRenderProps) {
       {previews.length < 5 && (
         <div
           {...getRootProps()}
-          className={`mx-auto flex cursor-pointer flex-col items-center justify-center gap-y-2 rounded-lg border border-foreground p-8 shadow-sm shadow-foreground ${previews.length > 0 ? "hidden" : ""}`}
+          className={`mx-auto flex cursor-pointer flex-col items-center justify-center gap-y-2 rounded-lg border border-foreground p-8 shadow-sm shadow-foreground ${
+            previews.length > 0 ? "hidden" : ""
+          }`}
         >
-          <ImagePlus className="size-20" onClick={open} />
+          <ImagePlus className="size-20" onClick={handleClickOpen} />
           <Input {...getInputProps()} type="file" />
           {isDragActive ? (
             <p>Drop the image!</p>
@@ -105,15 +129,12 @@ export default function ImageUploader(props: ControllerRenderProps) {
             />
           ))}
           {previews.length < 5 && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="ml-2 bg-transparent border-none outline-none"
-              onClick={open}
-              type="button"
-            >              
-              <CirclePlus size="md" className="w-5   text-sky-500" />            
-            </Button>
+            <button
+            type="button"  onClick={handleClickOpen}
+              className="h-24 w-24 rounded-lg cursor-pointer border-2 border-dashed border-transparent flex items-center justify-center"
+            >
+              <Upload className="h-8 w-8 text-gray-500" />
+            </button>
           )}
         </div>
       )}
