@@ -6,8 +6,8 @@ export const templateSchema = z.object({
   fields: z
     .array(
       z.object({
-        fieldName: z.string().min(1),
-        fieldType: z.enum(["text", "select"]),
+        fieldName: z.string().min(1,'Field Name is required'),
+        fieldType: z.string().min(1,'Select value is required'),
         fieldValue: z.string().max(255),
       })
     )

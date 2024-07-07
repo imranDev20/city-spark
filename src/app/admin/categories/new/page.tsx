@@ -1,12 +1,9 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import React, { useRef } from "react";
 import { ChevronLeft, Upload } from "lucide-react";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
-import { createCategoryAction } from "./actions";
-import { useFormState } from "react-dom";
 import {
   Form,
   FormControl,
@@ -23,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+
 import {
   Card,
   CardContent,
@@ -32,7 +29,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { categorySchema } from "./schema";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,7 +39,11 @@ import { z } from "zod";
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
   { label: "Category", href: "/admin/categories" },
-  { label: "Create Category", href: "/admin/categories/new", isCurrentPage: true },
+  {
+    label: "Create Category",
+    href: "/admin/categories/new",
+    isCurrentPage: true,
+  },
 ];
 
 const defaultValues = {
@@ -51,30 +52,29 @@ const defaultValues = {
   parentCategory: "",
 };
 
+type FormInputType = z.infer<typeof categorySchema>;
+
 export default function CreateCategoryPage() {
-  const [state, formAction] = useFormState(createCategoryAction, {
-    message: "",
-  });
   const form = useForm<z.infer<typeof categorySchema>>({
     resolver: zodResolver(categorySchema),
     defaultValues,
   });
-  const formRef = useRef<HTMLFormElement>(null);
-
+  const { control, handleSubmit } = form;
+  const onCreateCategorySubmit: SubmitHandler<FormInputType> = async (data) => {
+    console.log(data);
+    const { name, image, parentCategory } = data;
+    const payload = {
+      name,
+      image,
+      parentCategory,
+    };
+    console.log(`payload`, payload);
+  };
   return (
     <ContentLayout title="Create Category">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <Form {...form}>
-        <form
-          ref={formRef}
-          action={formAction}
-          onSubmit={(e) => {
-            e.preventDefault();
-            return form.handleSubmit(() => {
-              formAction(new FormData(formRef.current!));
-            })(e);
-          }}
-        >
+        <form onSubmit={handleSubmit(onCreateCategorySubmit)}>
           <div className="flex items-center gap-4 mb-5 mt-7">
             <Link href="/admin/categories">
               <Button variant="outline" size="icon" className="h-7 w-7">
@@ -116,14 +116,16 @@ export default function CreateCategoryPage() {
                         <FormItem>
                           <FormLabel>Category Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter category name" {...field} />
+                            <Input
+                              placeholder="Enter category name"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-               
                 </CardContent>
               </Card>
               <Card>
@@ -136,20 +138,29 @@ export default function CreateCategoryPage() {
                 <CardContent>
                   <div className="grid gap-3">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="parentCategory"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Parent Category</FormLabel>
-                          <Select {...field}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select parent category" />
-                            </SelectTrigger>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select parent category" />
+                              </SelectTrigger>
+                            </FormControl>
                             <SelectContent>
                               <SelectItem value="primary">Primary</SelectItem>
-                              <SelectItem value="secondary">Secondary</SelectItem>
+                              <SelectItem value="secondary">
+                                Secondary
+                              </SelectItem>
                               <SelectItem value="tertiary">Tertiary</SelectItem>
-                              <SelectItem value="quaternary">Quaternary</SelectItem>
+                              <SelectItem value="quaternary">
+                                Quaternary
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -161,7 +172,6 @@ export default function CreateCategoryPage() {
               </Card>
             </div>
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-             
               <Card x-chunk="dashboard-07-chunk-5">
                 <CardHeader>
                   <CardTitle>Manuals & Instructions</CardTitle>
