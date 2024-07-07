@@ -1,23 +1,11 @@
 "use-client";
 import React, { useContext } from "react";
 import {  ControllerRenderProps } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useDropzone } from "react-dropzone";
-import { z } from "zod";
 import { Input } from "@/components/ui/input";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-  } from "@/components/ui/form";
-
 import { ImagePlus } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { userSchema } from "../users/new/schema";
+
+
 
 export default function ImageUploader(props:ControllerRenderProps) {
   const [preview, setPreview] = React.useState<string | ArrayBuffer | null>("");

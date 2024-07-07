@@ -77,6 +77,27 @@ export default function CreateProductPage() {
 
   const onCreateProductSubmit: SubmitHandler<FormInputType> = async (data) => {
     console.log(data);
+    const {brandName,color, description, features,length, guarantee, height,material,model,name,tradePrice, type, unit, warranty, weight, width, status} = data;
+     const payload = {
+      brandName,
+      color:color ,
+      description,
+      features,
+      length,
+      guarantee,
+      height,
+      material,
+      model,
+      name,
+      tradePrice,
+      type,
+      unit,
+      warranty,
+      weight,
+      width,
+      status,
+     }            
+     console.log(`payload`, payload);
   };
 
   return (
@@ -619,17 +640,34 @@ export default function CreateProductPage() {
                 <CardContent>
                   <div className="grid gap-6">
                     <div className="grid gap-3">
-                      <Label htmlFor="status">Status</Label>
-                      <Select>
-                        <SelectTrigger id="status" aria-label="Select status">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="draft">Draft</SelectItem>
-                          <SelectItem value="published">Active</SelectItem>
-                          <SelectItem value="archived">Archived</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Status</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="draft">Draft</SelectItem>
+                                <SelectItem value="active">
+                                  Active
+                                </SelectItem>
+                                <SelectItem value="archived">
+                                  Archived
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </div>
                 </CardContent>
