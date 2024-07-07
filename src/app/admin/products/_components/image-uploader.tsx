@@ -69,6 +69,7 @@ export default function ImageUploader(props: ControllerRenderProps) {
             <Button
               variant="outline"
               size="sm"
+              type="button"
               className="absolute bottom-4 right-4"
               onClick={() => deleteImage(previews.indexOf(selectedPreview))}
             >
