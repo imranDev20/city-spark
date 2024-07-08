@@ -1,13 +1,10 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, Icon, Trash, Upload } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -20,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { ContentLayout } from "../../_components/content-layout";
 import {
   Form,
@@ -30,17 +26,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import OrderDetailsList from "../_components/orders-details";
 import PaidByCustomerList from "../_components/paid-customer";
-import { Timeline } from "../../_components/timeline";
 import { TimelineLayout } from "../../_components/timeline-layout";
 import { timelineData } from "@/app/data";
-
 import { LucideEdit } from "lucide-react";
 import { useState } from "react";
 import { orderDetailsSchema } from "./schema";
