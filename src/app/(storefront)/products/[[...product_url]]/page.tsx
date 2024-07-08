@@ -8,5 +8,9 @@ export default function ProductsPage({
     product_url: string;
   };
 }) {
-  return <div className="container mx-auto"></div>;
+  return (
+    <div className="container mx-auto">
+      <p>productsss</p>
+    </div>
+  );
 }
