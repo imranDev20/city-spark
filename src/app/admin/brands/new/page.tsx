@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
-import React, { useRef } from "react";
-import { ChevronLeft, Trash, Upload } from "lucide-react";
+import React from "react";
+import { ChevronLeft } from "lucide-react";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import {
@@ -13,7 +13,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -36,8 +35,6 @@ import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import ImageUploader from "../_components/image-uploader";
-
-
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
