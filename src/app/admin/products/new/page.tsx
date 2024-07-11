@@ -1,8 +1,6 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, Trash, Upload } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ChevronLeft, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -38,7 +36,19 @@ import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import TemplateSelect from "../_components/template-select";
 import ManualsInstructionsUpload from "../_components/manuals-instructions-upload";
 import { productSchema } from "./schema";
-import ProductImageUploader from "../_components/image-uploader";
+import ProductImageUploader from "../_components/product-image-uploader";
+import { useFormState, useFormStatus } from "react-dom";
+import { createProduct } from "./actions";
+
+function SubmitButton({ isValid }: { isValid: boolean }) {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button type="submit" disabled={!isValid} size="sm">
+      {pending ? "Adding..." : "Add New Product"}
+    </Button>
+  );
+}
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -50,25 +60,25 @@ const breadcrumbItems = [
   },
 ];
 
-const defaultValues = {
-  name: "",
-  description: "",
-  features: [
-    {
-      feature: "",
-    },
-  ],
-};
-
-type FormInputType = z.infer<typeof productSchema>;
-interface Feature {
-  feature: string;
-}
+export type ProductFormInputType = z.infer<typeof productSchema>;
 
 export default function CreateProductPage() {
-  const form = useForm<FormInputType>({
+  const [state, formAction] = useFormState(createProduct, {
+    success: false,
+    message: "",
+  });
+
+  const form = useForm<ProductFormInputType>({
     resolver: zodResolver(productSchema),
-    defaultValues,
+    defaultValues: {
+      name: "",
+      description: "",
+      features: [
+        {
+          feature: "",
+        },
+      ],
+    },
   });
 
   const { control, handleSubmit } = form;
@@ -78,56 +88,56 @@ export default function CreateProductPage() {
     name: "features", // unique name for your Field Array
   });
 
-  const onCreateProductSubmit: SubmitHandler<FormInputType> = async (data) => {
-    console.log(data);
-    const {
-      brandName,
-      color,
-      description,
-      images,
-      features,
-      length,
-      guarantee,
-      height,
-      material,
-      model,
-      name,
-      tradePrice,
-      type,
-      unit,
-      warranty,
-      weight,
-      width,
-      status,
-    } = data;
-    const payload = {
-      brandName,
-      color: color,
-      description,
-      features,
-      length,
-      guarantee,
-      height,
-      material,
-      model,
-      name,
-      tradePrice,
-      type,
-      unit,
-      warranty,
-      weight,
-      width,
-      status,
-      images,
-    };
-    console.log(`payload`, payload);
-  };
+  // const onCreateProductSubmit: SubmitHandler<FormInputType> = async (data) => {
+  //   console.log(data);
+  //   const {
+  //     brandName,
+  //     color,
+  //     description,
+  //     images,
+  //     features,
+  //     length,
+  //     guarantee,
+  //     height,
+  //     material,
+  //     model,
+  //     name,
+  //     tradePrice,
+  //     type,
+  //     unit,
+  //     warranty,
+  //     weight,
+  //     width,
+  //     status,
+  //   } = data;
+  //   const payload = {
+  //     brandName,
+  //     color: color,
+  //     description,
+  //     features,
+  //     length,
+  //     guarantee,
+  //     height,
+  //     material,
+  //     model,
+  //     name,
+  //     tradePrice,
+  //     type,
+  //     unit,
+  //     warranty,
+  //     weight,
+  //     width,
+  //     status,
+  //     images,
+  //   };
+  //   console.log(`payload`, payload);
+  // };
 
   return (
     <ContentLayout title="Add New Product">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <Form {...form}>
-        <form onSubmit={handleSubmit(onCreateProductSubmit)}>
+        <form action={formAction}>
           <div className="flex items-center gap-4 mb-5 mt-7">
             <Link href="/admin/products">
               <Button variant="outline" size="icon" className="h-7 w-7">
@@ -146,9 +156,11 @@ export default function CreateProductPage() {
               <Button variant="outline" size="sm">
                 Discard
               </Button>
-              <Button size="sm" type="submit">
+
+              <SubmitButton isValid={form.formState.isValid} />
+              {/* <Button size="sm" type="submit">
                 Save Product
-              </Button>
+              </Button> */}
             </div>
           </div>
 
@@ -742,7 +754,8 @@ export default function CreateProductPage() {
             <Button variant="outline" size="sm">
               Discard
             </Button>
-            <Button size="sm">Save Product</Button>
+            <SubmitButton isValid={form.formState.isValid} />
+            {/* <Button size="sm">Save Product</Button> */}
           </div>
         </form>
       </Form>
