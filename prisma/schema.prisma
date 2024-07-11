@@ -125,21 +125,21 @@ model Address {
 model Product {
     id                Int            @id @default(autoincrement())
     name              String
-    description       String?
-    tradePrice        Float?
-    contractPrice     Float?
-    promotionalPrice  Float?
-    unitOfMeasurement String?
-    weight            Float?
-    length            Float?
-    width             Float?
-    height            Float?
+    description       String
+    tradePrice        Float?         @default(dbgenerated())
+    contractPrice     Float?         @default(dbgenerated())
+    promotionalPrice  Float?         @default(dbgenerated())
+    unitOfMeasurement String?        @default(dbgenerated())
+    weight            Float?         @default(dbgenerated())
+    length            Float?         @default(dbgenerated())
+    width             Float?         @default(dbgenerated())
+    height            Float?         @default(dbgenerated())
     features          Feature[]
     categories        Category[]
     status            Status         @default(DRAFT)
     images            Image[]
     brand             Brand?         @relation(fields: [brandId], references: [id])
-    brandId           Int?
+    brandId           Int?           @default(dbgenerated())
     createdAt         DateTime       @default(now())
     updatedAt         DateTime       @updatedAt
     WishlistItem      WishlistItem[]
