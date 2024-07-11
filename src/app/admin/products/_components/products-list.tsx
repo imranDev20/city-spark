@@ -68,13 +68,11 @@ export default function ProductList() {
               <SelectItem value="draft">Draft</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" >
-              Download Excel
-            </Button>
+          <Button variant="outline">Download Excel</Button>
         </div>
         <Link href="products/new">
           {" "}
-          <Button className="whitespace-nowrap">Create Product</Button>
+          <Button className="whitespace-nowrap">Add New Product</Button>
         </Link>
       </div>
 
