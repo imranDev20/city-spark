@@ -2,11 +2,12 @@
 import React from "react";
 import { ControllerRenderProps } from "react-hook-form";
 import { FileRejection, useDropzone } from "react-dropzone";
-import { Input } from "@/components/ui/input";
-import { CirclePlus, ImagePlus, Trash, Upload } from "lucide-react";
+import { ImagePlus, Trash, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { Separator } from "@/components/ui/separator";
 
-export default function ImageUploader(props: ControllerRenderProps) {
+export default function ProductImageUploader(props: ControllerRenderProps) {
   const [previews, setPreviews] = React.useState<(string | ArrayBuffer)[]>([]);
   const [selectedPreview, setSelectedPreview] = React.useState<
     string | ArrayBuffer | null
@@ -79,65 +80,99 @@ export default function ImageUploader(props: ControllerRenderProps) {
   };
 
   return (
-    <div className="flex flex-col items-center">
+    <>
       <div className="relative flex items-center justify-center mb-4">
         {selectedPreview && (
-          <>
-            <img
-              src={selectedPreview as string}
-              alt="Uploaded image"
-              className="max-h-[400px] rounded-lg"
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              type="button"
-              className="absolute bottom-4 right-4"
-              onClick={() => deleteImage(previews.indexOf(selectedPreview))}
-            >
-              <Trash className="w-4 h-4" />
-            </Button>
-          </>
+          <div className="border rounded-lg overflow-hidden w-full h-full min-h-56 flex items-end flex-col">
+            <div className="relative w-full h-[250px]">
+              <Image
+                src={selectedPreview as string}
+                alt="Uploaded image"
+                className="rounded-lg"
+                fill
+                style={{
+                  objectFit: "contain",
+                }}
+              />
+            </div>
+            <Separator />
+
+            <div className="mt-3 pb-3 pr-3">
+              <Button
+                variant="outline"
+                size="sm"
+                type="button"
+                onClick={() => deleteImage(previews.indexOf(selectedPreview))}
+              >
+                <Trash className="w-4 h-4 text-primary" />
+              </Button>
+            </div>
+          </div>
         )}
       </div>
       {previews.length < 5 && (
         <div
           {...getRootProps()}
-          className={`mx-auto flex cursor-pointer flex-col items-center justify-center gap-y-2 rounded-lg border border-foreground p-8 shadow-sm shadow-foreground ${
+          className={`flex flex-col items-center justify-center gap-y-2 rounded-lg bg-gray-500/10 h-[300px]  ${
             previews.length > 0 ? "hidden" : ""
-          }`}
+          } outline-dashed outline-1 outline-gray-500/20 relative`}
         >
-          <ImagePlus className="size-20" onClick={handleClickOpen} />
-          <Input {...getInputProps()} type="file" />
+          <ImagePlus
+            className=" size-10 text-gray-500"
+            onClick={handleClickOpen}
+          />
+          <input
+            {...getInputProps()}
+            type="file"
+            className="h-full w-full absolute opacity-0 cursor-pointer"
+            style={{
+              display: "block", //block!important isn't working
+            }}
+          />
           {isDragActive ? (
             <p>Drop the image!</p>
           ) : (
-            <p>Click here or drag an image to upload it</p>
+            <p className="text-center text-gray-500 px-3">
+              <span className="font-semibold">Click here</span> or drag an image
+              to upload it
+            </p>
           )}
         </div>
       )}
       {error && <p className="text-red-500 mt-2">{error}</p>}
       {previews.length > 0 && (
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+        <div className="grid grid-cols-5 gap-2 w-full">
           {previews.map((preview, index) => (
-            <img
+            <div
               key={index}
-              src={preview as string}
-              alt={`Uploaded image ${index + 1}`}
-              className="h-24 w-24 rounded-lg cursor-pointer border-2 border-transparent hover:border-foreground"
-              onClick={() => setSelectedPreview(preview)}
-            />
-          ))}
-          {previews.length < 5 && (
-            <button
-            type="button"  onClick={handleClickOpen}
-              className="h-24 w-24 rounded-lg cursor-pointer border-2 border-dashed border-transparent flex items-center justify-center"
+              className="h-14 relative border-2 hover:border-primary overflow-hidden rounded-sm"
             >
-              <Upload className="h-8 w-8 text-gray-500" />
-            </button>
+              <Image
+                src={preview as string}
+                alt={`Uploaded image ${index + 1}`}
+                fill
+                className="rounded-sm cursor-pointer"
+                onClick={() => setSelectedPreview(preview)}
+                style={{
+                  objectFit: "contain",
+                }}
+              />
+            </div>
+          ))}
+
+          {previews.length < 5 && (
+            <div className="border-2 border-dashed  flex items-center justify-center rounded-sm hover:border-primary">
+              <button
+                type="button"
+                className="w-full h-full flex justify-center items-center"
+                onClick={handleClickOpen}
+              >
+                <Upload className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }
