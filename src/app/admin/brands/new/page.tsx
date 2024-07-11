@@ -36,7 +36,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ImageUploader } from "../../_components/image-uploader";
+// import { ImageUploader } from "../../_components/image-uploader";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -200,18 +200,15 @@ export default function CreateBrandPage() {
                               </FormControl>
                               <SelectContent>
                                 <SelectItem value="draft">Draft</SelectItem>
-                                <SelectItem value="active">
-                                  Active
-                                </SelectItem>
+                                <SelectItem value="active">Active</SelectItem>
                                 <SelectItem value="archived">
                                   Archived
                                 </SelectItem>
                               </SelectContent>
-                            </Select>                            
+                            </Select>
                           </FormItem>
                         )}
                       />
-                     
                     </div>
                   </div>
                 </CardContent>
@@ -223,9 +220,7 @@ export default function CreateBrandPage() {
                     Archive this product if it&apos;s no longer available.
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <ImageUploader />
-                </CardContent>
+                <CardContent>{/* <ImageUploader /> */}</CardContent>
               </Card>
             </div>
           </div>
