@@ -22,7 +22,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import TemplateSelect from "../_components/template-select";
 import {
   Card,
   CardContent,
@@ -36,7 +35,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ImageUploader } from "../../_components/image-uploader";
+import ImageUploader from "../_components/image-uploader";
+
+
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -65,11 +66,11 @@ export default function CreateBrandPage() {
   const { control, handleSubmit } = form;
   const onCreateBrandSubmit: SubmitHandler<FormInputType> = async (data) => {
     console.log(data);
-    const { brandName, website, image, status } = data;
+    const { brandName, website, images, status } = data;
     const payload = {
       brandName,
       website,
-      image,
+      images,
       status,
     };
     console.log(`payload`, payload);
@@ -218,13 +219,29 @@ export default function CreateBrandPage() {
               </Card>
               <Card x-chunk="dashboard-07-chunk-5">
                 <CardHeader>
-                  <CardTitle>Manuals & Instructions</CardTitle>
+                  <CardTitle>Images</CardTitle>
                   <CardDescription>
-                    Archive this product if it&apos;s no longer available.
+                  Upload your brand images here.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ImageUploader />
+                <FormField
+                      control={form.control}
+                      name="images"
+                      render={({field}) => (
+                        <FormItem className="mx-auto ">
+                          <FormLabel                           
+                          >
+                            <h2 className="text-xl font-semibold tracking-tight">
+                            
+                            </h2>
+                          </FormLabel>
+                          <FormControl>
+                            <ImageUploader {...field} />
+                          </FormControl>                       
+                        </FormItem>
+                      )}
+                    />
                 </CardContent>
               </Card>
             </div>
