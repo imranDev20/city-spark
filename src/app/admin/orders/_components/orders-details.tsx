@@ -1,5 +1,3 @@
-
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent, 
@@ -31,9 +29,7 @@ export default function OrderDetailsList() {
                 <TableHead className="hidden md:table-cell">Price</TableHead>
                 <TableHead className="hidden md:table-cell">
                   Total
-                </TableHead>
-               
-              
+                </TableHead>                             
               </TableRow>
             </TableHeader>
             <TableBody>

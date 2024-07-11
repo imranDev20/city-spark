@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Upload } from "lucide-react";
+import { ChevronLeft} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -21,24 +21,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import ManualsInstructionsUpload from "../../products/_components/manuals-instructions-upload";
-import Image from "next/image";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { productSchema } from "../../products/new/schema";
 
 import { useRef } from "react";
-import { useFormState } from "react-dom";
 import { Switch } from "@/components/ui/switch";
 
 const breadcrumbItems = [
