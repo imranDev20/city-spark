@@ -32,18 +32,22 @@ import {
 } from "@/components/ui/form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {SubmitHandler, useFieldArray, useForm } from "react-hook-form";
+import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import TemplateSelect from "../_components/template-select";
 import ManualsInstructionsUpload from "../_components/manuals-instructions-upload";
 import { productSchema } from "./schema";
-import ImageUploader from "../_components/image-uploader";
+import ProductImageUploader from "../_components/image-uploader";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
   { label: "Products", href: "/admin/products" },
-  { label: "Create Product", href: "/admin/products/new", isCurrentPage: true },
+  {
+    label: "Add New Product",
+    href: "/admin/products/new",
+    isCurrentPage: true,
+  },
 ];
 
 const defaultValues = {
@@ -58,8 +62,8 @@ const defaultValues = {
 
 type FormInputType = z.infer<typeof productSchema>;
 interface Feature {
-    feature: string;
-  }
+  feature: string;
+}
 
 export default function CreateProductPage() {
   const form = useForm<FormInputType>({
@@ -69,19 +73,36 @@ export default function CreateProductPage() {
 
   const { control, handleSubmit } = form;
 
-  const { fields, append, remove,} = useFieldArray(
-    {
-      control, // control props comes from useForm (optional: if you are using FormProvider)
-      name: "features", // unique name for your Field Array
-    }
-  );
+  const { fields, append, remove } = useFieldArray({
+    control, // control props comes from useForm (optional: if you are using FormProvider)
+    name: "features", // unique name for your Field Array
+  });
 
   const onCreateProductSubmit: SubmitHandler<FormInputType> = async (data) => {
     console.log(data);
-    const {brandName,color, description,images, features,length, guarantee, height,material,model,name,tradePrice, type, unit, warranty, weight, width, status} = data;
-     const payload = {
+    const {
       brandName,
-      color:color ,
+      color,
+      description,
+      images,
+      features,
+      length,
+      guarantee,
+      height,
+      material,
+      model,
+      name,
+      tradePrice,
+      type,
+      unit,
+      warranty,
+      weight,
+      width,
+      status,
+    } = data;
+    const payload = {
+      brandName,
+      color: color,
       description,
       features,
       length,
@@ -97,13 +118,13 @@ export default function CreateProductPage() {
       weight,
       width,
       status,
-      images
-     }            
-     console.log(`payload`, payload);
+      images,
+    };
+    console.log(`payload`, payload);
   };
 
   return (
-    <ContentLayout title="Create Product">
+    <ContentLayout title="Add New Product">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <Form {...form}>
         <form onSubmit={handleSubmit(onCreateProductSubmit)}>
@@ -116,19 +137,16 @@ export default function CreateProductPage() {
             </Link>
 
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-              Pro Controller
+              Add New Product
             </h1>
-            <Badge variant="outline" className="ml-auto sm:ml-0">
+            {/* <Badge variant="outline" className="ml-auto sm:ml-0">
               In stock
-            </Badge>
+            </Badge> */}
             <div className="hidden items-center gap-2 md:ml-auto md:flex">
               <Button variant="outline" size="sm">
                 Discard
               </Button>
-              <Button
-                size="sm"
-                type="submit"              
-              >
+              <Button size="sm" type="submit">
                 Save Product
               </Button>
             </div>
@@ -162,8 +180,6 @@ export default function CreateProductPage() {
                           </FormItem>
                         )}
                       />
-                     
-
                     </div>
                     <div className="grid gap-3">
                       <FormField
@@ -507,17 +523,17 @@ export default function CreateProductPage() {
                             name={`features.${index}.feature`}
                             control={control}
                             render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      placeholder="Enter features and benefits"
-                                      defaultValue={field.value || ""}
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Enter features and benefits"
+                                    defaultValue={field.value || ""}
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
                           />
                         </div>
                         <div className="grid gap-3 col-span-1">
@@ -641,7 +657,7 @@ export default function CreateProductPage() {
                 <CardContent>
                   <div className="grid gap-6">
                     <div className="grid gap-3">
-                    <FormField
+                      <FormField
                         control={form.control}
                         name="status"
                         render={({ field }) => (
@@ -658,9 +674,7 @@ export default function CreateProductPage() {
                               </FormControl>
                               <SelectContent>
                                 <SelectItem value="draft">Draft</SelectItem>
-                                <SelectItem value="active">
-                                  Active
-                                </SelectItem>
+                                <SelectItem value="active">Active</SelectItem>
                                 <SelectItem value="archived">
                                   Archived
                                 </SelectItem>
@@ -680,23 +694,20 @@ export default function CreateProductPage() {
                   <CardDescription>Upload product images here.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                <FormField
-                      control={form.control}
-                      name="images"
-                      render={({field}) => (
-                        <FormItem className="mx-auto ">
-                          <FormLabel                           
-                          >
-                            <h2 className="text-xl font-semibold tracking-tight">
-                            
-                            </h2>
-                          </FormLabel>
-                          <FormControl>
-                            <ImageUploader {...field} />
-                          </FormControl>                       
-                        </FormItem>
-                      )}
-                    />
+                  <FormField
+                    control={form.control}
+                    name="images"
+                    render={({ field }) => (
+                      <FormItem className="mx-auto ">
+                        <FormLabel>
+                          <h2 className="text-xl font-semibold tracking-tight"></h2>
+                        </FormLabel>
+                        <FormControl>
+                          <ProductImageUploader {...field} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </CardContent>
               </Card>
 
