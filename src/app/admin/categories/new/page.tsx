@@ -33,8 +33,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ImageUploader } from "../../_components/image-uploader";
 import { z } from "zod";
+// import ImageUploader from "../../_components/image-uploader";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -179,9 +179,7 @@ export default function CreateCategoryPage() {
                     Archive this product if it&apos;s no longer available.
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <ImageUploader />
-                </CardContent>
+                <CardContent>{/* <ImageUploader  /> */}</CardContent>
               </Card>
             </div>
           </div>
