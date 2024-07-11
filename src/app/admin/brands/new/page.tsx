@@ -201,18 +201,15 @@ export default function CreateBrandPage() {
                               </FormControl>
                               <SelectContent>
                                 <SelectItem value="draft">Draft</SelectItem>
-                                <SelectItem value="active">
-                                  Active
-                                </SelectItem>
+                                <SelectItem value="active">Active</SelectItem>
                                 <SelectItem value="archived">
                                   Archived
                                 </SelectItem>
                               </SelectContent>
-                            </Select>                            
+                            </Select>
                           </FormItem>
                         )}
                       />
-                     
                     </div>
                   </div>
                 </CardContent>
