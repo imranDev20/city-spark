@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import Chip from "@/components/custom/chip";
+
 
 export default function TemplateSelect() {
   const [value, setValue] = useState("");

@@ -5,8 +5,6 @@ import { useDropzone } from "react-dropzone";
 import { Input } from "@/components/ui/input";
 import { ImagePlus } from "lucide-react";
 
-
-
 export default function ImageUploader(props:ControllerRenderProps) {
   const [preview, setPreview] = React.useState<string | ArrayBuffer | null>("");
   
