@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import TemplateSelect from "../_components/template-select";
@@ -39,14 +39,23 @@ import { productSchema } from "./schema";
 import ProductImageUploader from "../_components/product-image-uploader";
 import { useFormState, useFormStatus } from "react-dom";
 import { createProduct } from "./actions";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 function SubmitButton({ isValid }: { isValid: boolean }) {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" disabled={!isValid} size="sm">
-      {pending ? "Adding..." : "Add New Product"}
-    </Button>
+    <LoadingButton
+      type="submit"
+      disabled={!isValid || pending}
+      size="sm"
+      loading={pending}
+    >
+      Add New Product
+    </LoadingButton>
   );
 }
 
@@ -63,10 +72,13 @@ const breadcrumbItems = [
 export type ProductFormInputType = z.infer<typeof productSchema>;
 
 export default function CreateProductPage() {
+  const router = useRouter();
   const [state, formAction] = useFormState(createProduct, {
     success: false,
     message: "",
   });
+
+  const { toast } = useToast();
 
   const form = useForm<ProductFormInputType>({
     resolver: zodResolver(productSchema),
@@ -81,57 +93,22 @@ export default function CreateProductPage() {
     },
   });
 
-  const { control, handleSubmit } = form;
-
-  const { fields, append, remove } = useFieldArray({
-    control, // control props comes from useForm (optional: if you are using FormProvider)
-    name: "features", // unique name for your Field Array
+  const { control } = form;
+  const { fields, append, remove } = useFieldArray<ProductFormInputType>({
+    control,
+    name: "features",
   });
 
-  // const onCreateProductSubmit: SubmitHandler<FormInputType> = async (data) => {
-  //   console.log(data);
-  //   const {
-  //     brandName,
-  //     color,
-  //     description,
-  //     images,
-  //     features,
-  //     length,
-  //     guarantee,
-  //     height,
-  //     material,
-  //     model,
-  //     name,
-  //     tradePrice,
-  //     type,
-  //     unit,
-  //     warranty,
-  //     weight,
-  //     width,
-  //     status,
-  //   } = data;
-  //   const payload = {
-  //     brandName,
-  //     color: color,
-  //     description,
-  //     features,
-  //     length,
-  //     guarantee,
-  //     height,
-  //     material,
-  //     model,
-  //     name,
-  //     tradePrice,
-  //     type,
-  //     unit,
-  //     warranty,
-  //     weight,
-  //     width,
-  //     status,
-  //     images,
-  //   };
-  //   console.log(`payload`, payload);
-  // };
+  useEffect(() => {
+    if (state.success) {
+      toast({
+        title: "Product Saved",
+        description: "The product has been successfully saved.",
+        variant: "success",
+      });
+      router.push("/admin/products");
+    }
+  }, [state, router, toast]);
 
   return (
     <ContentLayout title="Add New Product">
@@ -229,7 +206,7 @@ export default function CreateProductPage() {
                     <div className="grid gap-3">
                       <FormField
                         control={control}
-                        name="brandName"
+                        name="brand"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Brand Name</FormLabel>
