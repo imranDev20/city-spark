@@ -2,7 +2,8 @@
 
 import prisma from "@/lib/prisma";
 import { productSchema } from "./schema";
-import { ProductFormInputType } from "./page";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export async function getProducts() {
   try {
@@ -33,6 +34,7 @@ export async function createProduct(previousState: FormState, data: FormData) {
       height: Number(formData.height),
       width: Number(formData.width),
       length: Number(formData.length),
+      brand: Number(formData.brand),
     };
 
     const validationResult = productSchema.safeParse(parsedData);
@@ -48,7 +50,7 @@ export async function createProduct(previousState: FormState, data: FormData) {
       };
     }
 
-    const { features } = validationResult.data;
+    const { brand } = validationResult.data;
 
     const newProduct = await prisma.product.create({
       data: {
@@ -62,7 +64,7 @@ export async function createProduct(previousState: FormState, data: FormData) {
         length: 10.0,
         width: 5.0,
         height: 2.0,
-        brandId: 1,
+        brandId: brand || 1, //change later, don't use default 1
         features: {
           createMany: {
             data: [
@@ -90,10 +92,11 @@ export async function createProduct(previousState: FormState, data: FormData) {
       },
     });
 
-    console.log(newProduct, "NEW PRODUCT");
+    revalidatePath("/admin/products");
 
     return {
       message: "Products created successfully!",
+      data: newProduct,
       success: true,
     };
   } catch (error) {

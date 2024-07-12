@@ -4,152 +4,36 @@ generator client {
 
 datasource db {
     provider  = "postgresql"
-    url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-    directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
-}
-
-model Post {
-    id        String  @id @default(cuid())
-    title     String
-    content   String?
-    published Boolean @default(false)
-    author    User?   @relation(fields: [authorId], references: [id])
-    authorId  String?
-}
-
-model User {
-    id             String          @id @default(cuid())
-    name           String
-    email          String          @unique
-    password       String
-    wishlist       WishlistItem[]
-    paymentMethods PaymentMethod[]
-    orders         Order[]
-    address        Address[]
-    createdAt      DateTime        @default(now()) @map(name: "created_at")
-    updatedAt      DateTime        @updatedAt @map(name: "updated_at")
-    Post           Post[]
-
-    @@map(name: "users")
-}
-
-model WishlistItem {
-    id        Int     @id @default(autoincrement())
-    product   Product @relation(fields: [productId], references: [id])
-    productId Int
-    user      User    @relation(fields: [userId], references: [id])
-    userId    String
-}
-
-model PaymentMethod {
-    id               Int      @id @default(autoincrement())
-    type             String
-    cardNumber       String
-    cardExpiryDate   DateTime
-    cardCvv          String
-    billingAddress   Address? @relation(fields: [billingAddressId], references: [id])
-    billingAddressId Int?
-    user             User     @relation(fields: [userId], references: [id])
-    userId           String
-}
-
-model Order {
-    id                Int             @id @default(autoincrement())
-    totalAmount       Float
-    status            OrderStatus
-    items             OrderItem[]
-    user              User            @relation(fields: [userId], references: [id])
-    userId            String
-    shippingAddress   Address?        @relation(fields: [shippingAddressId], references: [id])
-    shippingAddressId Int?
-    activities        OrderActivity[]
-    customerNote      String?
-    createdAt         DateTime        @default(now()) @map(name: "created_at")
-    updatedAt         DateTime        @updatedAt @map(name: "updated_at")
-    Shipment          Shipment?
-}
-
-model OrderItem {
-    id        Int     @id @default(autoincrement())
-    quantity  Int
-    price     Float
-    product   Product @relation(fields: [productId], references: [id])
-    productId Int
-    order     Order   @relation(fields: [orderId], references: [id])
-    orderId   Int
-}
-
-model OrderActivity {
-    id        Int          @id @default(autoincrement())
-    orderId   Int
-    order     Order        @relation(fields: [orderId], references: [id])
-    type      ActivityType
-    message   String
-    timestamp DateTime     @default(now())
-
-    @@map(name: "order_activities")
-}
-
-enum ActivityType {
-    ORDER_PLACED
-    ORDER_CONFIRMED
-    PAYMENT_RECEIVED
-    ORDER_PREPARING
-    ORDER_DISPATCHED
-    OUT_FOR_DELIVERY
-    DELIVERED
-    ORDER_CANCELLED
-    RETURN_REQUESTED
-    RETURN_APPROVED
-    RETURN_REJECTED
-    ITEM_RETURNED
-    REFUND_INITIATED
-    REFUND_COMPLETED
-    CUSTOMER_NOTE
-    ADMIN_NOTE
-}
-
-model Address {
-    id             Int             @id @default(autoincrement())
-    street         String
-    city           String
-    state          String
-    postalCode     String
-    country        String
-    users          User[]
-    paymentMethods PaymentMethod[]
-    orders         Order[]
-    Shipment       Shipment[]
+    url       = env("POSTGRES_PRISMA_URL")
+    directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model Product {
-    id                Int            @id @default(autoincrement())
+    id                String     @id @default(cuid())
     name              String
     description       String
-    tradePrice        Float?         @default(dbgenerated())
-    contractPrice     Float?         @default(dbgenerated())
-    promotionalPrice  Float?         @default(dbgenerated())
-    unitOfMeasurement String?        @default(dbgenerated())
-    weight            Float?         @default(dbgenerated())
-    length            Float?         @default(dbgenerated())
-    width             Float?         @default(dbgenerated())
-    height            Float?         @default(dbgenerated())
+    tradePrice        Float?     @default(dbgenerated())
+    contractPrice     Float?     @default(dbgenerated())
+    promotionalPrice  Float?     @default(dbgenerated())
+    unitOfMeasurement String?    @default(dbgenerated())
+    weight            Float?     @default(dbgenerated())
+    length            Float?     @default(dbgenerated())
+    width             Float?     @default(dbgenerated())
+    height            Float?     @default(dbgenerated())
     features          Feature[]
     categories        Category[]
-    status            Status         @default(DRAFT)
+    status            Status     @default(DRAFT)
     images            Image[]
-    brand             Brand?         @relation(fields: [brandId], references: [id])
-    brandId           Int?           @default(dbgenerated())
-    createdAt         DateTime       @default(now())
-    updatedAt         DateTime       @updatedAt
-    WishlistItem      WishlistItem[]
-    OrderItem         OrderItem[]
+    brand             Brand?     @relation(fields: [brandId], references: [id])
+    brandId           Int?       @default(dbgenerated())
+    createdAt         DateTime   @default(now())
+    updatedAt         DateTime   @updatedAt
 }
 
 model Feature {
     id        Int     @id @default(autoincrement())
     name      String
-    productId Int
+    productId String
     product   Product @relation(fields: [productId], references: [id])
 }
 
@@ -168,7 +52,7 @@ model Category {
 model Image {
     id         Int       @id @default(autoincrement())
     url        String
-    productId  Int?
+    productId  String?
     product    Product?  @relation(fields: [productId], references: [id])
     categoryId Int?      @unique
     category   Category? @relation(fields: [categoryId], references: [id])
@@ -189,33 +73,4 @@ enum Status {
     DRAFT
     ACTIVE
     ARCHIVED
-}
-
-enum OrderStatus {
-    PENDING
-    PROCESSING
-    SHIPPED
-    DELIVERED
-    CANCELLED
-}
-
-model Shipment {
-    id                Int            @id @default(autoincrement())
-    orderId           Int            @unique
-    order             Order          @relation(fields: [orderId], references: [id])
-    trackingNumber    String
-    carrier           String
-    shippedAt         DateTime?
-    deliveredAt       DateTime?
-    shipmentStatus    ShipmentStatus
-    shippingAddress   Address        @relation(fields: [shippingAddressId], references: [id])
-    shippingAddressId Int
-}
-
-enum ShipmentStatus {
-    PENDING
-    SHIPPED
-    OUT_FOR_DELIVERY
-    DELIVERED
-    CANCELLED
 }
