@@ -33,6 +33,8 @@ import { getProducts } from "../new/actions";
 export default async function ProductList() {
   const products = await getProducts();
 
+  console.log(products);
+
   return (
     <>
       <div className="flex items-center gap-4 mb-5 mt-7">
@@ -110,13 +112,13 @@ export default async function ProductList() {
               {products.map((product) => (
                 <TableRow key={product.id}>
                   <TableCell className="hidden sm:table-cell">
-                    {/* <Image
+                    <Image
                       alt="Product image"
                       className="aspect-square rounded-md object-cover"
                       height="64"
                       src={product.images[0].url}
                       width="64"
-                    /> */}
+                    />
                   </TableCell>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>

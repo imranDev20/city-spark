@@ -86,6 +86,6 @@ model Image {
     id          String  @id @default(cuid())
     url         String // Store the URL to the image in Edgestore
     description String?
-    product     Product @relation(fields: [productId], references: [id])
+    product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
     productId   String
 }

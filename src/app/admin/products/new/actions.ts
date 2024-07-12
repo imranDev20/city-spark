@@ -6,7 +6,11 @@ import { revalidatePath } from "next/cache";
 
 export async function getProducts() {
   try {
-    const products = await prisma.product.findMany();
+    const products = await prisma.product.findMany({
+      include: {
+        images: true,
+      },
+    });
 
     return products;
   } catch (error) {
@@ -82,11 +86,11 @@ export async function createProduct(previousState: FormState, data: FormData) {
         images: {
           create: [
             {
-              url: "https://source.unsplash.com/random/800x600", // Example Unsplash image URL
+              url: "https://images.unsplash.com/photo-1565103446317-476a2b789651?q=80&w=2897&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Example Unsplash image URL
               description: "Product Image 1",
             },
             {
-              url: "https://source.unsplash.com/random/800x600", // Example Unsplash image URL
+              url: "https://images.unsplash.com/photo-1565103446317-476a2b789651?q=80&w=2897&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Example Unsplash image URL
               description: "Product Image 2",
             },
           ],
