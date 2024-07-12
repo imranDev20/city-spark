@@ -2,14 +2,12 @@
 
 import prisma from "@/lib/prisma";
 import { productSchema } from "./schema";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 export async function getProducts() {
   try {
-    const products = await prisma.product.findMany({
-      include: { images: true },
-    });
+    const products = await prisma.product.findMany();
+
     return products;
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -50,44 +48,48 @@ export async function createProduct(previousState: FormState, data: FormData) {
       };
     }
 
-    const { brand } = validationResult.data;
-
-    const newProduct = await prisma.product.create({
+    const createdProduct = await prisma.product.create({
       data: {
         name: "Sample Product",
-        description: "This is a sample product.",
-        tradePrice: 100.0,
-        contractPrice: 90.0,
-        promotionalPrice: 80.0,
-        unitOfMeasurement: "kg",
+        description: "This is a sample product description.",
+        model: "ABC123",
+        type: "Electronics",
+        warranty: "1 year",
+        guarantee: "30 days",
+        tradePrice: 299.99,
+        contractPrice: 279.99,
+        promotionalPrice: 259.99,
+        unit: "pcs",
         weight: 1.5,
+        color: "Black",
         length: 10.0,
         width: 5.0,
-        height: 2.0,
-        brandId: brand || 1, //change later, don't use default 1
+        height: 3.0,
+        material: "Plastic",
+        template: "Standard",
         features: {
-          createMany: {
-            data: [
-              {
-                name: "Some feature 1",
-              },
-              {
-                name: "Some feature 2",
-              },
-            ],
-          },
+          create: [{ name: "Feature 1" }, { name: "Feature 2" }],
+        },
+        category: {
+          connect: { id: "clyjb5z6z0003qhhhtywwiez8" }, // Replace with actual category ID
+        },
+        brand: {
+          connect: { id: "clyjaoap30000daapsr8p341h" }, // Replace with actual brand ID
+        },
+        manuals: {
+          set: ["manual1.pdf", "manual2.pdf"],
         },
         images: {
-          createMany: {
-            data: [
-              {
-                url: "https://images.unsplash.com/photo-1720582760044-c4d220f09305?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-              },
-              {
-                url: "https://images.unsplash.com/photo-1720582760044-c4d220f09305?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-              },
-            ],
-          },
+          create: [
+            {
+              url: "https://source.unsplash.com/random/800x600", // Example Unsplash image URL
+              description: "Product Image 1",
+            },
+            {
+              url: "https://source.unsplash.com/random/800x600", // Example Unsplash image URL
+              description: "Product Image 2",
+            },
+          ],
         },
       },
     });
@@ -96,7 +98,7 @@ export async function createProduct(previousState: FormState, data: FormData) {
 
     return {
       message: "Products created successfully!",
-      data: newProduct,
+      data: createdProduct,
       success: true,
     };
   } catch (error) {

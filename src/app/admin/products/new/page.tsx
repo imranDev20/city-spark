@@ -53,6 +53,7 @@ function SubmitButton({ isValid }: { isValid: boolean }) {
       disabled={!isValid || pending}
       size="sm"
       loading={pending}
+      className="text-xs font-semibold h-8"
     >
       Add New Product
     </LoadingButton>
@@ -99,16 +100,16 @@ export default function CreateProductPage() {
     name: "features",
   });
 
-  useEffect(() => {
-    if (state.success) {
-      toast({
-        title: "Product Saved",
-        description: "The product has been successfully saved.",
-        variant: "success",
-      });
-      router.push("/admin/products");
-    }
-  }, [state, router, toast]);
+  // useEffect(() => {
+  //   if (state.success) {
+  //     toast({
+  //       title: "Product Saved",
+  //       description: "The product has been successfully saved.",
+  //       variant: "success",
+  //     });
+  //     router.push("/admin/products");
+  //   }
+  // }, [state, router, toast]);
 
   return (
     <ContentLayout title="Add New Product">
