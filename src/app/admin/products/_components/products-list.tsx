@@ -110,17 +110,15 @@ export default async function ProductList() {
               {products.map((product) => (
                 <TableRow key={product.id}>
                   <TableCell className="hidden sm:table-cell">
-                    <Image
+                    {/* <Image
                       alt="Product image"
                       className="aspect-square rounded-md object-cover"
                       height="64"
                       src={product.images[0].url}
                       width="64"
-                    />
+                    /> */}
                   </TableCell>
-                  <TableCell className="font-medium">
-                    Laser Lemonade Machine
-                  </TableCell>
+                  <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>
                     <Badge variant="outline">Draft</Badge>
                   </TableCell>

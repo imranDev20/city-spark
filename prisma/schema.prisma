@@ -4,73 +4,88 @@ generator client {
 
 datasource db {
     provider  = "postgresql"
-    url       = env("POSTGRES_PRISMA_URL")
-    directUrl = env("POSTGRES_URL_NON_POOLING")
+    url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+    directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model Post {
+    id        String  @id @default(cuid())
+    title     String
+    content   String?
+    published Boolean @default(false)
+}
+
+// Category model representing nested categories
+model Category {
+    id              String       @id @default(cuid())
+    name            String
+    type            CategoryType
+    parentCategory  Category?    @relation("ChildCategories", fields: [parentId], references: [id])
+    parentId        String?
+    childCategories Category[]   @relation("ChildCategories") // Opposite relation field
+    products        Product[]
+}
+
+enum CategoryType {
+    PRIMARY
+    SECONDARY
+    TERTIARY
+    QUATERNARY
 }
 
 model Product {
-    id                String     @id @default(cuid())
-    name              String
-    description       String
-    tradePrice        Float?     @default(dbgenerated())
-    contractPrice     Float?     @default(dbgenerated())
-    promotionalPrice  Float?     @default(dbgenerated())
-    unitOfMeasurement String?    @default(dbgenerated())
-    weight            Float?     @default(dbgenerated())
-    length            Float?     @default(dbgenerated())
-    width             Float?     @default(dbgenerated())
-    height            Float?     @default(dbgenerated())
-    features          Feature[]
-    categories        Category[]
-    status            Status     @default(DRAFT)
-    images            Image[]
-    brand             Brand?     @relation(fields: [brandId], references: [id])
-    brandId           Int?       @default(dbgenerated())
-    createdAt         DateTime   @default(now())
-    updatedAt         DateTime   @updatedAt
+    id               String    @id @default(cuid())
+    name             String
+    description      String?
+    model            String?
+    type             String?
+    warranty         String?
+    guarantee        String?
+    tradePrice       Float?
+    contractPrice    Float?
+    promotionalPrice Float?
+    unit             String?
+    weight           Float?
+    color            String?
+    length           Float?
+    width            Float?
+    height           Float?
+    material         String?
+    template         String?
+    features         Feature[]
+    category         Category  @relation(fields: [categoryId], references: [id])
+    categoryId       String
+    brand            Brand?    @relation(fields: [brandId], references: [id])
+    brandId          String?
+    status           Status    @default(DRAFT)
+    manuals          String[]
+    images           Image[]
+}
+
+// Brand model
+model Brand {
+    id       String    @id @default(cuid())
+    name     String
+    products Product[]
 }
 
 model Feature {
-    id        Int     @id @default(autoincrement())
+    id        String  @id @default(cuid())
     name      String
     productId String
-    product   Product @relation(fields: [productId], references: [id])
-}
-
-model Category {
-    id       Int        @id @default(autoincrement())
-    name     String
-    parentId Int?
-    parent   Category?  @relation("CategoryToParent", fields: [parentId], references: [id])
-    children Category[] @relation("CategoryToParent")
-    image    Image?
-    products Product[]
-
-    @@map(name: "categories")
-}
-
-model Image {
-    id         Int       @id @default(autoincrement())
-    url        String
-    productId  String?
-    product    Product?  @relation(fields: [productId], references: [id])
-    categoryId Int?      @unique
-    category   Category? @relation(fields: [categoryId], references: [id])
-}
-
-model Brand {
-    id              Int       @id @default(autoincrement())
-    name            String
-    image           String?
-    countryOfOrigin String
-    website         String?
-    products        Product[]
-    createdAt       DateTime  @default(now())
-    updatedAt       DateTime  @updatedAt
+    product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 enum Status {
     DRAFT
     ACTIVE
     ARCHIVED
+}
+
+model Image {
+    id          String  @id @default(cuid())
+    url         String // Store the URL to the image in Edgestore
+    description String?
+    product     Product @relation(fields: [productId], references: [id])
+    productId   String
 }
