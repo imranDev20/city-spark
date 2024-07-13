@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 
-import "./globals.css";
-
+import { EdgeStoreProvider } from "../lib/edgestore";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
+
+import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -44,9 +46,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={GeistSans.className}>
         {/* <ThemeProvider attribute="class" defaultTheme="light" enableSystem> */}
-        <ThemeProvider attribute="class" defaultTheme="light">
-          {children}
-        </ThemeProvider>
+        <EdgeStoreProvider>
+          <ThemeProvider attribute="class" defaultTheme="light">
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </EdgeStoreProvider>
       </body>
     </html>
   );

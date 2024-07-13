@@ -49,7 +49,7 @@ export default function ProductImageUploader(props: ControllerRenderProps) {
     },
     [previews, selectedPreview, onChange]
   );
-  console.log(`error`, error);
+  // console.log(`error`, error);
 
   const deleteImage = (index: number) => {
     const newPreviews = previews.filter((_, i) => i !== index);
@@ -130,7 +130,7 @@ export default function ProductImageUploader(props: ControllerRenderProps) {
             }}
           />
           {isDragActive ? (
-            <p>Drop the image!</p>
+            <p className="text-center text-gray-500 px-3">Drop the image!</p>
           ) : (
             <p className="text-center text-gray-500 px-3">
               <span className="font-semibold">Click here</span> or drag an image
