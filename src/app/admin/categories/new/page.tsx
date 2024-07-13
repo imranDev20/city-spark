@@ -29,7 +29,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { categorySchema } from "./schema";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,7 @@ function SubmitButton({ isValid }: { isValid: boolean }) {
   return (
     <LoadingButton
       type="submit"
-      disabled={!isValid || pending}
+      // disabled={!isValid || pending}
       size="sm"
       loading={pending}
       className="text-xs font-semibold h-8"
@@ -70,8 +70,8 @@ const breadcrumbItems = [
 
 
 
-export type categoryFormInputType = z.infer<typeof categorySchema>;
-type categoryType = "SECONDARY" | "TERTIARY" | "QUATERNARY";
+export type CategoryFormInputType = z.infer<typeof categorySchema>;
+
 export default function CreateCategoryPage() {
   const router = useRouter();
   const [state, formAction] = useFormState(createCategory, {
@@ -79,13 +79,13 @@ export default function CreateCategoryPage() {
     message: "",
   });
   const { toast } = useToast();
-  const form = useForm<categoryFormInputType>({
+  const form = useForm<CategoryFormInputType>({
     resolver: zodResolver(categorySchema),
     defaultValues:{
       name: "",
       images: "",
       parentCategory: "",
-      type: ""      
+      // type: 'PRIMARY'     
     },
   });
   const { control } = form;
@@ -100,17 +100,10 @@ export default function CreateCategoryPage() {
     }
   }, [state, router, toast]);
   
-  const [isPrimary, setIsPrimary] = useState<boolean>(false);
-  const [typeValue, setTypeValue] = useState<string>("");
-  // const [categoryValue, setCategoryValue] = useState<FormInputType>(null);
-  const checkTypeValue = (value: string) => {
-    value == CATEGORY_TYPE[0] ? setIsPrimary(true) : setIsPrimary(false);
-    setTypeValue(value);
-  };
-
   return (
     <ContentLayout title="Create Category">
       <DynamicBreadcrumb items={breadcrumbItems} />
+      <FormProvider {...form}>
       <Form {...form}>
         <form action={formAction}>
           <div className="flex items-center gap-4 mb-5 mt-7">
@@ -167,20 +160,20 @@ export default function CreateCategoryPage() {
                           <FormLabel>Category Type</FormLabel>
                           <Select
                             onValueChange={(value) =>
-                              field.onChange(checkTypeValue(value))
+                              field.onChange(value)
                             }
-                            defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select category type" />
+                                <SelectValue  placeholder="Select category type" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                               {CATEGORY_TYPE.map((category) => {
                                 return (
-                                  <SelectItem key={category} value={category}>
-                                    {category}
+                                  <SelectItem  key={category} value={category}>
+                                    {category.charAt(0).toUpperCase() + category.slice(1).toLowerCase()}
                                   </SelectItem>
                                 );
                               })}
@@ -193,8 +186,8 @@ export default function CreateCategoryPage() {
                   </div>
                 </CardContent>
               </Card>
-              {!isPrimary && (
-                <ParentCategory type={typeValue} control={control} />
+              {form.watch('type') !== 'PRIMARY' && (
+                <ParentCategory  control={control} />
               )}
             </div>
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
@@ -231,6 +224,7 @@ export default function CreateCategoryPage() {
           </div>
         </form>
       </Form>
+      </FormProvider>
     </ContentLayout>
   );
 }

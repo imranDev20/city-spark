@@ -5,10 +5,21 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { categorySchema } from "./schema";
 
-type categoryType = "SECONDARY" | "TERTIARY" | "QUATERNARY";
+type categoryType = "PRIMARY"|"SECONDARY" | "TERTIARY" | "QUATERNARY";
 
 export async function getCategory(categoryType: categoryType) {
   try {
+    if(categoryType == 'PRIMARY') {
+      throw new Error("Failed to fetch categoryies");
+    }
+    if(categoryType == 'SECONDARY') {
+      categoryType = 'PRIMARY';
+    }
+    else if(categoryType == 'TERTIARY') {
+      categoryType = 'SECONDARY';
+    } else if(categoryType == 'QUATERNARY') {
+      categoryType = 'TERTIARY';
+    }
     const category = await prisma.category.findMany({
       where: {
         type: categoryType,
