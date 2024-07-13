@@ -74,7 +74,6 @@ export type ProductFormInputType = z.infer<typeof productSchema>;
 
 export default function CreateProductPage() {
   const router = useRouter();
-
   const { toast } = useToast();
 
   const form = useForm<ProductFormInputType>({
