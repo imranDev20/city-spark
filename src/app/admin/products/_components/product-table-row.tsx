@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 
 import React, { useTransition } from "react";
-import { Product } from "@prisma/client";
 import { deleteProduct } from "../actions";
 import {
   DropdownMenu,
@@ -19,7 +18,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { title } from "process";
 
 type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -37,22 +35,26 @@ export default function ProductTableRow({
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
-  const handleDelete = () => {
+  const handleDelete = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    e.stopPropagation(); // Stop the propagation to prevent routing
+
     startTransition(async () => {
       const result = await deleteProduct(product.id);
 
       if (result.success) {
-        // Handle successful deletion (e.g., show a success message, update UI)
-        console.log(result.message);
-
         toast({
           title: "Product Deleted",
           description: "The product has been successfully deleted.",
-          variant: "destructive",
+          variant: "success",
         });
       } else {
         // Handle error (e.g., show an error message)
-        console.error(result.message);
+        toast({
+          title: "Error Deleting Product",
+          description:
+            "There was an error deleting the product. Please try again.",
+          variant: "destructive",
+        });
       }
     });
   };
@@ -72,7 +74,7 @@ export default function ProductTableRow({
           width="64"
         />
       </TableCell>
-      <TableCell className="font-medium">{product.name}</TableCell>
+      <TableCell className="font-medium flex-1">{product.name}</TableCell>
       <TableCell>
         <Badge variant="outline">{product.status}</Badge>
       </TableCell>
@@ -96,8 +98,7 @@ export default function ProductTableRow({
             <DropdownMenuItem>Edit</DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => {
-                e.stopPropagation();
-                handleDelete();
+                handleDelete(e);
               }}
             >
               Delete

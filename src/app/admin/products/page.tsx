@@ -16,11 +16,9 @@ export default function AdminProductsPage() {
       <DynamicBreadcrumb items={breadcrumbItems} />
 
       <ProductTableHeader />
-
       <Suspense fallback="Loading...">
         <ProductList />
       </Suspense>
-
       <ProductPagination />
     </ContentLayout>
   );
