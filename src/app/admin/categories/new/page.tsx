@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import React, { useRef } from "react";
+import React from "react";
 import { ChevronLeft, Upload } from "lucide-react";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
@@ -33,8 +33,9 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ImageUploader } from "../../_components/image-uploader";
+
 import { z } from "zod";
+import ImageUploader from "../_components/image-uploader";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -62,10 +63,10 @@ export default function CreateCategoryPage() {
   const { control, handleSubmit } = form;
   const onCreateCategorySubmit: SubmitHandler<FormInputType> = async (data) => {
     console.log(data);
-    const { name, image, parentCategory } = data;
+    const { name, images, parentCategory } = data;
     const payload = {
       name,
-      image,
+      images,
       parentCategory,
     };
     console.log(`payload`, payload);
@@ -174,13 +175,29 @@ export default function CreateCategoryPage() {
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
               <Card x-chunk="dashboard-07-chunk-5">
                 <CardHeader>
-                  <CardTitle>Manuals & Instructions</CardTitle>
+                  <CardTitle>Images</CardTitle>
                   <CardDescription>
-                    Archive this product if it&apos;s no longer available.
+                    Upload category images.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ImageUploader />
+                <FormField
+                      control={form.control}
+                      name="images"
+                      render={({field}) => (
+                        <FormItem className="mx-auto ">
+                          <FormLabel                           
+                          >
+                            <h2 className="text-xl font-semibold tracking-tight">
+                            
+                            </h2>
+                          </FormLabel>
+                          <FormControl>
+                            <ImageUploader {...field} />
+                          </FormControl>                       
+                        </FormItem>
+                      )}
+                    />
                 </CardContent>
               </Card>
             </div>

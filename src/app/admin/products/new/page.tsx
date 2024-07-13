@@ -1,8 +1,6 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, Trash, Upload } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ChevronLeft, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -32,81 +30,92 @@ import {
 } from "@/components/ui/form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {SubmitHandler, useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import TemplateSelect from "../_components/template-select";
 import ManualsInstructionsUpload from "../_components/manuals-instructions-upload";
 import { productSchema } from "./schema";
-import ImageUploader from "../_components/image-uploader";
+import ProductImageUploader from "../_components/product-image-uploader";
+import { useFormState, useFormStatus } from "react-dom";
+import { createProduct } from "./actions";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
+import { LoadingButton } from "@/components/ui/loading-button";
+
+function SubmitButton({ isValid }: { isValid: boolean }) {
+  const { pending } = useFormStatus();
+
+  return (
+    <LoadingButton
+      type="submit"
+      disabled={!isValid || pending}
+      size="sm"
+      loading={pending}
+      className="text-xs font-semibold h-8"
+    >
+      Add New Product
+    </LoadingButton>
+  );
+}
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
   { label: "Products", href: "/admin/products" },
-  { label: "Create Product", href: "/admin/products/new", isCurrentPage: true },
+  {
+    label: "Add New Product",
+    href: "/admin/products/new",
+    isCurrentPage: true,
+  },
 ];
 
-const defaultValues = {
-  name: "",
-  description: "",
-  features: [
-    {
-      feature: "",
-    },
-  ],
-};
-
-type FormInputType = z.infer<typeof productSchema>;
-interface Feature {
-    feature: string;
-  }
+export type ProductFormInputType = z.infer<typeof productSchema>;
 
 export default function CreateProductPage() {
-  const form = useForm<FormInputType>({
-    resolver: zodResolver(productSchema),
-    defaultValues,
+  const router = useRouter();
+  const [state, formAction] = useFormState(createProduct, {
+    success: false,
+    message: "",
   });
 
-  const { control, handleSubmit } = form;
+  const { toast } = useToast();
 
-  const { fields, append, remove,} = useFieldArray(
-    {
-      control, // control props comes from useForm (optional: if you are using FormProvider)
-      name: "features", // unique name for your Field Array
+  const form = useForm<ProductFormInputType>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      features: [
+        {
+          feature: "",
+        },
+      ],
+    },
+  });
+
+  const { control } = form;
+  const { fields, append, remove } = useFieldArray<ProductFormInputType>({
+    control,
+    name: "features",
+  });
+
+  useEffect(() => {
+    if (state.success) {
+      toast({
+        title: "Product Saved",
+        description: "The product has been successfully saved.",
+        variant: "success",
+      });
+      router.push("/admin/products");
     }
-  );
-
-  const onCreateProductSubmit: SubmitHandler<FormInputType> = async (data) => {
-    console.log(data);
-    const {brandName,color, description,images, features,length, guarantee, height,material,model,name,tradePrice, type, unit, warranty, weight, width, status} = data;
-     const payload = {
-      brandName,
-      color:color ,
-      description,
-      features,
-      length,
-      guarantee,
-      height,
-      material,
-      model,
-      name,
-      tradePrice,
-      type,
-      unit,
-      warranty,
-      weight,
-      width,
-      status,
-      images
-     }            
-     console.log(`payload`, payload);
-  };
+  }, [state, router, toast]);
 
   return (
-    <ContentLayout title="Create Product">
+    <ContentLayout title="Add New Product">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <Form {...form}>
-        <form onSubmit={handleSubmit(onCreateProductSubmit)}>
+        <form action={formAction}>
           <div className="flex items-center gap-4 mb-5 mt-7">
             <Link href="/admin/products">
               <Button variant="outline" size="icon" className="h-7 w-7">
@@ -116,21 +125,20 @@ export default function CreateProductPage() {
             </Link>
 
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-              Pro Controller
+              Add New Product
             </h1>
-            <Badge variant="outline" className="ml-auto sm:ml-0">
+            {/* <Badge variant="outline" className="ml-auto sm:ml-0">
               In stock
-            </Badge>
+            </Badge> */}
             <div className="hidden items-center gap-2 md:ml-auto md:flex">
               <Button variant="outline" size="sm">
                 Discard
               </Button>
-              <Button
-                size="sm"
-                type="submit"              
-              >
+
+              <SubmitButton isValid={form.formState.isValid} />
+              {/* <Button size="sm" type="submit">
                 Save Product
-              </Button>
+              </Button> */}
             </div>
           </div>
 
@@ -162,8 +170,6 @@ export default function CreateProductPage() {
                           </FormItem>
                         )}
                       />
-                     
-
                     </div>
                     <div className="grid gap-3">
                       <FormField
@@ -201,7 +207,7 @@ export default function CreateProductPage() {
                     <div className="grid gap-3">
                       <FormField
                         control={control}
-                        name="brandName"
+                        name="brand"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Brand Name</FormLabel>
@@ -507,17 +513,17 @@ export default function CreateProductPage() {
                             name={`features.${index}.feature`}
                             control={control}
                             render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      placeholder="Enter features and benefits"
-                                      defaultValue={field.value || ""}
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Enter features and benefits"
+                                    defaultValue={field.value || ""}
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
                           />
                         </div>
                         <div className="grid gap-3 col-span-1">
@@ -641,7 +647,7 @@ export default function CreateProductPage() {
                 <CardContent>
                   <div className="grid gap-6">
                     <div className="grid gap-3">
-                    <FormField
+                      <FormField
                         control={form.control}
                         name="status"
                         render={({ field }) => (
@@ -658,9 +664,7 @@ export default function CreateProductPage() {
                               </FormControl>
                               <SelectContent>
                                 <SelectItem value="draft">Draft</SelectItem>
-                                <SelectItem value="active">
-                                  Active
-                                </SelectItem>
+                                <SelectItem value="active">Active</SelectItem>
                                 <SelectItem value="archived">
                                   Archived
                                 </SelectItem>
@@ -680,23 +684,20 @@ export default function CreateProductPage() {
                   <CardDescription>Upload product images here.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                <FormField
-                      control={form.control}
-                      name="images"
-                      render={({field}) => (
-                        <FormItem className="mx-auto ">
-                          <FormLabel                           
-                          >
-                            <h2 className="text-xl font-semibold tracking-tight">
-                            
-                            </h2>
-                          </FormLabel>
-                          <FormControl>
-                            <ImageUploader {...field} />
-                          </FormControl>                       
-                        </FormItem>
-                      )}
-                    />
+                  <FormField
+                    control={form.control}
+                    name="images"
+                    render={({ field }) => (
+                      <FormItem className="mx-auto ">
+                        <FormLabel>
+                          <h2 className="text-xl font-semibold tracking-tight"></h2>
+                        </FormLabel>
+                        <FormControl>
+                          <ProductImageUploader {...field} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </CardContent>
               </Card>
 
@@ -731,7 +732,8 @@ export default function CreateProductPage() {
             <Button variant="outline" size="sm">
               Discard
             </Button>
-            <Button size="sm">Save Product</Button>
+            <SubmitButton isValid={form.formState.isValid} />
+            {/* <Button size="sm">Save Product</Button> */}
           </div>
         </form>
       </Form>

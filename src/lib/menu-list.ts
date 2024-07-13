@@ -46,76 +46,32 @@ export function getMenuList(pathname: string): Group[] {
       groupLabel: "Products",
       menus: [
         {
-          href: "",
+          href: "/products",
           label: "Products",
-          // active: pathname.includes("/products"),
+          active: pathname.includes("/products"),
           icon: Package2,
-          submenus: [
-            {
-              href: "/products",
-              label: "All Products",
-              active: pathname === "/admin/products",
-            },
-            {
-              href: "/products/new",
-              label: "Create Product",
-              active: pathname === "/admin/products/new",
-            },
-          ],
+          submenus: [],
         },
         {
-          href: "",
+          href: "/templates",
           label: "Templates",
-          // active: pathname.includes("/templates"),
+          active: pathname.includes("/templates"),
           icon: Blocks,
-          submenus: [
-            {
-              href: "/templates",
-              label: "All Templates",
-              active: pathname === "/admin/templates",
-            },
-            {
-              href: "/templates/new",
-              label: "Create Template",
-              active: pathname === "/admin/templates/new",
-            },
-          ],
+          submenus: [],
         },
         {
-          href: "",
+          href: "/brands",
           label: "Brands",
-          // active: pathname.includes("/brands"),
+          active: pathname.includes("/brands"),
           icon: Award,
-          submenus: [
-            {
-              href: "/brands",
-              label: "All Brands",
-              active: pathname === "/admin/brands",
-            },
-            {
-              href: "/brands/new",
-              label: "Create Brand",
-              active: pathname === "/admin/brands/new",
-            },
-          ],
+          submenus: [],
         },
         {
           href: "/categories",
           label: "Categories",
-          // active: pathname.includes("/categories"),
+          active: pathname.includes("/categories"),
           icon: Network,
-          submenus: [
-            {
-              href: "/categories",
-              label: "All Categories",
-              active: pathname === "/admin/categories",
-            },
-            {
-              href: "/categories/new",
-              label: "Create Category",
-              active: pathname === "/admin/categories/new",
-            },
-          ],
+          submenus: [],
         },
 
         {
