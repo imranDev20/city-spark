@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { title } from "process";
 
 type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -32,8 +34,8 @@ export default function ProductTableRow({
   product: ProductWithRelations;
 }) {
   const router = useRouter();
-
   const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
   const handleDelete = () => {
     startTransition(async () => {
@@ -42,6 +44,12 @@ export default function ProductTableRow({
       if (result.success) {
         // Handle successful deletion (e.g., show a success message, update UI)
         console.log(result.message);
+
+        toast({
+          title: "Product Deleted",
+          description: "The product has been successfully deleted.",
+          variant: "destructive",
+        });
       } else {
         // Handle error (e.g., show an error message)
         console.error(result.message);
