@@ -5,10 +5,11 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { categorySchema } from "./schema";
 
-type categoryType = "PRIMARY"|"SECONDARY" | "TERTIARY" | "QUATERNARY";
+type CategoryType = "PRIMARY"|"SECONDARY" | "TERTIARY" | "QUATERNARY";
 
-export async function getCategory(categoryType: categoryType) {
+export async function getCategories(categoryType: CategoryType) { 
   try {
+    console.log(`categoryType`, categoryType);
     if(categoryType == 'PRIMARY') {
       throw new Error("Failed to fetch categoryies");
     }
