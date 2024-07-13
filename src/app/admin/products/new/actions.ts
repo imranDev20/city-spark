@@ -70,10 +70,17 @@ export async function createProduct(previousState: FormState, data: FormData) {
         width: 5.0,
         height: 3.0,
         material: "Plastic",
-        template: "Standard",
+
+        template: {
+          connect: {
+            id: "clyjswdsq0000nrkfwsxy3s0q",
+          },
+        },
+
         features: {
           create: [{ name: "Feature 1" }, { name: "Feature 2" }],
         },
+
         category: {
           connect: { id: "clyjb5z6z0003qhhhtywwiez8" }, // Replace with actual category ID
         },

@@ -24,6 +24,7 @@ model Category {
     childCategories Category[]   @relation("ChildCategories") // Opposite relation field
     products        Product[]
     createdAt       DateTime     @default(now())
+    updatedAt       DateTime     @updatedAt
 }
 
 enum CategoryType {
@@ -51,8 +52,8 @@ model Product {
     width            Float?
     height           Float?
     material         String?
-    templateId       String?
     template         Template? @relation(fields: [templateId], references: [id])
+    templateId       String?
     features         Feature[]
     category         Category  @relation(fields: [categoryId], references: [id])
     categoryId       String
@@ -62,6 +63,7 @@ model Product {
     manuals          String[]
     images           Image[]
     createdAt        DateTime  @default(now())
+    updatedAt        DateTime  @updatedAt
 }
 
 model Brand {
@@ -71,6 +73,7 @@ model Brand {
     website         String?
     countryOfOrigin String?
     createdAt       DateTime  @default(now())
+    updatedAt       DateTime  @updatedAt
 }
 
 model Feature {
@@ -79,6 +82,7 @@ model Feature {
     productId String
     product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
     createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 enum Status {
@@ -94,6 +98,7 @@ model Image {
     product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
     productId   String
     createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 }
 
 model Template {
@@ -102,6 +107,8 @@ model Template {
     description String?
     fields      Json[]
     products    Product[]
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
 }
 
 enum FieldType {
