@@ -73,7 +73,7 @@ export async function createProduct(previousState: FormState, data: FormData) {
 
         template: {
           connect: {
-            id: "clyjswdsq0000nrkfwsxy3s0q",
+            id: "clyjugd8l000011qghedzgbxo",
           },
         },
 
@@ -82,10 +82,10 @@ export async function createProduct(previousState: FormState, data: FormData) {
         },
 
         category: {
-          connect: { id: "clyjb5z6z0003qhhhtywwiez8" }, // Replace with actual category ID
+          connect: { id: "clyjum3y5000511qgrq4szisu" }, // Replace with actual category ID
         },
         brand: {
-          connect: { id: "clyjaoap30000daapsr8p341h" }, // Replace with actual brand ID
+          connect: { id: "clyjuid5c000111qgbiuuybyy" }, // Replace with actual brand ID
         },
         manuals: {
           set: ["manual1.pdf", "manual2.pdf"],
