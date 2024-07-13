@@ -24,6 +24,8 @@ model Category {
     parentId        String?
     childCategories Category[]   @relation("ChildCategories") // Opposite relation field
     products        Product[]
+    createdAt       DateTime     @default(now())
+    updatedAt       DateTime     @updatedAt
 }
 
 enum CategoryType {
@@ -60,20 +62,28 @@ model Product {
     status           Status    @default(DRAFT)
     manuals          String[]
     images           Image[]
+    createdAt        DateTime  @default(now())
+    updatedAt        DateTime  @updatedAt
 }
 
 // Brand model
 model Brand {
-    id       String    @id @default(cuid())
-    name     String
-    products Product[]
+    id              String    @id @default(cuid())
+    name            String
+    products        Product[]
+    website         String?
+    countryOfOrigin String?
+    createdAt       DateTime  @default(now())
+    updatedAt       DateTime  @updatedAt
 }
 
 model Feature {
-    id        String  @id @default(cuid())
+    id        String   @id @default(cuid())
     name      String
     productId String
-    product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+    product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 enum Status {
@@ -83,9 +93,11 @@ enum Status {
 }
 
 model Image {
-    id          String  @id @default(cuid())
+    id          String   @id @default(cuid())
     url         String // Store the URL to the image in Edgestore
     description String?
-    product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+    product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
     productId   String
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 }
