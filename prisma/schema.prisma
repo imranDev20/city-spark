@@ -1,104 +1,117 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+    provider  = "postgresql"
+    url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+    directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
 model Post {
-  id        String  @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean @default(false)
+    id        String  @id @default(cuid())
+    title     String
+    content   String?
+    published Boolean @default(false)
 }
 
 model Category {
-  id              String       @id @default(cuid())
-  name            String
-  type            CategoryType
-  parentCategory  Category?    @relation("ChildCategories", fields: [parentId], references: [id])
-  parentId        String?
-  childCategories Category[]   @relation("ChildCategories")
-  products        Product[]
+    id              String       @id @default(cuid())
+    name            String
+    type            CategoryType
+    parentCategory  Category?    @relation("ChildCategories", fields: [parentId], references: [id])
+    parentId        String?
+    childCategories Category[]   @relation("ChildCategories") // Opposite relation field
+    products        Product[]
+    createdAt       DateTime     @default(now())
+    updatedAt       DateTime     @updatedAt
 }
 
 enum CategoryType {
-  PRIMARY
-  SECONDARY
-  TERTIARY
-  QUATERNARY
+    PRIMARY
+    SECONDARY
+    TERTIARY
+    QUATERNARY
 }
 
 model Product {
-  id               String    @id @default(cuid())
-  name             String
-  description      String?
-  model            String?
-  type             String?
-  warranty         String?
-  guarantee        String?
-  tradePrice       Float?
-  contractPrice    Float?
-  promotionalPrice Float?
-  unit             String?
-  weight           Float?
-  color            String?
-  length           Float?
-  width            Float?
-  height           Float?
-  material         String?
-  templateId       String?
-  template         Template? @relation(fields: [templateId], references: [id])
-  features         Feature[]
-  category         Category  @relation(fields: [categoryId], references: [id])
-  categoryId       String
-  brand            Brand?    @relation(fields: [brandId], references: [id])
-  brandId          String?
-  status           Status    @default(DRAFT)
-  manuals          String[]
-  images           Image[]
+    id               String    @id @default(cuid())
+    name             String
+    description      String?
+    model            String?
+    type             String?
+    warranty         String?
+    guarantee        String?
+    tradePrice       Float?
+    contractPrice    Float?
+    promotionalPrice Float?
+    unit             String?
+    weight           Float?
+    color            String?
+    length           Float?
+    width            Float?
+    height           Float?
+    material         String?
+    template         Template? @relation(fields: [templateId], references: [id])
+    templateId       String?
+    features         Feature[]
+    category         Category  @relation(fields: [categoryId], references: [id])
+    categoryId       String
+    brand            Brand?    @relation(fields: [brandId], references: [id])
+    brandId          String?
+    status           Status    @default(DRAFT)
+    manuals          String[]
+    images           Image[]
+    createdAt        DateTime  @default(now())
+    updatedAt        DateTime  @updatedAt
 }
 
 model Brand {
-  id       String    @id @default(cuid())
-  name     String
-  products Product[]
+    id              String    @id @default(cuid())
+    name            String
+    products        Product[]
+    website         String?
+    countryOfOrigin String?
+    createdAt       DateTime  @default(now())
+    updatedAt       DateTime  @updatedAt
 }
 
 model Feature {
-  id        String  @id @default(cuid())
-  name      String
-  productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+    id        String   @id @default(cuid())
+    name      String
+    productId String
+    product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 enum Status {
-  DRAFT
-  ACTIVE
-  ARCHIVED
+    DRAFT
+    ACTIVE
+    ARCHIVED
 }
 
 model Image {
-  id          String  @id @default(cuid())
-  url         String
-  description String?
-  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId   String
+    id          String   @id @default(cuid())
+    url         String // Store the URL to the image in Edgestore
+    description String?
+    product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+    productId   String
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 }
 
 model Template {
-  id          String    @id @default(cuid())
-  name        String
-  description String?
-  fields      Json[]
-  products    Product[]
+    id          String    @id @default(cuid())
+    name        String
+    description String?
+    fields      Json[]
+    products    Product[]
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
 }
 
 enum FieldType {
-  TEXT
-  SELECT
+    TEXT
+    SELECT
 }
-
