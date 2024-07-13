@@ -1,14 +1,15 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { productSchema } from "./schema";
 import { revalidatePath } from "next/cache";
+import { ProductFormInputType } from "./new/page";
 
 export async function getProducts() {
   try {
     const products = await prisma.product.findMany({
       include: {
         images: true,
+        brand: true,
       },
     });
 
@@ -19,39 +20,8 @@ export async function getProducts() {
   }
 }
 
-export type FormState = {
-  message: string;
-};
-
-export async function createProduct(previousState: FormState, data: FormData) {
+export async function createProduct(data: ProductFormInputType) {
   try {
-    const formData = Object.fromEntries(data);
-
-    const parsedData = {
-      ...formData,
-      tradePrice: Number(formData.tradePrice),
-      contractPrice: Number(formData.contractPrice),
-      promotionalPrice: Number(formData.promotionalPrice),
-      weight: Number(formData.weight),
-      height: Number(formData.height),
-      width: Number(formData.width),
-      length: Number(formData.length),
-      brand: Number(formData.brand),
-    };
-
-    const validationResult = productSchema.safeParse(parsedData);
-
-    // If validation fails, return the error messages
-    if (!validationResult.success) {
-      const errorMessages = validationResult.error.errors
-        .map((err) => err.message)
-        .join(", ");
-      return {
-        message: `Validation failed: ${errorMessages}`,
-        success: false,
-      };
-    }
-
     const createdProduct = await prisma.product.create({
       data: {
         name: "Sample Product",
@@ -116,6 +86,37 @@ export async function createProduct(previousState: FormState, data: FormData) {
     console.log(error);
     return {
       message: "An error occurred while creating the product.",
+      success: false,
+    };
+  }
+}
+
+export async function deleteProduct(productId: string) {
+  try {
+    if (!productId) {
+      return {
+        message: "Product ID is required",
+        success: false,
+      };
+    }
+
+    // Delete the product
+    await prisma.product.delete({
+      where: {
+        id: productId,
+      },
+    });
+
+    revalidatePath("/admin/products");
+
+    return {
+      message: "Product deleted successfully!",
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    return {
+      message: "An error occurred while deleting the product.",
       success: false,
     };
   }
