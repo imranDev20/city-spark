@@ -37,28 +37,11 @@ import TemplateSelect from "../_components/template-select";
 import ManualsInstructionsUpload from "../_components/manuals-instructions-upload";
 import { productSchema } from "./schema";
 import ProductImageUploader from "../_components/product-image-uploader";
-import { useFormState, useFormStatus } from "react-dom";
 import { createProduct } from "../actions";
-import { startTransition, useEffect } from "react";
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { LoadingButton } from "@/components/ui/loading-button";
-
-function SubmitButton({ isValid }: { isValid: boolean }) {
-  const { pending } = useFormStatus();
-
-  return (
-    <LoadingButton
-      type="submit"
-      disabled={!isValid || pending}
-      size="sm"
-      loading={pending}
-      className="text-xs font-semibold h-8"
-    >
-      Add New Product
-    </LoadingButton>
-  );
-}
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -75,6 +58,8 @@ export type ProductFormInputType = z.infer<typeof productSchema>;
 export default function CreateProductPage() {
   const router = useRouter();
   const { toast } = useToast();
+
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<ProductFormInputType>({
     resolver: zodResolver(productSchema),
@@ -98,14 +83,14 @@ export default function CreateProductPage() {
   const onCreateProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
   ) => {
-    console.log(data);
-
     startTransition(async () => {
       const result = await createProduct(data);
 
       if (result.success) {
         // Handle successful deletion (e.g., show a success message, update UI)
         console.log(result.message);
+
+        router.push("/admin/products");
       } else {
         // Handle error (e.g., show an error message)
         console.error(result.message);
@@ -137,10 +122,15 @@ export default function CreateProductPage() {
                 Discard
               </Button>
 
-              <SubmitButton isValid={form.formState.isValid} />
-              {/* <Button size="sm" type="submit">
-                Save Product
-              </Button> */}
+              <LoadingButton
+                type="submit"
+                disabled={isPending}
+                size="sm"
+                loading={isPending}
+                className="text-xs font-semibold h-8"
+              >
+                Add New Product
+              </LoadingButton>
             </div>
           </div>
 
@@ -736,8 +726,16 @@ export default function CreateProductPage() {
             <Button variant="outline" size="sm">
               Discard
             </Button>
-            <SubmitButton isValid={form.formState.isValid} />
-            {/* <Button size="sm">Save Product</Button> */}
+
+            <LoadingButton
+              type="submit"
+              disabled={isPending}
+              size="sm"
+              loading={isPending}
+              className="text-xs font-semibold h-8"
+            >
+              Add New Product
+            </LoadingButton>
           </div>
         </form>
       </Form>
