@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ChevronLeft, Upload } from "lucide-react";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
@@ -36,7 +36,28 @@ import { Button } from "@/components/ui/button";
 
 import { z } from "zod";
 import ImageUploader from "../_components/image-uploader";
+import { CATEGORY_TYPE } from "@/constant/constants";
+import { LoadingButton } from "@/components/ui/loading-button";
+import { useFormState, useFormStatus } from "react-dom";
+import ParentCategory from "../_components/parent-category";
+import { useRouter } from "next/navigation";
+import { createCategory } from "./actions";
+import { useToast } from "@/components/ui/use-toast";
+function SubmitButton({ isValid }: { isValid: boolean }) {
+  const { pending } = useFormStatus();
 
+  return (
+    <LoadingButton
+      type="submit"
+      disabled={!isValid || pending}
+      size="sm"
+      loading={pending}
+      className="text-xs font-semibold h-8"
+    >
+      Add New Category
+    </LoadingButton>
+  );
+}
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
   { label: "Category", href: "/admin/categories" },
@@ -47,35 +68,51 @@ const breadcrumbItems = [
   },
 ];
 
-const defaultValues = {
-  name: "",
-  image: "",
-  parentCategory: "",
-};
 
-type FormInputType = z.infer<typeof categorySchema>;
 
+export type categoryFormInputType = z.infer<typeof categorySchema>;
+type categoryType = "SECONDARY" | "TERTIARY" | "QUATERNARY";
 export default function CreateCategoryPage() {
-  const form = useForm<z.infer<typeof categorySchema>>({
-    resolver: zodResolver(categorySchema),
-    defaultValues,
+  const router = useRouter();
+  const [state, formAction] = useFormState(createCategory, {
+    success: false,
+    message: "",
   });
-  const { control, handleSubmit } = form;
-  const onCreateCategorySubmit: SubmitHandler<FormInputType> = async (data) => {
-    console.log(data);
-    const { name, images, parentCategory } = data;
-    const payload = {
-      name,
-      images,
-      parentCategory,
-    };
-    console.log(`payload`, payload);
+  const { toast } = useToast();
+  const form = useForm<categoryFormInputType>({
+    resolver: zodResolver(categorySchema),
+    defaultValues:{
+      name: "",
+      images: "",
+      parentCategory: "",
+      type: ""      
+    },
+  });
+  const { control } = form;
+  useEffect(() => {
+    if (state.success) {
+      toast({
+        title: "Category Saved",
+        description: "The category has been successfully saved.",
+        variant: "success",
+      });
+      router.push("/admin/categories");
+    }
+  }, [state, router, toast]);
+  
+  const [isPrimary, setIsPrimary] = useState<boolean>(false);
+  const [typeValue, setTypeValue] = useState<string>("");
+  // const [categoryValue, setCategoryValue] = useState<FormInputType>(null);
+  const checkTypeValue = (value: string) => {
+    value == CATEGORY_TYPE[0] ? setIsPrimary(true) : setIsPrimary(false);
+    setTypeValue(value);
   };
+
   return (
     <ContentLayout title="Create Category">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <Form {...form}>
-        <form onSubmit={handleSubmit(onCreateCategorySubmit)}>
+        <form action={formAction}>
           <div className="flex items-center gap-4 mb-5 mt-7">
             <Link href="/admin/categories">
               <Button variant="outline" size="icon" className="h-7 w-7">
@@ -86,16 +123,12 @@ export default function CreateCategoryPage() {
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
               Create Category
             </h1>
-            <Badge variant="outline" className="ml-auto sm:ml-0">
-              Active
-            </Badge>
+
             <div className="hidden items-center gap-2 md:ml-auto md:flex">
               <Button variant="outline" size="sm">
                 Discard
               </Button>
-              <Button size="sm" type="submit">
-                Save Category
-              </Button>
+              <SubmitButton isValid={form.formState.isValid} />
             </div>
           </div>
 
@@ -109,7 +142,7 @@ export default function CreateCategoryPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-3">
+                  <div className="grid gap-3 grid-cols-2">
                     <FormField
                       control={form.control}
                       name="name"
@@ -126,42 +159,31 @@ export default function CreateCategoryPage() {
                         </FormItem>
                       )}
                     />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Parent Category</CardTitle>
-                  <CardDescription>
-                    Select the parent category if applicable.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-3">
                     <FormField
                       control={control}
-                      name="parentCategory"
+                      name="type"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Parent Category</FormLabel>
+                          <FormLabel>Category Type</FormLabel>
                           <Select
-                            onValueChange={field.onChange}
+                            onValueChange={(value) =>
+                              field.onChange(checkTypeValue(value))
+                            }
                             defaultValue={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select parent category" />
+                                <SelectValue placeholder="Select category type" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="primary">Primary</SelectItem>
-                              <SelectItem value="secondary">
-                                Secondary
-                              </SelectItem>
-                              <SelectItem value="tertiary">Tertiary</SelectItem>
-                              <SelectItem value="quaternary">
-                                Quaternary
-                              </SelectItem>
+                              {CATEGORY_TYPE.map((category) => {
+                                return (
+                                  <SelectItem key={category} value={category}>
+                                    {category}
+                                  </SelectItem>
+                                );
+                              })}
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -171,36 +193,41 @@ export default function CreateCategoryPage() {
                   </div>
                 </CardContent>
               </Card>
+              {!isPrimary && (
+                <ParentCategory type={typeValue} control={control} />
+              )}
             </div>
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
               <Card x-chunk="dashboard-07-chunk-5">
                 <CardHeader>
                   <CardTitle>Images</CardTitle>
-                  <CardDescription>
-                    Upload category images.
-                  </CardDescription>
+                  <CardDescription>Upload category images.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                <FormField
-                      control={form.control}
-                      name="images"
-                      render={({field}) => (
-                        <FormItem className="mx-auto ">
-                          <FormLabel                           
-                          >
-                            <h2 className="text-xl font-semibold tracking-tight">
-                            
-                            </h2>
-                          </FormLabel>
-                          <FormControl>
-                            <ImageUploader {...field} />
-                          </FormControl>                       
-                        </FormItem>
-                      )}
-                    />
+                  <FormField
+                    control={form.control}
+                    name="images"
+                    render={({ field }) => (
+                      <FormItem className="mx-auto ">
+                        <FormLabel>
+                          <h2 className="text-xl font-semibold tracking-tight"></h2>
+                        </FormLabel>
+                        <FormControl>
+                          <ImageUploader {...field} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </CardContent>
               </Card>
             </div>
+          </div>
+          <div className="flex items-center justify-center gap-2 md:hidden">
+            <Button variant="outline" size="sm">
+              Discard
+            </Button>
+            <SubmitButton isValid={form.formState.isValid} />
+            {/* <Button size="sm">Save Product</Button> */}
           </div>
         </form>
       </Form>
