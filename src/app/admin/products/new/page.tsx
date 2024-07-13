@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useFieldArray, useForm } from "react-hook-form";
+import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import TemplateSelect from "../_components/template-select";
@@ -38,8 +38,8 @@ import ManualsInstructionsUpload from "../_components/manuals-instructions-uploa
 import { productSchema } from "./schema";
 import ProductImageUploader from "../_components/product-image-uploader";
 import { useFormState, useFormStatus } from "react-dom";
-import { createProduct } from "./actions";
-import { useEffect } from "react";
+import { createProduct } from "../actions";
+import { startTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { LoadingButton } from "@/components/ui/loading-button";
@@ -74,11 +74,6 @@ export type ProductFormInputType = z.infer<typeof productSchema>;
 
 export default function CreateProductPage() {
   const router = useRouter();
-  const [state, formAction] = useFormState(createProduct, {
-    success: false,
-    message: "",
-  });
-
   const { toast } = useToast();
 
   const form = useForm<ProductFormInputType>({
@@ -94,28 +89,35 @@ export default function CreateProductPage() {
     },
   });
 
-  const { control } = form;
+  const { control, handleSubmit } = form;
   const { fields, append, remove } = useFieldArray<ProductFormInputType>({
     control,
     name: "features",
   });
 
-  useEffect(() => {
-    if (state.success) {
-      toast({
-        title: "Product Saved",
-        description: "The product has been successfully saved.",
-        variant: "success",
-      });
-      router.push("/admin/products");
-    }
-  }, [state, router, toast]);
+  const onCreateProductSubmit: SubmitHandler<ProductFormInputType> = async (
+    data
+  ) => {
+    console.log(data);
+
+    startTransition(async () => {
+      const result = await createProduct(data);
+
+      if (result.success) {
+        // Handle successful deletion (e.g., show a success message, update UI)
+        console.log(result.message);
+      } else {
+        // Handle error (e.g., show an error message)
+        console.error(result.message);
+      }
+    });
+  };
 
   return (
     <ContentLayout title="Add New Product">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <Form {...form}>
-        <form action={formAction}>
+        <form onSubmit={handleSubmit(onCreateProductSubmit)}>
           <div className="flex items-center gap-4 mb-5 mt-7">
             <Link href="/admin/products">
               <Button variant="outline" size="icon" className="h-7 w-7">
@@ -565,7 +567,9 @@ export default function CreateProductPage() {
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="clothing">Clothing</SelectItem>
+                          <SelectItem value="clothing" className="capitalize">
+                            clothing
+                          </SelectItem>
                           <SelectItem value="electronics">
                             Electronics
                           </SelectItem>
