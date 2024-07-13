@@ -70,15 +70,22 @@ export async function createProduct(previousState: FormState, data: FormData) {
         width: 5.0,
         height: 3.0,
         material: "Plastic",
-        template: "Standard",
+
+        template: {
+          connect: {
+            id: "clyjugd8l000011qghedzgbxo",
+          },
+        },
+
         features: {
           create: [{ name: "Feature 1" }, { name: "Feature 2" }],
         },
+
         category: {
-          connect: { id: "clyjb5z6z0003qhhhtywwiez8" }, // Replace with actual category ID
+          connect: { id: "clyjum3y5000511qgrq4szisu" }, // Replace with actual category ID
         },
         brand: {
-          connect: { id: "clyjaoap30000daapsr8p341h" }, // Replace with actual brand ID
+          connect: { id: "clyjuid5c000111qgbiuuybyy" }, // Replace with actual brand ID
         },
         manuals: {
           set: ["manual1.pdf", "manual2.pdf"],
