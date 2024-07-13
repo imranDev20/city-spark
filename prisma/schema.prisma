@@ -13,176 +13,67 @@ model Post {
     title     String
     content   String?
     published Boolean @default(false)
-    author    User?   @relation(fields: [authorId], references: [id])
-    authorId  String?
 }
 
-model User {
-    id             String          @id @default(cuid())
-    name           String
-    email          String          @unique
-    password       String
-    wishlist       WishlistItem[]
-    paymentMethods PaymentMethod[]
-    orders         Order[]
-    address        Address[]
-    createdAt      DateTime        @default(now()) @map(name: "created_at")
-    updatedAt      DateTime        @updatedAt @map(name: "updated_at")
-    Post           Post[]
-
-    @@map(name: "users")
+// Category model representing nested categories
+model Category {
+    id              String       @id @default(cuid())
+    name            String
+    type            CategoryType
+    parentCategory  Category?    @relation("ChildCategories", fields: [parentId], references: [id])
+    parentId        String?
+    childCategories Category[]   @relation("ChildCategories") // Opposite relation field
+    products        Product[]
 }
 
-model WishlistItem {
-    id        Int     @id @default(autoincrement())
-    product   Product @relation(fields: [productId], references: [id])
-    productId Int
-    user      User    @relation(fields: [userId], references: [id])
-    userId    String
-}
-
-model PaymentMethod {
-    id               Int      @id @default(autoincrement())
-    type             String
-    cardNumber       String
-    cardExpiryDate   DateTime
-    cardCvv          String
-    billingAddress   Address? @relation(fields: [billingAddressId], references: [id])
-    billingAddressId Int?
-    user             User     @relation(fields: [userId], references: [id])
-    userId           String
-}
-
-model Order {
-    id                Int             @id @default(autoincrement())
-    totalAmount       Float
-    status            OrderStatus
-    items             OrderItem[]
-    user              User            @relation(fields: [userId], references: [id])
-    userId            String
-    shippingAddress   Address?        @relation(fields: [shippingAddressId], references: [id])
-    shippingAddressId Int?
-    activities        OrderActivity[]
-    customerNote      String?
-    createdAt         DateTime        @default(now()) @map(name: "created_at")
-    updatedAt         DateTime        @updatedAt @map(name: "updated_at")
-    Shipment          Shipment?
-}
-
-model OrderItem {
-    id        Int     @id @default(autoincrement())
-    quantity  Int
-    price     Float
-    product   Product @relation(fields: [productId], references: [id])
-    productId Int
-    order     Order   @relation(fields: [orderId], references: [id])
-    orderId   Int
-}
-
-model OrderActivity {
-    id        Int          @id @default(autoincrement())
-    orderId   Int
-    order     Order        @relation(fields: [orderId], references: [id])
-    type      ActivityType
-    message   String
-    timestamp DateTime     @default(now())
-
-    @@map(name: "order_activities")
-}
-
-enum ActivityType {
-    ORDER_PLACED
-    ORDER_CONFIRMED
-    PAYMENT_RECEIVED
-    ORDER_PREPARING
-    ORDER_DISPATCHED
-    OUT_FOR_DELIVERY
-    DELIVERED
-    ORDER_CANCELLED
-    RETURN_REQUESTED
-    RETURN_APPROVED
-    RETURN_REJECTED
-    ITEM_RETURNED
-    REFUND_INITIATED
-    REFUND_COMPLETED
-    CUSTOMER_NOTE
-    ADMIN_NOTE
-}
-
-model Address {
-    id             Int             @id @default(autoincrement())
-    street         String
-    city           String
-    state          String
-    postalCode     String
-    country        String
-    users          User[]
-    paymentMethods PaymentMethod[]
-    orders         Order[]
-    Shipment       Shipment[]
+enum CategoryType {
+    PRIMARY
+    SECONDARY
+    TERTIARY
+    QUATERNARY
 }
 
 model Product {
-    id                Int            @id @default(autoincrement())
-    name              String
-    description       String?
-    tradePrice        Float?
-    contractPrice     Float?
-    promotionalPrice  Float?
-    unitOfMeasurement String?
-    weight            Float?
-    length            Float?
-    width             Float?
-    height            Float?
-    features          Feature[]
-    categories        Category[]
-    status            Status         @default(DRAFT)
-    images            Image[]
-    brand             Brand?         @relation(fields: [brandId], references: [id])
-    brandId           Int?
-    createdAt         DateTime       @default(now())
-    updatedAt         DateTime       @updatedAt
-    WishlistItem      WishlistItem[]
-    OrderItem         OrderItem[]
+    id               String    @id @default(cuid())
+    name             String
+    description      String?
+    model            String?
+    type             String?
+    warranty         String?
+    guarantee        String?
+    tradePrice       Float?
+    contractPrice    Float?
+    promotionalPrice Float?
+    unit             String?
+    weight           Float?
+    color            String?
+    length           Float?
+    width            Float?
+    height           Float?
+    material         String?
+    template         String?
+    features         Feature[]
+    category         Category  @relation(fields: [categoryId], references: [id])
+    categoryId       String
+    brand            Brand?    @relation(fields: [brandId], references: [id])
+    brandId          String?
+    status           Status    @default(DRAFT)
+    manuals          String[]
+    images           Image[]
+}
+
+// Brand model
+model Brand {
+    id       String    @id @default(cuid())
+    name     String
+    products Product[]
 }
 
 model Feature {
-    id        Int     @id @default(autoincrement())
+    id        String  @id @default(cuid())
     name      String
-    productId Int
-    product   Product @relation(fields: [productId], references: [id])
-}
-
-model Category {
-    id       Int        @id @default(autoincrement())
-    name     String
-    parentId Int?
-    parent   Category?  @relation("CategoryToParent", fields: [parentId], references: [id])
-    children Category[] @relation("CategoryToParent")
-    image    Image?
-    products Product[]
-
-    @@map(name: "categories")
-}
-
-model Image {
-    id         Int       @id @default(autoincrement())
-    url        String
-    productId  Int?
-    product    Product?  @relation(fields: [productId], references: [id])
-    categoryId Int?      @unique
-    category   Category? @relation(fields: [categoryId], references: [id])
-}
-
-model Brand {
-    id              Int       @id @default(autoincrement())
-    name            String
-    image           String?
-    countryOfOrigin String
-    website         String?
-    products        Product[]
-    createdAt       DateTime  @default(now())
-    updatedAt       DateTime  @updatedAt
+    productId String
+    product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 enum Status {
@@ -191,31 +82,10 @@ enum Status {
     ARCHIVED
 }
 
-enum OrderStatus {
-    PENDING
-    PROCESSING
-    SHIPPED
-    DELIVERED
-    CANCELLED
-}
-
-model Shipment {
-    id                Int            @id @default(autoincrement())
-    orderId           Int            @unique
-    order             Order          @relation(fields: [orderId], references: [id])
-    trackingNumber    String
-    carrier           String
-    shippedAt         DateTime?
-    deliveredAt       DateTime?
-    shipmentStatus    ShipmentStatus
-    shippingAddress   Address        @relation(fields: [shippingAddressId], references: [id])
-    shippingAddressId Int
-}
-
-enum ShipmentStatus {
-    PENDING
-    SHIPPED
-    OUT_FOR_DELIVERY
-    DELIVERED
-    CANCELLED
+model Image {
+    id          String  @id @default(cuid())
+    url         String // Store the URL to the image in Edgestore
+    description String?
+    product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+    productId   String
 }
