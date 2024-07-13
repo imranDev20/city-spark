@@ -85,7 +85,7 @@ export default function CreateCategoryPage() {
       name: "",
       images: "",
       parentCategory: "",
-      // type: 'PRIMARY'     
+      type: 'PRIMARY'     
     },
   });
   const { control } = form;
