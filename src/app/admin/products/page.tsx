@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { ContentLayout } from "../_components/content-layout";
 import DynamicBreadcrumb from "../_components/dynamic-breadcrumb";
 import { ProductPagination } from "./_components/product-pagination";
@@ -12,7 +13,11 @@ export default function AdminProductsPage() {
   return (
     <ContentLayout title="Products">
       <DynamicBreadcrumb items={breadcrumbItems} />
-      <ProductList />
+
+      <Suspense fallback="Loading...">
+        <ProductList />
+      </Suspense>
+
       <ProductPagination />
     </ContentLayout>
   );
