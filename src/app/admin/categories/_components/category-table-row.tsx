@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 import { MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useTransition } from "react";
+import { deleteCategory } from "../actions";
 export type CategoryWithRelations = Prisma.CategoryGetPayload<{
   include: {
     parentCategory: true;
@@ -28,6 +29,29 @@ export default function CategoriesTableRow({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const handleDelete = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    e.stopPropagation(); // Stop the propagation to prevent routing
+
+    startTransition(async () => {
+      const result = await deleteCategory(category.id);
+
+      if (result.success) {
+        toast({
+          title: "Category Deleted",
+          description: "The category has been successfully deleted.",
+          variant: "success",
+        });
+      } else {
+        // Handle error (e.g., show an error message)
+        toast({
+          title: "Error Deleting Category",
+          description:
+            "There was an error deleting the category. Please try again.",
+          variant: "destructive",
+        });
+      }
+    });
+  };
 
   return (
     <TableRow
@@ -38,11 +62,12 @@ export default function CategoriesTableRow({
       <TableCell className="font-medium flex-1">{category.name} </TableCell>
       <TableCell className="font-medium flex-1">{category.type} </TableCell>
       <TableCell className="font-medium flex-1">
-        {category?.parentCategory ?
-          `${category.parentCategory.name} (${
-            category.parentCategory.type.charAt(0).toUpperCase() +
-            category.parentCategory.type.slice(1).toLowerCase()
-          })` : 'N/A' }
+        {category?.parentCategory
+          ? `${category.parentCategory.name} (${
+              category.parentCategory.type.charAt(0).toUpperCase() +
+              category.parentCategory.type.slice(1).toLowerCase()
+            })`
+          : "N/A"}
       </TableCell>
 
       <TableCell className="font-medium flex-1">
@@ -61,7 +86,13 @@ export default function CategoriesTableRow({
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem>Edit</DropdownMenuItem>
-            <DropdownMenuItem>Delete</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                handleDelete(e);
+              }}
+            >
+              Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>
