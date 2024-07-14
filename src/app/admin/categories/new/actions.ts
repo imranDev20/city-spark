@@ -46,11 +46,12 @@ export async function createCategory(previousState: FormState, data: FormData) {
     const parsedData = {
       ...formData,
       name: formData.name,
-      type: formData.type,
-      images: formData.images,
-      parentId: Number(formData.parentCategory),    
+      type: formData.type ,
+      images: formData.images ?? '',
+      parentId: formData.parentCategory ?? 'clyjujnp8000311qgakv70hqs',    
     };
-
+    console.log(`parsedData`, parsedData);
+    
     const validationResult = categorySchema.safeParse(parsedData);
 
     // If validation fails, return the error messages
@@ -64,12 +65,12 @@ export async function createCategory(previousState: FormState, data: FormData) {
       };
     }
 
-    // const createdCategory = await prisma.category.create({
-    //   name: formData.name,
-    //   type: formData.type,
-    //   images: formData.images,
-    //   parentId: Number(formData.parentCategory)
-    // });
+    const createdCategory = await prisma.category.create({
+      name: formData.name,
+      type: formData.type,
+      images: formData.images,
+      parentId: Number(formData.parentCategory)
+    });
 
     revalidatePath("/admin/categories");
 
