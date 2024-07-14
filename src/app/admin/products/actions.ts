@@ -3,13 +3,14 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ProductFormInputType } from "./new/page";
+import { unstable_cache as cache } from "next/cache";
 
-export async function getProducts() {
+// Cached products for ssr in the list
+export const getProducts = cache(async () => {
   try {
     const products = await prisma.product.findMany({
       include: {
         images: true,
-        brand: true,
         category: true,
       },
     });
@@ -19,7 +20,7 @@ export async function getProducts() {
     console.error("Error fetching products:", error);
     throw new Error("Failed to fetch products");
   }
-}
+});
 
 export async function getBrands() {
   try {
@@ -64,6 +65,7 @@ export async function getProductById(productId: string) {
         images: true,
         brand: true,
         features: true,
+        template: true,
       },
     });
 
