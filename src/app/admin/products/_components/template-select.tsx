@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 
-
 export default function TemplateSelect() {
   const [value, setValue] = useState("");
   const [suggestions, setSuggestions] = useState<any[]>([]);

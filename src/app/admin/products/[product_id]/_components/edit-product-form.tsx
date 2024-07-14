@@ -46,7 +46,7 @@ import ProductImageUploader from "../../_components/product-image-uploader";
 import ManualsInstructionsUpload from "../../_components/manuals-instructions-upload";
 import { Prisma } from "@prisma/client";
 
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Spinner } from "@/components/ui/spinner";
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
@@ -63,11 +63,48 @@ export default function EditProductForm() {
   const router = useRouter();
   const { toast } = useToast();
   const params = useParams();
-
   const [isPending, startTransition] = useTransition();
+
   const form = useForm<ProductFormInputType>({
     resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      brand: "",
+      model: "",
+      type: "",
+      warranty: "",
+      guarantee: "",
+      tradePrice: 0,
+      contractPrice: 0,
+      promotionalPrice: 0,
+      unit: "",
+      weight: 0,
+      color: "",
+      length: 0,
+      width: 0,
+      height: 0,
+      material: "",
+      template: "",
+
+      features: [{ feature: "" }],
+
+      primaryCategory: "",
+      secondaryCategory: "",
+      tertiaryCategory: "",
+      quaternaryCategory: "",
+      status: "DRAFT",
+      images: [],
+      manuals: [],
+    },
   });
+
+  const {
+    reset,
+    control,
+    formState: { isDirty },
+    handleSubmit,
+  } = form;
 
   const {
     data: productDetails,
@@ -90,19 +127,56 @@ export default function EditProductForm() {
 
   useEffect(() => {
     if (productDetails) {
-      form.reset({
-        brand: productDetails.brandId || "",
-        color: productDetails.color || "",
-        name: productDetails.name || "",
-        description: productDetails.description || "",
-        features: productDetails.features.map((feature) => ({
-          feature: feature.name,
-        })),
+      const {
+        name,
+        contractPrice,
+        brandId,
+        color,
+        features,
+        description,
+        guarantee,
+        height,
+        length,
+        model,
+        material,
+        status,
+        promotionalPrice,
+        unit,
+        warranty,
+        width,
+        manuals,
+        tradePrice,
+        type,
+        weight,
+      } = productDetails;
+      reset({
+        name: name ?? "",
+        contractPrice: contractPrice ?? 0,
+        brand: brandId ?? "",
+        color: color ?? "",
+        features:
+          features?.map((feature) => ({
+            feature: feature.name,
+          })) ?? [],
+        height: height ?? 0,
+        description: description ?? "",
+        length: length ?? 0,
+        manuals: manuals ?? [],
+        guarantee: guarantee ?? "",
+        type: type ?? "",
+        material: material ?? "",
+        model: model ?? "",
+        tradePrice: tradePrice ?? 0,
+        unit: unit ?? "",
+        promotionalPrice: promotionalPrice ?? 0,
+        weight: weight ?? 0,
+        width: width ?? 0,
+        status: status ?? "DRAFT",
+        warranty: warranty ?? "",
       });
     }
-  }, [productDetails, form]);
+  }, [productDetails, reset]);
 
-  const { control, handleSubmit } = form;
   const { fields, append, remove } = useFieldArray<ProductFormInputType>({
     control,
     name: "features",
@@ -168,12 +242,12 @@ export default function EditProductForm() {
 
               <LoadingButton
                 type="submit"
-                disabled={isPending}
+                disabled={!isDirty || isPending}
                 size="sm"
                 loading={isPending}
                 className="text-xs font-semibold h-8"
               >
-                Add New Product
+                Save Product
               </LoadingButton>
             </div>
           </div>
@@ -453,7 +527,6 @@ export default function EditProductForm() {
                       />
                     </div>
                     <div className="grid gap-3 col-span-3">
-                      <Label htmlFor="dimensions">Dimensions (in meters)</Label>
                       <div className="grid gap-3 grid-cols-4">
                         <FormField
                           control={control}
@@ -553,7 +626,6 @@ export default function EditProductForm() {
                                 <FormControl>
                                   <Input
                                     placeholder="Enter features and benefits"
-                                    defaultValue={field.value || ""}
                                     {...field}
                                   />
                                 </FormControl>
@@ -686,7 +758,7 @@ export default function EditProductForm() {
                   <div className="grid gap-6">
                     <div className="grid gap-3">
                       <FormField
-                        control={form.control}
+                        control={control}
                         name="status"
                         render={({ field }) => (
                           <FormItem>
@@ -701,10 +773,13 @@ export default function EditProductForm() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="draft">Draft</SelectItem>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="archived">
+                                <SelectItem value="DRAFT">Draft</SelectItem>
+                                <SelectItem value="ACTIVE">Active</SelectItem>
+                                <SelectItem value="ARCHIVED">
                                   Archived
+                                </SelectItem>
+                                <SelectItem value="DISCONTINUED">
+                                  Discondinued
                                 </SelectItem>
                               </SelectContent>
                             </Select>
@@ -723,7 +798,7 @@ export default function EditProductForm() {
                 </CardHeader>
                 <CardContent>
                   <FormField
-                    control={form.control}
+                    control={control}
                     name="images"
                     render={({ field }) => (
                       <FormItem className="mx-auto ">
@@ -773,12 +848,12 @@ export default function EditProductForm() {
 
             <LoadingButton
               type="submit"
-              disabled={isPending}
+              disabled={!isDirty || isPending}
               size="sm"
               loading={isPending}
               className="text-xs font-semibold h-8"
             >
-              Add New Product
+              Save Product
             </LoadingButton>
           </div>
         </form>

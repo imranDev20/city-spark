@@ -23,6 +23,9 @@ export const productSchema = z.object({
   material: z.string().optional(),
   template: z.string().optional(),
 
+  shape: z.string().optional(),
+  volume: z.string().optional(),
+
   // changed it to an object
   features: z
     .array(
