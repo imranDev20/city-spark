@@ -33,11 +33,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
-import TemplateSelect from "../_components/template-select";
 import ManualsInstructionsUpload from "../_components/manuals-instructions-upload";
 import { productSchema } from "../schema";
 import ProductImageUploader from "../_components/product-image-uploader";
-import { createProduct, getBrands } from "../actions";
+import { createProduct, getBrands, getTemplates } from "../actions";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
@@ -74,7 +73,10 @@ export type ProductFormInputType = z.infer<typeof productSchema>;
 export default function CreateProductPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [openComboBox, setOpenComboBox] = useState<boolean>(false);
+  const [openBrandComboBox, setOpenBrandComboBox] = useState<boolean>(false);
+  const [openTemplateComboBox, setOpenTemplateComboBox] =
+    useState<boolean>(false);
+
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<ProductFormInputType>({
@@ -88,6 +90,8 @@ export default function CreateProductPage() {
           feature: "",
         },
       ],
+
+      category: "",
     },
   });
 
@@ -103,8 +107,18 @@ export default function CreateProductPage() {
     isError: isBrandsError,
     error: brandsError,
   } = useQuery({
-    queryKey: ["product-details"],
+    queryKey: ["brands"],
     queryFn: async () => await getBrands(),
+  });
+
+  const {
+    data: templates,
+    isPending: isTemplatesPending,
+    isError: isTemplatesError,
+    error: templatesError,
+  } = useQuery({
+    queryKey: ["templates"],
+    queryFn: async () => await getTemplates(),
   });
 
   const onCreateProductSubmit: SubmitHandler<ProductFormInputType> = async (
@@ -130,7 +144,7 @@ export default function CreateProductPage() {
     });
   };
 
-  if (isBrandsPending) {
+  if (isBrandsPending || isTemplatesPending) {
     return (
       <div className="min-h-[100vh] flex justify-center items-center">
         <Spinner className="text-secondary" size="large" />
@@ -138,9 +152,11 @@ export default function CreateProductPage() {
     );
   }
 
-  if (isBrandsError) {
+  if (isBrandsError || isTemplatesError) {
     return (
-      <ContentLayout title="Edit Product">{brandsError.message}</ContentLayout>
+      <ContentLayout title="Edit Product">
+        {brandsError?.message || templatesError?.message}
+      </ContentLayout>
     );
   }
 
@@ -256,14 +272,14 @@ export default function CreateProductPage() {
                             <FormLabel>Brand Name</FormLabel>
                             <FormControl>
                               <Popover
-                                open={openComboBox}
-                                onOpenChange={setOpenComboBox}
+                                open={openBrandComboBox}
+                                onOpenChange={setOpenBrandComboBox}
                               >
                                 <PopoverTrigger asChild>
                                   <Button
                                     variant="outline"
                                     role="combobox"
-                                    aria-expanded={openComboBox}
+                                    aria-expanded={openBrandComboBox}
                                     className="w-[200px] justify-between"
                                   >
                                     {field.value ? (
@@ -292,7 +308,7 @@ export default function CreateProductPage() {
                                             value={brand.name}
                                             onSelect={() => {
                                               form.setValue("brand", brand.id);
-                                              // setOpenComboBox(false);
+                                              setOpenBrandComboBox(false);
                                             }}
                                           >
                                             <Check
@@ -620,56 +636,61 @@ export default function CreateProductPage() {
                     <div className="col-span-4 grid gap-3">
                       <FormField
                         control={control}
-                        name="brand"
+                        name="template"
                         render={({ field }) => (
                           <FormItem className="w-full flex flex-col gap-1">
-                            <FormLabel>Brand Name</FormLabel>
+                            <FormLabel>Templates</FormLabel>
                             <FormControl>
-                              <Popover>
+                              <Popover
+                                open={openTemplateComboBox}
+                                onOpenChange={setOpenTemplateComboBox}
+                              >
                                 <PopoverTrigger asChild>
                                   <Button
                                     variant="outline"
                                     role="combobox"
-                                    aria-expanded={openComboBox}
-                                    className="w-[200px] justify-between"
+                                    className="justify-between"
                                   >
                                     {field.value ? (
-                                      brands.find(
-                                        (brand) => brand.id === field.value
+                                      templates.find(
+                                        (template) =>
+                                          template.id === field.value
                                       )?.name
                                     ) : (
                                       <p className="text-muted-foreground">
-                                        Select a brand
+                                        Select a template
                                       </p>
                                     )}
                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                   </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-[200px] p-0">
+                                <PopoverContent className="w-[200px] p-0 popover-content-width-same-as-its-trigger">
                                   <Command>
-                                    <CommandInput placeholder="Search brands..." />
+                                    <CommandInput placeholder="Search templates..." />
                                     <CommandList>
                                       <CommandEmpty>
                                         No framework found.
                                       </CommandEmpty>
                                       <CommandGroup>
-                                        {brands.map((brand) => (
+                                        {templates.map((template) => (
                                           <CommandItem
-                                            key={brand.id}
-                                            value={brand.name}
+                                            key={template.id}
+                                            value={template.name}
                                             onSelect={() => {
-                                              form.setValue("brand", brand.id);
+                                              field.onChange(template.id);
+
+                                              setOpenTemplateComboBox(false);
                                             }}
                                           >
                                             <Check
                                               className={cn(
                                                 "mr-2 h-4 w-4",
-                                                field.value === brand.id
+                                                field.value === template.id
                                                   ? "opacity-100"
                                                   : "opacity-0"
                                               )}
                                             />
-                                            {brand.name}
+                                            {template.name}
                                           </CommandItem>
                                         ))}
                                       </CommandGroup>
