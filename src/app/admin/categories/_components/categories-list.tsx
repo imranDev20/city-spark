@@ -50,6 +50,9 @@ export default async function CategoriesList() {
           <Table>
             <TableHeader>
               <TableRow>
+              <TableHead className="hidden w-[120px] sm:table-cell">
+                  <span className="sr-only">Image</span>
+                </TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Parent</TableHead>

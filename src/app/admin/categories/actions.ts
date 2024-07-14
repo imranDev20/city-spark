@@ -44,8 +44,9 @@ export async function createCategory(data: CategoryFormInputType) {
       data: {
         name: data.name,
         type:"SECONDARY",
-        // images: data.images ?? '',
+      
         parentId:"clyjujnp8000311qgakv70hqs",
+       
       },
     });
     console.log(`createdCategory`, createdCategory);
@@ -70,7 +71,7 @@ export async function getAllCategories() {
 
       include: {
         parentCategory:true,
-        
+        // image:true
       }
     });
 
