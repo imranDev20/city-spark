@@ -80,3 +80,33 @@ export async function getAllCategories() {
     throw new Error("Failed to fetch categories");
   }
 }
+export async function deleteCategory(categoryId: string) {
+  try {
+    if (!categoryId) {
+      return {
+        message: "Category ID is required",
+        success: false,
+      };
+    }
+
+    // Delete the product
+    await prisma.category.delete({
+      where: {
+        id: categoryId,
+      },
+    });
+
+    revalidatePath("/admin/categories");
+
+    return {
+      message: "Category deleted successfully!",
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error deleting category:", error);
+    return {
+      message: "An error occurred while deleting the category.",
+      success: false,
+    };
+  }
+}
