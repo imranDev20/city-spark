@@ -1,6 +1,3 @@
-import { Package2 } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
 import {
@@ -28,12 +25,12 @@ export default async function ProductList() {
                 <TableHead className="hidden w-[120px] sm:table-cell">
                   <span className="sr-only">Image</span>
                 </TableHead>
-                <TableHead>Name</TableHead>
+                <TableHead className="w-[30%]">Name</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="hidden md:table-cell">Brand</TableHead>
                 <TableHead className="hidden md:table-cell">Price</TableHead>
 
-                <TableHead className="hidden md:table-cell">
+                <TableHead className="hidden md:table-cell w-[16%]">
                   Created at
                 </TableHead>
                 <TableHead>
