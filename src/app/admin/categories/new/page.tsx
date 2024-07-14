@@ -85,7 +85,7 @@ export default function CreateCategoryPage() {
       name: "",
       images: "",
       parentCategory: "",
-      type: 'PRIMARY'     
+      type: 'PRIMARY',    
     },
   });
   const { control } = form;
@@ -170,9 +170,9 @@ export default function CreateCategoryPage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {CATEGORY_TYPE.map((category) => {
+                              {CATEGORY_TYPE.map((category, index) => {
                                 return (
-                                  <SelectItem  key={category} value={category}>
+                                  <SelectItem  key={index} value={category}>
                                     {category.charAt(0).toUpperCase() + category.slice(1).toLowerCase()}
                                   </SelectItem>
                                 );
