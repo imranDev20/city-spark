@@ -50,7 +50,7 @@ import { ContentLayout } from "@/app/admin/_components/content-layout";
 import DynamicBreadcrumb from "@/app/admin/_components/dynamic-breadcrumb";
 import ProductImageUploader from "../../_components/product-image-uploader";
 import ManualsInstructionsUpload from "../../_components/manuals-instructions-upload";
-import { Prisma } from "@prisma/client";
+import { Brand, Category, Prisma, Template } from "@prisma/client";
 
 import { useQuery } from "@tanstack/react-query";
 import { Spinner } from "@/components/ui/spinner";
@@ -79,7 +79,17 @@ export type ProductWithRelations = Prisma.ProductGetPayload<{
 
 export type ProductFormInputType = z.infer<typeof productSchema>;
 
-export default function EditProductForm() {
+export default function EditProductForm({
+  productDetails,
+  categories,
+  templates,
+  brands,
+}: {
+  productDetails: ProductWithRelations;
+  brands: Brand[];
+  categories: Category[];
+  templates: Template[];
+}) {
   const router = useRouter();
   const { toast } = useToast();
   const params = useParams();
@@ -129,54 +139,6 @@ export default function EditProductForm() {
     formState: { isDirty },
     handleSubmit,
   } = form;
-
-  const {
-    data: productDetails,
-    isPending: isProductDetailsPending,
-    isFetching: isProductDetailsFetching,
-    isError: isProductDetailsError,
-    error: productDetailsError,
-  } = useQuery({
-    queryKey: ["product-details"],
-    queryFn: async () => await getProductById(params.product_id as string),
-    refetchOnWindowFocus: false,
-  });
-
-  const {
-    data: brands,
-    isPending: isBrandsPending,
-    isError: isBrandsError,
-    error: brandsError,
-  } = useQuery({
-    queryKey: ["brands"],
-    queryFn: async () => await getBrands(),
-    refetchOnWindowFocus: false,
-    enabled: !!productDetails,
-  });
-
-  const {
-    data: templates,
-    isPending: isTemplatesPending,
-    isError: isTemplatesError,
-    error: templatesError,
-  } = useQuery({
-    queryKey: ["templates"],
-    queryFn: async () => await getTemplates(),
-    refetchOnWindowFocus: false,
-    enabled: !!productDetails,
-  });
-
-  const {
-    data: categories,
-    isPending: isCategoriesPending,
-    isError: isCategoriesError,
-    error: categoriesError,
-  } = useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => await getCategories(),
-    refetchOnWindowFocus: false,
-    enabled: !!productDetails,
-  });
 
   const { fields, append, remove } = useFieldArray<ProductFormInputType>({
     control,
@@ -271,30 +233,6 @@ export default function EditProductForm() {
       });
     }
   };
-
-  if (isProductDetailsPending || isProductDetailsFetching) {
-    return (
-      <div className="min-h-[100vh] flex justify-center items-center">
-        <Spinner className="text-secondary" size="large" />
-      </div>
-    );
-  }
-
-  if (
-    isProductDetailsError ||
-    isBrandsError ||
-    isTemplatesError ||
-    isCategoriesError
-  ) {
-    return (
-      <ContentLayout title="Edit Product">
-        {productDetailsError?.message ||
-          brandsError?.message ||
-          templatesError?.message ||
-          categoriesError?.message}
-      </ContentLayout>
-    );
-  }
 
   return (
     <ContentLayout title="Edit Product">
