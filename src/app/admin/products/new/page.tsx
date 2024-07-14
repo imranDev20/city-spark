@@ -109,6 +109,7 @@ export default function CreateProductPage() {
   } = useQuery({
     queryKey: ["brands"],
     queryFn: async () => await getBrands(),
+    refetchOnWindowFocus: false,
   });
 
   const {
@@ -119,6 +120,7 @@ export default function CreateProductPage() {
   } = useQuery({
     queryKey: ["templates"],
     queryFn: async () => await getTemplates(),
+    refetchOnWindowFocus: false,
   });
 
   const onCreateProductSubmit: SubmitHandler<ProductFormInputType> = async (
