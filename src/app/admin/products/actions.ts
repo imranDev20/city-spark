@@ -22,40 +22,37 @@ export const getProducts = cache(async () => {
   }
 });
 
-export async function getBrands() {
+export const getBrands = cache(async () => {
   try {
     const brands = await prisma.brand.findMany({});
-    console.log(brands);
     return brands;
   } catch (error) {
     console.error("Error fetching products:", error);
     throw new Error("Failed to fetch products");
   }
-}
+});
 
-export async function getTemplates() {
+export const getTemplates = cache(async () => {
   try {
     const templates = await prisma.template.findMany({});
-    console.log(templates);
     return templates;
   } catch (error) {
     console.error("Error fetching templates:", error);
     throw new Error("Failed to fetch templates");
   }
-}
+});
 
-export async function getCategories() {
+export const getCategories = cache(async () => {
   try {
     const categories = await prisma.category.findMany({});
-    console.log(categories);
     return categories;
   } catch (error) {
     console.error("Error fetching categories:", error);
     throw new Error("Failed to fetch categories");
   }
-}
+});
 
-export async function getProductById(productId: string) {
+export const getProductById = cache(async (productId: string) => {
   try {
     const product = await prisma.product.findUnique({
       where: {
@@ -78,7 +75,7 @@ export async function getProductById(productId: string) {
     console.error("Error fetching product:", error);
     throw new Error("Failed to fetch product");
   }
-}
+});
 
 export async function createProduct(data: ProductFormInputType) {
   try {
