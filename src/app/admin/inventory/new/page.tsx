@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft} from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -25,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { productSchema } from "../../products/new/schema";
+import { productSchema } from "../../products/schema";
 
 import { useRef } from "react";
 import { Switch } from "@/components/ui/switch";

@@ -20,6 +20,30 @@ export async function getProducts() {
   }
 }
 
+export async function getProductById(productId: string) {
+  try {
+    const product = await prisma.product.findUnique({
+      where: {
+        id: productId,
+      },
+      include: {
+        images: true,
+        brand: true,
+        features: true,
+      },
+    });
+
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
+    return product;
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    throw new Error("Failed to fetch product");
+  }
+}
+
 export async function createProduct(data: ProductFormInputType) {
   try {
     console.log(`data`, data);
