@@ -16,7 +16,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { getCategories } from "../new/actions";
+
 import { CategoryType } from "./parent-category";
 import {
   FormControl,
@@ -29,6 +29,7 @@ import { useFormContext } from "react-hook-form";
 import { CategoryFormInputType } from "../new/page";
 import { cn } from "@/lib/utils";
 import { Category } from "@prisma/client";
+import { getCategories } from "../actions";
 
 interface DataType {
   id: string;

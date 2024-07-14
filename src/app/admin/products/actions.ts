@@ -46,7 +46,7 @@ export async function getProductById(productId: string) {
 
 export async function createProduct(data: ProductFormInputType) {
   try {
-    console.log(`data`, data);
+    // console.log(`data`, data);
     const createdProduct = await prisma.product.create({
       data: {
         name: "Sample Product",
