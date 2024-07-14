@@ -1,12 +1,14 @@
 // Import necessary components and libraries
 "use client";
-import React, { Fragment, useState } from "react";
-import { ContentLayout } from "../../_components/content-layout";
-import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, Trash } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -15,18 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray, SubmitHandler } from "react-hook-form";
-import { z } from "zod";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -35,6 +26,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronLeft, Trash } from "lucide-react";
+import Link from "next/link";
+import { Fragment, startTransition, useState } from "react";
+import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
+import { z } from "zod";
+import { ContentLayout } from "../../_components/content-layout";
+import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
+import { createTemplate } from "../actions";
 import { templateSchema } from "./schema";
 
 // Define breadcrumb items
@@ -50,7 +51,7 @@ const breadcrumbItems = [
 
 // Define default values and types
 
-type FormInputType = z.infer<typeof templateSchema>;
+export type FormInputType = z.infer<typeof templateSchema>;
 
 // Component definition
 export default function CreateTemplatePage() {
@@ -90,6 +91,14 @@ export default function CreateTemplatePage() {
       description,
     };
     console.log(`payload`, payload);
+    startTransition(async () => {
+      const result = await createTemplate(data);
+      if (result.success) {
+        console.log(result.message);
+      } else {
+        console.error(result.message);
+      }
+    });
   };
 
   return (
