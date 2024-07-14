@@ -28,7 +28,9 @@ export default async function ProductList() {
                 <TableHead className="w-[30%]">Name</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="hidden md:table-cell">Brand</TableHead>
-                <TableHead className="hidden md:table-cell">Price</TableHead>
+                <TableHead className="hidden md:table-cell w-[19%]">
+                  Category
+                </TableHead>
 
                 <TableHead className="hidden md:table-cell w-[16%]">
                   Created at

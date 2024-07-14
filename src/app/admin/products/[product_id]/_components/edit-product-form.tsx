@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronLeft, Trash } from "lucide-react";
+import { Check, ChevronLeft, ChevronsUpDown, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -38,16 +38,36 @@ import { useParams, useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { productSchema } from "../../schema";
-import { createProduct, getProductById } from "../../actions";
+import {
+  createProduct,
+  getBrands,
+  getCategories,
+  getProductById,
+  getTemplates,
+  updateProduct,
+} from "../../actions";
 import { ContentLayout } from "@/app/admin/_components/content-layout";
 import DynamicBreadcrumb from "@/app/admin/_components/dynamic-breadcrumb";
-import TemplateSelect from "../../_components/template-select";
 import ProductImageUploader from "../../_components/product-image-uploader";
 import ManualsInstructionsUpload from "../../_components/manuals-instructions-upload";
 import { Prisma } from "@prisma/client";
 
 import { useQuery } from "@tanstack/react-query";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -64,6 +84,11 @@ export default function EditProductForm() {
   const { toast } = useToast();
   const params = useParams();
   const [isPending, startTransition] = useTransition();
+  const [openBrandComboBox, setOpenBrandComboBox] = useState<boolean>(false);
+  const [openTemplateComboBox, setOpenTemplateComboBox] =
+    useState<boolean>(false);
+  const [openCategoriesComboBox, setOpenCategoriesComboBox] =
+    useState<boolean>(false);
 
   const form = useForm<ProductFormInputType>({
     resolver: zodResolver(productSchema),
@@ -93,6 +118,7 @@ export default function EditProductForm() {
       secondaryCategory: "",
       tertiaryCategory: "",
       quaternaryCategory: "",
+      category: "",
       status: "DRAFT",
       images: [],
       manuals: [],
@@ -109,6 +135,7 @@ export default function EditProductForm() {
   const {
     data: productDetails,
     isPending: isProductDetailsPending,
+    isFetching: isProductDetailsFetching,
     isError: isProductDetailsError,
     error: productDetailsError,
   } = useQuery({
@@ -148,6 +175,7 @@ export default function EditProductForm() {
         tradePrice,
         type,
         weight,
+        categoryId,
       } = productDetails;
       reset({
         name: name ?? "",
@@ -173,9 +201,40 @@ export default function EditProductForm() {
         width: width ?? 0,
         status: status ?? "DRAFT",
         warranty: warranty ?? "",
+        category: categoryId ?? "",
       });
     }
   }, [productDetails, reset]);
+
+  const {
+    data: brands,
+    isPending: isBrandsPending,
+    isError: isBrandsError,
+    error: brandsError,
+  } = useQuery({
+    queryKey: ["brands"],
+    queryFn: async () => await getBrands(),
+  });
+
+  const {
+    data: templates,
+    isPending: isTemplatesPending,
+    isError: isTemplatesError,
+    error: templatesError,
+  } = useQuery({
+    queryKey: ["templates"],
+    queryFn: async () => await getTemplates(),
+  });
+
+  const {
+    data: categories,
+    isPending: isCategoriesPending,
+    isError: isCategoriesError,
+    error: categoriesError,
+  } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => await getCategories(),
+  });
 
   const { fields, append, remove } = useFieldArray<ProductFormInputType>({
     control,
@@ -185,22 +244,34 @@ export default function EditProductForm() {
   const onEditProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
   ) => {
-    startTransition(async () => {
-      const result = await createProduct(data);
+    if (productDetails?.id) {
+      startTransition(async () => {
+        const result = await updateProduct(productDetails?.id, data);
 
-      if (result.success) {
-        // Handle successful deletion (e.g., show a success message, update UI)
-        console.log(result.message);
-
-        router.push("/admin/products");
-      } else {
-        // Handle error (e.g., show an error message)
-        console.error(result.message);
-      }
-    });
+        if (result.success) {
+          toast({
+            title: "Success",
+            description: result.message,
+            variant: "success",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: result.message,
+            variant: "destructive",
+          });
+        }
+      });
+    }
   };
 
-  if (isProductDetailsPending) {
+  if (
+    isProductDetailsPending ||
+    isProductDetailsFetching ||
+    isBrandsPending ||
+    isCategoriesPending ||
+    isTemplatesPending
+  ) {
     return (
       <div className="min-h-[100vh] flex justify-center items-center">
         <Spinner className="text-secondary" size="large" />
@@ -208,10 +279,18 @@ export default function EditProductForm() {
     );
   }
 
-  if (isProductDetailsError) {
+  if (
+    isProductDetailsError ||
+    isBrandsError ||
+    isTemplatesError ||
+    isCategoriesError
+  ) {
     return (
       <ContentLayout title="Edit Product">
-        {productDetailsError.message}
+        {productDetailsError?.message ||
+          brandsError?.message ||
+          templatesError?.message ||
+          categoriesError?.message}
       </ContentLayout>
     );
   }
@@ -322,10 +401,62 @@ export default function EditProductForm() {
                           <FormItem>
                             <FormLabel>Brand Name</FormLabel>
                             <FormControl>
-                              <Input
-                                placeholder="Enter brand name"
-                                {...field}
-                              />
+                              <Popover
+                                open={openBrandComboBox}
+                                onOpenChange={setOpenBrandComboBox}
+                              >
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={openBrandComboBox}
+                                    className="w-[200px] justify-between"
+                                  >
+                                    {field.value ? (
+                                      brands.find(
+                                        (brand) => brand.id === field.value
+                                      )?.name
+                                    ) : (
+                                      <p className="text-muted-foreground">
+                                        Select a brand
+                                      </p>
+                                    )}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[200px] p-0">
+                                  <Command>
+                                    <CommandInput placeholder="Search brands..." />
+                                    <CommandList>
+                                      <CommandEmpty>
+                                        No framework found.
+                                      </CommandEmpty>
+                                      <CommandGroup>
+                                        {brands.map((brand) => (
+                                          <CommandItem
+                                            key={brand.id}
+                                            value={brand.name}
+                                            onSelect={() => {
+                                              form.setValue("brand", brand.id);
+                                              setOpenBrandComboBox(false);
+                                            }}
+                                          >
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                field.value === brand.id
+                                                  ? "opacity-100"
+                                                  : "opacity-0"
+                                              )}
+                                            />
+                                            {brand.name}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -599,8 +730,76 @@ export default function EditProductForm() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-6 sm:grid-cols-6">
-                    <div className="grid gap-3 col-span-6">
-                      <TemplateSelect />
+                    <div className="col-span-4 grid gap-3">
+                      <FormField
+                        control={control}
+                        name="template"
+                        render={({ field }) => (
+                          <FormItem className="w-full flex flex-col gap-1">
+                            <FormLabel>Templates</FormLabel>
+                            <FormControl>
+                              <Popover
+                                open={openTemplateComboBox}
+                                onOpenChange={setOpenTemplateComboBox}
+                              >
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    className="justify-between"
+                                  >
+                                    {field.value ? (
+                                      templates.find(
+                                        (template) =>
+                                          template.id === field.value
+                                      )?.name
+                                    ) : (
+                                      <p className="text-muted-foreground">
+                                        Select a template
+                                      </p>
+                                    )}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="p-0 popover-content-width-same-as-its-trigger">
+                                  <Command>
+                                    <CommandInput placeholder="Search templates..." />
+                                    <CommandList>
+                                      <CommandEmpty>
+                                        No framework found.
+                                      </CommandEmpty>
+                                      <CommandGroup>
+                                        {templates.map((template) => (
+                                          <CommandItem
+                                            key={template.id}
+                                            value={template.name}
+                                            onSelect={() => {
+                                              field.onChange(template.id);
+
+                                              setOpenTemplateComboBox(false);
+                                            }}
+                                          >
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                field.value === template.id
+                                                  ? "opacity-100"
+                                                  : "opacity-0"
+                                              )}
+                                            />
+                                            {template.name}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </div>
                 </CardContent>
@@ -662,29 +861,76 @@ export default function EditProductForm() {
                   <CardTitle>Categories</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-6 sm:grid-cols-3">
-                    <div className="grid gap-3">
-                      <Label htmlFor="primary-category">Primary</Label>
-                      <Select>
-                        <SelectTrigger
-                          id="primary-category"
-                          aria-label="Select primary category"
-                        >
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="clothing" className="capitalize">
-                            clothing
-                          </SelectItem>
-                          <SelectItem value="electronics">
-                            Electronics
-                          </SelectItem>
-                          <SelectItem value="accessories">
-                            Accessories
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    <FormField
+                      control={control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem className="grid gap-1">
+                          <FormLabel>Category</FormLabel>
+                          <FormControl>
+                            <Popover
+                              open={openCategoriesComboBox}
+                              onOpenChange={setOpenCategoriesComboBox}
+                            >
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  aria-expanded={openBrandComboBox}
+                                  className="justify-between"
+                                >
+                                  {field.value ? (
+                                    categories.find(
+                                      (brand) => brand.id === field.value
+                                    )?.name
+                                  ) : (
+                                    <p className="text-muted-foreground">
+                                      Select a brand
+                                    </p>
+                                  )}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="p-0">
+                                <Command>
+                                  <CommandInput placeholder="Search brands..." />
+                                  <CommandList>
+                                    <CommandEmpty>
+                                      No framework found.
+                                    </CommandEmpty>
+                                    <CommandGroup>
+                                      {categories.map((category) => (
+                                        <CommandItem
+                                          key={category.id}
+                                          value={category.name}
+                                          onSelect={() => {
+                                            field.onChange(category.id);
+                                            setOpenCategoriesComboBox(false);
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              field.value === category.id
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            )}
+                                          />
+                                          {category.name}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <div className="grid gap-3">
                       <Label htmlFor="secondary-category">
                         Secondary (optional)
