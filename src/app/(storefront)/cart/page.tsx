@@ -36,10 +36,18 @@ export default function CartPage() {
               <Card key={data.id}>
                 <div className="grid grid-cols-[25%_60%_10%] gap-2">
                   <div className="">
-                    <img
+                    {/* <img
                       src={data?.src}
                       alt={data?.name}
                       className="w-full h-40 "
+                    /> */}
+                    <Image 
+                    src={data?.src}
+                    alt={data?.name}
+                    width="233"
+                    height="160"
+                    loading="lazy"
+                     className="aspect-square rounded-md object-cover"
                     />
                   </div>
                   <div className="flex flex-col gap-4 ps-3 ">

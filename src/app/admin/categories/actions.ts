@@ -8,7 +8,7 @@ import { CategoryFormInputType } from "./new/page";
 
 type CategoryType = "PRIMARY" | "SECONDARY" | "TERTIARY" | "QUATERNARY";
 
-export async function getCategories(categoryType: CategoryType) {
+export async function getParentCategories(categoryType: CategoryType) {
   try {
     console.log(`categoryType`, categoryType);
     if (categoryType == "PRIMARY") {
@@ -59,6 +59,102 @@ export async function createCategory(data: CategoryFormInputType) {
     console.log(error);
     return {
       message: "An error occurred while creating the category.",
+      success: false,
+    };
+  }
+}
+
+export async function getAllCategories() {
+  try {
+    const categories = await prisma.category.findMany({
+
+      include: {
+        parentCategory:true,
+        
+      }
+    });
+
+    return categories;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    throw new Error("Failed to fetch categories");
+  }
+}
+export async function deleteCategory(categoryId: string) {
+  try {
+    if (!categoryId) {
+      return {
+        message: "Category ID is required",
+        success: false,
+      };
+    }
+
+    // Delete the product
+    await prisma.category.delete({
+      where: {
+        id: categoryId,
+      },
+    });
+
+    revalidatePath("/admin/categories");
+
+    return {
+      message: "Category deleted successfully!",
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error deleting category:", error);
+    return {
+      message: "An error occurred while deleting the category.",
+      success: false,
+    };
+  }
+}
+
+export async function getCategoryById(categoryId: string) {
+  try {
+ 
+    const category = await prisma.category.findUnique({
+      where: {
+        id: categoryId,
+      },
+      include: {
+        parentCategory:true,
+      }
+     
+    });
+   
+    return category;
+  } catch (error) {
+    console.error("Error fetching category:", error);
+    throw new Error("Failed to fetch category");
+  }
+}
+export async function updateCategoryById(categoryId: string, data: CategoryFormInputType) {
+  try {
+    const category = await prisma.category.update({
+      where: {
+        id: categoryId,
+      },
+      data: {
+        name: data.name,
+        type: 'SECONDARY',
+        parentId: 'clyjujnp8000311qgakv70hqs'
+        
+      },
+    });
+
+    revalidatePath("/admin/categories");
+    return {
+      message: "Category created successfully!",
+      data: category,
+      success: true,
+    };
+  
+  } catch (error) {
+    console.error("Error updating category:", error);
+    return {
+      message: "An error occurred while updating the category.",
       success: false,
     };
   }
