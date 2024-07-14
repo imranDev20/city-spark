@@ -6,7 +6,7 @@ export const productSchema = z.object({
     .string()
     .min(1, "Product description is required and can't be left blank"),
 
-  brand: z.number().optional(),
+  brand: z.string().optional(),
   model: z.string().optional(),
   type: z.string().optional(),
   warranty: z.string().optional(),
