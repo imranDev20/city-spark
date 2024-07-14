@@ -111,9 +111,7 @@ export default function EditProductForm() {
       height: 0,
       material: "",
       template: "",
-
       features: [{ feature: "" }],
-
       primaryCategory: "",
       secondaryCategory: "",
       tertiaryCategory: "",
@@ -141,6 +139,48 @@ export default function EditProductForm() {
   } = useQuery({
     queryKey: ["product-details"],
     queryFn: async () => await getProductById(params.product_id as string),
+    refetchOnWindowFocus: false,
+  });
+
+  const {
+    data: brands,
+    isPending: isBrandsPending,
+    isError: isBrandsError,
+    error: brandsError,
+  } = useQuery({
+    queryKey: ["brands"],
+    queryFn: async () => await getBrands(),
+    refetchOnWindowFocus: false,
+    enabled: !!productDetails,
+  });
+
+  const {
+    data: templates,
+    isPending: isTemplatesPending,
+    isError: isTemplatesError,
+    error: templatesError,
+  } = useQuery({
+    queryKey: ["templates"],
+    queryFn: async () => await getTemplates(),
+    refetchOnWindowFocus: false,
+    enabled: !!productDetails,
+  });
+
+  const {
+    data: categories,
+    isPending: isCategoriesPending,
+    isError: isCategoriesError,
+    error: categoriesError,
+  } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => await getCategories(),
+    refetchOnWindowFocus: false,
+    enabled: !!productDetails,
+  });
+
+  const { fields, append, remove } = useFieldArray<ProductFormInputType>({
+    control,
+    name: "features",
   });
 
   const breadcrumbItems = [
@@ -206,41 +246,6 @@ export default function EditProductForm() {
     }
   }, [productDetails, reset]);
 
-  const {
-    data: brands,
-    isPending: isBrandsPending,
-    isError: isBrandsError,
-    error: brandsError,
-  } = useQuery({
-    queryKey: ["brands"],
-    queryFn: async () => await getBrands(),
-  });
-
-  const {
-    data: templates,
-    isPending: isTemplatesPending,
-    isError: isTemplatesError,
-    error: templatesError,
-  } = useQuery({
-    queryKey: ["templates"],
-    queryFn: async () => await getTemplates(),
-  });
-
-  const {
-    data: categories,
-    isPending: isCategoriesPending,
-    isError: isCategoriesError,
-    error: categoriesError,
-  } = useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => await getCategories(),
-  });
-
-  const { fields, append, remove } = useFieldArray<ProductFormInputType>({
-    control,
-    name: "features",
-  });
-
   const onEditProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
   ) => {
@@ -265,13 +270,7 @@ export default function EditProductForm() {
     }
   };
 
-  if (
-    isProductDetailsPending ||
-    isProductDetailsFetching ||
-    isBrandsPending ||
-    isCategoriesPending ||
-    isTemplatesPending
-  ) {
+  if (isProductDetailsPending || isProductDetailsFetching) {
     return (
       <div className="min-h-[100vh] flex justify-center items-center">
         <Spinner className="text-secondary" size="large" />
@@ -413,7 +412,7 @@ export default function EditProductForm() {
                                     className="w-[200px] justify-between"
                                   >
                                     {field.value ? (
-                                      brands.find(
+                                      brands?.find(
                                         (brand) => brand.id === field.value
                                       )?.name
                                     ) : (
@@ -432,12 +431,12 @@ export default function EditProductForm() {
                                         No framework found.
                                       </CommandEmpty>
                                       <CommandGroup>
-                                        {brands.map((brand) => (
+                                        {brands?.map((brand) => (
                                           <CommandItem
                                             key={brand.id}
                                             value={brand.name}
                                             onSelect={() => {
-                                              form.setValue("brand", brand.id);
+                                              field.onChange("brand", brand.id);
                                               setOpenBrandComboBox(false);
                                             }}
                                           >
@@ -749,7 +748,7 @@ export default function EditProductForm() {
                                     className="justify-between"
                                   >
                                     {field.value ? (
-                                      templates.find(
+                                      templates?.find(
                                         (template) =>
                                           template.id === field.value
                                       )?.name
@@ -769,7 +768,7 @@ export default function EditProductForm() {
                                         No framework found.
                                       </CommandEmpty>
                                       <CommandGroup>
-                                        {templates.map((template) => (
+                                        {templates?.map((template) => (
                                           <CommandItem
                                             key={template.id}
                                             value={template.name}
@@ -881,7 +880,7 @@ export default function EditProductForm() {
                                   className="justify-between"
                                 >
                                   {field.value ? (
-                                    categories.find(
+                                    categories?.find(
                                       (brand) => brand.id === field.value
                                     )?.name
                                   ) : (
@@ -900,7 +899,7 @@ export default function EditProductForm() {
                                       No framework found.
                                     </CommandEmpty>
                                     <CommandGroup>
-                                      {categories.map((category) => (
+                                      {categories?.map((category) => (
                                         <CommandItem
                                           key={category.id}
                                           value={category.name}
