@@ -37,7 +37,7 @@ import TemplateSelect from "../_components/template-select";
 import ManualsInstructionsUpload from "../_components/manuals-instructions-upload";
 import { productSchema } from "../schema";
 import ProductImageUploader from "../_components/product-image-uploader";
-import { createProduct } from "../actions";
+import { createProduct, getBrands } from "../actions";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
@@ -56,6 +56,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { Spinner } from "@/components/ui/spinner";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -64,29 +66,6 @@ const breadcrumbItems = [
     label: "Add New Product",
     href: "/admin/products/new",
     isCurrentPage: true,
-  },
-];
-
-const frameworks = [
-  {
-    value: "next.js",
-    label: "Next.js",
-  },
-  {
-    value: "sveltekit",
-    label: "SvelteKit",
-  },
-  {
-    value: "nuxt.js",
-    label: "Nuxt.js",
-  },
-  {
-    value: "remix",
-    label: "Remix",
-  },
-  {
-    value: "astro",
-    label: "Astro",
   },
 ];
 
@@ -102,6 +81,7 @@ export default function CreateProductPage() {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: "",
+      status: "DRAFT",
       description: "",
       features: [
         {
@@ -117,6 +97,16 @@ export default function CreateProductPage() {
     name: "features",
   });
 
+  const {
+    data: brands,
+    isPending: isBrandsPending,
+    isError: isBrandsError,
+    error: brandsError,
+  } = useQuery({
+    queryKey: ["product-details"],
+    queryFn: async () => await getBrands(),
+  });
+
   const onCreateProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
   ) => {
@@ -124,16 +114,35 @@ export default function CreateProductPage() {
       const result = await createProduct(data);
 
       if (result.success) {
-        // Handle successful deletion (e.g., show a success message, update UI)
-        console.log(result.message);
-
+        toast({
+          title: "Success",
+          description: result.message,
+          variant: "success",
+        });
         router.push("/admin/products");
       } else {
-        // Handle error (e.g., show an error message)
-        console.error(result.message);
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        });
       }
     });
   };
+
+  if (isBrandsPending) {
+    return (
+      <div className="min-h-[100vh] flex justify-center items-center">
+        <Spinner className="text-secondary" size="large" />
+      </div>
+    );
+  }
+
+  if (isBrandsError) {
+    return (
+      <ContentLayout title="Edit Product">{brandsError.message}</ContentLayout>
+    );
+  }
 
   return (
     <ContentLayout title="Add New Product">
@@ -166,7 +175,7 @@ export default function CreateProductPage() {
                 loading={isPending}
                 className="text-xs font-semibold h-8"
               >
-                Add New Product
+                Save Product
               </LoadingButton>
             </div>
           </div>
@@ -188,7 +197,9 @@ export default function CreateProductPage() {
                         name="name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Name</FormLabel>
+                            <FormLabel>
+                              Name <span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 placeholder="Enter product name"
@@ -206,7 +217,10 @@ export default function CreateProductPage() {
                         name="description"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Description</FormLabel>
+                            <FormLabel>
+                              Descriptions{" "}
+                              <span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Textarea
                                 id="description"
@@ -253,13 +267,12 @@ export default function CreateProductPage() {
                                     className="w-[200px] justify-between"
                                   >
                                     {field.value ? (
-                                      frameworks.find(
-                                        (framework) =>
-                                          framework.value === field.value
-                                      )?.label
+                                      brands.find(
+                                        (brand) => brand.id === field.value
+                                      )?.name
                                     ) : (
                                       <p className="text-muted-foreground">
-                                        Type Brand Name...
+                                        Select a brand
                                       </p>
                                     )}
                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -267,34 +280,30 @@ export default function CreateProductPage() {
                                 </PopoverTrigger>
                                 <PopoverContent className="w-[200px] p-0">
                                   <Command>
-                                    <CommandInput placeholder="Search framework..." />
+                                    <CommandInput placeholder="Search brands..." />
                                     <CommandList>
                                       <CommandEmpty>
                                         No framework found.
                                       </CommandEmpty>
                                       <CommandGroup>
-                                        {frameworks.map((framework) => (
+                                        {brands.map((brand) => (
                                           <CommandItem
-                                            key={framework.value}
-                                            value={framework.value}
-                                            onSelect={(currentValue) => {
-                                              field.onChange(
-                                                currentValue === field.value
-                                                  ? ""
-                                                  : currentValue
-                                              );
-                                              setOpenComboBox(false);
+                                            key={brand.id}
+                                            value={brand.name}
+                                            onSelect={() => {
+                                              form.setValue("brand", brand.id);
+                                              // setOpenComboBox(false);
                                             }}
                                           >
                                             <Check
                                               className={cn(
                                                 "mr-2 h-4 w-4",
-                                                field.value === framework.value
+                                                field.value === brand.id
                                                   ? "opacity-100"
                                                   : "opacity-0"
                                               )}
                                             />
-                                            {framework.label}
+                                            {brand.name}
                                           </CommandItem>
                                         ))}
                                       </CommandGroup>
@@ -503,8 +512,7 @@ export default function CreateProductPage() {
                       />
                     </div>
                     <div className="grid gap-3 col-span-3">
-                      <Label htmlFor="dimensions">Dimensions (in meters)</Label>
-                      <div className="grid gap-3 grid-cols-4">
+                      <div className="grid gap-3 grid-cols-3">
                         <FormField
                           control={control}
                           name="length"
@@ -544,7 +552,11 @@ export default function CreateProductPage() {
                             </FormItem>
                           )}
                         />
+                      </div>
+                    </div>
 
+                    <div className="grid gap-3 col-span-3">
+                      <div className="grid gap-3 grid-cols-3">
                         <FormField
                           control={control}
                           name="material"
@@ -556,6 +568,34 @@ export default function CreateProductPage() {
                                   placeholder="Enter material"
                                   {...field}
                                 />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={control}
+                          name="volume"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Volume</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter volume" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={control}
+                          name="shape"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Shape</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter shape" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -574,10 +614,74 @@ export default function CreateProductPage() {
                     Please provide the physical specifications.
                   </CardDescription>
                 </CardHeader>
+
                 <CardContent>
                   <div className="grid gap-6 sm:grid-cols-6">
-                    <div className="grid gap-3 col-span-6">
-                      <TemplateSelect />
+                    <div className="col-span-4 grid gap-3">
+                      <FormField
+                        control={control}
+                        name="brand"
+                        render={({ field }) => (
+                          <FormItem className="w-full flex flex-col gap-1">
+                            <FormLabel>Brand Name</FormLabel>
+                            <FormControl>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={openComboBox}
+                                    className="w-[200px] justify-between"
+                                  >
+                                    {field.value ? (
+                                      brands.find(
+                                        (brand) => brand.id === field.value
+                                      )?.name
+                                    ) : (
+                                      <p className="text-muted-foreground">
+                                        Select a brand
+                                      </p>
+                                    )}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[200px] p-0">
+                                  <Command>
+                                    <CommandInput placeholder="Search brands..." />
+                                    <CommandList>
+                                      <CommandEmpty>
+                                        No framework found.
+                                      </CommandEmpty>
+                                      <CommandGroup>
+                                        {brands.map((brand) => (
+                                          <CommandItem
+                                            key={brand.id}
+                                            value={brand.name}
+                                            onSelect={() => {
+                                              form.setValue("brand", brand.id);
+                                            }}
+                                          >
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                field.value === brand.id
+                                                  ? "opacity-100"
+                                                  : "opacity-0"
+                                              )}
+                                            />
+                                            {brand.name}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </div>
                 </CardContent>
@@ -603,7 +707,6 @@ export default function CreateProductPage() {
                                 <FormControl>
                                   <Input
                                     placeholder="Enter features and benefits"
-                                    defaultValue={field.value || ""}
                                     {...field}
                                   />
                                 </FormControl>
@@ -751,9 +854,9 @@ export default function CreateProductPage() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="draft">Draft</SelectItem>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="archived">
+                                <SelectItem value="DRAFT">Draft</SelectItem>
+                                <SelectItem value="ACTIVE">Active</SelectItem>
+                                <SelectItem value="ARCHIVED">
                                   Archived
                                 </SelectItem>
                               </SelectContent>
@@ -828,7 +931,7 @@ export default function CreateProductPage() {
               loading={isPending}
               className="text-xs font-semibold h-8"
             >
-              Add New Product
+              Save Product
             </LoadingButton>
           </div>
         </form>
