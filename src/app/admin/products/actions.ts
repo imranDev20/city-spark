@@ -10,6 +10,7 @@ export async function getProducts() {
       include: {
         images: true,
         brand: true,
+        category: true,
       },
     });
 
@@ -42,6 +43,17 @@ export async function getTemplates() {
   }
 }
 
+export async function getCategories() {
+  try {
+    const categories = await prisma.category.findMany({});
+    console.log(categories);
+    return categories;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    throw new Error("Failed to fetch categories");
+  }
+}
+
 export async function getProductById(productId: string) {
   try {
     const product = await prisma.product.findUnique({
@@ -68,7 +80,7 @@ export async function getProductById(productId: string) {
 
 export async function createProduct(data: ProductFormInputType) {
   try {
-    // console.log(`data`, data);
+    console.log(`data`, data);
     const createdProduct = await prisma.product.create({
       data: {
         name: "Sample Product",
@@ -102,7 +114,7 @@ export async function createProduct(data: ProductFormInputType) {
           connect: { id: "clyjum3y5000511qgrq4szisu" }, // Replace with actual category ID
         },
         brand: {
-          connect: { id: "clyjuid5c000111qgbiuuybyy" }, // Replace with actual brand ID
+          connect: { id: "clylgt71m00009gvbup4hari6" }, // Replace with actual brand ID
         },
         manuals: {
           set: ["manual1.pdf", "manual2.pdf"],
@@ -133,6 +145,93 @@ export async function createProduct(data: ProductFormInputType) {
     console.log(error);
     return {
       message: "An error occurred while creating the product.",
+      success: false,
+    };
+  }
+}
+
+export async function updateProduct(
+  productId: string,
+  data: ProductFormInputType
+) {
+  try {
+    const updatedProduct = await prisma.product.update({
+      where: { id: productId },
+      data: {
+        name: data.name,
+        description: data.description,
+        model: data.model,
+        type: data.type,
+        warranty: data.warranty,
+        guarantee: data.guarantee,
+        tradePrice: data.tradePrice,
+        contractPrice: data.contractPrice,
+        promotionalPrice: data.promotionalPrice,
+        unit: data.unit,
+        weight: data.weight,
+        color: data.color,
+        length: data.length,
+        width: data.width,
+        height: data.height,
+        material: data.material,
+        status: data.status ?? "DRAFT",
+
+        template: data.template
+          ? {
+              connect: { id: data.template },
+            }
+          : undefined,
+
+        features: {
+          deleteMany: {}, // Clear existing features
+          create:
+            data.features?.map((feature) => ({ name: feature.feature })) || [],
+        },
+
+        category: {
+          connect: {
+            id: data.category,
+          },
+        },
+
+        brand: data.brand
+          ? {
+              connect: { id: data.brand },
+            }
+          : undefined,
+
+        manuals: {
+          set: data.manuals ?? [],
+        },
+
+        // we can delete the current images from edgesotre
+        // and at the same time delete it from db
+        // then create new image urls
+
+        // images: {
+        //   deleteMany: {}, // Clear existing images
+        //   create:
+        //     data.images?.map((url) => ({
+        //       url,
+        //       description: "Product Image",
+        //     })) || [],
+        // },
+
+        updatedAt: new Date(), // Ensures updatedAt is set to the current date and time
+      },
+    });
+
+    revalidatePath("/admin/products");
+
+    return {
+      message: "Product updated successfully!",
+      data: updatedProduct,
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return {
+      message: "An error occurred while updating the product.",
       success: false,
     };
   }
