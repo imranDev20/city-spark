@@ -216,6 +216,7 @@ export default function EditProductForm() {
         type,
         weight,
         categoryId,
+        templateId,
       } = productDetails;
       reset({
         name: name ?? "",
@@ -242,6 +243,7 @@ export default function EditProductForm() {
         status: status ?? "DRAFT",
         warranty: warranty ?? "",
         category: categoryId ?? "",
+        template: templateId ?? "",
       });
     }
   }, [productDetails, reset]);
@@ -436,7 +438,7 @@ export default function EditProductForm() {
                                             key={brand.id}
                                             value={brand.name}
                                             onSelect={() => {
-                                              field.onChange("brand", brand.id);
+                                              field.onChange(brand.id);
                                               setOpenBrandComboBox(false);
                                             }}
                                           >
