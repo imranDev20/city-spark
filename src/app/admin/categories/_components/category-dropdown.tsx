@@ -29,7 +29,7 @@ import { useFormContext } from "react-hook-form";
 import { CategoryFormInputType } from "../new/page";
 import { cn } from "@/lib/utils";
 import { Category } from "@prisma/client";
-import { getCategories } from "../actions";
+import { getParentCategories } from "../actions";
 
 interface DataType {
   id: string;
@@ -62,7 +62,7 @@ export default function CategoryDropdown({
   useEffect(() => {
     const getCategoryByType = async () => {
       try {
-        const data = await getCategories(categoryValue);
+        const data = await getParentCategories(categoryValue);
         setCategories(data);
         console.log(`data`, data); // Ensure categories is always an array
       } catch (error) {

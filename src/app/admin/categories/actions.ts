@@ -8,7 +8,7 @@ import { CategoryFormInputType } from "./new/page";
 
 type CategoryType = "PRIMARY" | "SECONDARY" | "TERTIARY" | "QUATERNARY";
 
-export async function getCategories(categoryType: CategoryType) {
+export async function getParentCategories(categoryType: CategoryType) {
   try {
     console.log(`categoryType`, categoryType);
     if (categoryType == "PRIMARY") {
@@ -61,5 +61,22 @@ export async function createCategory(data: CategoryFormInputType) {
       message: "An error occurred while creating the category.",
       success: false,
     };
+  }
+}
+
+export async function getAllCategories() {
+  try {
+    const categories = await prisma.category.findMany({
+
+      include: {
+        parentCategory:true,
+        
+      }
+    });
+
+    return categories;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    throw new Error("Failed to fetch categories");
   }
 }
