@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 
 import "./globals.css";
+import QueryProvider from "@/providers/query-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -46,12 +47,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={GeistSans.className}>
         {/* <ThemeProvider attribute="class" defaultTheme="light" enableSystem> */}
-        <EdgeStoreProvider>
-          <ThemeProvider attribute="class" defaultTheme="light">
-            {children}
-            <Toaster />
-          </ThemeProvider>
-        </EdgeStoreProvider>
+        <QueryProvider>
+          <EdgeStoreProvider>
+            <ThemeProvider attribute="class" defaultTheme="light">
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </EdgeStoreProvider>
+        </QueryProvider>
       </body>
     </html>
   );

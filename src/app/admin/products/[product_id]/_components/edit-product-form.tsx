@@ -1,6 +1,7 @@
 "use client";
+
 import Link from "next/link";
-import { Check, ChevronLeft, ChevronsUpDown, Trash } from "lucide-react";
+import { ChevronLeft, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,7 +20,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ContentLayout } from "../../_components/content-layout";
 import {
   Form,
   FormControl,
@@ -32,84 +32,75 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
-import TemplateSelect from "../_components/template-select";
-import ManualsInstructionsUpload from "../_components/manuals-instructions-upload";
-import { productSchema } from "../schema";
-import ProductImageUploader from "../_components/product-image-uploader";
-import { createProduct } from "../actions";
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+
+import { useEffect, useState, useTransition } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { LoadingButton } from "@/components/ui/loading-button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { productSchema } from "../../schema";
+import { createProduct, getProductById } from "../../actions";
+import { ContentLayout } from "@/app/admin/_components/content-layout";
+import DynamicBreadcrumb from "@/app/admin/_components/dynamic-breadcrumb";
+import TemplateSelect from "../../_components/template-select";
+import ProductImageUploader from "../../_components/product-image-uploader";
+import ManualsInstructionsUpload from "../../_components/manuals-instructions-upload";
+import { Prisma } from "@prisma/client";
 
-const breadcrumbItems = [
-  { label: "Dashboard", href: "/admin" },
-  { label: "Products", href: "/admin/products" },
-  {
-    label: "Add New Product",
-    href: "/admin/products/new",
-    isCurrentPage: true,
-  },
-];
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Spinner } from "@/components/ui/spinner";
 
-const frameworks = [
-  {
-    value: "next.js",
-    label: "Next.js",
-  },
-  {
-    value: "sveltekit",
-    label: "SvelteKit",
-  },
-  {
-    value: "nuxt.js",
-    label: "Nuxt.js",
-  },
-  {
-    value: "remix",
-    label: "Remix",
-  },
-  {
-    value: "astro",
-    label: "Astro",
-  },
-];
+export type ProductWithRelations = Prisma.ProductGetPayload<{
+  include: {
+    images: true;
+    brand: true;
+    features: true;
+  };
+}>;
 
 export type ProductFormInputType = z.infer<typeof productSchema>;
 
-export default function CreateProductPage() {
+export default function EditProductForm() {
   const router = useRouter();
   const { toast } = useToast();
-  const [openComboBox, setOpenComboBox] = useState<boolean>(false);
-  const [isPending, startTransition] = useTransition();
+  const params = useParams();
 
+  const [isPending, startTransition] = useTransition();
   const form = useForm<ProductFormInputType>({
     resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      features: [
-        {
-          feature: "",
-        },
-      ],
-    },
   });
+
+  const {
+    data: productDetails,
+    isPending: isProductDetailsPending,
+    isError: isProductDetailsError,
+    error: productDetailsError,
+  } = useQuery({
+    queryKey: ["product-details"],
+    queryFn: async () => await getProductById(params.product_id as string),
+  });
+
+  const breadcrumbItems = [
+    { label: "Dashboard", href: "/admin" },
+    { label: "Products", href: "/admin/products" },
+    {
+      label: `${productDetails?.name}`,
+      isCurrentPage: true,
+    },
+  ];
+
+  useEffect(() => {
+    if (productDetails) {
+      form.reset({
+        brand: productDetails.brandId || "",
+        color: productDetails.color || "",
+        name: productDetails.name || "",
+        description: productDetails.description || "",
+        features: productDetails.features.map((feature) => ({
+          feature: feature.name,
+        })),
+      });
+    }
+  }, [productDetails, form]);
 
   const { control, handleSubmit } = form;
   const { fields, append, remove } = useFieldArray<ProductFormInputType>({
@@ -117,7 +108,7 @@ export default function CreateProductPage() {
     name: "features",
   });
 
-  const onCreateProductSubmit: SubmitHandler<ProductFormInputType> = async (
+  const onEditProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
   ) => {
     startTransition(async () => {
@@ -135,11 +126,27 @@ export default function CreateProductPage() {
     });
   };
 
+  if (isProductDetailsPending) {
+    return (
+      <div className="min-h-[100vh] flex justify-center items-center">
+        <Spinner className="text-secondary" size="large" />
+      </div>
+    );
+  }
+
+  if (isProductDetailsError) {
+    return (
+      <ContentLayout title="Edit Product">
+        {productDetailsError.message}
+      </ContentLayout>
+    );
+  }
+
   return (
-    <ContentLayout title="Add New Product">
+    <ContentLayout title="Edit Product">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <Form {...form}>
-        <form onSubmit={handleSubmit(onCreateProductSubmit)}>
+        <form onSubmit={handleSubmit(onEditProductSubmit)}>
           <div className="flex items-center gap-4 mb-5 mt-7">
             <Link href="/admin/products">
               <Button variant="outline" size="icon" className="h-7 w-7">
@@ -149,7 +156,7 @@ export default function CreateProductPage() {
             </Link>
 
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-              Add New Product
+              {`Edit ${productDetails?.name}`}
             </h1>
             {/* <Badge variant="outline" className="ml-auto sm:ml-0">
               In stock
@@ -241,67 +248,10 @@ export default function CreateProductPage() {
                           <FormItem>
                             <FormLabel>Brand Name</FormLabel>
                             <FormControl>
-                              <Popover
-                                open={openComboBox}
-                                onOpenChange={setOpenComboBox}
-                              >
-                                <PopoverTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    aria-expanded={openComboBox}
-                                    className="w-[200px] justify-between"
-                                  >
-                                    {field.value ? (
-                                      frameworks.find(
-                                        (framework) =>
-                                          framework.value === field.value
-                                      )?.label
-                                    ) : (
-                                      <p className="text-muted-foreground">
-                                        Type Brand Name...
-                                      </p>
-                                    )}
-                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-[200px] p-0">
-                                  <Command>
-                                    <CommandInput placeholder="Search framework..." />
-                                    <CommandList>
-                                      <CommandEmpty>
-                                        No framework found.
-                                      </CommandEmpty>
-                                      <CommandGroup>
-                                        {frameworks.map((framework) => (
-                                          <CommandItem
-                                            key={framework.value}
-                                            value={framework.value}
-                                            onSelect={(currentValue) => {
-                                              field.onChange(
-                                                currentValue === field.value
-                                                  ? ""
-                                                  : currentValue
-                                              );
-                                              setOpenComboBox(false);
-                                            }}
-                                          >
-                                            <Check
-                                              className={cn(
-                                                "mr-2 h-4 w-4",
-                                                field.value === framework.value
-                                                  ? "opacity-100"
-                                                  : "opacity-0"
-                                              )}
-                                            />
-                                            {framework.label}
-                                          </CommandItem>
-                                        ))}
-                                      </CommandGroup>
-                                    </CommandList>
-                                  </Command>
-                                </PopoverContent>
-                              </Popover>
+                              <Input
+                                placeholder="Enter brand name"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
