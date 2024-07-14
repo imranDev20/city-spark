@@ -72,3 +72,52 @@ export async function deleteTemplate(templateId: string) {
     };
   }
 }
+
+export async function getTemplateById(templateId: string) {
+  try {
+    const template = await prisma.template.findUnique({
+      where: {
+        id: templateId,
+      },
+    });
+
+    if (!template) {
+      throw new Error("Template not found");
+    }
+
+    return template;
+  } catch (error) {
+    console.error("Error fetching template:", error);
+    throw new Error("Failed to fetch template");
+  }
+}
+
+export async function updateTemplateById(
+  templateId: string,
+  data: FormInputType
+) {
+  try {
+    const updatedtemplate = await prisma.template.update({
+      where: {
+        id: templateId,
+      },
+      data: {
+        name: data.name,
+        description: data.description,
+      },
+    });
+
+    revalidatePath("/admin/templates");
+    return {
+      message: "Templates Updated successfully!",
+      data: updatedtemplate,
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error updating template:", error);
+    return {
+      message: "An error occurred while updating the template.",
+      success: false,
+    };
+  }
+}
