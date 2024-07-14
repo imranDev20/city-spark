@@ -33,7 +33,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
-import TemplateSelect from "../_components/template-select";
 import ManualsInstructionsUpload from "../_components/manuals-instructions-upload";
 import { productSchema } from "../schema";
 import ProductImageUploader from "../_components/product-image-uploader";
@@ -74,7 +73,10 @@ export type ProductFormInputType = z.infer<typeof productSchema>;
 export default function CreateProductPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [openComboBox, setOpenComboBox] = useState<boolean>(false);
+  const [openBrandComboBox, setOpenBrandComboBox] = useState<boolean>(false);
+  const [openTemplateComboBox, setOpenTemplateComboBox] =
+    useState<boolean>(false);
+
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<ProductFormInputType>({
@@ -88,6 +90,8 @@ export default function CreateProductPage() {
           feature: "",
         },
       ],
+
+      category: "",
     },
   });
 
@@ -268,14 +272,14 @@ export default function CreateProductPage() {
                             <FormLabel>Brand Name</FormLabel>
                             <FormControl>
                               <Popover
-                                open={openComboBox}
-                                onOpenChange={setOpenComboBox}
+                                open={openBrandComboBox}
+                                onOpenChange={setOpenBrandComboBox}
                               >
                                 <PopoverTrigger asChild>
                                   <Button
                                     variant="outline"
                                     role="combobox"
-                                    aria-expanded={openComboBox}
+                                    aria-expanded={openBrandComboBox}
                                     className="w-[200px] justify-between"
                                   >
                                     {field.value ? (
@@ -304,7 +308,7 @@ export default function CreateProductPage() {
                                             value={brand.name}
                                             onSelect={() => {
                                               form.setValue("brand", brand.id);
-                                              // setOpenComboBox(false);
+                                              setOpenBrandComboBox(false);
                                             }}
                                           >
                                             <Check
@@ -632,17 +636,19 @@ export default function CreateProductPage() {
                     <div className="col-span-4 grid gap-3">
                       <FormField
                         control={control}
-                        name="brand"
+                        name="template"
                         render={({ field }) => (
                           <FormItem className="w-full flex flex-col gap-1">
                             <FormLabel>Templates</FormLabel>
                             <FormControl>
-                              <Popover>
+                              <Popover
+                                open={openTemplateComboBox}
+                                onOpenChange={setOpenTemplateComboBox}
+                              >
                                 <PopoverTrigger asChild>
                                   <Button
                                     variant="outline"
                                     role="combobox"
-                                    aria-expanded={openComboBox}
                                     className="justify-between"
                                   >
                                     {field.value ? (
@@ -671,10 +677,9 @@ export default function CreateProductPage() {
                                             key={template.id}
                                             value={template.name}
                                             onSelect={() => {
-                                              form.setValue(
-                                                "template",
-                                                template.id
-                                              );
+                                              field.onChange(template.id);
+
+                                              setOpenTemplateComboBox(false);
                                             }}
                                           >
                                             <Check
