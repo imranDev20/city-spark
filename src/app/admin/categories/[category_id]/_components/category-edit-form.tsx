@@ -2,8 +2,7 @@
 import Link from "next/link";
 import React, { useEffect, useState, useTransition } from "react";
 import { ChevronLeft, Upload } from "lucide-react";
-import { ContentLayout } from "../../_components/content-layout";
-import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
+
 import {
   Form,
   FormControl,
@@ -30,60 +29,79 @@ import {
 } from "@/components/ui/card";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
 import { z } from "zod";
-import ImageUploader from "../_components/image-uploader";
 import { CATEGORY_TYPE } from "@/constant/constants";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { useFormState, useFormStatus } from "react-dom";
-import ParentCategory from "../_components/parent-category";
-import { useRouter } from "next/navigation";
-import { useToast } from "@/components/ui/use-toast";
-import { categorySchema } from "../schema";
-import { createCategory } from "../actions";
 
-const breadcrumbItems = [
-  { label: "Dashboard", href: "/admin" },
-  { label: "Category", href: "/admin/categories" },
-  {
-    label: "Create Category",
-    href: "/admin/categories/new",
-    isCurrentPage: true,
-  },
-];
+import { useParams, useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
+import { categorySchema } from "../../schema";
+import { ContentLayout } from "@/app/admin/_components/content-layout";
+import DynamicBreadcrumb from "@/app/admin/_components/dynamic-breadcrumb";
+import ParentCategory from "./parent-category";
+import ImageUploader from "../../_components/image-uploader";
+import { getCategoryById, updateCategoryById } from "../../actions";
+import { useQuery } from "@tanstack/react-query";
+import { Spinner } from "@/components/ui/spinner";
+
+
+
 
 export type CategoryFormInputType = z.infer<typeof categorySchema>;
 
-export default function CreateCategoryPage() {
+export default function EditCategoryForm() {
   const router = useRouter();
   const { toast } = useToast();
+  const params = useParams();
   const [openComboBox, setOpenComboBox] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
-
   const form = useForm<CategoryFormInputType>({
     resolver: zodResolver(categorySchema),
-    defaultValues: {
-      name: "",
-      images: "",
-      parentCategory: "",
-      type: "PRIMARY",
-    },
+   
   });
-  const { control, handleSubmit } = form;
+  const {
+    data: categoryDetails,
+    isPending: isCategoryDetailsPending,
+    isError: isCategoryDetailsError,
+    error: categoryDetailsError,
+  } = useQuery({
+    queryKey: ["category-details"],
+    queryFn: async () => await getCategoryById(params.category_id as string),
+  });
+  console.log(`categoryDetails`,categoryDetails );
+  const breadcrumbItems = [
+    { label: "Dashboard", href: "/admin" },
+    { label: "Category", href: "/admin/categories" },
+    {
+      label: `${categoryDetails?.name}`,      
+      isCurrentPage: true,
+    },
+  ];
+  useEffect(() => {
+    if (categoryDetails) {
+      form.reset({
+      name:categoryDetails?.name,
+      type:categoryDetails?.type,
+      parentCategory:categoryDetails?.parentCategory?.name
 
-  const onCreateCategorySubmit: SubmitHandler<CategoryFormInputType> = async (
+      });
+    }
+  }, [categoryDetails, form]);
+  
+  const { control, handleSubmit } = form;
+  const onEditCategorySubmit: SubmitHandler<CategoryFormInputType> = async (
     data
   ) => {
     startTransition(async () => {
-      const result = await createCategory(data);
+      const result = await updateCategoryById(params.category_id as string,data);
 
       if (result.success) {
         // Handle successful deletion (e.g., show a success message, update UI)
         console.log(result.message);
         toast({
-          title: "Category Saved",
+          title: "Category Updated",
           description: result.message,
           variant: "success",
         });
@@ -99,12 +117,28 @@ export default function CreateCategoryPage() {
       }
     });
   };
+
+  if (isCategoryDetailsPending) {
+    return (
+      <div className="min-h-[100vh] flex justify-center items-center">
+        <Spinner className="text-secondary" size="large" />
+      </div>
+    );
+  }
+
+  if (isCategoryDetailsError) {
+    return (
+      <ContentLayout title="Edit Product">
+        {categoryDetailsError.message}
+      </ContentLayout>
+    );
+  }
   return (
-    <ContentLayout title="Create Category">
+    <ContentLayout title="Edit Category">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <FormProvider {...form}>
         <Form {...form}>
-          <form onSubmit={handleSubmit(onCreateCategorySubmit)}>
+          <form onSubmit={handleSubmit(onEditCategorySubmit)}>
             <div className="flex items-center gap-4 mb-5 mt-7">
               <Link href="/admin/categories">
                 <Button variant="outline" size="icon" className="h-7 w-7">
@@ -113,7 +147,7 @@ export default function CreateCategoryPage() {
                 </Button>
               </Link>
               <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-                Create Category
+              {`Edit ${categoryDetails?.name}`}
               </h1>
 
               <div className="hidden items-center gap-2 md:ml-auto md:flex">
@@ -127,7 +161,7 @@ export default function CreateCategoryPage() {
                   loading={isPending}
                   className="text-xs font-semibold h-8"
                 >
-                  Add New Category
+                  Update Category
                 </LoadingButton>
               </div>
             </div>
@@ -232,9 +266,9 @@ export default function CreateCategoryPage() {
                   loading={isPending}
                   className="text-xs font-semibold h-8"
                 >
-                  Add New Category
+                  Update Category
                 </LoadingButton>
-              {/* <Button size="sm">Save Product</Button> */}
+             
             </div>
           </form>
         </Form>

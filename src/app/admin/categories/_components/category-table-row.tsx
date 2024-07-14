@@ -85,7 +85,9 @@ export default function CategoriesTableRow({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>Edit</DropdownMenuItem>
+            <DropdownMenuItem 
+             onClick={() => router.push(`/admin/categories/${category.id}`)}
+            >Edit</DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => {
                 handleDelete(e);
