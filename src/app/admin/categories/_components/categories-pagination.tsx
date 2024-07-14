@@ -10,7 +10,7 @@ import {
   
   export function CategoriesPagination() {
     return (
-      <Pagination>
+      <Pagination className='mt-5'>
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious href="#" />

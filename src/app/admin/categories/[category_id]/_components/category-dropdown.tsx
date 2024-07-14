@@ -26,10 +26,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useFormContext } from "react-hook-form";
-import { CategoryFormInputType } from "../new/page";
+
 import { cn } from "@/lib/utils";
 import { Category } from "@prisma/client";
-import { getParentCategories } from "../actions";
+import { CategoryFormInputType } from "../../new/page";
+import { getParentCategories } from "../../actions";
+
 
 interface DataType {
   id: string;
