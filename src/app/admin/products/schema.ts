@@ -23,6 +23,9 @@ export const productSchema = z.object({
   material: z.string().optional(),
   template: z.string().optional(),
 
+  shape: z.string().optional(),
+  volume: z.string().optional(),
+
   // changed it to an object
   features: z
     .array(
@@ -36,6 +39,8 @@ export const productSchema = z.object({
   secondaryCategory: z.string().optional(),
   tertiaryCategory: z.string().optional(),
   quaternaryCategory: z.string().optional(),
+
+  category: z.string().optional(),
   status: z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]).optional(),
   images: z.array(z.string()).optional(),
   manuals: z.array(z.string()).optional(),
