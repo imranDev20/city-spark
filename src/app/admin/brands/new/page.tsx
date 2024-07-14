@@ -1,9 +1,13 @@
 "use client";
-import Link from "next/link";
-import React from "react";
-import { ChevronLeft } from "lucide-react";
-import { ContentLayout } from "../../_components/content-layout";
-import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -21,20 +25,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { brandSchema } from "./schema";
-import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronLeft } from "lucide-react";
+import Link from "next/link";
+import { startTransition } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { ContentLayout } from "../../_components/content-layout";
+import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import ImageUploader from "../_components/image-uploader";
+import { createBrand } from "../actions";
+import { brandSchema } from "./schema";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -54,7 +55,7 @@ const defaultValues = {
   ambassador: "",
   tagline: "",
 };
-type FormInputType = z.infer<typeof brandSchema>;
+export type FormInputType = z.infer<typeof brandSchema>;
 export default function CreateBrandPage() {
   const form = useForm<FormInputType>({
     resolver: zodResolver(brandSchema),
@@ -71,6 +72,14 @@ export default function CreateBrandPage() {
       status,
     };
     console.log(`payload`, payload);
+    startTransition(async () => {
+      const result = await createBrand(data);
+      if (result.success) {
+        console.log(result.message);
+      } else {
+        console.error(result.message);
+      }
+    });
   };
   return (
     <ContentLayout title="Create Brands">
@@ -215,27 +224,24 @@ export default function CreateBrandPage() {
                 <CardHeader>
                   <CardTitle>Images</CardTitle>
                   <CardDescription>
-                  Upload your brand images here.
+                    Upload your brand images here.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                <FormField
-                      control={form.control}
-                      name="images"
-                      render={({field}) => (
-                        <FormItem className="mx-auto ">
-                          <FormLabel                           
-                          >
-                            <h2 className="text-xl font-semibold tracking-tight">
-                            
-                            </h2>
-                          </FormLabel>
-                          <FormControl>
-                            <ImageUploader {...field} />
-                          </FormControl>                       
-                        </FormItem>
-                      )}
-                    />
+                  <FormField
+                    control={form.control}
+                    name="images"
+                    render={({ field }) => (
+                      <FormItem className="mx-auto ">
+                        <FormLabel>
+                          <h2 className="text-xl font-semibold tracking-tight"></h2>
+                        </FormLabel>
+                        <FormControl>
+                          <ImageUploader {...field} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </CardContent>
               </Card>
             </div>
