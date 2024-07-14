@@ -65,10 +65,10 @@ export default function CreateCategoryPage() {
   const form = useForm<CategoryFormInputType>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
-      name: "",
-      images: "",
+      name: "",    
       parentCategory: "",
       type: "PRIMARY",
+      
     },
   });
   const { control, handleSubmit } = form;
@@ -205,7 +205,7 @@ export default function CreateCategoryPage() {
                   <CardContent>
                     <FormField
                       control={form.control}
-                      name="images"
+                      name="image"
                       render={({ field }) => (
                         <FormItem className="mx-auto ">
                           <FormLabel>

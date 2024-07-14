@@ -16,9 +16,11 @@ import { MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useTransition } from "react";
 import { deleteCategory } from "../actions";
+import Image from "next/image";
 export type CategoryWithRelations = Prisma.CategoryGetPayload<{
   include: {
     parentCategory: true;
+    image: true;
   };
 }>;
 export default function CategoriesTableRow({
@@ -29,6 +31,7 @@ export default function CategoriesTableRow({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  console.log(`category`, category);
   const handleDelete = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.stopPropagation(); // Stop the propagation to prevent routing
 
@@ -59,9 +62,19 @@ export default function CategoriesTableRow({
       onClick={() => router.push(`/admin/categories/${category.id}`)}
       className={`cursor-pointer ${isPending ? "opacity-30" : "opacity-100"}`}
     >
+      <TableCell className="hidden sm:table-cell">
+        { category?.image && <Image
+          alt="Category Image"
+          className="aspect-square rounded-md object-cover"
+          height="64"
+          src={category.image?.url}
+          // src=''
+          width="64"
+        />}
+      </TableCell>
       <TableCell className="font-medium flex-1">{category.name} </TableCell>
-      <TableCell className="font-medium flex-1">{category.type} </TableCell>
-      <TableCell className="font-medium flex-1">
+      <TableCell className="hidden md:table-cell">{category.type} </TableCell>
+      <TableCell className="hidden md:table-cell">
         {category?.parentCategory
           ? `${category.parentCategory.name} (${
               category.parentCategory.type.charAt(0).toUpperCase() +
@@ -70,7 +83,7 @@ export default function CategoriesTableRow({
           : "N/A"}
       </TableCell>
 
-      <TableCell className="font-medium flex-1">
+      <TableCell className="hidden md:table-cell">
         {" "}
         {dayjs(category.createdAt).format("DD-MM-YY hh:mm A")}
       </TableCell>
@@ -85,9 +98,11 @@ export default function CategoriesTableRow({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem 
-             onClick={() => router.push(`/admin/categories/${category.id}`)}
-            >Edit</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => router.push(`/admin/categories/${category.id}`)}
+            >
+              Edit
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => {
                 handleDelete(e);

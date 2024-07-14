@@ -8,26 +8,26 @@ import {
 } from "@/components/ui/select";
 import Link from "next/link";
 
-import { Network } from "lucide-react";
+import {PackagePlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-export default function CategoryTableHeader() {
+export default function InventoryTableHeader() {
   return (
     <>
       <div className="flex items-center gap-4 mb-5 mt-7">
         <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0 flex items-center">
-          <Network className="mr-3 text-primary" />
-          Categories List
+          <PackagePlus className="mr-3 text-primary" />
+          Inventory List
         </h1>
 
         <div className="hidden items-center gap-2 md:ml-auto md:flex">
           <Button variant="outline" size="sm">
             Download Excel
           </Button>
-          <Link href="categories/new">
+          <Link href="inventory/new">
             <Button size="sm" className="whitespace-nowrap">
-              Add New Category
+              Add New Inventory
             </Button>
           </Link>
         </div>
@@ -36,7 +36,7 @@ export default function CategoryTableHeader() {
       <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto mb-5">
         <Input
           type="search"
-          placeholder="Search categories"
+          placeholder="Search inventory"
           className="w-full sm:w-auto flex-1"
         />
         <Select>
