@@ -20,6 +20,17 @@ export async function getProducts() {
   }
 }
 
+export async function getBrands() {
+  try {
+    const brands = await prisma.brand.findMany({});
+    console.log(brands);
+    return brands;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    throw new Error("Failed to fetch products");
+  }
+}
+
 export async function getProductById(productId: string) {
   try {
     const product = await prisma.product.findUnique({
