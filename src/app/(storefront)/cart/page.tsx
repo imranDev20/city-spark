@@ -22,15 +22,10 @@ import {
   SquarePlus,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 
-export default function CartPage({
-  params,
-}: {
-  params: {
-    cart_url: string;
-  };
-}) {
+export default function CartPage() {
   const [isAddPromo, setIsAddPromo] = useState<boolean>(false);
   return (
     <div className="container mx-auto mt-6 mb-4">
@@ -163,11 +158,13 @@ export default function CartPage({
                 <div className="flex justify-between">
                   <p className="text-gray-500">Total (Ex. VAT)</p>
                   <p className="">$180</p>
-                </div>                
+                </div>
               </div>
-              <div className="mt-2" >
-                <Button className="w-full h-10 flex items-center gap-2"><LockKeyhole /> <span> Checkout Securely</span></Button>
-              </div>          
+              <div className="mt-2">
+                <Button className="w-full h-10 flex items-center gap-2">
+                  <LockKeyhole /> <span> Checkout Securely</span>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
