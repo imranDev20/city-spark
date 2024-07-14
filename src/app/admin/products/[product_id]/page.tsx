@@ -1,6 +1,7 @@
-import { ContentLayout } from "../../_components/content-layout";
+import { getProductById } from "../actions";
+import EditProductForm from "./_components/edit-product-form";
 
-export default function AdminProductDetailsPage({
+export default async function AdminProductDetailsPage({
   params,
 }: {
   params: {
@@ -9,5 +10,9 @@ export default function AdminProductDetailsPage({
 }) {
   const { product_id } = params;
 
-  return <ContentLayout title={product_id}>Product details</ContentLayout>;
+  return (
+    <>
+      <EditProductForm />
+    </>
+  );
 }
