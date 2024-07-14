@@ -31,6 +31,17 @@ export async function getBrands() {
   }
 }
 
+export async function getTemplates() {
+  try {
+    const templates = await prisma.template.findMany({});
+    console.log(templates);
+    return templates;
+  } catch (error) {
+    console.error("Error fetching templates:", error);
+    throw new Error("Failed to fetch templates");
+  }
+}
+
 export async function getProductById(productId: string) {
   try {
     const product = await prisma.product.findUnique({
@@ -79,7 +90,7 @@ export async function createProduct(data: ProductFormInputType) {
 
         template: {
           connect: {
-            id: "clyjugd8l000011qghedzgbxo",
+            id: "clykb82130000tc4yw0v2du0u",
           },
         },
 
