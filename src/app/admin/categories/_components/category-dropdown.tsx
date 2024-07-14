@@ -107,7 +107,7 @@ export default function CategoryDropdown({
               <CommandEmpty>No parent category found.</CommandEmpty>
               <CommandGroup>
                 {categories.map((category) => (
-                  <CommandList>
+                  <CommandList key={category.id}>
                   <CommandItem
                     value={category.id}
                     key={category.id}
