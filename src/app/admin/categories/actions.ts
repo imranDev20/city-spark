@@ -110,3 +110,52 @@ export async function deleteCategory(categoryId: string) {
     };
   }
 }
+
+export async function getCategoryById(categoryId: string) {
+  try {
+ 
+    const category = await prisma.category.findUnique({
+      where: {
+        id: categoryId,
+      },
+      include: {
+        parentCategory:true,
+      }
+     
+    });
+   
+    return category;
+  } catch (error) {
+    console.error("Error fetching category:", error);
+    throw new Error("Failed to fetch category");
+  }
+}
+export async function updateCategoryById(categoryId: string, data: CategoryFormInputType) {
+  try {
+    const category = await prisma.category.update({
+      where: {
+        id: categoryId,
+      },
+      data: {
+        name: data.name,
+        type: 'SECONDARY',
+        parentId: 'clyjujnp8000311qgakv70hqs'
+        
+      },
+    });
+
+    revalidatePath("/admin/categories");
+    return {
+      message: "Category created successfully!",
+      data: category,
+      success: true,
+    };
+  
+  } catch (error) {
+    console.error("Error updating category:", error);
+    return {
+      message: "An error occurred while updating the category.",
+      success: false,
+    };
+  }
+}
