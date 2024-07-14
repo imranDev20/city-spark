@@ -239,7 +239,7 @@ export default function EditCategoryForm() {
                   <CardContent>
                     <FormField
                       control={form.control}
-                      name="images"
+                      name="image"
                       render={({ field }) => (
                         <FormItem className="mx-auto ">
                           <FormLabel>
