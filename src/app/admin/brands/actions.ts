@@ -67,3 +67,48 @@ export async function deleteBrand(brandId: string) {
     };
   }
 }
+
+export async function getBrandById(brandId: string) {
+  try {
+    const brand = await prisma.brand.findUnique({
+      where: {
+        id: brandId,
+      },
+    });
+
+    if (!brand) {
+      throw new Error("Brand not found");
+    }
+
+    return brand;
+  } catch (error) {
+    console.error("Error fetching brand:", error);
+    throw new Error("Failed to fetch brand");
+  }
+}
+
+export async function updateBrandById(brandId: string, data: FormInputType) {
+  try {
+    const updatedbrand = await prisma.brand.update({
+      where: {
+        id: brandId,
+      },
+      data: {
+        name: data?.brandName,
+      },
+    });
+
+    revalidatePath("/admin/brands");
+    return {
+      message: "Brand Updated successfully!",
+      data: updatedbrand,
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error updating brand:", error);
+    return {
+      message: "An error occurred while updating the brand.",
+      success: false,
+    };
+  }
+}

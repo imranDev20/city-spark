@@ -1,7 +1,7 @@
 "use client";
+import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import React, { useEffect, useState, useTransition } from "react";
-import { ChevronLeft, Upload } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
 
 import {
   Form,
@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -27,27 +28,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import { z } from "zod";
-import { CATEGORY_TYPE } from "@/constant/constants";
 import { LoadingButton } from "@/components/ui/loading-button";
-import { useFormState, useFormStatus } from "react-dom";
+import { CATEGORY_TYPE } from "@/constant/constants";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
+import { z } from "zod";
 
-import { useParams, useRouter } from "next/navigation";
-import { useToast } from "@/components/ui/use-toast";
-import { categorySchema } from "../../schema";
 import { ContentLayout } from "@/app/admin/_components/content-layout";
 import DynamicBreadcrumb from "@/app/admin/_components/dynamic-breadcrumb";
-import ParentCategory from "./parent-category";
+import { Spinner } from "@/components/ui/spinner";
+import { useToast } from "@/components/ui/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { useParams, useRouter } from "next/navigation";
 import ImageUploader from "../../_components/image-uploader";
 import { getCategoryById, updateCategoryById } from "../../actions";
-import { useQuery } from "@tanstack/react-query";
-import { Spinner } from "@/components/ui/spinner";
-
-
-
+import { categorySchema } from "../../schema";
+import ParentCategory from "./parent-category";
 
 export type CategoryFormInputType = z.infer<typeof categorySchema>;
 
@@ -59,7 +55,6 @@ export default function EditCategoryForm() {
   const [isPending, startTransition] = useTransition();
   const form = useForm<CategoryFormInputType>({
     resolver: zodResolver(categorySchema),
-   
   });
   const {
     data: categoryDetails,
@@ -70,32 +65,34 @@ export default function EditCategoryForm() {
     queryKey: ["category-details"],
     queryFn: async () => await getCategoryById(params.category_id as string),
   });
-  console.log(`categoryDetails`,categoryDetails );
+  console.log(`categoryDetails`, categoryDetails);
   const breadcrumbItems = [
     { label: "Dashboard", href: "/admin" },
     { label: "Category", href: "/admin/categories" },
     {
-      label: `${categoryDetails?.name}`,      
+      label: `${categoryDetails?.name}`,
       isCurrentPage: true,
     },
   ];
   useEffect(() => {
     if (categoryDetails) {
       form.reset({
-      name:categoryDetails?.name,
-      type:categoryDetails?.type,
-      parentCategory:categoryDetails?.parentCategory?.name
-
+        name: categoryDetails?.name,
+        type: categoryDetails?.type,
+        parentCategory: categoryDetails?.parentCategory?.name,
       });
     }
   }, [categoryDetails, form]);
-  
+
   const { control, handleSubmit } = form;
   const onEditCategorySubmit: SubmitHandler<CategoryFormInputType> = async (
     data
   ) => {
     startTransition(async () => {
-      const result = await updateCategoryById(params.category_id as string,data);
+      const result = await updateCategoryById(
+        params.category_id as string,
+        data
+      );
 
       if (result.success) {
         // Handle successful deletion (e.g., show a success message, update UI)
@@ -147,7 +144,7 @@ export default function EditCategoryForm() {
                 </Button>
               </Link>
               <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-              {`Edit ${categoryDetails?.name}`}
+                {`Edit ${categoryDetails?.name}`}
               </h1>
 
               <div className="hidden items-center gap-2 md:ml-auto md:flex">
@@ -260,15 +257,14 @@ export default function EditCategoryForm() {
                 Discard
               </Button>
               <LoadingButton
-                  type="submit"
-                  disabled={isPending}
-                  size="sm"
-                  loading={isPending}
-                  className="text-xs font-semibold h-8"
-                >
-                  Update Category
-                </LoadingButton>
-             
+                type="submit"
+                disabled={isPending}
+                size="sm"
+                loading={isPending}
+                className="text-xs font-semibold h-8"
+              >
+                Update Category
+              </LoadingButton>
             </div>
           </form>
         </Form>
