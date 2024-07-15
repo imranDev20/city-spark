@@ -1,5 +1,9 @@
-import React from "react";
+import EditTemplateForm from "./_components/edit-template-form";
 
 export default function TemplateDetailsPage() {
-  return <div>TemplateDetailsPage</div>;
+  return (
+    <div>
+      <EditTemplateForm />
+    </div>
+  );
 }
