@@ -14,8 +14,6 @@ import ProductTableRow, { ProductWithRelations } from "./product-table-row";
 export default async function ProductList() {
   const products = (await getProducts()) as ProductWithRelations[];
 
-  console.log(products);
-
   return (
     <>
       <Card>
