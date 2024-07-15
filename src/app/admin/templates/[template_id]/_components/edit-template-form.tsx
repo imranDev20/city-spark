@@ -86,16 +86,11 @@ export default function EditTemplateForm() {
     setFieldTypes(newFieldTypes);
   };
 
-  const {
-    data: templateDetails,
-    isPending: isTemplateDetailsPending,
-    isFetching: isTemplateDetailsFetching,
-    isError: isTemplateDetailsError,
-    error: TemplateDetailsError,
-  } = useQuery({
-    queryKey: ["template-details"],
-    queryFn: async () => await getTemplateById(params.template_id as string),
-  });
+  const { data: templateDetails, isPending: isTemplateDetailsPending } =
+    useQuery({
+      queryKey: ["template-details"],
+      queryFn: async () => await getTemplateById(params.template_id as string),
+    });
 
   //   console.log(templateDetails);
 
@@ -148,12 +143,7 @@ export default function EditTemplateForm() {
     },
   ];
 
-  if (
-    isTemplateDetailsPending ||
-    isTemplateDetailsFetching ||
-    isTemplateDetailsError ||
-    TemplateDetailsError
-  ) {
+  if (isTemplateDetailsPending) {
     return (
       <div className="min-h-[100vh] flex justify-center items-center">
         <Spinner className="text-secondary" size="large" />
