@@ -58,8 +58,7 @@ export type CategoryFormInputType = z.infer<typeof categorySchema>;
 
 export default function CreateCategoryPage() {
   const router = useRouter();
-  const { toast } = useToast();
-  const [openComboBox, setOpenComboBox] = useState<boolean>(false);
+  const { toast } = useToast(); 
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<CategoryFormInputType>({
