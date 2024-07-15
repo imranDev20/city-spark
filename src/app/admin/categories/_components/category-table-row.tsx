@@ -31,7 +31,6 @@ export default function CategoriesTableRow({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
-  console.log(`category`, category);
   const handleDelete = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.stopPropagation(); // Stop the propagation to prevent routing
 

@@ -70,17 +70,31 @@ export async function createCategory(data: CategoryFormInputType) {
   }
 }
 
-export async function getAllCategories() {
-  try {
-    const categories = await prisma.category.findMany({
+export async function getAllCategories(page = 1) {
+  const PAGE_SIZE = 4;
+  
 
+  try {
+   
+    const categories = await prisma.category.findMany({
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
       include: {
-        parentCategory:true,
-        image:true
+        parentCategory: true,
+        image: true
       }
     });
+    revalidatePath(`admin/categories?page${page}`);
 
-    return categories;
+    // Get the total count of categories to calculate the total number of pages
+    const totalCategories = await prisma.category.count();
+    const totalPages = Math.ceil(totalCategories / PAGE_SIZE);
+    const currentPage = Math.min(Math.max(page,1), totalPages);
+    return {
+      categories,
+      totalPages,
+      currentPage,
+    };
   } catch (error) {
     console.error("Error fetching categories:", error);
     throw new Error("Failed to fetch categories");

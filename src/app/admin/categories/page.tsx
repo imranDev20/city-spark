@@ -12,15 +12,18 @@ const breadcrumbItems = [
     isCurrentPage: true,
   },
 ];
-export default function AdminCreateProductPage() {
+
+export default function AdminCreateProductPage(context:any) {
+
+  const {searchParams} = context;
   return (
     <ContentLayout title="Brands">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <CategoryTableHeader />
       <Suspense fallback="Loading...">
-      <CategoriesList />
+      <CategoriesList page={parseInt(searchParams.page)} />
       </Suspense>
-      <CategoriesPagination />
+     
     </ContentLayout>
   );
 }

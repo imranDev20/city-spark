@@ -1,46 +1,28 @@
-import Image from "next/image";
-import { MoreHorizontal } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import Link from "next/link";
 import { getAllCategories } from "../actions";
 import CategoriesTableRow from "./category-table-row";
+import { CategoriesPagination } from "./categories-pagination";
 
-export default async function CategoriesList() {
-  const categories = await getAllCategories();
-  console.log(`categories`, categories);
+
+export default async function CategoriesList({page}:{page:number}) {
+  const pages = page | 1;
+  const categories = await getAllCategories(pages);
+console.log(`categories`, categories);
+
+
   return (
     <>
     
@@ -65,18 +47,16 @@ export default async function CategoriesList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {categories?.map((category) => (
+              {categories?.categories?.map((category) => (
                 <CategoriesTableRow key={category.id} category={category} />
               ))}
             </TableBody>
           </Table>
         </CardContent>
-        <CardFooter>
-          <div className="text-xs text-muted-foreground">
-            Showing <strong>1-10</strong> of <strong>32</strong> products
-          </div>
-        </CardFooter>
+       
       </Card>
+
+      <CategoriesPagination totalPages={categories.totalPages} currentPage={categories.currentPage}  page={pages} />
     </>
   );
 }
