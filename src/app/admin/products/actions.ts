@@ -34,8 +34,30 @@ export const getBrands = cache(async () => {
 
 export const getTemplates = cache(async () => {
   try {
-    const templates = await prisma.template.findMany({});
+    const templates = await prisma.template.findMany({
+      include: {
+        fields: true,
+      },
+    });
     return templates;
+  } catch (error) {
+    console.error("Error fetching templates:", error);
+    throw new Error("Failed to fetch templates");
+  }
+});
+
+export const getTemplateById = cache(async (templateId: string) => {
+  try {
+    const template = await prisma.template.findUnique({
+      where: {
+        id: templateId,
+      },
+      include: {
+        fields: true,
+      },
+    });
+
+    return template;
   } catch (error) {
     console.error("Error fetching templates:", error);
     throw new Error("Failed to fetch templates");
@@ -173,8 +195,7 @@ export async function updateProduct(
         width: data.width,
         height: data.height,
         material: data.material,
-        status: data.status ?? "DRAFT",
-
+        status: data.status,
         template: data.template
           ? {
               connect: { id: data.template },
@@ -220,7 +241,25 @@ export async function updateProduct(
       },
     });
 
+    if (data.templateFields) {
+      await prisma.template.update({
+        where: { id: data.template },
+        data: {
+          fields: {
+            deleteMany: {}, // This will delete all existing fields
+            create: data.templateFields.map((field) => ({
+              fieldName: field.fieldName,
+              fieldType: field.fieldType,
+              fieldOptions: field.fieldOptions,
+              fieldValues: field.fieldValues,
+            })),
+          },
+        },
+      });
+    }
+
     revalidatePath("/admin/products");
+    revalidatePath(`/admin/products/${productId}`);
 
     return {
       message: "Product updated successfully!",
