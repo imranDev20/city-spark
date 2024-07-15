@@ -1,19 +1,9 @@
-import { ContentLayout } from "../../_components/content-layout";
-import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
-
-const breadcrumbItems = [
-  { label: "Dashboard", href: "/admin" },
-  {
-    label: "Brands",
-    href: "/admin/brands",
-    isCurrentPage: true,
-  },
-];
+import EditBrandForm from "./_components/edit-brand-form";
 
 export default function AdminBrandDetailsPage() {
   return (
-    <ContentLayout title="Create Brand">
-      <DynamicBreadcrumb items={breadcrumbItems} />
-    </ContentLayout>
+    <div>
+      <EditBrandForm />
+    </div>
   );
 }
