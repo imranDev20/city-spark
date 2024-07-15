@@ -2,8 +2,9 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { ProductFormInputType } from "./new/page";
+
 import { unstable_cache as cache } from "next/cache";
+import { ProductFormInputType } from "./new/_components/create-product-form";
 
 // Cached products for ssr in the list
 export const getProducts = cache(async () => {
@@ -47,6 +48,13 @@ export const getTemplates = cache(async () => {
 });
 
 export const getTemplateById = cache(async (templateId: string) => {
+  if (!templateId) {
+    console.log("No template Id");
+    return null;
+  }
+
+  console.log(templateId, "IN ACTION");
+
   try {
     const template = await prisma.template.findUnique({
       where: {

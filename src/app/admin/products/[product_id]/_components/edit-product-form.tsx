@@ -89,7 +89,7 @@ export default function EditProductForm({
   brands: Brand[];
   categories: Category[];
   templates: Template[];
-  templateDetails: TemplateWithRelations;
+  templateDetails: TemplateWithRelations | null;
 }) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -220,7 +220,7 @@ export default function EditProductForm({
         warranty: warranty ?? "",
         category: categoryId ?? "",
         template: selectedTemplate || templateId || "",
-        templateFields: templateDetails.fields.map((item) => ({
+        templateFields: templateDetails?.fields.map((item) => ({
           fieldName: item.fieldName,
           fieldType: item.fieldType,
           fieldOptions: item.fieldOptions || "",
