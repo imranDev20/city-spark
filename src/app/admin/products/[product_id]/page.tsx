@@ -25,21 +25,20 @@ export default async function AdminProductDetailsPage({
   const brands = await getBrands();
   const templates = await getTemplates();
   const categories = await getCategories();
+
   const templateDetails = await getTemplateById(
     (template_id || productDetails.templateId) as string
   );
 
   return (
     <>
-      {templateDetails && (
-        <EditProductForm
-          productDetails={productDetails}
-          brands={brands}
-          templates={templates}
-          categories={categories}
-          templateDetails={templateDetails}
-        />
-      )}
+      <EditProductForm
+        productDetails={productDetails}
+        brands={brands}
+        templates={templates}
+        categories={categories}
+        templateDetails={templateDetails}
+      />
     </>
   );
 }
