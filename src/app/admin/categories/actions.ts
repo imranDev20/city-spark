@@ -40,11 +40,12 @@ export type FormState = {
 
 export async function createCategory(data: CategoryFormInputType) {
   try {
+    console.log(`data`, data);
     const createdCategory = await prisma.category.create({
       data: {
         name: data.name,
-        type:"SECONDARY",      
-        parentId:"clyjujnp8000311qgakv70hqs",
+        type:data.type,      
+        parentId:data.parentCategory ?? null,
         image: {
           create: {
             url: "https://images.unsplash.com/photo-1565103446317-476a2b789651?q=80&w=2897&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",

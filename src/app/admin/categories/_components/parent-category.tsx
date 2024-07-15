@@ -40,33 +40,7 @@ export default  function ParentCategory(props: any) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-3">
-          {/* <FormField
-            control={control}
-            name="parentCategory"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Parent Category</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select parent category" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="primary">Primary</SelectItem>
-                    <SelectItem value="secondary">Secondary</SelectItem>
-                    <SelectItem value="tertiary">Tertiary</SelectItem>
-                    <SelectItem value="quaternary">Quaternary</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
+        <div className="grid gap-3">         
          <CategoryDropdown categoryValue = {categoryValue} />
         </div>
       </CardContent>
