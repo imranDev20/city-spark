@@ -33,8 +33,6 @@ export default async function AdminCreateProductPage({
   const categories = await getCategories();
   const templateDetails = await getTemplateById(template_id as string);
 
-  console.log(templateDetails);
-
   return (
     <ContentLayout title="Add New Product">
       <DynamicBreadcrumb items={breadcrumbItems} />
