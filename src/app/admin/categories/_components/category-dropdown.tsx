@@ -49,16 +49,16 @@ const categories = [
   { label: "Japanese", value: "ja" },
   { label: "Korean", value: "ko" },
   { label: "Chinese", value: "zh" },
-] as const
+] as const;
 
 export default function CategoryDropdown({
   categoryValue,
 }: {
   categoryValue: CategoryType;
 }) {
-  const { control, setValue } = useFormContext<CategoryFormInputType>();
+  const { control } = useFormContext<CategoryFormInputType>();
   const [categories, setCategories] = useState<Category[]>([]);
-
+  const [openParentComboBox, setOpenParentComboBox] = useState<boolean>(false);
   useEffect(() => {
     const getCategoryByType = async () => {
       try {
@@ -73,67 +73,69 @@ export default function CategoryDropdown({
 
     getCategoryByType();
   }, [categoryValue]);
-  console.log(`categories`, categories);
+
   return (
     <FormField
-    control={control}
-    name="parentCategory"
-    render={({ field }) => (
-      <FormItem className="flex flex-col">
-        <FormLabel>Parent Category</FormLabel>
-        <Popover>
-          <PopoverTrigger asChild>
-            <FormControl>
-              <Button
-                variant="outline"
-                role="combobox"
-                className={cn(
-                  "w-[200px] justify-between",
-                  !field.value && "text-muted-foreground"
-                )}
-              >
-                {field.value
-                  ? categories.find(
-                      (category) => category.id === field.value
-                    )?.name
-                  : "Select parent category"}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </FormControl>
-          </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0">
-            <Command>
-              <CommandInput placeholder="Search parent category..." />
-              <CommandEmpty>No parent category found.</CommandEmpty>
-              <CommandGroup>
-                {categories.map((category) => (
-                  <CommandList key={category.id}>
-                  <CommandItem
-                    value={category.id}
-                    key={category.id}
-                    onSelect={() => {
-                      setValue("parentCategory", field.value)
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        category.id === field.value
-                          ? "opacity-100"
-                          : "opacity-0"
-                      )}
-                    />
-                    {category.name}
-                  </CommandItem>
-                 </CommandList>
-                ))}
-              </CommandGroup>
-            </Command>
-          </PopoverContent>
-        </Popover>       
-        <FormMessage />
-      </FormItem>
-    )}
-  />
+      control={control}
+      name="parentCategory"
+      render={({ field }) => (
+        <FormItem className="w-full flex flex-col gap-1">
+          <FormLabel>Parent Category</FormLabel>
+          <FormControl>
+            <Popover
+              open={openParentComboBox}
+              onOpenChange={setOpenParentComboBox}
+            >
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className="justify-between"
+                >
+                  {field.value ? (
+                    categories.find((category) => category.id === field.value)
+                      ?.name
+                  ) : (
+                    <p className="text-muted-foreground">Select a parent category</p>
+                  )}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[200px] p-0 popover-content-width-same-as-its-trigger">
+                <Command>
+                  <CommandInput placeholder="Search parent category..." />
+                  <CommandList>
+                    <CommandEmpty>No parent category found.</CommandEmpty>
+                    <CommandGroup>
+                      {categories.map((category) => (
+                        <CommandItem
+                          key={category.id}
+                          value={category.id}
+                          onSelect={() => {
+                            field.onChange(category.id);
+                            setOpenParentComboBox(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              field.value === category.id
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          {category.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
   );
 }

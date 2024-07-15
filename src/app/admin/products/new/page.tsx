@@ -680,7 +680,6 @@ export default function CreateProductPage() {
                                             value={template.name}
                                             onSelect={() => {
                                               field.onChange(template.id);
-
                                               setOpenTemplateComboBox(false);
                                             }}
                                           >
