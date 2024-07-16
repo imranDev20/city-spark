@@ -65,3 +65,34 @@ export const getAllInventory = cache(async () => {
       };
     }
   }
+
+  export async function deleteInventory(inventoryId: string) {
+    try {
+      if (!inventoryId) {
+        return {
+          message: "Inventory ID is required",
+          success: false,
+        };
+      }
+  
+      // Delete the inventory
+      await prisma.inventory.delete({
+        where: {
+          id: inventoryId,
+        },
+      });
+  
+      revalidatePath("/admin/inventory");
+  
+      return {
+        message: "Inventory deleted successfully!",
+        success: true,
+      };
+    } catch (error) {
+      console.error("Error deleting inventory:", error);
+      return {
+        message: "An error occurred while deleting the inventory.",
+        success: false,
+      };
+    }
+  }
