@@ -76,7 +76,6 @@ export default function EditCategoryForm({
   const selectedCategoryType = searchParams.get(
     "category_type"
   ) as CategoryType | null;
-
   const parentCategoryId = searchParams.get("parent_category_id") || null;
 
   const breadcrumbItems = [
@@ -97,6 +96,7 @@ export default function EditCategoryForm({
       type: "PRIMARY",
     },
   });
+
   const { control, handleSubmit, watch, setValue, reset } = form;
 
   useEffect(() => {
@@ -104,7 +104,7 @@ export default function EditCategoryForm({
       reset({
         name: categoryDetails?.name || "",
         type: selectedCategoryType || categoryDetails.type,
-        parentCategory: parentCategoryId || categoryDetails?.parentId || "",
+        parentCategory: parentCategoryId || "",
       });
     }
   }, [categoryDetails, reset, selectedCategoryType, parentCategoryId]);
@@ -123,8 +123,6 @@ export default function EditCategoryForm({
             description: result.message,
             variant: "success",
           });
-
-          router.push("/admin/categories");
         } else {
           toast({
             title: "Category Saved failed",
@@ -210,20 +208,14 @@ export default function EditCategoryForm({
                                 field.onChange(currentValue);
 
                                 router.push(
-                                  `${pathname}?${createQueryString(
-                                    "category_type",
-                                    currentValue
-                                  )}`
-                                );
-
-                                router.push(
-                                  `${pathname}?${createQueryString(
-                                    "parent_category_id",
-                                    "null"
-                                  )}`
+                                  `${pathname}?${createQueryString({
+                                    category_type: currentValue,
+                                    parent_category_id: "",
+                                  })}`,
+                                  { scroll: false }
                                 );
                               }
-                              form.setValue("parentCategory", "");
+                              setValue("parentCategory", "");
                             }}
                           >
                             <FormControl>
@@ -305,6 +297,16 @@ export default function EditCategoryForm({
                                             value={category.id}
                                             onSelect={() => {
                                               field.onChange(category.id);
+
+                                              router.push(
+                                                `${pathname}?${createQueryString(
+                                                  {
+                                                    parent_category_id:
+                                                      category.id,
+                                                  }
+                                                )}`
+                                              );
+
                                               setOpenParentComboBox(false);
                                             }}
                                           >
