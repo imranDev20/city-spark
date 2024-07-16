@@ -31,7 +31,7 @@ export default function CategoriesTableRow({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
-  console.log(`category`, category);
+
   const handleDelete = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.stopPropagation(); // Stop the propagation to prevent routing
 
@@ -63,14 +63,16 @@ export default function CategoriesTableRow({
       className={`cursor-pointer ${isPending ? "opacity-30" : "opacity-100"}`}
     >
       <TableCell className="hidden sm:table-cell">
-        { category?.image && <Image
-          alt="Category Image"
-          className="aspect-square rounded-md object-cover"
-          height="64"
-          src={category.image?.url}
-          // src=''
-          width="64"
-        />}
+        {category?.image && (
+          <Image
+            alt="Category Image"
+            className="aspect-square rounded-md object-cover"
+            height="64"
+            src={category.image?.url}
+            // src=''
+            width="64"
+          />
+        )}
       </TableCell>
       <TableCell className="font-medium flex-1">{category.name} </TableCell>
       <TableCell className="hidden md:table-cell">{category.type} </TableCell>
