@@ -13,10 +13,11 @@ import { useToast } from "@/components/ui/use-toast";
 import { Prisma } from "@prisma/client";
 import dayjs from "dayjs";
 import { MoreHorizontal } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useTransition } from "react";
 import { deleteCategory } from "../actions";
 import Image from "next/image";
+import useQueryString from "@/hooks/use-query-string";
 export type CategoryWithRelations = Prisma.CategoryGetPayload<{
   include: {
     parentCategory: true;
@@ -29,11 +30,13 @@ export default function CategoriesTableRow({
   category: CategoryWithRelations;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const { createQueryString } = useQueryString();
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
   const handleDelete = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    e.stopPropagation(); // Stop the propagation to prevent routing
+    e.stopPropagation();
 
     startTransition(async () => {
       const result = await deleteCategory(category.id);
@@ -41,15 +44,13 @@ export default function CategoriesTableRow({
       if (result.success) {
         toast({
           title: "Category Deleted",
-          description: "The category has been successfully deleted.",
+          description: result.message,
           variant: "success",
         });
       } else {
-        // Handle error (e.g., show an error message)
         toast({
           title: "Error Deleting Category",
-          description:
-            "There was an error deleting the category. Please try again.",
+          description: result.message,
           variant: "destructive",
         });
       }
@@ -59,7 +60,14 @@ export default function CategoriesTableRow({
   return (
     <TableRow
       key={category.id}
-      onClick={() => router.push(`/admin/categories/${category.id}`)}
+      onClick={() =>
+        router.push(
+          `/admin/categories/${category.id}?${createQueryString({
+            category_type: category.type,
+            parent_category_id: category.parentId || "",
+          })}`
+        )
+      }
       className={`cursor-pointer ${isPending ? "opacity-30" : "opacity-100"}`}
     >
       <TableCell className="hidden sm:table-cell">

@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 
 import { revalidatePath } from "next/cache";
 import { CategoryFormInputType } from "./schema";
-import { CategoryType } from "@prisma/client";
+import { CategoryType, Prisma } from "@prisma/client";
 
 export async function getParentCategories(categoryType: CategoryType) {
   let parentCategoryType: CategoryType | null = null;
@@ -55,7 +55,7 @@ export async function createCategory(data: CategoryFormInputType) {
       data: {
         name: data.name,
         type: data.type,
-        parentId: data.parentCategory ?? null,
+        parentId: data.parentCategory || null,
         image: {
           create: {
             url: "https://images.unsplash.com/photo-1565103446317-476a2b789651?q=80&w=2897&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -95,6 +95,7 @@ export async function getCategories() {
     throw new Error("Failed to fetch categories");
   }
 }
+
 export async function deleteCategory(categoryId: string) {
   try {
     if (!categoryId) {
@@ -104,7 +105,22 @@ export async function deleteCategory(categoryId: string) {
       };
     }
 
-    // Delete the product
+    // Check if there are any products in this category
+    const productsCount = await prisma.product.count({
+      where: {
+        categoryId: categoryId,
+      },
+    });
+
+    if (productsCount > 0) {
+      return {
+        message:
+          "Cannot delete category. It contains products that must be removed or reassigned first.",
+        success: false,
+      };
+    }
+
+    // If no products are associated, proceed with deletion
     await prisma.category.delete({
       where: {
         id: categoryId,
@@ -119,8 +135,18 @@ export async function deleteCategory(categoryId: string) {
     };
   } catch (error) {
     console.error("Error deleting category:", error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2003") {
+        return {
+          message:
+            "Cannot delete this category as it is still referenced by existing products. Please remove or reassign all products from this category before deleting it.",
+          success: false,
+        };
+      }
+    }
     return {
-      message: "An error occurred while deleting the category.",
+      message:
+        "An unexpected error occurred while deleting the category. Please try again later.",
       success: false,
     };
   }
@@ -156,14 +182,14 @@ export async function updateCategory(
       data: {
         name: data.name,
         type: data.type,
-        parentId: data.parentCategory,
+        parentId: data.parentCategory || null,
       },
     });
 
     revalidatePath("/admin/categories");
 
     return {
-      message: "Category created successfully!",
+      message: "Category updated successfully!",
       data: updatedCategory,
       success: true,
     };
