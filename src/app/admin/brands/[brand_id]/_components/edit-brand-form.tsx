@@ -108,9 +108,10 @@ export default function EditBrandForm() {
 
   useEffect(() => {
     if (brandDetails) {
-      const { name, website } = brandDetails;
+      const { name, website, description } = brandDetails;
       reset({
         brandName: name ?? "",
+        description: description ?? "",
         website: website ?? "",
       });
     }

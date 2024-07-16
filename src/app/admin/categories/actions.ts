@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma";
 
 import { revalidatePath } from "next/cache";
-import { CategoryFormInputType, categorySchema } from "./schema";
+import { CategoryFormInputType } from "./schema";
 
 type CategoryType = "PRIMARY" | "SECONDARY" | "TERTIARY" | "QUATERNARY";
 

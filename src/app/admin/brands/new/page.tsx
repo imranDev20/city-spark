@@ -53,6 +53,7 @@ const defaultValues = {
   website: "",
   email: "",
   phone: "",
+  status: "",
   productCategories: [],
   brandStory: "",
   ambassador: "",
