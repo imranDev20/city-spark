@@ -93,6 +93,18 @@ export default function EditInventoryForm({
           collectionPoint: "",
         },
       ],
+      collectionAvailabilityTime: '',
+      collectionEligibility:false,
+      deliveryEligibility:false,
+      countAvailableForCollection:"",
+      countAvailableForDelivery: "",
+      maxCollectionCount: "",
+      maxDeliveryCount: "",
+      minCollectionCount: "",
+      minDeliveryCount: "",
+      maxDeliveryTime: "",
+      productId: "",
+      
     },
   });
   const {
