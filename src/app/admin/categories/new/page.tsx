@@ -16,7 +16,6 @@ export default function CreateCategoryPage() {
   return (
     <ContentLayout title="Create Category">
       <DynamicBreadcrumb items={breadcrumbItems} />
-
       <CreateCategoryForm />
     </ContentLayout>
   );

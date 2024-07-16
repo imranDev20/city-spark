@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { Check, ChevronLeft, ChevronsUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -22,16 +22,22 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRef, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Prisma } from "@prisma/client";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { inventorySchema } from "../schema";
-const defaultValues = {
-  name: "",
-  description: "",
-  features: [],
-};
+import { Popover, PopoverTrigger } from "@radix-ui/react-popover";
+import { PopoverContent } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
+
+
+// const defaultValues = {
+//   name: "",
+//   description: "",
+//   features: [],
+// };
 export type RelationsWithProducts = Prisma.ProductGetPayload<{
   include: {
     images: true;
@@ -44,9 +50,10 @@ export default function CreateInventoryForm({
   products: RelationsWithProducts[];
 }) {
   const [isPending, startTransition] = useTransition();
+  const [openParentComboBox, setOpenParentComboBox] = useState<boolean>(false);
   const form = useForm<z.infer<typeof inventorySchema>>({
     resolver: zodResolver(inventorySchema),
-    defaultValues,
+    // defaultValues,
     // mode: "all",
   });
   const formRef = useRef<HTMLFormElement>(null);
@@ -97,10 +104,64 @@ export default function CreateInventoryForm({
                       control={form.control}
                       name="productId"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Product</FormLabel>
+                        <FormItem className="w-full flex flex-col gap-1">
+                          <FormLabel>Product Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Select product" {...field} />
+                            <Popover
+                              open={openParentComboBox}
+                              onOpenChange={setOpenParentComboBox}
+                            >
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  className="justify-between"
+                                >
+                                  {field.value ? (
+                                    products.find(
+                                      (product) => product.id === field.value
+                                    )?.name
+                                  ) : (
+                                    <p className="text-muted-foreground">
+                                      Select product
+                                    </p>
+                                  )}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[200px] p-0 popover-content-width-same-as-its-trigger">
+                                <Command>
+                                  <CommandInput placeholder="Search product..." />
+                                  <CommandList>
+                                    <CommandEmpty>
+                                      No product found.
+                                    </CommandEmpty>
+                                    <CommandGroup>
+                                      {products.map((product) => (
+                                        <CommandItem
+                                          key={product.id}
+                                          value={product.id}
+                                          onSelect={() => {
+                                            field.onChange(product.id);
+                                            setOpenParentComboBox(false);
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              field.value === product.id
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            )}
+                                          />
+                                          {product.name}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -163,7 +224,10 @@ export default function CreateInventoryForm({
                         <FormItem>
                           <FormLabel>Estimated Delivery Time</FormLabel>
                           <FormControl>
-                            <Input placeholder="Estimated delivery time" {...field} />
+                            <Input
+                              placeholder="Estimated delivery time"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -171,6 +235,59 @@ export default function CreateInventoryForm({
                     />
                   </div>
                 </div>
+                <Card>
+              <CardHeader>
+                <CardTitle>Features & Benefits</CardTitle>
+                <CardDescription>
+                  Please list the features and benefits.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-3 space-y-1">
+                  {featureFields.map((featureField, index) => (
+                    <div
+                      key={featureField.id}
+                      className="grid gap-3 sm:grid-cols-8"
+                    >
+                      <div className="grid gap-3 col-span-7">
+                        <FormField
+                          name={`features.${index}.feature`}
+                          control={form.control}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  placeholder="Enter features and benefits"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid gap-3 col-span-1">
+                        <Button
+                          variant="ghost"
+                          type="button"
+                        //   onClick={() => removeFeature(index)} // Remove the feature at the specified index
+                        >
+                          <Trash className="w-4 h-4 text-primary" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  <div>
+                    <Button
+                      type="button"
+                    //   onClick={() => appendFeature({ feature: "" })} // Append a new feature with empty string
+                    >
+                      Add new
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
               </CardContent>
             </Card>
 
@@ -189,12 +306,12 @@ export default function CreateInventoryForm({
                   <div className="grid gap-3">
                     <FormField
                       control={form.control}
-                      name="name"
+                      name="collectionMinimumCount"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Minimum Count</FormLabel>
                           <FormControl>
-                            <Input placeholder="Select product" {...field} />
+                            <Input placeholder="Minimum count" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -205,7 +322,7 @@ export default function CreateInventoryForm({
                   <div className="grid gap-3">
                     <FormField
                       control={form.control}
-                      name="name"
+                      name="collectionMaximumCount"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Maximum Count</FormLabel>
@@ -221,7 +338,7 @@ export default function CreateInventoryForm({
                   <div className="grid gap-3">
                     <FormField
                       control={form.control}
-                      name="name"
+                      name="estimatedcollectionTime"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Estimated Collection Time</FormLabel>
