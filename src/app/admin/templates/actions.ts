@@ -8,8 +8,8 @@ export async function createTemplate(data: FormInputType) {
   try {
     const createTemplate = await prisma.template.create({
       data: {
-        name: "Sample Template",
-        description: "This is a sample template description.",
+        name: data.name,
+        description: data.description,
         fields: {
           create: [
             {
