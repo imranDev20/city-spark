@@ -7,12 +7,11 @@ export async function createBrand(data: FormInputType) {
   try {
     const createBrand = await prisma.brand.create({
       data: {
-        name: "sample brand",
-        website: "sample brand website",
+        name: data.brandName,
+        website: data.website,
       },
     });
     console.log(createBrand);
-
     revalidatePath("/admin/brands");
     return {
       message: "Brands created successfully!",
