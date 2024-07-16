@@ -215,6 +215,13 @@ export default function EditCategoryForm({
                                     currentValue
                                   )}`
                                 );
+
+                                router.push(
+                                  `${pathname}?${createQueryString(
+                                    "parent_category_id",
+                                    "null"
+                                  )}`
+                                );
                               }
                               form.setValue("parentCategory", "");
                             }}
