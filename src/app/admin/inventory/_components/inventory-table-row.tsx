@@ -64,7 +64,7 @@ export default function InventoryTableRow({
   return (
     <TableRow
       key={inventory.id}
-      onClick={() => router.push(`/admin/products/${inventory.id}`)}
+      onClick={() => router.push(`/admin/inventory/${inventory.id}`)}
       className={`cursor-pointer ${isPending ? "opacity-30" : "opacity-100"}`}
     >
       <TableCell className="hidden sm:table-cell">
