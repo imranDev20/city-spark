@@ -1,8 +1,9 @@
-import React from "react";
+import { Suspense } from "react";
 import { ContentLayout } from "../_components/content-layout";
 import DynamicBreadcrumb from "../_components/dynamic-breadcrumb";
+import TemplateList from "./_components/template-list";
 import { TemplatePagination } from "./_components/template-pagination";
-import TemplateList  from "./_components/template-list";
+import TemplateTableHeader from "./_components/template-table-header";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -13,7 +14,10 @@ export default function TemplatesPage() {
   return (
     <ContentLayout title="Templates">
       <DynamicBreadcrumb items={breadcrumbItems} />
-      <TemplateList />
+      <TemplateTableHeader />
+      <Suspense fallback="Loading">
+        <TemplateList />
+      </Suspense>
       <TemplatePagination />
     </ContentLayout>
   );

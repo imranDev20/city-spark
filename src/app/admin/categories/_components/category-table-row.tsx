@@ -15,9 +15,10 @@ import dayjs from "dayjs";
 import { MoreHorizontal } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useTransition } from "react";
-import { deleteCategory } from "../actions";
+
 import Image from "next/image";
 import useQueryString from "@/hooks/use-query-string";
+import { deleteCategory } from "../actions";
 export type CategoryWithRelations = Prisma.CategoryGetPayload<{
   include: {
     parentCategory: true;
@@ -30,7 +31,6 @@ export default function CategoriesTableRow({
   category: CategoryWithRelations;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
   const { createQueryString } = useQueryString();
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -41,7 +41,7 @@ export default function CategoriesTableRow({
     startTransition(async () => {
       const result = await deleteCategory(category.id);
 
-      if (result.success) {
+      if (result?.success) {
         toast({
           title: "Category Deleted",
           description: result.message,
@@ -50,7 +50,7 @@ export default function CategoriesTableRow({
       } else {
         toast({
           title: "Error Deleting Category",
-          description: result.message,
+          description: result?.message,
           variant: "destructive",
         });
       }

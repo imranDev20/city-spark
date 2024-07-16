@@ -628,10 +628,9 @@ export default function CreateProductForm({
                                             setOpenTemplateComboBox(false);
 
                                             router.push(
-                                              `${pathname}?${createQueryString(
-                                                "template_id",
-                                                template.id
-                                              )}`,
+                                              `${pathname}?${createQueryString({
+                                                template_id: template.id,
+                                              })}`,
                                               {
                                                 scroll: false,
                                               }
