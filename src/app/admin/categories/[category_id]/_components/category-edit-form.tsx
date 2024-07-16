@@ -42,10 +42,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import ImageUploader from "../../_components/image-uploader";
 import { getCategoryById, updateCategoryById } from "../../actions";
-import { categorySchema } from "../../schema";
+import { CategoryFormInputType, categorySchema } from "../../schema";
 import ParentCategory from "./parent-category";
-
-export type CategoryFormInputType = z.infer<typeof categorySchema>;
 
 export default function EditCategoryForm() {
   const router = useRouter();

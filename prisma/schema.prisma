@@ -8,13 +8,6 @@ datasource db {
     directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
-model Post {
-    id        String  @id @default(cuid())
-    title     String
-    content   String?
-    published Boolean @default(false)
-}
-
 model Category {
     id              String       @id @default(cuid())
     name            String
@@ -37,7 +30,7 @@ enum CategoryType {
 
 model Product {
     id               String     @id @default(cuid())
-    name             String
+    name             String     @unique
     description      String?
     model            String?
     type             String?
@@ -70,8 +63,10 @@ model Product {
 
 model Brand {
     id              String    @id @default(cuid())
-    name            String
+    name            String    @unique
     products        Product[]
+    description     String?
+    status          Status    @default(DRAFT)
     website         String?
     countryOfOrigin String?
     image           Image?
