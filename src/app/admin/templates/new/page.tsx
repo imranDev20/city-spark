@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { LoadingButton } from "@/components/ui/loading-button";
 import {
   Select,
   SelectContent,
@@ -27,10 +28,12 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft, Trash } from "lucide-react";
 import Link from "next/link";
-import { Fragment, startTransition, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Fragment, useState, useTransition } from "react";
 import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { ContentLayout } from "../../_components/content-layout";
@@ -55,6 +58,9 @@ export type FormInputType = z.infer<typeof templateSchema>;
 
 // Component definition
 export default function CreateTemplatePage() {
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const { toast } = useToast();
   // Initialize form using useForm and zodResolver for validation
   const form = useForm<FormInputType>({
     resolver: zodResolver(templateSchema),
@@ -94,8 +100,21 @@ export default function CreateTemplatePage() {
     startTransition(async () => {
       const result = await createTemplate(data);
       if (result.success) {
+        // Handle successful deletion (e.g., show a success message, update UI)
         console.log(result.message);
+        toast({
+          title: "Brand Template",
+          description: result.message,
+          variant: "success",
+        });
+
+        router.push("/admin/templates");
       } else {
+        toast({
+          title: "Templates Saved failed",
+          description: result.message,
+          variant: "destructive",
+        });
         console.error(result.message);
       }
     });
@@ -125,7 +144,15 @@ export default function CreateTemplatePage() {
               <Button variant="outline" size="sm">
                 Discard
               </Button>
-              <Button size="sm">Save Template</Button>
+              <LoadingButton
+                type="submit"
+                disabled={isPending}
+                size="sm"
+                loading={isPending}
+                className="text-xs font-semibold h-8"
+              >
+                Save Tempalte
+              </LoadingButton>
             </div>
           </div>
 
@@ -346,9 +373,15 @@ export default function CreateTemplatePage() {
             <Button variant="outline" size="sm">
               Discard
             </Button>
-            <Button type="submit" size="sm">
-              Save Template
-            </Button>
+            <LoadingButton
+              type="submit"
+              disabled={isPending}
+              size="sm"
+              loading={isPending}
+              className="text-xs font-semibold h-8"
+            >
+              Save Brand
+            </LoadingButton>
           </div>
         </form>
       </Form>
