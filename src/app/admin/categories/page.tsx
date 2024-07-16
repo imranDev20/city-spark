@@ -12,9 +12,9 @@ const breadcrumbItems = [
     isCurrentPage: true,
   },
 ];
-export default function AdminCreateProductPage() {
+export default function AdminCategoryListPage() {
   return (
-    <ContentLayout title="Brands">
+    <ContentLayout title="Categories">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <CategoryTableHeader />
       <Suspense fallback="Loading...">
