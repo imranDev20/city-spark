@@ -10,9 +10,21 @@ export async function createTemplate(data: FormInputType) {
       data: {
         name: "Sample Template",
         description: "This is a sample template description.",
-        fields: [
-          { fieldName: "sample", fieldType: "sample", fieldValue: "sample" },
-        ],
+        fields: {
+          create: [
+            {
+              fieldName: "Sample Field Name",
+              fieldType: "TEXT",
+              fieldValues: null,
+            },
+            {
+              fieldName: "Sample field 2",
+              fieldType: "SELECT",
+              fieldOptions: "Option1, option2, option 3",
+              fieldValues: "Option 1",
+            },
+          ],
+        },
       },
     });
     console.log(createTemplate);
