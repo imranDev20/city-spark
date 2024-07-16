@@ -170,10 +170,10 @@ export default function CreateCategoryForm({
                               field.onChange(currentValue);
 
                               router.push(
-                                `${pathname}?${createQueryString(
-                                  "category_type",
-                                  currentValue
-                                )}`
+                                `${pathname}?${createQueryString({
+                                  category_type: currentValue,
+                                  parent_category_id: "",
+                                })}`
                               );
 
                               form.setValue("parentCategory", "");

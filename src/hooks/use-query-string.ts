@@ -1,27 +1,36 @@
 import { useSearchParams } from "next/navigation";
+import { useCallback } from "react";
 
 export default function useQueryString() {
   const searchParams = useSearchParams();
 
-  const createQueryString = (name: string, value: string) => {
-    const newSearchParams = new URLSearchParams(searchParams.toString());
+  const createQueryString = useCallback(
+    (updates: Record<string, string>) => {
+      const params = new URLSearchParams(searchParams.toString());
 
-    if (value === "") {
+      Object.entries(updates).forEach(([name, value]) => {
+        if (value === "") {
+          params.delete(name);
+        } else {
+          params.delete(name); // Remove existing parameter
+          params.set(name, value); // Add new value
+        }
+      });
+
+      return params.toString();
+    },
+    [searchParams]
+  );
+  const removeQueryString = useCallback(
+    (name: string) => {
+      const newSearchParams = new URLSearchParams(searchParams.toString());
+
       newSearchParams.delete(name);
-    } else {
-      newSearchParams.set(name, value);
-    }
 
-    const newQueryString = newSearchParams.toString();
-    return newQueryString;
-  };
-  const removeQueryString = (name: string) => {
-    const newSearchParams = new URLSearchParams(searchParams.toString());
-
-    newSearchParams.delete(name);
-
-    return newSearchParams.toString();
-  };
+      return newSearchParams.toString();
+    },
+    [searchParams]
+  );
 
   return { createQueryString, removeQueryString };
 }
