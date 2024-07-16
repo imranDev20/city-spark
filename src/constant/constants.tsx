@@ -1,2 +1,8 @@
-export type CategoryType = string[];
-export const CATEGORY_TYPE = ["PRIMARY", "SECONDARY", "TERTIARY", "QUATERNARY"];
+import { CategoryType } from "@prisma/client";
+
+export const CATEGORY_TYPE: CategoryType[] = [
+  "PRIMARY",
+  "SECONDARY",
+  "TERTIARY",
+  "QUATERNARY",
+];
