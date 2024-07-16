@@ -142,6 +142,7 @@ model Inventory {
     minCollectionCount          Int?
     maxDeliveryCount            Int?
     maxCollectionCount          Int?
+    stockCount                  Int      @default(0)
     product                     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
     productId                   String   @unique
     createdAt                   DateTime @default(now())

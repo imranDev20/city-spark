@@ -2,36 +2,48 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { CategoryFormInputType, categorySchema } from "./schema";
-
-type CategoryType = "PRIMARY" | "SECONDARY" | "TERTIARY" | "QUATERNARY";
+import { CategoryFormInputType } from "./schema";
+import { CategoryType } from "@prisma/client";
 
 export async function getParentCategories(categoryType: CategoryType) {
+  let parentCategoryType: CategoryType | null = null;
+
+  if (!categoryType) {
+    return null;
+  }
+
   try {
-    console.log(`categoryType`, categoryType);
-    if (categoryType == "PRIMARY") {
-      throw new Error("Failed to fetch categoryies");
+    switch (categoryType) {
+      case "PRIMARY":
+        return null;
+      case "SECONDARY":
+        parentCategoryType = "PRIMARY";
+        break;
+      case "TERTIARY":
+        parentCategoryType = "SECONDARY";
+        break;
+      case "QUATERNARY":
+        parentCategoryType = "TERTIARY";
+        break;
+
+      default:
+        throw new Error(`Invalid category type: ${categoryType}`);
     }
-    if (categoryType == "SECONDARY") {
-      categoryType = "PRIMARY";
-    } else if (categoryType == "TERTIARY") {
-      categoryType = "SECONDARY";
-    } else if (categoryType == "QUATERNARY") {
-      categoryType = "TERTIARY";
-    }
-    const category = await prisma.category.findMany({
+
+    const categories = await prisma.category.findMany({
       where: {
-        type: categoryType,
+        type: parentCategoryType,
       },
     });
 
-    return category;
+    return categories;
   } catch (error) {
-    console.error("Error fetching products:", error);
-    throw new Error("Failed to fetch products");
+    console.error("Error fetching parent categories:", error);
+    throw new Error(
+      "An error occurred while fetching parent categories. Please try again later."
+    );
   }
 }
-
 export type FormState = {
   message: string;
 };
@@ -67,7 +79,7 @@ export async function createCategory(data: CategoryFormInputType) {
   }
 }
 
-export async function getAllCategories() {
+export async function getCategories() {
   try {
     const categories = await prisma.category.findMany({
       include: {
@@ -130,26 +142,28 @@ export async function getCategoryById(categoryId: string) {
     throw new Error("Failed to fetch category");
   }
 }
-export async function updateCategoryById(
+
+export async function updateCategory(
   categoryId: string,
   data: CategoryFormInputType
 ) {
   try {
-    const category = await prisma.category.update({
+    const updatedCategory = await prisma.category.update({
       where: {
         id: categoryId,
       },
       data: {
         name: data.name,
-        type: "SECONDARY",
-        parentId: "clyjujnp8000311qgakv70hqs",
+        type: data.type,
+        parentId: data.parentCategory,
       },
     });
 
     revalidatePath("/admin/categories");
+
     return {
       message: "Category created successfully!",
-      data: category,
+      data: updatedCategory,
       success: true,
     };
   } catch (error) {

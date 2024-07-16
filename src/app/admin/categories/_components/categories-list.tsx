@@ -35,22 +35,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
-import { getAllCategories } from "../actions";
+import { getCategories } from "../actions";
 import CategoriesTableRow from "./category-table-row";
 
 export default async function CategoriesList() {
-  const categories = await getAllCategories();
-  console.log(`categories`, categories);
+  const categories = await getCategories();
+
   return (
     <>
-    
-
-      <Card>  
+      <Card>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-              <TableHead className="hidden w-[120px] sm:table-cell">
+                <TableHead className="hidden w-[120px] sm:table-cell">
                   <span className="sr-only">Image</span>
                 </TableHead>
                 <TableHead>Name</TableHead>
