@@ -1,9 +1,16 @@
+import { getBrandById } from "../actions";
 import EditBrandForm from "./_components/edit-brand-form";
 
-export default function AdminBrandDetailsPage() {
+export default async function AdminBrandDetailsPage({
+  params,
+}: {
+  params: { brand_id: string };
+}) {
+  const { brand_id } = params;
+  const brandDetails = await getBrandById(brand_id);
   return (
     <div>
-      <EditBrandForm />
+      <EditBrandForm brandDetails={brandDetails} />
     </div>
   );
 }
