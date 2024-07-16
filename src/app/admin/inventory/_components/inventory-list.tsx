@@ -31,7 +31,7 @@ export type InventoryWithRelations = Prisma.InventoryGetPayload<{
   };
 }>;
 
-export default function InventoryList({inventories}:{inventories:InventoryWithRelations}) {
+export default function InventoryList({inventories}:{inventories:InventoryWithRelations[]}) {
   return (
     <>
       
