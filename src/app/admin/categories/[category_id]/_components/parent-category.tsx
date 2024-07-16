@@ -5,34 +5,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import React from "react";
 import { useFormContext } from "react-hook-form";
-import { CategoryFormInputType } from "../../new/page";
 import CategoryDropdown from "./category-dropdown";
+import { CategoryFormInputType } from "../../schema";
 
+export type CategoryType = "PRIMARY" | "SECONDARY" | "TERTIARY" | "QUATERNARY";
 
-
-export type CategoryType = "PRIMARY"|"SECONDARY" | "TERTIARY" | "QUATERNARY";
-
-export default  function ParentCategory(props: any) {
-  const { control,  watch } = useFormContext<CategoryFormInputType>();
+export default function ParentCategory(props: any) {
+  const { watch } = useFormContext<CategoryFormInputType>();
   const categoryValue = watch("type");
-  
- 
+
   return (
     <Card>
       <CardHeader>
@@ -69,7 +53,7 @@ export default  function ParentCategory(props: any) {
               </FormItem>
             )}
           /> */}
-         <CategoryDropdown categoryValue = {categoryValue} />
+          <CategoryDropdown categoryValue={categoryValue} />
         </div>
       </CardContent>
     </Card>

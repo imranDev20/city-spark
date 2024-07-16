@@ -1,6 +1,11 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-const CategoryTypeEnum = z.enum(['PRIMARY', 'SECONDARY', 'TERTIARY', 'QUATERNARY']);
+const CategoryTypeEnum = z.enum([
+  "PRIMARY",
+  "SECONDARY",
+  "TERTIARY",
+  "QUATERNARY",
+]);
 
 export const categorySchema = z.object({
   name: z.string().min(1, "Category name is required and must be unique"),
@@ -10,4 +15,4 @@ export const categorySchema = z.object({
 });
 
 // Export the TypeScript type for the schema
-export type Category = z.infer<typeof categorySchema>;
+export type CategoryFormInputType = z.infer<typeof categorySchema>;
