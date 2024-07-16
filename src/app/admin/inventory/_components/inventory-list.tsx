@@ -1,15 +1,11 @@
 import Image from "next/image";
 import { MoreHorizontal } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -26,17 +22,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
+import { InventoryPagination } from "./inventory-pagination";
+import { Prisma } from "@prisma/client";
+export type InventoryWithRelations = Prisma.InventoryGetPayload<{
+  include: {
+    product:true
+  };
+}>;
 
-export default function InventoryList() {
+export default function InventoryList({inventories}:{inventories:InventoryWithRelations}) {
   return (
     <>
       
@@ -295,6 +290,7 @@ export default function InventoryList() {
           </div>
         </CardFooter>
       </Card>
+      <InventoryPagination />
     </>
   );
 }
