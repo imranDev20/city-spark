@@ -59,9 +59,9 @@ export default function CreateInventoryForm({
   const { toast } = useToast();
   const [openParentComboBox, setOpenParentComboBox] = useState<boolean>(false);
   const form = useForm<InventoryFormInputType>({
-    // resolver: zodResolver(inventorySchema),
+    resolver: zodResolver(inventorySchema),
     defaultValues: {
-      stock: 0,
+      stock: "0",
       deliveryAreas: [
         {
             deliveryArea: "",
@@ -96,24 +96,24 @@ export default function CreateInventoryForm({
     data
   ) => {
     console.log(`data`, data);
-    // startTransition(async () => {
-    //   const result = await createInventory(data);
+    startTransition(async () => {
+      const result = await createInventory(data);
 
-    //   if (result.success) {
-    //     toast({
-    //       title: "Success",
-    //       description: result.message,
-    //       variant: "success",
-    //     });
-    //     router.push("/admin/inventories");
-    //   } else {
-    //     toast({
-    //       title: "Error",
-    //       description: result.message,
-    //       variant: "destructive",
-    //     });
-    //   }
-    // });
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: result.message,
+          variant: "success",
+        });
+        router.push("/admin/inventory");
+      } else {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    });
   };
   return (
     <Form {...form}>
@@ -366,7 +366,7 @@ export default function CreateInventoryForm({
                         <FormItem>
                          
                           <FormControl>
-                            <Input type="number" placeholder="Count available for delivery" {...field} />
+                            <Input  placeholder="Count available for delivery" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -502,17 +502,17 @@ export default function CreateInventoryForm({
                 </Card>
                 <Card className="mt-5">
                   <CardHeader>
-                    <CardTitle>Count Available For Delivery</CardTitle>
+                    <CardTitle>Count Available For Collection</CardTitle>
                   </CardHeader>
                   <CardContent>
                   <FormField
                       control={form.control}
-                      name="countAvailableForDelivery"
+                      name="countAvailableForCollection"
                       render={({ field }) => (
                         <FormItem>
                          
                           <FormControl>
-                            <Input placeholder="Count available for delivery" {...field} />
+                            <Input placeholder="Count available for collection" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

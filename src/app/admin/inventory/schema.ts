@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const inventorySchema = z.object({
-  stock: z.number().min(1, "stock value is required"),
+  stock: z.string().min(1, "stock value is required"),
   deliveryEligibility: z.boolean(),
   collectionEligibility: z.boolean(),
   maxDeliveryTime: z.string().optional(),
@@ -21,16 +21,16 @@ export const inventorySchema = z.object({
     })
   )
   .optional(),
-  countAvailableForDelivery: z.number().optional(),
-  countAvailableForCollection: z.number().optional(),
-  minDeliveryCount: z.number().optional(),
-  minCollectionCount: z.number().optional(),
-  maxDeliveryCount: z.number().optional(),
-  maxCollectionCount: z.number().optional(),
+  countAvailableForDelivery: z.string().optional(),
+  countAvailableForCollection: z.string().optional(),
+  minDeliveryCount: z.string().optional(),
+  minCollectionCount: z.string().optional(),
+  maxDeliveryCount: z.string().optional(),
+  maxCollectionCount: z.string().optional(),
   productId: z.string().min(1, "Select product is required"),
 }).refine(data => {
     if (data.countAvailableForDelivery && data.stock) {
-      return data.countAvailableForDelivery <= data.stock;
+      return Number(data.countAvailableForDelivery) <= Number(data.stock);
     }
     return true;
   }, {
