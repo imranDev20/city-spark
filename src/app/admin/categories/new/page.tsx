@@ -29,7 +29,6 @@ export default async function CreateCategoryPage({
   return (
     <ContentLayout title="Create Category">
       <DynamicBreadcrumb items={breadcrumbItems} />
-
       <CreateCategoryForm parentCategories={parentCategories} />
     </ContentLayout>
   );

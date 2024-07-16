@@ -17,7 +17,6 @@ export default async function AdminEditProductPage({
 }) {
   const { category_id } = params;
   const { category_type } = searchParams;
-
   const categoryDetails = await getCategoryById(category_id as string);
 
   const parentCategories = await getParentCategories(
