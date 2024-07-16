@@ -65,6 +65,8 @@ model Brand {
     id              String    @id @default(cuid())
     name            String    @unique
     products        Product[]
+    description     String?
+    status          Status    @default(DRAFT)
     website         String?
     countryOfOrigin String?
     image           Image?
