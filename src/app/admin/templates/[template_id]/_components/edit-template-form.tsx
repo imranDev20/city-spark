@@ -30,13 +30,12 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, Trash } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
 import { LoadingButton } from "@/components/ui/loading-button";
-import { Spinner } from "@/components/ui/spinner";
+import { Prisma } from "@prisma/client";
 import { Fragment, useEffect, useState, useTransition } from "react";
 import {
   FormProvider,
@@ -45,13 +44,18 @@ import {
   useForm,
 } from "react-hook-form";
 import { z } from "zod";
-import { getTemplateById, updateTemplateById } from "../../actions";
+import { updateTemplateById } from "../../actions";
 import { templateSchema } from "../../new/schema";
 console.log(updateTemplateById);
 // Define default values and types
 
 export type FormInputType = z.infer<typeof templateSchema>;
-export default function EditTemplateForm() {
+export type TemplateWithRelations = Prisma.TemplateGetPayload<{}>;
+export default function EditTemplateForm({
+  templateDetails,
+}: {
+  templateDetails: TemplateWithRelations;
+}) {
   // Initialize form using useForm and zodResolver for validation
   const form = useForm<FormInputType>({
     resolver: zodResolver(templateSchema),
@@ -85,14 +89,6 @@ export default function EditTemplateForm() {
     newFieldTypes[index] = value;
     setFieldTypes(newFieldTypes);
   };
-
-  const { data: templateDetails, isPending: isTemplateDetailsPending } =
-    useQuery({
-      queryKey: ["template-details"],
-      queryFn: async () => await getTemplateById(params.template_id as string),
-    });
-
-  //   console.log(templateDetails);
 
   // Handle form submission
   const onEditTemplateSubmit: SubmitHandler<FormInputType> = async (data) => {
@@ -142,14 +138,6 @@ export default function EditTemplateForm() {
       isCurrentPage: true,
     },
   ];
-
-  if (isTemplateDetailsPending) {
-    return (
-      <div className="min-h-[100vh] flex justify-center items-center">
-        <Spinner className="text-secondary" size="large" />
-      </div>
-    );
-  }
 
   return (
     <ContentLayout title="Edit Template">
