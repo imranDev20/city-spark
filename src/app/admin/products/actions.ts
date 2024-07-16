@@ -2,14 +2,15 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { ProductFormInputType } from "./new/page";
+import { unstable_cache as cache } from "next/cache";
+import { ProductFormInputType } from "./new/_components/create-product-form";
 
-export async function getProducts() {
+// Cached products for ssr in the list
+export const getProducts = cache(async () => {
   try {
     const products = await prisma.product.findMany({
       include: {
         images: true,
-        brand: true,
         category: true,
       },
     });
@@ -19,42 +20,68 @@ export async function getProducts() {
     console.error("Error fetching products:", error);
     throw new Error("Failed to fetch products");
   }
-}
+});
 
-export async function getBrands() {
+export const getBrands = cache(async () => {
   try {
     const brands = await prisma.brand.findMany({});
-    console.log(brands);
     return brands;
   } catch (error) {
     console.error("Error fetching products:", error);
     throw new Error("Failed to fetch products");
   }
-}
+});
 
-export async function getTemplates() {
+export const getTemplates = cache(async () => {
   try {
-    const templates = await prisma.template.findMany({});
-    console.log(templates);
+    const templates = await prisma.template.findMany({
+      include: {
+        fields: true,
+      },
+    });
     return templates;
   } catch (error) {
     console.error("Error fetching templates:", error);
     throw new Error("Failed to fetch templates");
   }
-}
+});
 
-export async function getCategories() {
+export const getTemplateById = cache(async (templateId: string) => {
+  if (!templateId) {
+    console.log("No template Id");
+    return null;
+  }
+
+  console.log(templateId, "IN ACTION");
+
+  try {
+    const template = await prisma.template.findUnique({
+      where: {
+        id: templateId,
+      },
+      include: {
+        fields: true,
+      },
+    });
+
+    return template;
+  } catch (error) {
+    console.error("Error fetching templates:", error);
+    throw new Error("Failed to fetch templates");
+  }
+});
+
+export const getCategories = cache(async () => {
   try {
     const categories = await prisma.category.findMany({});
-    console.log(categories);
     return categories;
   } catch (error) {
     console.error("Error fetching categories:", error);
     throw new Error("Failed to fetch categories");
   }
-}
+});
 
-export async function getProductById(productId: string) {
+export const getProductById = cache(async (productId: string) => {
   try {
     const product = await prisma.product.findUnique({
       where: {
@@ -64,6 +91,7 @@ export async function getProductById(productId: string) {
         images: true,
         brand: true,
         features: true,
+        template: true,
       },
     });
 
@@ -76,7 +104,7 @@ export async function getProductById(productId: string) {
     console.error("Error fetching product:", error);
     throw new Error("Failed to fetch product");
   }
-}
+});
 
 export async function createProduct(data: ProductFormInputType) {
   try {
@@ -174,8 +202,7 @@ export async function updateProduct(
         width: data.width,
         height: data.height,
         material: data.material,
-        status: data.status ?? "DRAFT",
-
+        status: data.status,
         template: data.template
           ? {
               connect: { id: data.template },
@@ -221,7 +248,25 @@ export async function updateProduct(
       },
     });
 
+    if (data.templateFields) {
+      await prisma.template.update({
+        where: { id: data.template },
+        data: {
+          fields: {
+            deleteMany: {}, // This will delete all existing fields
+            create: data.templateFields.map((field) => ({
+              fieldName: field.fieldName,
+              fieldType: field.fieldType,
+              fieldOptions: field.fieldOptions,
+              fieldValues: field.fieldValues,
+            })),
+          },
+        },
+      });
+    }
+
     revalidatePath("/admin/products");
+    revalidatePath(`/admin/products/${productId}`);
 
     return {
       message: "Product updated successfully!",

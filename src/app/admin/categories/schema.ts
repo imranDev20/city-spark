@@ -1,13 +1,34 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-const CategoryTypeEnum = z.enum(['PRIMARY', 'SECONDARY', 'TERTIARY', 'QUATERNARY']);
+const CategoryTypeEnum = z.enum([
+  "PRIMARY",
+  "SECONDARY",
+  "TERTIARY",
+  "QUATERNARY",
+]);
 
 export const categorySchema = z.object({
   name: z.string().min(1, "Category name is required and must be unique"),
-  images: z.string().optional(),
+  image: z.string().optional(),
   parentCategory: z.string().optional(),
-  type: CategoryTypeEnum,
+  type: CategoryTypeEnum.refine(
+    (val) => CategoryTypeEnum.options.includes(val as any),
+    {
+      message:
+        "Category type must be PRIMARY, SECONDARY, TERTIARY, or QUATERNARY",
+    }
+  ).superRefine((val, ctx) => {
+    if (!val) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Category type is required",
+      });
+    }
+  }),
 });
 
 // Export the TypeScript type for the schema
-export type Category = z.infer<typeof categorySchema>;
+export type CategoryFormInputType = z.infer<typeof categorySchema>;
+
+// Export the TypeScript type for CategoryType
+export type CategoryType = z.infer<typeof CategoryTypeEnum>;
