@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronLeft, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronLeft, ChevronsUpDown, Trash } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -19,47 +19,105 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef, useState, useTransition } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Prisma } from "@prisma/client";
 import { LoadingButton } from "@/components/ui/loading-button";
-import { inventorySchema } from "../schema";
+import { InventoryFormInputType, inventorySchema } from "../schema";
 import { Popover, PopoverTrigger } from "@radix-ui/react-popover";
 import { PopoverContent } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/use-toast";
+import { createInventory } from "../actions";
+import { useRouter } from "next/navigation";
 
-
-// const defaultValues = {
-//   name: "",
-//   description: "",
-//   features: [],
-// };
 export type RelationsWithProducts = Prisma.ProductGetPayload<{
   include: {
     images: true;
     category: true;
   };
 }>;
+
 export default function CreateInventoryForm({
   products,
 }: {
   products: RelationsWithProducts[];
 }) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const { toast } = useToast();
   const [openParentComboBox, setOpenParentComboBox] = useState<boolean>(false);
-  const form = useForm<z.infer<typeof inventorySchema>>({
-    resolver: zodResolver(inventorySchema),
-    // defaultValues,
-    // mode: "all",
+  const form = useForm<InventoryFormInputType>({
+    // resolver: zodResolver(inventorySchema),
+    defaultValues: {
+      stock: 0,
+      deliveryAreas: [
+        {
+            deliveryArea: "",
+        },
+      ],
+      collectionPoints: [
+        {
+            collectionPoint: "",
+        },
+      ],
+    },
   });
-  const formRef = useRef<HTMLFormElement>(null);
+  const { control, handleSubmit } = form;
+  const {
+    fields: areasFields,
+    append: appendDeliveryAreas,
+    remove: removeAreas,
+  } = useFieldArray<InventoryFormInputType>({
+    control,
+    name: "deliveryAreas",
+  });
+  const {
+    fields: collectionFields,
+    append: appendCollection,
+    remove: removeCollection,
+  } = useFieldArray<InventoryFormInputType>({
+    control,
+    name: "collectionPoints",
+  });
+
+  const onCreateInventorySubmit: SubmitHandler<InventoryFormInputType> = async (
+    data
+  ) => {
+    console.log(`data`, data);
+    // startTransition(async () => {
+    //   const result = await createInventory(data);
+
+    //   if (result.success) {
+    //     toast({
+    //       title: "Success",
+    //       description: result.message,
+    //       variant: "success",
+    //     });
+    //     router.push("/admin/inventories");
+    //   } else {
+    //     toast({
+    //       title: "Error",
+    //       description: result.message,
+    //       variant: "destructive",
+    //     });
+    //   }
+    // });
+  };
   return (
     <Form {...form}>
-      <form>
+      <form onSubmit={handleSubmit(onCreateInventorySubmit)}>
         <div className="flex items-center gap-4 mb-5 mt-7">
           <Link href="/admin/inventories">
             <Button variant="outline" size="icon" className="h-7 w-7">
@@ -173,26 +231,34 @@ export default function CreateInventoryForm({
             </Card>
 
             <Card x-chunk="dashboard-07-chunk-0">
-              <CardHeader>
+            <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   Delivery Eligibility
-                  <Switch />
+                  <FormField
+                    control={control}
+                    name="deliveryEligibility"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Switch  checked={field.value}  onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </CardTitle>
-                <CardDescription>
-                  Please provide the product name and description.
-                </CardDescription>
               </CardHeader>
+
               <CardContent>
                 <div className="grid gap-6 grid-cols-3">
                   <div className="grid gap-3">
                     <FormField
-                      control={form.control}
-                      name="deliveryMinimumCount"
+                      control={control}
+                      name="minDeliveryCount"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Minimum Count</FormLabel>
                           <FormControl>
-                            <Input placeholder="Minimum count" {...field} />
+                            <Input  placeholder="Minimum count" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -202,13 +268,13 @@ export default function CreateInventoryForm({
 
                   <div className="grid gap-3">
                     <FormField
-                      control={form.control}
-                      name="deliveryMaximumCount"
+                      control={control}
+                      name="maxDeliveryCount"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Maximum Count</FormLabel>
                           <FormControl>
-                            <Input placeholder="Maximum count" {...field} />
+                            <Input  placeholder="Maximum count" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -219,12 +285,12 @@ export default function CreateInventoryForm({
                   <div className="grid gap-3">
                     <FormField
                       control={form.control}
-                      name="estimatedDeliveryTime"
+                      name="maxDeliveryTime"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Estimated Delivery Time</FormLabel>
+                          <FormLabel>Max Delivery Time</FormLabel>
                           <FormControl>
-                            <Input
+                            <Input 
                               placeholder="Estimated delivery time"
                               {...field}
                             />
@@ -235,29 +301,29 @@ export default function CreateInventoryForm({
                     />
                   </div>
                 </div>
-                <Card>
-              <CardHeader>
-                <CardTitle>Features & Benefits</CardTitle>
-                <CardDescription>
-                  Please list the features and benefits.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-3 space-y-1">
-                  {featureFields.map((featureField, index) => (
+                <Card className="mt-5">
+                  <CardHeader>
+                    <CardTitle> Delivery Areas </CardTitle>
+                    <CardDescription>
+                      Post code for delivery area
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-3 space-y-1">
+                    {areasFields.map((areaField, index) => (
                     <div
-                      key={featureField.id}
+                      key={areaField.id}
                       className="grid gap-3 sm:grid-cols-8"
                     >
                       <div className="grid gap-3 col-span-7">
                         <FormField
-                          name={`features.${index}.feature`}
-                          control={form.control}
+                          name={`deliveryAreas.${index}.deliveryArea`}
+                          control={control}
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
                                 <Input
-                                  placeholder="Enter features and benefits"
+                                  placeholder="Enter delivery post code"
                                   {...field}
                                 />
                               </FormControl>
@@ -270,48 +336,75 @@ export default function CreateInventoryForm({
                         <Button
                           variant="ghost"
                           type="button"
-                        //   onClick={() => removeFeature(index)} // Remove the feature at the specified index
+                          onClick={() => removeAreas(index)} // Remove the feature at the specified index
                         >
                           <Trash className="w-4 h-4 text-primary" />
                         </Button>
                       </div>
                     </div>
                   ))}
-                  <div>
-                    <Button
-                      type="button"
-                    //   onClick={() => appendFeature({ feature: "" })} // Append a new feature with empty string
-                    >
-                      Add new
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                      <div>
+                        <Button
+                          type="button"
+                          onClick={() => appendDeliveryAreas({deliveryArea:""})} // Append a new feature with empty string
+                        >
+                          Add new
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="mt-5">
+                  <CardHeader>
+                    <CardTitle>Count Available For Delivery</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                  <FormField
+                      control={form.control}
+                      name="countAvailableForDelivery"
+                      render={({ field }) => (
+                        <FormItem>
+                         
+                          <FormControl>
+                            <Input type="number" placeholder="Count available for delivery" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </CardContent>
+                </Card>
               </CardContent>
             </Card>
 
             <Card x-chunk="dashboard-07-chunk-0">
-              <CardHeader>
+            <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   Collection Eligibility
-                  <Switch />
+                  <FormField
+                    control={control}
+                    name="collectionEligibility"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Switch  checked={field.value}  onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </CardTitle>
-                <CardDescription>
-                  Please provide the product name and description.
-                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-6 grid-cols-3">
                   <div className="grid gap-3">
                     <FormField
-                      control={form.control}
-                      name="collectionMinimumCount"
+                      control={control}
+                      name="minCollectionCount"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Minimum Count</FormLabel>
                           <FormControl>
-                            <Input placeholder="Minimum count" {...field} />
+                            <Input  placeholder="Minimum count" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -321,13 +414,13 @@ export default function CreateInventoryForm({
 
                   <div className="grid gap-3">
                     <FormField
-                      control={form.control}
-                      name="collectionMaximumCount"
+                      control={control}
+                      name="maxCollectionCount"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Maximum Count</FormLabel>
                           <FormControl>
-                            <Input placeholder="Select product" {...field} />
+                            <Input  placeholder="Maximum Count" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -337,13 +430,16 @@ export default function CreateInventoryForm({
 
                   <div className="grid gap-3">
                     <FormField
-                      control={form.control}
-                      name="estimatedcollectionTime"
+                      control={control}
+                      name="collectionAvailabilityTime"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Estimated Collection Time</FormLabel>
+                          <FormLabel>Collection Availability Time</FormLabel>
                           <FormControl>
-                            <Input placeholder="Select product" {...field} />
+                            <Input
+                              placeholder="Collection availability time"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -351,8 +447,83 @@ export default function CreateInventoryForm({
                     />
                   </div>
                 </div>
+                <Card className="mt-5">
+                  <CardHeader>
+                    <CardTitle>Collection Point / Branches </CardTitle>
+                    <CardDescription>
+                      Post code for collection point / branches
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-3 space-y-1">
+                    {collectionFields.map((collectionField, index) => (
+                    <div
+                      key={collectionField.id}
+                      className="grid gap-3 sm:grid-cols-8"
+                    >
+                      <div className="grid gap-3 col-span-7">
+                        <FormField
+                          name={`collectionPoints.${index}.collectionPoint`}
+                          control={control}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  placeholder="Enter collection post code"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid gap-3 col-span-1">
+                        <Button
+                          variant="ghost"
+                          type="button"
+                          onClick={() => removeCollection(index)} // Remove the feature at the specified index
+                        >
+                          <Trash className="w-4 h-4 text-primary" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                      <div>
+                        <Button
+                          type="button"
+                          onClick={() => appendCollection({collectionPoint:""})} // Append a new feature with empty string
+                        >
+                          Add new
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="mt-5">
+                  <CardHeader>
+                    <CardTitle>Count Available For Delivery</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                  <FormField
+                      control={form.control}
+                      name="countAvailableForDelivery"
+                      render={({ field }) => (
+                        <FormItem>
+                         
+                          <FormControl>
+                            <Input placeholder="Count available for delivery" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </CardContent>
+                </Card>
               </CardContent>
+              
             </Card>
+            
           </div>
 
           <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
@@ -364,13 +535,14 @@ export default function CreateInventoryForm({
                 <div className="grid gap-6">
                   <div className="grid gap-3">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="stock"
+                     
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Stock Count</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter stock value" {...field} />
+                            <Input   placeholder="Enter stock value" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
