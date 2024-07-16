@@ -40,7 +40,12 @@ import { productSchema } from "../../schema";
 import { updateProduct } from "../../actions";
 import { ContentLayout } from "@/app/admin/_components/content-layout";
 import DynamicBreadcrumb from "@/app/admin/_components/dynamic-breadcrumb";
-import ProductImageUploader from "../../_components/product-image-uploader";
+
+import {
+  MultiImageDropzone,
+  type FileState,
+} from "../../_components/product-image-uploader";
+
 import ManualsInstructionsUpload from "../../_components/manuals-instructions-upload";
 import { Brand, Category, Prisma, Template } from "@prisma/client";
 
@@ -60,6 +65,7 @@ import {
 import { cn } from "@/lib/utils";
 import useQueryString from "@/hooks/use-query-string";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEdgeStore } from "@/lib/edgestore";
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -103,6 +109,24 @@ export default function EditProductForm({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const selectedTemplate = searchParams.get("template_id") || null;
+
+  const [fileStates, setFileStates] = useState<FileState[]>([]);
+  const { edgestore } = useEdgeStore();
+
+  console.log(fileStates);
+
+  function updateFileProgress(key: string, progress: FileState["progress"]) {
+    setFileStates((fileStates) => {
+      const newFileStates = structuredClone(fileStates);
+      const fileState = newFileStates.find(
+        (fileState) => fileState.key === key
+      );
+      if (fileState) {
+        fileState.progress = progress;
+      }
+      return newFileStates;
+    });
+  }
 
   const form = useForm<ProductFormInputType>({
     resolver: zodResolver(productSchema),
@@ -233,8 +257,6 @@ export default function EditProductForm({
   const onEditProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
   ) => {
-    console.log(data);
-
     if (productDetails?.id) {
       startTransition(async () => {
         const result = await updateProduct(productDetails?.id, data);
@@ -1101,7 +1123,66 @@ export default function EditProductForm({
                           <h2 className="text-xl font-semibold tracking-tight"></h2>
                         </FormLabel>
                         <FormControl>
-                          <ProductImageUploader {...field} />
+                          <MultiImageDropzone
+                            value={fileStates}
+                            dropzoneOptions={{
+                              maxFiles: 5,
+                              maxSize: 1024 * 1024 * 1, // 1MB
+                            }}
+                            onChange={(files) => {
+                              setFileStates(files);
+                            }}
+                            onFilesAdded={async (addedFiles) => {
+                              setFileStates([...fileStates, ...addedFiles]);
+                              await Promise.all(
+                                addedFiles.map(async (addedFileState) => {
+                                  if (!(addedFileState.file instanceof File)) {
+                                    console.error(
+                                      "Expected a File object, but received:",
+                                      addedFileState.file
+                                    );
+                                    updateFileProgress(
+                                      addedFileState.key,
+                                      "ERROR"
+                                    );
+                                    return;
+                                  }
+
+                                  try {
+                                    const res =
+                                      await edgestore.publicImages.upload({
+                                        file: addedFileState.file,
+                                        input: { type: "product" },
+                                        onProgressChange: async (progress) => {
+                                          updateFileProgress(
+                                            addedFileState.key,
+                                            progress
+                                          );
+                                          if (progress === 100) {
+                                            // wait 1 second to set it to complete
+                                            // so that the user can see the progress bar at 100%
+                                            await new Promise((resolve) =>
+                                              setTimeout(resolve, 1000)
+                                            );
+                                            updateFileProgress(
+                                              addedFileState.key,
+                                              "COMPLETE"
+                                            );
+                                          }
+                                        },
+                                      });
+
+                                    console.log(res);
+                                  } catch (err) {
+                                    updateFileProgress(
+                                      addedFileState.key,
+                                      "ERROR"
+                                    );
+                                  }
+                                })
+                              );
+                            }}
+                          />
                         </FormControl>
                       </FormItem>
                     )}

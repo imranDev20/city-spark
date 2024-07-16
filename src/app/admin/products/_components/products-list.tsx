@@ -10,6 +10,7 @@ import {
 
 import { getProducts } from "../actions";
 import ProductTableRow, { ProductWithRelations } from "./product-table-row";
+import Link from "next/link";
 
 export default async function ProductList() {
   const products = (await getProducts()) as ProductWithRelations[];

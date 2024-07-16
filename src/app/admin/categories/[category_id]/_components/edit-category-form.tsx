@@ -82,7 +82,7 @@ export default function EditCategoryForm({
     { label: "Dashboard", href: "/admin" },
     { label: "Category", href: "/admin/categories" },
     {
-      label: "Create Category",
+      label: categoryDetails?.name || "",
       href: "/admin/categories/new",
       isCurrentPage: true,
     },
@@ -97,7 +97,14 @@ export default function EditCategoryForm({
     },
   });
 
-  const { control, handleSubmit, watch, setValue, reset } = form;
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { isDirty },
+  } = form;
 
   useEffect(() => {
     if (categoryDetails) {
@@ -148,7 +155,7 @@ export default function EditCategoryForm({
               </Button>
             </Link>
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-              Create Category
+              {`Edit ${categoryDetails?.name}`}
             </h1>
 
             <div className="hidden items-center gap-2 md:ml-auto md:flex">
@@ -157,7 +164,7 @@ export default function EditCategoryForm({
               </Button>
               <LoadingButton
                 type="submit"
-                disabled={isPending}
+                disabled={!isDirty || isPending}
                 size="sm"
                 loading={isPending}
                 className="text-xs font-semibold h-8"
