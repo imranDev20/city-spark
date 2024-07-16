@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Popover,
   PopoverContent,
@@ -26,10 +26,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useFormContext } from "react-hook-form";
-import { CategoryFormInputType } from "../new/page";
 import { cn } from "@/lib/utils";
 import { Category } from "@prisma/client";
-import { getParentCategories } from "../actions";
+import { CategoryFormInputType } from "../schema";
 
 interface DataType {
   id: string;
@@ -39,17 +38,6 @@ interface DataType {
   createdAt: Date;
   updatedAt: Date;
 }
-const categories = [
-  { label: "English", value: "en" },
-  { label: "French", value: "fr" },
-  { label: "German", value: "de" },
-  { label: "Spanish", value: "es" },
-  { label: "Portuguese", value: "pt" },
-  { label: "Russian", value: "ru" },
-  { label: "Japanese", value: "ja" },
-  { label: "Korean", value: "ko" },
-  { label: "Chinese", value: "zh" },
-] as const;
 
 export default function CategoryDropdown({
   categoryValue,
@@ -59,20 +47,6 @@ export default function CategoryDropdown({
   const { control } = useFormContext<CategoryFormInputType>();
   const [categories, setCategories] = useState<Category[]>([]);
   const [openParentComboBox, setOpenParentComboBox] = useState<boolean>(false);
-  useEffect(() => {
-    const getCategoryByType = async () => {
-      try {
-        const data = await getParentCategories(categoryValue);
-        setCategories(data);
-        console.log(`data`, data); // Ensure categories is always an array
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        setCategories([]); // Handle error by setting categories to an empty array
-      }
-    };
-
-    getCategoryByType();
-  }, [categoryValue]);
 
   return (
     <FormField
@@ -96,7 +70,9 @@ export default function CategoryDropdown({
                     categories.find((category) => category.id === field.value)
                       ?.name
                   ) : (
-                    <p className="text-muted-foreground">Select a parent category</p>
+                    <p className="text-muted-foreground">
+                      Select a parent category
+                    </p>
                   )}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
