@@ -2,7 +2,6 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-
 import { unstable_cache as cache } from "next/cache";
 import { ProductFormInputType } from "./new/_components/create-product-form";
 
