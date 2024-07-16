@@ -58,23 +58,25 @@ export default function CreateInventoryForm({
   const router = useRouter();
   const { toast } = useToast();
   const [openParentComboBox, setOpenParentComboBox] = useState<boolean>(false);
+  const [eligibilityDeliveryChecked, setEligibilityDeliveryChecked] =
+    useState<boolean>(false);
   const form = useForm<InventoryFormInputType>({
     resolver: zodResolver(inventorySchema),
     defaultValues: {
       stock: "0",
       deliveryAreas: [
         {
-            deliveryArea: "",
+          deliveryArea: "",
         },
       ],
       collectionPoints: [
         {
-            collectionPoint: "",
+          collectionPoint: "",
         },
       ],
     },
   });
-  const { control, handleSubmit } = form;
+  const { control, handleSubmit, watch, formState:{errors} } = form;
   const {
     fields: areasFields,
     append: appendDeliveryAreas,
@@ -231,7 +233,7 @@ export default function CreateInventoryForm({
             </Card>
 
             <Card x-chunk="dashboard-07-chunk-0">
-            <CardHeader>
+              <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   Delivery Eligibility
                   <FormField
@@ -240,7 +242,10 @@ export default function CreateInventoryForm({
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Switch  checked={field.value}  onCheckedChange={field.onChange} />
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
                         </FormControl>
                       </FormItem>
                     )}
@@ -258,7 +263,7 @@ export default function CreateInventoryForm({
                         <FormItem>
                           <FormLabel>Minimum Count</FormLabel>
                           <FormControl>
-                            <Input  placeholder="Minimum count" {...field} />
+                            <Input placeholder="Minimum count" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -274,7 +279,7 @@ export default function CreateInventoryForm({
                         <FormItem>
                           <FormLabel>Maximum Count</FormLabel>
                           <FormControl>
-                            <Input  placeholder="Maximum count" {...field} />
+                            <Input placeholder="Maximum count" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -290,7 +295,7 @@ export default function CreateInventoryForm({
                         <FormItem>
                           <FormLabel>Max Delivery Time</FormLabel>
                           <FormControl>
-                            <Input 
+                            <Input
                               placeholder="Estimated delivery time"
                               {...field}
                             />
@@ -310,75 +315,57 @@ export default function CreateInventoryForm({
                   </CardHeader>
                   <CardContent>
                     <div className="grid gap-3 space-y-1">
-                    {areasFields.map((areaField, index) => (
-                    <div
-                      key={areaField.id}
-                      className="grid gap-3 sm:grid-cols-8"
-                    >
-                      <div className="grid gap-3 col-span-7">
-                        <FormField
-                          name={`deliveryAreas.${index}.deliveryArea`}
-                          control={control}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input
-                                  placeholder="Enter delivery post code"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <div className="grid gap-3 col-span-1">
-                        <Button
-                          variant="ghost"
-                          type="button"
-                          onClick={() => removeAreas(index)} // Remove the feature at the specified index
+                      {areasFields.map((areaField, index) => (
+                        <div
+                          key={areaField.id}
+                          className="grid gap-3 sm:grid-cols-8"
                         >
-                          <Trash className="w-4 h-4 text-primary" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                          <div className="grid gap-3 col-span-7">
+                            <FormField
+                              name={`deliveryAreas.${index}.deliveryArea`}
+                              control={control}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="Enter delivery post code"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div className="grid gap-3 col-span-1">
+                            <Button
+                              variant="ghost"
+                              type="button"
+                              onClick={() => removeAreas(index)} // Remove the feature at the specified index
+                            >
+                              <Trash className="w-4 h-4 text-primary" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
                       <div>
                         <Button
                           type="button"
-                          onClick={() => appendDeliveryAreas({deliveryArea:""})} // Append a new feature with empty string
+                          onClick={() =>
+                            appendDeliveryAreas({ deliveryArea: "" })
+                          } // Append a new feature with empty string
                         >
                           Add new
                         </Button>
                       </div>
                     </div>
                   </CardContent>
-                </Card>
-                <Card className="mt-5">
-                  <CardHeader>
-                    <CardTitle>Count Available For Delivery</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                  <FormField
-                      control={form.control}
-                      name="countAvailableForDelivery"
-                      render={({ field }) => (
-                        <FormItem>
-                         
-                          <FormControl>
-                            <Input  placeholder="Count available for delivery" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                </Card>
+                </Card>               
               </CardContent>
             </Card>
 
             <Card x-chunk="dashboard-07-chunk-0">
-            <CardHeader>
+              <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   Collection Eligibility
                   <FormField
@@ -387,7 +374,10 @@ export default function CreateInventoryForm({
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Switch  checked={field.value}  onCheckedChange={field.onChange} />
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
                         </FormControl>
                       </FormItem>
                     )}
@@ -404,7 +394,7 @@ export default function CreateInventoryForm({
                         <FormItem>
                           <FormLabel>Minimum Count</FormLabel>
                           <FormControl>
-                            <Input  placeholder="Minimum count" {...field} />
+                            <Input placeholder="Minimum count" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -420,7 +410,7 @@ export default function CreateInventoryForm({
                         <FormItem>
                           <FormLabel>Maximum Count</FormLabel>
                           <FormControl>
-                            <Input  placeholder="Maximum Count" {...field} />
+                            <Input placeholder="Maximum Count" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -456,43 +446,45 @@ export default function CreateInventoryForm({
                   </CardHeader>
                   <CardContent>
                     <div className="grid gap-3 space-y-1">
-                    {collectionFields.map((collectionField, index) => (
-                    <div
-                      key={collectionField.id}
-                      className="grid gap-3 sm:grid-cols-8"
-                    >
-                      <div className="grid gap-3 col-span-7">
-                        <FormField
-                          name={`collectionPoints.${index}.collectionPoint`}
-                          control={control}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input
-                                  placeholder="Enter collection post code"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <div className="grid gap-3 col-span-1">
-                        <Button
-                          variant="ghost"
-                          type="button"
-                          onClick={() => removeCollection(index)} // Remove the feature at the specified index
+                      {collectionFields.map((collectionField, index) => (
+                        <div
+                          key={collectionField.id}
+                          className="grid gap-3 sm:grid-cols-8"
                         >
-                          <Trash className="w-4 h-4 text-primary" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                          <div className="grid gap-3 col-span-7">
+                            <FormField
+                              name={`collectionPoints.${index}.collectionPoint`}
+                              control={control}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="Enter collection post code"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div className="grid gap-3 col-span-1">
+                            <Button
+                              variant="ghost"
+                              type="button"
+                              onClick={() => removeCollection(index)} // Remove the feature at the specified index
+                            >
+                              <Trash className="w-4 h-4 text-primary" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
                       <div>
                         <Button
                           type="button"
-                          onClick={() => appendCollection({collectionPoint:""})} // Append a new feature with empty string
+                          onClick={() =>
+                            appendCollection({ collectionPoint: "" })
+                          } // Append a new feature with empty string
                         >
                           Add new
                         </Button>
@@ -500,30 +492,8 @@ export default function CreateInventoryForm({
                     </div>
                   </CardContent>
                 </Card>
-                <Card className="mt-5">
-                  <CardHeader>
-                    <CardTitle>Count Available For Collection</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                  <FormField
-                      control={form.control}
-                      name="countAvailableForCollection"
-                      render={({ field }) => (
-                        <FormItem>
-                         
-                          <FormControl>
-                            <Input placeholder="Count available for collection" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                </Card>
               </CardContent>
-              
             </Card>
-            
           </div>
 
           <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
@@ -537,18 +507,69 @@ export default function CreateInventoryForm({
                     <FormField
                       control={control}
                       name="stock"
-                     
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Stock Count</FormLabel>
                           <FormControl>
-                            <Input   placeholder="Enter stock value" {...field} />
+                            <Input placeholder="Enter stock value" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
+                </div>
+                <div className="mt-6">
+                  <FormField
+                    control={form.control}
+                    name="countAvailableForDelivery"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Available For Delivery</FormLabel>
+                        <FormControl>
+                          <Input
+                            className={`${
+                              watch("deliveryEligibility")
+                                ? "opacity-100"
+                                : "disabled opacity-50"
+                            }`}
+                            {...field}
+                            placeholder="Count available for delivery"
+                            disabled={!watch("deliveryEligibility")}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                          {
+                            errors?.countAvailableForDelivery?.message && <span className="text-red-500">{errors?.countAvailableForDelivery?.message}</span>
+                          }
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="mt-6">
+                  <FormField
+                    control={form.control}
+                    name="countAvailableForCollection"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Available For Collection</FormLabel>
+                        <FormControl>
+                          <Input
+                            className={`${
+                              watch("collectionEligibility")
+                                ? "opacity-100"
+                                : "disabled opacity-50"
+                            }`}
+                            placeholder="Count available for collection"
+                            {...field}
+                            disabled={!watch("collectionEligibility")}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                       
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </CardContent>
             </Card>
