@@ -1,7 +1,8 @@
 "use client";
+
 import Link from "next/link";
-import React, { useTransition } from "react";
-import { ChevronLeft } from "lucide-react";
+import React, { useState, useTransition } from "react";
+import { Check, ChevronLeft, ChevronsUpDown } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -32,17 +33,41 @@ import { Button } from "@/components/ui/button";
 
 import { CATEGORY_TYPE } from "@/constant/constants";
 import { LoadingButton } from "@/components/ui/loading-button";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { CategoryFormInputType, categorySchema } from "../../schema";
 import { createCategory } from "../../actions";
-import ParentCategory from "../../_components/parent-category";
-import CategoryImageUploader from "../../_components/category-image-uploader";
 
-export default function CreateCategoryForm() {
+import CategoryImageUploader from "../../_components/category-image-uploader";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
+import { Category } from "@prisma/client";
+import useQueryString from "@/hooks/use-query-string";
+
+export default function CreateCategoryForm({
+  parentCategories,
+}: {
+  parentCategories: Category[] | null;
+}) {
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const [openParentComboBox, setOpenParentComboBox] = useState<boolean>(false);
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { createQueryString } = useQueryString();
 
   const form = useForm<CategoryFormInputType>({
     resolver: zodResolver(categorySchema),
@@ -52,7 +77,7 @@ export default function CreateCategoryForm() {
       type: "PRIMARY",
     },
   });
-  const { control, handleSubmit } = form;
+  const { control, handleSubmit, watch, setValue } = form;
 
   const onCreateCategorySubmit: SubmitHandler<CategoryFormInputType> = async (
     data
@@ -121,7 +146,7 @@ export default function CreateCategoryForm() {
               <CardContent>
                 <div className="grid gap-3 grid-cols-2">
                   <FormField
-                    control={form.control}
+                    control={control}
                     name="name"
                     render={({ field }) => (
                       <FormItem>
@@ -140,8 +165,23 @@ export default function CreateCategoryForm() {
                       <FormItem>
                         <FormLabel>Category Type</FormLabel>
                         <Select
-                          onValueChange={(value) => field.onChange(value)}
-                          value={field.value}
+                          onValueChange={(currentValue) => {
+                            if (currentValue) {
+                              field.onChange(currentValue);
+
+                              router.push(
+                                `${pathname}?${createQueryString(
+                                  "category_type",
+                                  currentValue
+                                )}`
+                              );
+
+                              form.setValue("parentCategory", "");
+                            }
+                          }}
+                          value={
+                            searchParams.get("category_type") || field.value
+                          }
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -166,8 +206,90 @@ export default function CreateCategoryForm() {
                 </div>
               </CardContent>
             </Card>
-            {form.watch("type") !== "PRIMARY" && <ParentCategory />}
+
+            {watch("type") !== "PRIMARY" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Parent Category</CardTitle>
+                  <CardDescription>
+                    Select the parent category if applicable.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3">
+                    <FormField
+                      control={control}
+                      name="parentCategory"
+                      render={({ field }) => (
+                        <FormItem className="w-full flex flex-col gap-1">
+                          <FormLabel>Parent Category</FormLabel>
+                          <FormControl>
+                            <Popover
+                              open={openParentComboBox}
+                              onOpenChange={setOpenParentComboBox}
+                            >
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  className="justify-between"
+                                >
+                                  {field.value ? (
+                                    parentCategories?.find(
+                                      (category) => category.id === field.value
+                                    )?.name
+                                  ) : (
+                                    <p className="text-muted-foreground">
+                                      Select a parent category
+                                    </p>
+                                  )}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[200px] p-0 popover-content-width-same-as-its-trigger">
+                                <Command>
+                                  <CommandInput placeholder="Search parent category..." />
+                                  <CommandList>
+                                    <CommandEmpty>
+                                      No parent category found.
+                                    </CommandEmpty>
+                                    <CommandGroup>
+                                      {parentCategories?.map((category) => (
+                                        <CommandItem
+                                          key={category.id}
+                                          value={category.id}
+                                          onSelect={() => {
+                                            field.onChange(category.id);
+                                            setOpenParentComboBox(false);
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              field.value === category.id
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            )}
+                                          />
+                                          {category.name}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
+
           <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
             <Card x-chunk="dashboard-07-chunk-5">
               <CardHeader>
@@ -176,7 +298,7 @@ export default function CreateCategoryForm() {
               </CardHeader>
               <CardContent>
                 <FormField
-                  control={form.control}
+                  control={control}
                   name="image"
                   render={({ field }) => (
                     <FormItem className="mx-auto ">
