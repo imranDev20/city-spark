@@ -1,9 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-
 import { revalidatePath } from "next/cache";
-import { categorySchema } from "./schema";
 import { CategoryFormInputType } from "./new/page";
 
 type CategoryType = "PRIMARY" | "SECONDARY" | "TERTIARY" | "QUATERNARY";
