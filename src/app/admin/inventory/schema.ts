@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export const inventorySchema = z.object({
   stock: z.string().min(1, "stock value is required"),
-  deliveryEligibility: z.boolean(),
-  collectionEligibility: z.boolean(),
+  deliveryEligibility: z.boolean().default(false),
+  collectionEligibility: z.boolean().default(false),
   maxDeliveryTime: z.string().optional(),
   collectionAvailabilityTime: z.string().optional(),
   deliveryAreas: z
