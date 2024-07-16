@@ -1,20 +1,30 @@
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
+import { getProducts } from "../../products/actions";
+import EditInventoryForm from "../_components/edit-inventory-form";
+import { getInventoryById } from "../actions";
 
-const breadcrumbItems = [
-  { label: "Dashboard", href: "/admin" },
-  { label: "Dashboard", href: "/admin" },
-  {
-    label: "New Inventory",
-    href: "/admin/inventory/new",
-    isCurrentPage: true,
-  },
-];
 
-export default function InventoryDetailsPage() {
+export default async function InventoryDetailsPage({
+  params,
+  searchParams,
+}: {
+  params: {
+    inventory_id: string;
+  };
+  searchParams: {
+    product_id: string;
+  };
+}) {
+  const { inventory_id } = params;
+  const { product_id} = searchParams;
+  const inventoryDetails = await getInventoryById(inventory_id);
+  const products  = await getProducts();
   return (
-    <ContentLayout title="Inventory Detail">
-      <DynamicBreadcrumb items={breadcrumbItems} />
-    </ContentLayout>
+      <EditInventoryForm 
+      inventoryDetails= {inventoryDetails} 
+      products={products}      
+      />
+   
   );
 }
