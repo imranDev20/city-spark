@@ -28,7 +28,6 @@ import {
 import { useFormContext } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { Category } from "@prisma/client";
-import { getParentCategories } from "../actions";
 import { CategoryFormInputType } from "../schema";
 
 interface DataType {
