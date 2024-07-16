@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 
 import "./globals.css";
 import QueryProvider from "@/providers/query-provider";
+import TopLoader from "@/components/top-loader";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -50,6 +51,7 @@ export default function RootLayout({
         <QueryProvider>
           <EdgeStoreProvider>
             <ThemeProvider attribute="class" defaultTheme="light">
+              <TopLoader />
               {children}
               <Toaster />
             </ThemeProvider>

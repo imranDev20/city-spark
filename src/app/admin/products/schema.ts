@@ -21,7 +21,18 @@ export const productSchema = z.object({
   width: z.number().optional(),
   height: z.number().optional(),
   material: z.string().optional(),
-  template: z.string().optional(),
+  template: z.string(),
+
+  templateFields: z
+    .array(
+      z.object({
+        fieldName: z.string(),
+        fieldType: z.enum(["TEXT", "SELECT"]),
+        fieldOptions: z.string().optional(),
+        fieldValues: z.string().optional(),
+      })
+    )
+    .optional(),
 
   shape: z.string().optional(),
   volume: z.string().optional(),

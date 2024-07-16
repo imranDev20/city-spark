@@ -34,26 +34,16 @@ import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { useEffect, useState, useTransition } from "react";
-import { useParams, useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { productSchema } from "../../schema";
-import {
-  createProduct,
-  getBrands,
-  getCategories,
-  getProductById,
-  getTemplates,
-  updateProduct,
-} from "../../actions";
+import { updateProduct } from "../../actions";
 import { ContentLayout } from "@/app/admin/_components/content-layout";
 import DynamicBreadcrumb from "@/app/admin/_components/dynamic-breadcrumb";
 import ProductImageUploader from "../../_components/product-image-uploader";
 import ManualsInstructionsUpload from "../../_components/manuals-instructions-upload";
-import { Prisma } from "@prisma/client";
+import { Brand, Category, Prisma, Template } from "@prisma/client";
 
-import { useQuery } from "@tanstack/react-query";
-import { Spinner } from "@/components/ui/spinner";
 import {
   Popover,
   PopoverContent,
@@ -68,27 +58,51 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import useQueryString from "@/hooks/use-query-string";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
     images: true;
     brand: true;
     features: true;
+    template: true;
+  };
+}>;
+
+export type TemplateWithRelations = Prisma.TemplateGetPayload<{
+  include: {
+    fields: true;
   };
 }>;
 
 export type ProductFormInputType = z.infer<typeof productSchema>;
 
-export default function EditProductForm() {
-  const router = useRouter();
+export default function EditProductForm({
+  productDetails,
+  categories,
+  templates,
+  brands,
+  templateDetails,
+}: {
+  productDetails: ProductWithRelations;
+  brands: Brand[];
+  categories: Category[];
+  templates: Template[];
+  templateDetails: TemplateWithRelations | null;
+}) {
   const { toast } = useToast();
-  const params = useParams();
   const [isPending, startTransition] = useTransition();
   const [openBrandComboBox, setOpenBrandComboBox] = useState<boolean>(false);
   const [openTemplateComboBox, setOpenTemplateComboBox] =
     useState<boolean>(false);
   const [openCategoriesComboBox, setOpenCategoriesComboBox] =
     useState<boolean>(false);
+  const { createQueryString } = useQueryString();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const selectedTemplate = searchParams.get("template_id") || null;
 
   const form = useForm<ProductFormInputType>({
     resolver: zodResolver(productSchema),
@@ -111,9 +125,7 @@ export default function EditProductForm() {
       height: 0,
       material: "",
       template: "",
-
       features: [{ feature: "" }],
-
       primaryCategory: "",
       secondaryCategory: "",
       tertiaryCategory: "",
@@ -133,14 +145,17 @@ export default function EditProductForm() {
   } = form;
 
   const {
-    data: productDetails,
-    isPending: isProductDetailsPending,
-    isFetching: isProductDetailsFetching,
-    isError: isProductDetailsError,
-    error: productDetailsError,
-  } = useQuery({
-    queryKey: ["product-details"],
-    queryFn: async () => await getProductById(params.product_id as string),
+    fields: featureFields,
+    append: appendFeature,
+    remove: removeFeature,
+  } = useFieldArray({
+    control,
+    name: "features",
+  });
+
+  const { fields: templateFields } = useFieldArray({
+    control,
+    name: "templateFields",
   });
 
   const breadcrumbItems = [
@@ -176,7 +191,9 @@ export default function EditProductForm() {
         type,
         weight,
         categoryId,
+        templateId,
       } = productDetails;
+
       reset({
         name: name ?? "",
         contractPrice: contractPrice ?? 0,
@@ -202,52 +219,25 @@ export default function EditProductForm() {
         status: status ?? "DRAFT",
         warranty: warranty ?? "",
         category: categoryId ?? "",
+        template: selectedTemplate || templateId || "",
+        templateFields: templateDetails?.fields.map((item) => ({
+          fieldName: item.fieldName,
+          fieldType: item.fieldType,
+          fieldOptions: item.fieldOptions || "",
+          fieldValues: item.fieldValues || "",
+        })),
       });
     }
-  }, [productDetails, reset]);
-
-  const {
-    data: brands,
-    isPending: isBrandsPending,
-    isError: isBrandsError,
-    error: brandsError,
-  } = useQuery({
-    queryKey: ["brands"],
-    queryFn: async () => await getBrands(),
-  });
-
-  const {
-    data: templates,
-    isPending: isTemplatesPending,
-    isError: isTemplatesError,
-    error: templatesError,
-  } = useQuery({
-    queryKey: ["templates"],
-    queryFn: async () => await getTemplates(),
-  });
-
-  const {
-    data: categories,
-    isPending: isCategoriesPending,
-    isError: isCategoriesError,
-    error: categoriesError,
-  } = useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => await getCategories(),
-  });
-
-  const { fields, append, remove } = useFieldArray<ProductFormInputType>({
-    control,
-    name: "features",
-  });
+  }, [productDetails, reset, selectedTemplate, router, templateDetails]);
 
   const onEditProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
   ) => {
+    console.log(data);
+
     if (productDetails?.id) {
       startTransition(async () => {
         const result = await updateProduct(productDetails?.id, data);
-
         if (result.success) {
           toast({
             title: "Success",
@@ -264,36 +254,6 @@ export default function EditProductForm() {
       });
     }
   };
-
-  if (
-    isProductDetailsPending ||
-    isProductDetailsFetching ||
-    isBrandsPending ||
-    isCategoriesPending ||
-    isTemplatesPending
-  ) {
-    return (
-      <div className="min-h-[100vh] flex justify-center items-center">
-        <Spinner className="text-secondary" size="large" />
-      </div>
-    );
-  }
-
-  if (
-    isProductDetailsError ||
-    isBrandsError ||
-    isTemplatesError ||
-    isCategoriesError
-  ) {
-    return (
-      <ContentLayout title="Edit Product">
-        {productDetailsError?.message ||
-          brandsError?.message ||
-          templatesError?.message ||
-          categoriesError?.message}
-      </ContentLayout>
-    );
-  }
 
   return (
     <ContentLayout title="Edit Product">
@@ -413,7 +373,7 @@ export default function EditProductForm() {
                                     className="w-[200px] justify-between"
                                   >
                                     {field.value ? (
-                                      brands.find(
+                                      brands?.find(
                                         (brand) => brand.id === field.value
                                       )?.name
                                     ) : (
@@ -432,12 +392,12 @@ export default function EditProductForm() {
                                         No framework found.
                                       </CommandEmpty>
                                       <CommandGroup>
-                                        {brands.map((brand) => (
+                                        {brands?.map((brand) => (
                                           <CommandItem
                                             key={brand.id}
                                             value={brand.name}
                                             onSelect={() => {
-                                              form.setValue("brand", brand.id);
+                                              field.onChange(brand.id);
                                               setOpenBrandComboBox(false);
                                             }}
                                           >
@@ -749,7 +709,7 @@ export default function EditProductForm() {
                                     className="justify-between"
                                   >
                                     {field.value ? (
-                                      templates.find(
+                                      templates?.find(
                                         (template) =>
                                           template.id === field.value
                                       )?.name
@@ -769,14 +729,23 @@ export default function EditProductForm() {
                                         No framework found.
                                       </CommandEmpty>
                                       <CommandGroup>
-                                        {templates.map((template) => (
+                                        {templates?.map((template) => (
                                           <CommandItem
                                             key={template.id}
                                             value={template.name}
                                             onSelect={() => {
                                               field.onChange(template.id);
-
                                               setOpenTemplateComboBox(false);
+
+                                              router.push(
+                                                `${pathname}?${createQueryString(
+                                                  "template_id",
+                                                  template.id
+                                                )}`,
+                                                {
+                                                  scroll: false,
+                                                }
+                                              );
                                             }}
                                           >
                                             <Check
@@ -803,6 +772,76 @@ export default function EditProductForm() {
                     </div>
                   </div>
                 </CardContent>
+
+                <CardHeader>
+                  <CardTitle>Template Fields</CardTitle>
+                  <CardDescription>
+                    {templateFields && templateFields.length > 0
+                      ? " Please provide the physical specifications."
+                      : "No related field found"}
+                  </CardDescription>
+                </CardHeader>
+
+                {templateFields && templateFields.length > 0 && (
+                  <CardContent>
+                    <div className="grid gap-6 sm:grid-cols-9">
+                      {templateFields.map((templateField, index) => (
+                        <div
+                          className="col-span-3 grid gap-3"
+                          key={templateField.id}
+                        >
+                          <FormField
+                            control={control}
+                            name={`templateFields.${index}.fieldValues`}
+                            render={({ field }) => (
+                              <FormItem className="w-full flex flex-col gap-1">
+                                <FormLabel>{templateField.fieldName}</FormLabel>
+
+                                <FormControl>
+                                  {templateField.fieldType === "TEXT" ? (
+                                    <Input
+                                      placeholder="Enter features and benefits"
+                                      {...field}
+                                    />
+                                  ) : (
+                                    <Select
+                                      onValueChange={(currentValue) => {
+                                        if (currentValue !== "") {
+                                          field.onChange(currentValue);
+                                        }
+                                      }}
+                                      value={field.value}
+                                    >
+                                      <SelectTrigger
+                                        id="secondary-category"
+                                        aria-label="Select secondary category"
+                                      >
+                                        <SelectValue placeholder="Select subcategory" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {templateField.fieldOptions
+                                          ?.split(",")
+                                          .map((option) => (
+                                            <SelectItem
+                                              value={option}
+                                              key={option}
+                                            >
+                                              {option}
+                                            </SelectItem>
+                                          ))}
+                                      </SelectContent>
+                                    </Select>
+                                  )}
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                )}
               </Card>
 
               <Card>
@@ -814,8 +853,11 @@ export default function EditProductForm() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3 space-y-1">
-                    {fields.map((field, index) => (
-                      <div key={field.id} className="grid gap-3 sm:grid-cols-8">
+                    {featureFields.map((featureField, index) => (
+                      <div
+                        key={featureField.id}
+                        className="grid gap-3 sm:grid-cols-8"
+                      >
                         <div className="grid gap-3 col-span-7">
                           <FormField
                             name={`features.${index}.feature`}
@@ -837,7 +879,7 @@ export default function EditProductForm() {
                           <Button
                             variant="ghost"
                             type="button"
-                            onClick={() => remove(index)} // Remove the feature at the specified index
+                            onClick={() => removeFeature(index)} // Remove the feature at the specified index
                           >
                             <Trash className="w-4 h-4 text-primary" />
                           </Button>
@@ -847,7 +889,7 @@ export default function EditProductForm() {
                     <div>
                       <Button
                         type="button"
-                        onClick={() => append({ feature: "" })} // Append a new feature with empty string
+                        onClick={() => appendFeature({ feature: "" })} // Append a new feature with empty string
                       >
                         Add new
                       </Button>
@@ -881,7 +923,7 @@ export default function EditProductForm() {
                                   className="justify-between"
                                 >
                                   {field.value ? (
-                                    categories.find(
+                                    categories?.find(
                                       (brand) => brand.id === field.value
                                     )?.name
                                   ) : (
@@ -900,7 +942,7 @@ export default function EditProductForm() {
                                       No framework found.
                                     </CommandEmpty>
                                     <CommandGroup>
-                                      {categories.map((category) => (
+                                      {categories?.map((category) => (
                                         <CommandItem
                                           key={category.id}
                                           value={category.name}
@@ -1006,31 +1048,37 @@ export default function EditProductForm() {
                       <FormField
                         control={control}
                         name="status"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Status</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select status" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="DRAFT">Draft</SelectItem>
-                                <SelectItem value="ACTIVE">Active</SelectItem>
-                                <SelectItem value="ARCHIVED">
-                                  Archived
-                                </SelectItem>
-                                <SelectItem value="DISCONTINUED">
-                                  Discondinued
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )}
+                        render={({ field }) => {
+                          return (
+                            <FormItem>
+                              <FormLabel>Status</FormLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={(currentValue) => {
+                                  if (currentValue !== "") {
+                                    field.onChange(currentValue);
+                                  }
+                                }}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select status" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="DRAFT">Draft</SelectItem>
+                                  <SelectItem value="ACTIVE">Active</SelectItem>
+                                  <SelectItem value="ARCHIVED">
+                                    Archived
+                                  </SelectItem>
+                                  <SelectItem value="DISCONTINUED">
+                                    Discondinued
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          );
+                        }}
                       />
                     </div>
                   </div>

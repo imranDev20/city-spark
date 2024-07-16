@@ -39,46 +39,9 @@ import {
 export default function InventoryList() {
   return (
     <>
-      <div className="flex flex-col mb-4 mt-2 sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
-        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
-          <Input
-            type="search"
-            placeholder="Search categories"
-            className="w-full sm:w-auto"
-          />
-          <Select>
-            <SelectTrigger className="w-full sm:w-auto">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name">Name</SelectItem>
-              <SelectItem value="status">Status</SelectItem>
-              <SelectItem value="price">Price</SelectItem>
-              <SelectItem value="totalSales">Total Sales</SelectItem>
-              <SelectItem value="createdAt">Created at</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select>
-            <SelectTrigger className="w-full sm:w-auto">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       
-      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Inventory</CardTitle>
-          <CardDescription>
-            Manage your inventory and view their sales performance.
-          </CardDescription>
-        </CardHeader>
+      <Card>       
         <CardContent>
           <Table>
             <TableHeader>

@@ -29,9 +29,8 @@ import { useFormContext } from "react-hook-form";
 
 import { cn } from "@/lib/utils";
 import { Category } from "@prisma/client";
-import { CategoryFormInputType } from "../../new/page";
 import { getParentCategories } from "../../actions";
-
+import { CategoryFormInputType } from "../../schema";
 
 interface DataType {
   id: string;
@@ -51,7 +50,7 @@ const categories = [
   { label: "Japanese", value: "ja" },
   { label: "Korean", value: "ko" },
   { label: "Chinese", value: "zh" },
-] as const
+] as const;
 
 export default function CategoryDropdown({
   categoryValue,
@@ -78,64 +77,63 @@ export default function CategoryDropdown({
   console.log(`categories`, categories);
   return (
     <FormField
-    control={control}
-    name="parentCategory"
-    render={({ field }) => (
-      <FormItem className="flex flex-col">
-        <FormLabel>Parent Category</FormLabel>
-        <Popover>
-          <PopoverTrigger asChild>
-            <FormControl>
-              <Button
-                variant="outline"
-                role="combobox"
-                className={cn(
-                  "w-[200px] justify-between",
-                  !field.value && "text-muted-foreground"
-                )}
-              >
-                {field.value
-                  ? categories.find(
-                      (category) => category.id === field.value
-                    )?.name
-                  : "Select parent category"}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </FormControl>
-          </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0">
-            <Command>
-              <CommandInput placeholder="Search parent category..." />
-              <CommandEmpty>No parent category found.</CommandEmpty>
-              <CommandGroup>
-                {categories.map((category) => (
-                  <CommandList key={category.id}>
-                  <CommandItem
-                    value={category.id}
-                    key={category.id}
-                    onSelect={() => {
-                      setValue("parentCategory", field.value)
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        category.id === field.value
-                          ? "opacity-100"
-                          : "opacity-0"
-                      )}
-                    />
-                    {category.name}
-                  </CommandItem>
-                 </CommandList>
-                ))}
-              </CommandGroup>
-            </Command>
-          </PopoverContent>
-        </Popover>       
-        <FormMessage />
-      </FormItem>
-    )}
-  />
+      control={control}
+      name="parentCategory"
+      render={({ field }) => (
+        <FormItem className="flex flex-col">
+          <FormLabel>Parent Category</FormLabel>
+          <Popover>
+            <PopoverTrigger asChild>
+              <FormControl>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className={cn(
+                    "w-[200px] justify-between",
+                    !field.value && "text-muted-foreground"
+                  )}
+                >
+                  {field.value
+                    ? categories.find((category) => category.id === field.value)
+                        ?.name
+                    : "Select parent category"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </FormControl>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0">
+              <Command>
+                <CommandInput placeholder="Search parent category..." />
+                <CommandEmpty>No parent category found.</CommandEmpty>
+                <CommandGroup>
+                  {categories.map((category) => (
+                    <CommandList key={category.id}>
+                      <CommandItem
+                        value={category.id}
+                        key={category.id}
+                        onSelect={() => {
+                          setValue("parentCategory", field.value);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            category.id === field.value
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {category.name}
+                      </CommandItem>
+                    </CommandList>
+                  ))}
+                </CommandGroup>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
   );
 }

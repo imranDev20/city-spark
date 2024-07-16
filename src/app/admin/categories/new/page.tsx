@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/select";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { useState, useTransition } from "react";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 
@@ -29,18 +28,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
+import { FormProvider } from "react-hook-form";
 
 import { LoadingButton } from "@/components/ui/loading-button";
-import { useToast } from "@/components/ui/use-toast";
 import { CATEGORY_TYPE } from "@/constant/constants";
-import { useRouter } from "next/navigation";
-import { z } from "zod";
 import ImageUploader from "../_components/image-uploader";
 import ParentCategory from "../_components/parent-category";
-import { createCategory } from "../actions";
-import { categorySchema } from "../schema";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -52,51 +45,7 @@ const breadcrumbItems = [
   },
 ];
 
-export type CategoryFormInputType = z.infer<typeof categorySchema>;
-
 export default function CreateCategoryPage() {
-  const router = useRouter();
-  const { toast } = useToast();
-  const [openComboBox, setOpenComboBox] = useState<boolean>(false);
-  const [isPending, startTransition] = useTransition();
-
-  const form = useForm<CategoryFormInputType>({
-    resolver: zodResolver(categorySchema),
-    defaultValues: {
-      name: "",
-      images: "",
-      parentCategory: "",
-      type: "PRIMARY",
-    },
-  });
-  const { control, handleSubmit } = form;
-
-  const onCreateCategorySubmit: SubmitHandler<CategoryFormInputType> = async (
-    data
-  ) => {
-    startTransition(async () => {
-      const result = await createCategory(data);
-
-      if (result.success) {
-        // Handle successful deletion (e.g., show a success message, update UI)
-        console.log(result.message);
-        toast({
-          title: "Category Saved",
-          description: result.message,
-          variant: "success",
-        });
-
-        router.push("/admin/categories");
-      } else {
-        toast({
-          title: "Category Saved failed",
-          description: result.message,
-          variant: "destructive",
-        });
-        console.error(result.message);
-      }
-    });
-  };
   return (
     <ContentLayout title="Create Category">
       <DynamicBreadcrumb items={breadcrumbItems} />
