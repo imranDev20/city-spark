@@ -739,8 +739,9 @@ export default function EditProductForm({
 
                                               router.push(
                                                 `${pathname}?${createQueryString(
-                                                  "template_id",
-                                                  template.id
+                                                  {
+                                                    template_id: template.id,
+                                                  }
                                                 )}`,
                                                 {
                                                   scroll: false,
