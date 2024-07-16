@@ -9,7 +9,11 @@ export const getAllInventory = cache(async () => {
     try {
       const inventory = await prisma.inventory.findMany({
         include: {
-        product:true,
+        product:{
+          include: {
+            images:true,
+          }
+        },
         },
       });
   
@@ -30,16 +34,17 @@ export const getAllInventory = cache(async () => {
        productId: data.productId,
        deliveryEligibility: data.deliveryEligibility,
        collectionEligibility: data.collectionEligibility,
-      //  maxDeliveryTime: data.maxDeliveryTime,
-      //  collectionAvailabilityTime: data.collectionAvailabilityTime,
+       maxDeliveryTime: data.maxDeliveryTime,
+       collectionAvailabilityTime: data.collectionAvailabilityTime,
        deliveryAreas: data.deliveryAreas?.map(area => area.deliveryArea.toUpperCase()),
        collectionPoints: data.collectionPoints?.map(point => point.collectionPoint.toUpperCase()),
        countAvailableForDelivery: Number(data.countAvailableForDelivery),
        countAvailableForCollection: Number(data.countAvailableForCollection),
-      //  minDeliveryCount: Number(data.minDeliveryCount),
-      //  minCollectionCount: data.minCollectionCount,
-      //  maxDeliveryCount: data.maxDeliveryCount,
-      //  maxCollectionCount: data.maxCollectionCount,
+       minDeliveryCount: Number(data.minDeliveryCount),
+       minCollectionCount:Number(data.minCollectionCount),
+       maxDeliveryCount: Number(data.maxDeliveryCount),
+       maxCollectionCount: Number(data.maxCollectionCount),
+       stockCount: Number(data.stock)
 
 
       }
