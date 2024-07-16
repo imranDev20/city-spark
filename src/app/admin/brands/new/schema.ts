@@ -9,5 +9,5 @@ export const brandSchema = z.object({
     .optional(),
   website: z.string().optional(),
   images: z.string().optional(),
-  status: z.string().optional(),
+  status: z.any().optional(),
 });

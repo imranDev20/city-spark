@@ -27,11 +27,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
+import { Prisma } from "@prisma/client";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -39,7 +38,7 @@ import { useEffect, useTransition } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import ImageUploader from "../../_components/image-uploader";
-import { getBrandById, updateBrandById } from "../../actions";
+import { updateBrandById } from "../../actions";
 import { brandSchema } from "../../new/schema";
 
 const defaultValues = {
@@ -56,7 +55,13 @@ const defaultValues = {
 };
 export type FormInputType = z.infer<typeof brandSchema>;
 
-export default function EditBrandForm() {
+export type BrandWithRelations = Prisma.BrandGetPayload<{}>;
+
+export default function EditBrandForm({
+  brandDetails,
+}: {
+  brandDetails: BrandWithRelations;
+}) {
   const form = useForm<FormInputType>({
     resolver: zodResolver(brandSchema),
     defaultValues,
@@ -71,12 +76,6 @@ export default function EditBrandForm() {
     reset,
     formState: { isDirty },
   } = form;
-
-  const { data: brandDetails, isPending: isBrandDetailsPending } = useQuery({
-    queryKey: ["brand-details"],
-    queryFn: async () => await getBrandById(params.brand_id as string),
-  });
-  console.log(brandDetails);
 
   const onEditBrandSubmit: SubmitHandler<FormInputType> = async (data) => {
     console.log(data);
@@ -108,9 +107,10 @@ export default function EditBrandForm() {
 
   useEffect(() => {
     if (brandDetails) {
-      const { name, website } = brandDetails;
+      const { name, website, description } = brandDetails;
       reset({
         brandName: name ?? "",
+        description: description ?? "",
         website: website ?? "",
       });
     }
@@ -126,13 +126,6 @@ export default function EditBrandForm() {
     },
   ];
 
-  if (isBrandDetailsPending) {
-    return (
-      <div className="min-h-[100vh] flex justify-center items-center">
-        <Spinner className="text-secondary" size="large" />
-      </div>
-    );
-  }
   return (
     <ContentLayout title="Create Brands">
       <DynamicBreadcrumb items={breadcrumbItems} />

@@ -147,3 +147,29 @@ export async function updateCategory(
     };
   }
 }
+
+export async function deleteCategory(categoryId: string) {
+  if (!categoryId) {
+    return null;
+  }
+
+  try {
+    await prisma.category.delete({
+      where: {
+        id: categoryId,
+      },
+    });
+
+    return {
+      message: "Category deleted successfully!",
+      success: true,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      message:
+        "An error occurred while deleting the category. Please try again later.",
+      success: false,
+    };
+  }
+}
