@@ -12,6 +12,7 @@ const breadcrumbItems = [
 
 export default async function InventoryPage() {
   const inventories = await getAllInventory();
+  console.log(`inventories`, inventories);
 
   return (
     <ContentLayout title="Inventory">

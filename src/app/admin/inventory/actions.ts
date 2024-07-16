@@ -8,7 +8,7 @@ export const getAllInventory = cache(async () => {
     try {
       const inventory = await prisma.inventory.findMany({
         include: {
-        product:true
+        product:true,
         },
       });
   
