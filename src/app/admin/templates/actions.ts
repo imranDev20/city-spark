@@ -35,7 +35,9 @@ export async function createTemplate(data: FormInputType) {
 
 export async function getTemplates() {
   try {
-    const templates = await prisma.template.findMany({});
+    const templates = await prisma.template.findMany({
+      include: {},
+    });
     return templates;
   } catch (error) {
     console.error("Error fetching template:", error);
