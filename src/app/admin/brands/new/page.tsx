@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { LoadingButton } from "@/components/ui/loading-button";
 import {
   Select,
   SelectContent,
@@ -25,10 +26,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { startTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { ContentLayout } from "../../_components/content-layout";
@@ -57,6 +60,10 @@ const defaultValues = {
 };
 export type FormInputType = z.infer<typeof brandSchema>;
 export default function CreateBrandPage() {
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const { toast } = useToast();
+
   const form = useForm<FormInputType>({
     resolver: zodResolver(brandSchema),
     defaultValues,
@@ -75,8 +82,21 @@ export default function CreateBrandPage() {
     startTransition(async () => {
       const result = await createBrand(data);
       if (result.success) {
+        // Handle successful deletion (e.g., show a success message, update UI)
         console.log(result.message);
+        toast({
+          title: "Brand Saved",
+          description: result.message,
+          variant: "success",
+        });
+
+        router.push("/admin/brands");
       } else {
+        toast({
+          title: "Brand Saved failed",
+          description: result.message,
+          variant: "destructive",
+        });
         console.error(result.message);
       }
     });
@@ -103,9 +123,15 @@ export default function CreateBrandPage() {
               <Button variant="outline" size="sm">
                 Discard
               </Button>
-              <Button size="sm" type="submit">
-                Save Product
-              </Button>
+              <LoadingButton
+                type="submit"
+                disabled={isPending}
+                size="sm"
+                loading={isPending}
+                className="text-xs font-semibold h-8"
+              >
+                Save Brand
+              </LoadingButton>
             </div>
           </div>
 

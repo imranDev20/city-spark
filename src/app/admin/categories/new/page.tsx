@@ -1,9 +1,4 @@
 "use client";
-import Link from "next/link";
-import React, { useEffect, useState, useTransition } from "react";
-import { ChevronLeft, Upload } from "lucide-react";
-import { ContentLayout } from "../../_components/content-layout";
-import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import {
   Form,
   FormControl,
@@ -20,7 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ChevronLeft } from "lucide-react";
+import Link from "next/link";
+import { useState, useTransition } from "react";
+import { ContentLayout } from "../../_components/content-layout";
+import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -28,21 +29,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 
+import { LoadingButton } from "@/components/ui/loading-button";
+import { useToast } from "@/components/ui/use-toast";
+import { CATEGORY_TYPE } from "@/constant/constants";
+import { useRouter } from "next/navigation";
 import { z } from "zod";
 import ImageUploader from "../_components/image-uploader";
-import { CATEGORY_TYPE } from "@/constant/constants";
-import { LoadingButton } from "@/components/ui/loading-button";
-import { useFormState, useFormStatus } from "react-dom";
 import ParentCategory from "../_components/parent-category";
-import { useRouter } from "next/navigation";
-import { useToast } from "@/components/ui/use-toast";
-import { categorySchema } from "../schema";
 import { createCategory } from "../actions";
+import { categorySchema } from "../schema";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -226,14 +224,14 @@ export default function CreateCategoryPage() {
                 Discard
               </Button>
               <LoadingButton
-                  type="submit"
-                  disabled={isPending}
-                  size="sm"
-                  loading={isPending}
-                  className="text-xs font-semibold h-8"
-                >
-                  Add New Category
-                </LoadingButton>
+                type="submit"
+                disabled={isPending}
+                size="sm"
+                loading={isPending}
+                className="text-xs font-semibold h-8"
+              >
+                Add New Category
+              </LoadingButton>
               {/* <Button size="sm">Save Product</Button> */}
             </div>
           </form>
