@@ -40,7 +40,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import ImageUploader from "../../_components/image-uploader";
+import CategoryImageUploader from "../../_components/category-image-uploader";
 import { getCategoryById, updateCategoryById } from "../../actions";
 import { CategoryFormInputType, categorySchema } from "../../schema";
 import ParentCategory from "./parent-category";
@@ -241,7 +241,7 @@ export default function EditCategoryForm() {
                             <h2 className="text-xl font-semibold tracking-tight"></h2>
                           </FormLabel>
                           <FormControl>
-                            <ImageUploader {...field} />
+                            <CategoryImageUploader {...field} />
                           </FormControl>
                         </FormItem>
                       )}
