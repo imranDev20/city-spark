@@ -37,7 +37,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { CategoryFormInputType, categorySchema } from "../../schema";
 import { createCategory } from "../../actions";
 import ParentCategory from "../../_components/parent-category";
-import ImageUploader from "../../_components/image-uploader";
+import CategoryImageUploader from "../../_components/category-image-uploader";
 
 export default function CreateCategoryForm() {
   const router = useRouter();
@@ -184,7 +184,7 @@ export default function CreateCategoryForm() {
                         <h2 className="text-xl font-semibold tracking-tight"></h2>
                       </FormLabel>
                       <FormControl>
-                        <ImageUploader {...field} />
+                        <CategoryImageUploader {...field} />
                       </FormControl>
                     </FormItem>
                   )}
