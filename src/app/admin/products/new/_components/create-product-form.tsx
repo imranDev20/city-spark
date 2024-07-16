@@ -54,7 +54,7 @@ import { cn } from "@/lib/utils";
 
 import { productSchema } from "../../schema";
 import { createProduct } from "../../actions";
-import ProductImageUploader from "../../_components/product-image-uploader";
+
 import { Brand, Category, Template } from "@prisma/client";
 import { TemplateWithRelations } from "../../[product_id]/_components/edit-product-form";
 import ManualsInstructionsUpload from "../../_components/manuals-instructions-upload";
@@ -982,9 +982,7 @@ export default function CreateProductForm({
                       <FormLabel>
                         <h2 className="text-xl font-semibold tracking-tight"></h2>
                       </FormLabel>
-                      <FormControl>
-                        <ProductImageUploader {...field} />
-                      </FormControl>
+                      <FormControl></FormControl>
                     </FormItem>
                   )}
                 />
