@@ -58,8 +58,6 @@ export default function CreateInventoryForm({
   const router = useRouter();
   const { toast } = useToast();
   const [openParentComboBox, setOpenParentComboBox] = useState<boolean>(false);
-  const [eligibilityDeliveryChecked, setEligibilityDeliveryChecked] =
-    useState<boolean>(false);
   const form = useForm<InventoryFormInputType>({
     resolver: zodResolver(inventorySchema),
     defaultValues: {
@@ -77,6 +75,7 @@ export default function CreateInventoryForm({
     },
   });
   const { control, handleSubmit, watch, formState:{errors} } = form;
+  console.log(errors);
   const {
     fields: areasFields,
     append: appendDeliveryAreas,
@@ -306,15 +305,10 @@ export default function CreateInventoryForm({
                     />
                   </div>
                 </div>
-                <Card className="mt-5">
-                  <CardHeader>
-                    <CardTitle> Delivery Areas </CardTitle>
-                    <CardDescription>
-                      Post code for delivery area
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-3 space-y-1">
+                <div className="mt-5">
+                  <h3 className="font-semibold mb-2">Delivery Areas</h3>
+                  <p className="text-sm text-gray-400 mb-3">  Post code for delivery area</p>                               
+                    <div className="grid gap-3 ">
                       {areasFields.map((areaField, index) => (
                         <div
                           key={areaField.id}
@@ -359,8 +353,8 @@ export default function CreateInventoryForm({
                         </Button>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>               
+                
+                </div>                                                        
               </CardContent>
             </Card>
 
@@ -437,15 +431,10 @@ export default function CreateInventoryForm({
                     />
                   </div>
                 </div>
-                <Card className="mt-5">
-                  <CardHeader>
-                    <CardTitle>Collection Point / Branches </CardTitle>
-                    <CardDescription>
-                      Post code for collection point / branches
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-3 space-y-1">
+                <div className="mt-5">
+                <h3 className="font-semibold mb-3">Collection Point / Branches</h3>
+                <p className="text-sm text-gray-400 mb-3"> Post code for collection point / branches</p>                                           
+                    <div className="grid gap-3">
                       {collectionFields.map((collectionField, index) => (
                         <div
                           key={collectionField.id}
@@ -490,8 +479,8 @@ export default function CreateInventoryForm({
                         </Button>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                 
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -538,10 +527,7 @@ export default function CreateInventoryForm({
                             disabled={!watch("deliveryEligibility")}
                           />
                         </FormControl>
-                        <FormMessage />
-                          {
-                            errors?.countAvailableForDelivery?.message && <span className="text-red-500">{errors?.countAvailableForDelivery?.message}</span>
-                          }
+                        <FormMessage />                        
                       </FormItem>
                     )}
                   />
