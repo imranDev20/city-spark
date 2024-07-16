@@ -1,12 +1,12 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-
 import { revalidatePath } from "next/cache";
-import { CategoryFormInputType } from "./schema";
-import { CategoryType, Prisma } from "@prisma/client";
+import { unstable_cache as cache } from "next/cache";
+import { CategoryFormInputType, CategoryType } from "./schema";
 
-export async function getParentCategories(categoryType: CategoryType) {
+// Fetch parent categories
+export const getParentCategories = cache(async (categoryType: CategoryType) => {
   let parentCategoryType: CategoryType | null = null;
 
   if (!categoryType) {
@@ -26,7 +26,6 @@ export async function getParentCategories(categoryType: CategoryType) {
       case "QUATERNARY":
         parentCategoryType = "TERTIARY";
         break;
-
       default:
         throw new Error(`Invalid category type: ${categoryType}`);
     }
@@ -44,11 +43,9 @@ export async function getParentCategories(categoryType: CategoryType) {
       "An error occurred while fetching parent categories. Please try again later."
     );
   }
-}
-export type FormState = {
-  message: string;
-};
+});
 
+// Create a new category
 export async function createCategory(data: CategoryFormInputType) {
   try {
     const createdCategory = await prisma.category.create({
@@ -59,7 +56,7 @@ export async function createCategory(data: CategoryFormInputType) {
         image: {
           create: {
             url: "https://images.unsplash.com/photo-1565103446317-476a2b789651?q=80&w=2897&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            description: "Category  image 1",
+            description: "Category image 1",
           },
         },
       },
@@ -74,13 +71,15 @@ export async function createCategory(data: CategoryFormInputType) {
   } catch (error) {
     console.log(error);
     return {
-      message: "An error occurred while creating the category.",
+      message:
+        "An error occurred while creating the category. Please try again later.",
       success: false,
     };
   }
 }
 
-export async function getCategories() {
+// Fetch categories with caching
+export const getCategories = cache(async () => {
   try {
     const categories = await prisma.category.findMany({
       include: {
@@ -92,67 +91,12 @@ export async function getCategories() {
     return categories;
   } catch (error) {
     console.error("Error fetching categories:", error);
-    throw new Error("Failed to fetch categories");
+    throw new Error("Failed to fetch categories. Please try again later.");
   }
-}
+});
 
-export async function deleteCategory(categoryId: string) {
-  try {
-    if (!categoryId) {
-      return {
-        message: "Category ID is required",
-        success: false,
-      };
-    }
-
-    // Check if there are any products in this category
-    const productsCount = await prisma.product.count({
-      where: {
-        categoryId: categoryId,
-      },
-    });
-
-    if (productsCount > 0) {
-      return {
-        message:
-          "Cannot delete category. It contains products that must be removed or reassigned first.",
-        success: false,
-      };
-    }
-
-    // If no products are associated, proceed with deletion
-    await prisma.category.delete({
-      where: {
-        id: categoryId,
-      },
-    });
-
-    revalidatePath("/admin/categories");
-
-    return {
-      message: "Category deleted successfully!",
-      success: true,
-    };
-  } catch (error) {
-    console.error("Error deleting category:", error);
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2003") {
-        return {
-          message:
-            "Cannot delete this category as it is still referenced by existing products. Please remove or reassign all products from this category before deleting it.",
-          success: false,
-        };
-      }
-    }
-    return {
-      message:
-        "An unexpected error occurred while deleting the category. Please try again later.",
-      success: false,
-    };
-  }
-}
-
-export async function getCategoryById(categoryId: string) {
+// Fetch a category by ID
+export const getCategoryById = cache(async (categoryId: string) => {
   try {
     const category = await prisma.category.findUnique({
       where: {
@@ -166,10 +110,11 @@ export async function getCategoryById(categoryId: string) {
     return category;
   } catch (error) {
     console.error("Error fetching category:", error);
-    throw new Error("Failed to fetch category");
+    throw new Error("Failed to fetch category. Please try again later.");
   }
-}
+});
 
+// Update a category
 export async function updateCategory(
   categoryId: string,
   data: CategoryFormInputType
@@ -196,7 +141,8 @@ export async function updateCategory(
   } catch (error) {
     console.error("Error updating category:", error);
     return {
-      message: "An error occurred while updating the category.",
+      message:
+        "An error occurred while updating the category. Please try again later.",
       success: false,
     };
   }
