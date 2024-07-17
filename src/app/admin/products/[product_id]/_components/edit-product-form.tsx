@@ -67,6 +67,7 @@ import useQueryString from "@/hooks/use-query-string";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ClientResponse, useEdgeStore } from "@/lib/edgestore";
 import { urlToFileState } from "@/lib/functions";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -91,12 +92,14 @@ export default function EditProductForm({
   templates,
   brands,
   templateDetails,
-}: {
+}: // productFileStates,
+{
   productDetails: ProductWithRelations;
   brands: Brand[];
   categories: Category[];
   templates: Template[];
   templateDetails: TemplateWithRelations | null;
+  // productFileStates: string;
 }) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -110,10 +113,10 @@ export default function EditProductForm({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const selectedTemplate = searchParams.get("template_id") || null;
-  const [imageLoading, setImageLoading] = useState(false);
 
   const [fileStates, setFileStates] = useState<FileState[]>([]);
   const { edgestore } = useEdgeStore();
+  const [productImagesLoading, setProductImagesLoading] = useState(true);
 
   function updateFileProgress(key: string, progress: FileState["progress"]) {
     setFileStates((fileStates) => {
@@ -260,8 +263,6 @@ export default function EditProductForm({
 
   useEffect(() => {
     if (productDetails) {
-      setImageLoading(true);
-
       const imageToFile = async () => {
         const results = await Promise.all(
           productDetails.images.map(async (image) => {
@@ -278,24 +279,24 @@ export default function EditProductForm({
       };
 
       // Call the async function and update state when it resolves
+
       imageToFile()
         .then((results) => {
           setFileStates(results);
+          setProductImagesLoading(false);
         })
         .catch((error) => {
           console.error("Error processing images:", error);
           // Handle the error appropriately
         });
-
-      setImageLoading(false);
     }
   }, [productDetails]);
+
+  console.log(productImagesLoading);
 
   const onEditProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
   ) => {
-    console.log(form.watch("images"), fileStates);
-
     if (productDetails?.id) {
       startTransition(async () => {
         const result = await updateProduct(productDetails?.id, data);
@@ -1173,17 +1174,18 @@ export default function EditProductForm({
                   <CardTitle>Images</CardTitle>
                   <CardDescription>Upload product images here.</CardDescription>
                 </CardHeader>
+
                 <CardContent>
-                  <FormField
-                    control={control}
-                    name="images"
-                    render={({ field }) => (
-                      <FormItem className="mx-auto">
-                        <FormLabel>
-                          <h2 className="text-xl font-semibold tracking-tight"></h2>
-                        </FormLabel>
-                        <FormControl>
-                          {!imageLoading ? (
+                  {!productImagesLoading ? (
+                    <FormField
+                      control={control}
+                      name="images"
+                      render={({ field }) => (
+                        <FormItem className="mx-auto">
+                          <FormLabel>
+                            <h2 className="text-xl font-semibold tracking-tight"></h2>
+                          </FormLabel>
+                          <FormControl>
                             <MultiImageDropzone
                               value={fileStates}
                               dropzoneOptions={{
@@ -1265,20 +1267,28 @@ export default function EditProductForm({
                                       size: file.size,
                                       thumbnailUrl: image.thumbnailUrl,
                                       url: image.url,
-                                      lastModified: file.lastModified,
+                                      lastModified:
+                                        file.lastModified.toString(),
                                       type: file.type,
                                     };
                                   })
                                 );
                               }}
                             />
-                          ) : (
-                            "Loading..."
-                          )}
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  ) : (
+                    <div>
+                      <Skeleton className="h-[290px] w-[290]" />
+                      <div className="grid grid-cols-3 mt-5 gap-3">
+                        <Skeleton className="h-[87px] w-[87px]" />
+                        <Skeleton className="h-[87px] w-[87px]" />
+                        <Skeleton className="h-[87px] w-[87px]" />
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 

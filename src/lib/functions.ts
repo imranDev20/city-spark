@@ -8,7 +8,7 @@ export async function urlToFileState(image: Image): Promise<FileState> {
   return {
     file: new File([blob], image?.name || "", {
       type: blob.type,
-      lastModified: image.lastModified || 0,
+      lastModified: parseInt(image?.lastModified?.toString() || ""),
     }),
     progress: "COMPLETE",
     key: image.id,

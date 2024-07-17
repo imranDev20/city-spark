@@ -4,6 +4,10 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { unstable_cache as cache } from "next/cache";
 import { ProductFormInputType } from "./new/_components/create-product-form";
+import { ProductWithRelations } from "./[product_id]/_components/edit-product-form";
+
+import { FileState } from "@/app/admin/products/_components/product-image-uploader";
+import { Image } from "@prisma/client";
 
 // Cached products for ssr in the list
 export const getProducts = cache(async () => {
@@ -243,7 +247,7 @@ export async function updateProduct(
               description: `${data.name}-${index}`,
               name: image.name,
               size: image.size,
-              lastModified: image.lastModified,
+              lastModified: image.lastModified?.toString(),
               thumbnailUrl: image.thumbnailUrl,
               type: image.type,
             })) || [],
