@@ -1,5 +1,6 @@
 "use client";
 
+import { useEdgeStore } from "@/lib/edgestore";
 import { formatFileSize } from "@edgestore/react/utils";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { UploadCloudIcon, X } from "lucide-react";
@@ -56,7 +57,6 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
   ) => {
     const [customError, setCustomError] = React.useState<string>();
     const [previewIndex, setPreviewIndex] = React.useState(0);
-
     const [isFullScreen, setIsFullScreen] = React.useState(false);
 
     const openFullScreen = () => setIsFullScreen(true);
@@ -150,11 +150,11 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
     }, [fileRejections, dropzoneOptions]);
 
     return (
-      <>
+      <div className="relative">
         <div>
           {/* Dropzone */}
 
-          <div className="relative">
+          <div>
             {value?.length === 0 ? (
               <div
                 {...getRootProps({
@@ -191,24 +191,32 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
                   />
 
                   <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-md group-hover:bg-black group-hover:bg-opacity-70 transition-all">
-                    {value[previewIndex].progress === "COMPLETE" && (
+                    {value[previewIndex]?.progress === "COMPLETE" && (
                       <MagnifyingGlassIcon className="text-white h-14 w-14 opacity-0 group-hover:opacity-100 transition-all duration-500" />
                     )}
                   </div>
 
                   {/* Progress Bar */}
-                  {typeof value[previewIndex].progress === "number" && (
+                  {typeof value[previewIndex]?.progress === "number" && (
                     <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-md bg-black bg-opacity-70">
                       <CircleProgress progress={value[previewIndex].progress} />
                     </div>
                   )}
+
                   {/* Remove Image Icon */}
                   {imageUrls[previewIndex] && !disabled && (
                     <div
                       className="group absolute right-0 top-0 -translate-y-1/4 translate-x-1/4 transform"
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation();
                         void onChange?.(value.filter((_, i) => i !== 0) ?? []);
+
+                        setPreviewIndex((currIndex) => {
+                          if (currIndex > 0) {
+                            return currIndex - 1;
+                          }
+                          return currIndex; // Return the current index if it's already 0
+                        });
                       }}
                     >
                       <div className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-md border border-solid border-gray-500 bg-white transition-all duration-300 hover:h-6 hover:w-6 dark:border-gray-400 dark:bg-black">
@@ -259,6 +267,13 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
                         void onChange?.(
                           value.filter((_, i) => i !== index) ?? []
                         );
+
+                        setPreviewIndex((currIndex) => {
+                          if (currIndex > 0) {
+                            return currIndex - 1;
+                          }
+                          return currIndex; // Return the current index if it's already 0
+                        });
                       }}
                     >
                       <div className="flex h-4 w-4 cursor-pointer items-center justify-center rounded-sm border border-solid border-gray-500 bg-white transition-all duration-300 hover:h-5 hover:w-5 dark:border-gray-400 dark:bg-black">
@@ -296,9 +311,10 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
             {customError ?? errorMessage}
           </div>
         </div>
+
         {isFullScreen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-90 flex justify-center items-center z-50"
+            className="fixed inset-0 bg-black bg-opacity-90 flex justify-center items-center z-50 top-0"
             onClick={closeFullScreen}
           >
             <div className="relative w-[90vw] h-[90vh]">
@@ -318,7 +334,7 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
             </button>
           </div>
         )}
-      </>
+      </div>
     );
   }
 );
@@ -392,24 +408,3 @@ function CircleProgress({ progress }: { progress: number }) {
     </div>
   );
 }
-
-// {!value || value.length < (dropzoneOptions?.maxFiles ?? 0) ? (
-//   <div
-//     {...getRootProps({
-//       className: dropZoneClassName,
-//     })}
-//   >
-//     {/* Main File Input */}
-//     <input ref={ref} {...getInputProps()} />
-
-//     <div className="flex flex-col items-center justify-center text-xs text-gray-400">
-//       <UploadCloudIcon className="mb-2 h-7 w-7" />
-//       <div className="text-gray-400">Drag images to upload</div>
-//       <div className="mt-3">
-//         <Button disabled={disabled} type="button">
-//           select
-//         </Button>
-//       </div>
-//     </div>
-//   </div>
-// )

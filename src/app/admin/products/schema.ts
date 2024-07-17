@@ -1,5 +1,20 @@
 import { z } from "zod";
 
+export const imageSchema = z.object({
+  url: z.string().url("Invalid image URL"),
+  thumbnailUrl: z.string().url("Invalid thumbnail URL").optional(),
+  description: z.string().optional(),
+  name: z.string().optional(),
+  size: z
+    .number()
+    .int("Size must be an integer")
+    .positive("Size must be positive")
+    .optional(),
+  lastModified: z.number().int().optional(),
+  lastModifiedDate: z.date().optional(),
+  type: z.string().optional(),
+});
+
 export const productSchema = z.object({
   name: z.string().min(1, "Product name is required and can't be left blank"),
   description: z
@@ -46,13 +61,9 @@ export const productSchema = z.object({
     )
     .optional(),
 
-  primaryCategory: z.string().optional(),
-  secondaryCategory: z.string().optional(),
-  tertiaryCategory: z.string().optional(),
-  quaternaryCategory: z.string().optional(),
-
   category: z.string().optional(),
   status: z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]).optional(),
-  images: z.array(z.string()).optional(),
+
+  images: z.array(imageSchema).optional(),
   manuals: z.array(z.string()).optional(),
 });

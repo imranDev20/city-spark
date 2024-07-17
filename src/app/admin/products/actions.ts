@@ -235,14 +235,19 @@ export async function updateProduct(
         // and at the same time delete it from db
         // then create new image urls
 
-        // images: {
-        //   deleteMany: {}, // Clear existing images
-        //   create:
-        //     data.images?.map((url) => ({
-        //       url,
-        //       description: "Product Image",
-        //     })) || [],
-        // },
+        images: {
+          deleteMany: {}, // Clear existing images
+          create:
+            data.images?.map((image, index) => ({
+              url: image.url,
+              description: `${data.name}-${index}`,
+              name: image.name,
+              size: image.size,
+              lastModified: image.lastModified,
+              thumbnailUrl: image.thumbnailUrl,
+              type: image.type,
+            })) || [],
+        },
 
         updatedAt: new Date(), // Ensures updatedAt is set to the current date and time
       },
