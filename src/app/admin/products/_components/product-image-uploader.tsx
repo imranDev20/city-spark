@@ -1,13 +1,18 @@
 "use client";
 
-import { useEdgeStore } from "@/lib/edgestore";
 import { formatFileSize } from "@edgestore/react/utils";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { UploadCloudIcon, X } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
 import { useDropzone, type DropzoneOptions } from "react-dropzone";
+import {
+  ControllerRenderProps,
+  useFieldArray,
+  useFormContext,
+} from "react-hook-form";
 import { twMerge } from "tailwind-merge";
+import { ProductFormInputType } from "../schema";
 
 const variants = {
   base: "relative rounded-md aspect-square flex justify-center items-center flex-col cursor-pointer border border-dashed border-gray-400 dark:border-gray-300 transition-colors duration-200 ease-in-out",
@@ -58,6 +63,13 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
     const [customError, setCustomError] = React.useState<string>();
     const [previewIndex, setPreviewIndex] = React.useState(0);
     const [isFullScreen, setIsFullScreen] = React.useState(false);
+
+    const { control } = useFormContext<ProductFormInputType>();
+
+    const { remove: removeImage } = useFieldArray({
+      control,
+      name: "images",
+    });
 
     const openFullScreen = () => setIsFullScreen(true);
     const closeFullScreen = () => setIsFullScreen(false);
@@ -211,6 +223,8 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
                         e.stopPropagation();
                         void onChange?.(value.filter((_, i) => i !== 0) ?? []);
 
+                        removeImage(previewIndex);
+
                         setPreviewIndex((currIndex) => {
                           if (currIndex > 0) {
                             return currIndex - 1;
@@ -267,6 +281,8 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
                         void onChange?.(
                           value.filter((_, i) => i !== index) ?? []
                         );
+
+                        removeImage(index);
 
                         setPreviewIndex((currIndex) => {
                           if (currIndex > 0) {

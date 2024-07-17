@@ -36,7 +36,7 @@ import { z } from "zod";
 import { useEffect, useState, useTransition } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { LoadingButton } from "@/components/ui/loading-button";
-import { productSchema } from "../../schema";
+import { ProductFormInputType, productSchema } from "../../schema";
 import { updateProduct } from "../../actions";
 import { ContentLayout } from "@/app/admin/_components/content-layout";
 import DynamicBreadcrumb from "@/app/admin/_components/dynamic-breadcrumb";
@@ -83,8 +83,6 @@ export type TemplateWithRelations = Prisma.TemplateGetPayload<{
     fields: true;
   };
 }>;
-
-export type ProductFormInputType = z.infer<typeof productSchema>;
 
 export default function EditProductForm({
   productDetails,
@@ -155,7 +153,20 @@ export default function EditProductForm({
       features: [{ feature: "" }],
       category: "",
       status: "DRAFT",
-      images: [],
+      images: [
+        {
+          image: {
+            name: "",
+            description: "",
+            lastModified: "",
+            lastModifiedDate: new Date(Date.now()),
+            size: 0,
+            thumbnailUrl: "",
+            type: "",
+            url: "",
+          },
+        },
+      ],
       manuals: [],
     },
   });
@@ -179,6 +190,11 @@ export default function EditProductForm({
   const { fields: templateFields } = useFieldArray({
     control,
     name: "templateFields",
+  });
+
+  const { append: appendImages } = useFieldArray({
+    control,
+    name: "images",
   });
 
   const breadcrumbItems = [
@@ -250,16 +266,23 @@ export default function EditProductForm({
           fieldOptions: item.fieldOptions || "",
           fieldValues: item.fieldValues || "",
         })),
+        images: images.map((image) => ({
+          image: {
+            description: image.description || "",
+            name: image.name || "",
+            size: image.size || 0,
+            lastModified: image.lastModified || "",
+            lastModifiedDate: image.lastModifiedDate || new Date(Date.now()),
+            url: image.url,
+            type: image.type || "",
+            thumbnailUrl: image.thumbnailUrl || "",
+          },
+        })),
       });
     }
-  }, [
-    productDetails,
-    reset,
-    selectedTemplate,
-    router,
-    templateDetails,
-    fileStates,
-  ]);
+  }, [productDetails, reset, selectedTemplate, templateDetails]);
+
+  console.log(form.formState.errors);
 
   useEffect(() => {
     if (productDetails) {
@@ -292,19 +315,20 @@ export default function EditProductForm({
     }
   }, [productDetails]);
 
-  console.log(productImagesLoading);
-
   const onEditProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
   ) => {
+    console.log(form.watch("images"));
+
     if (productDetails?.id) {
       startTransition(async () => {
         const result = await updateProduct(productDetails?.id, data);
+
         const images = form.watch("images");
 
         if (images) {
           await Promise.all(
-            images.map(async (image) => {
+            images.map(async ({ image }) => {
               try {
                 const res = await edgestore.publicImages.confirmUpload({
                   url: image.url,
@@ -337,6 +361,8 @@ export default function EditProductForm({
       });
     }
   };
+
+  console.log(form.getValues());
 
   return (
     <ContentLayout title="Edit Product">
@@ -1199,8 +1225,8 @@ export default function EditProductForm({
                                 const allFiles = [...fileStates, ...addedFiles];
                                 setFileStates(allFiles);
 
-                                const tempUploadedImages: ClientResponse["publicImages"]["upload"][] =
-                                  [];
+                                // const tempUploadedImages: ClientResponse["publicImages"]["upload"][] =
+                                //   [];
 
                                 await Promise.all(
                                   addedFiles.map(async (addedFileState) => {
@@ -1248,29 +1274,28 @@ export default function EditProductForm({
                                           },
                                         });
 
-                                      tempUploadedImages.push(res);
+                                      appendImages({
+                                        image: {
+                                          url: res.url,
+                                          description:
+                                            "some random description",
+                                          lastModified:
+                                            addedFileState.file.lastModified.toString(),
+                                          lastModifiedDate: new Date(
+                                            Date.now()
+                                          ),
+                                          name: addedFileState.file.name,
+                                          size: addedFileState.file.size,
+                                          thumbnailUrl: res.thumbnailUrl || "",
+                                          type: addedFileState.file.type,
+                                        },
+                                      });
                                     } catch (err) {
                                       updateFileProgress(
                                         addedFileState.key,
                                         "ERROR"
                                       );
                                     }
-                                  })
-                                );
-
-                                field.onChange(
-                                  tempUploadedImages.map((image, index) => {
-                                    const file = allFiles[index].file as File;
-
-                                    return {
-                                      name: file.name,
-                                      size: file.size,
-                                      thumbnailUrl: image.thumbnailUrl,
-                                      url: image.url,
-                                      lastModified:
-                                        file.lastModified.toString(),
-                                      type: file.type,
-                                    };
                                   })
                                 );
                               }}
