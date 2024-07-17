@@ -6,18 +6,13 @@ import { UploadCloudIcon, X } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
 import { useDropzone, type DropzoneOptions } from "react-dropzone";
-import {
-  ControllerRenderProps,
-  useFieldArray,
-  useFormContext,
-} from "react-hook-form";
+import { useFieldArray, useFormContext } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 import { ProductFormInputType } from "../schema";
 
 const variants = {
-  base: "relative rounded-md aspect-square flex justify-center items-center flex-col cursor-pointer border border-dashed border-gray-400 dark:border-gray-300 transition-colors duration-200 ease-in-out",
-  image:
-    "p-0 w-full h-full relative  bg-slate-200 dark:bg-slate-900 rounded-md",
+  base: "relative rounded-md aspect-square flex justify-center items-center flex-col cursor-pointer border border-dashed border-gray-400 hover:border-primary dark:border-gray-300 transition-all duration-200 ease-in-out hover:bg-gray-100",
+  image: "p-0 relative  bg-slate-200 dark:bg-slate-900 rounded-md",
   active: "border-2",
   disabled:
     "bg-gray-200 border-gray-300 cursor-default pointer-events-none bg-opacity-30 dark:bg-gray-700",
@@ -161,8 +156,6 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
       return undefined;
     }, [fileRejections, dropzoneOptions]);
 
-    console.log(previewIndex);
-
     return (
       <div className="relative">
         <div>
@@ -194,7 +187,7 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
                   onClick={openFullScreen}
                   className={
                     variants.image +
-                    " aspect-square h-full border border-input shadow-sm group"
+                    " aspect-square h-full border border-input shadow-sm group relative cursor-pointer"
                   }
                 >
                   <Image
@@ -252,60 +245,62 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
           {value && (
             <div className="grid gap-3 grid-cols-3 relative mt-5">
               {/* Images  */}
-              {value?.map(({ file, progress }, index) => (
-                <div
-                  key={index}
-                  className={
-                    variants.image +
-                    "aspect-square h-full border border-input shadow-sm hover:border-primary cursor-pointer transition-all" +
-                    `${index === previewIndex ? "border-primary" : ""}`
-                  }
-                  onClick={() => setPreviewIndex(index)}
-                >
-                  <Image
-                    className="h-full w-full rounded-md object-cover"
-                    fill
-                    src={imageUrls[index]}
-                    alt={typeof file === "string" ? file : file.name}
-                  />
+              {value?.map(({ file, progress }, index) => {
+                return (
+                  <div
+                    key={index}
+                    className={
+                      variants.image +
+                      "aspect-square h-[87px] border border-input shadow-sm hover:border-primary cursor-pointer transition-all relative rounded-md hover:rounded-md" +
+                      `${index === previewIndex ? "border border-primary" : ""}`
+                    }
+                    onClick={() => setPreviewIndex(index)}
+                  >
+                    <Image
+                      className="rounded-md object-cover"
+                      fill
+                      src={imageUrls[index]}
+                      alt={typeof file === "string" ? file : file.name}
+                    />
 
-                  {/* Progress Bar */}
-                  {typeof progress === "number" && (
-                    <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-md bg-black bg-opacity-70">
-                      <CircleProgress progress={progress} />
-                    </div>
-                  )}
-                  {/* Remove Image Icon */}
-                  {imageUrls[index] && !disabled && (
-                    <div
-                      className="group absolute right-0 top-0 -translate-y-1/4 translate-x-1/4 transform"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        void onChange?.(
-                          value.filter((_, i) => i !== index) ?? []
-                        );
-
-                        removeImage(index);
-
-                        setPreviewIndex((currIndex) => {
-                          if (currIndex > 0) {
-                            return currIndex - 1;
-                          }
-                          return currIndex; // Return the current index if it's already 0
-                        });
-                      }}
-                    >
-                      <div className="flex h-4 w-4 cursor-pointer items-center justify-center rounded-sm border border-solid border-gray-500 bg-white transition-all duration-300 hover:h-5 hover:w-5 dark:border-gray-400 dark:bg-black">
-                        <X
-                          className="text-gray-500 dark:text-gray-400"
-                          width={16}
-                          height={16}
-                        />
+                    {/* Progress Bar */}
+                    {typeof progress === "number" && (
+                      <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-md bg-black bg-opacity-70">
+                        <CircleProgress progress={progress} />
                       </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                    )}
+                    {/* Remove Image Icon */}
+                    {imageUrls[index] && !disabled && (
+                      <div
+                        className="group absolute right-0 top-0 -translate-y-1/4 translate-x-1/4 transform"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void onChange?.(
+                            value.filter((_, i) => i !== index) ?? []
+                          );
+
+                          removeImage(index);
+
+                          setPreviewIndex((currIndex) => {
+                            if (currIndex > 0) {
+                              return currIndex - 1;
+                            }
+                            return currIndex; // Return the current index if it's already 0
+                          });
+                        }}
+                      >
+                        <div className="flex h-4 w-4 cursor-pointer items-center justify-center rounded-sm border border-solid border-gray-500 bg-white transition-all duration-300 hover:h-5 hover:w-5 dark:border-gray-400 dark:bg-black">
+                          <X
+                            className="text-gray-500 dark:text-gray-400"
+                            width={16}
+                            height={16}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
 
               {value?.length > 0 &&
                 value.length < (dropzoneOptions?.maxFiles ?? 0) && (

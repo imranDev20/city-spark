@@ -302,7 +302,6 @@ export default function EditProductForm({
       };
 
       // Call the async function and update state when it resolves
-
       imageToFile()
         .then((results) => {
           setFileStates(results);
