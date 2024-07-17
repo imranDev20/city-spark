@@ -112,8 +112,7 @@ export default function EditProductForm({
 
   const [fileStates, setFileStates] = useState<FileState[]>([]);
   const { edgestore } = useEdgeStore();
-
-  console.log(fileStates);
+  const [imageUrls, setImageUrls] = useState<any[]>([]);
 
   function updateFileProgress(key: string, progress: FileState["progress"]) {
     setFileStates((fileStates) => {
@@ -1126,7 +1125,7 @@ export default function EditProductForm({
                           <MultiImageDropzone
                             value={fileStates}
                             dropzoneOptions={{
-                              maxFiles: 5,
+                              maxFiles: 6,
                               maxSize: 1024 * 1024 * 1, // 1MB
                             }}
                             onChange={(files) => {
@@ -1134,6 +1133,7 @@ export default function EditProductForm({
                             }}
                             onFilesAdded={async (addedFiles) => {
                               setFileStates([...fileStates, ...addedFiles]);
+
                               await Promise.all(
                                 addedFiles.map(async (addedFileState) => {
                                   if (!(addedFileState.file instanceof File)) {
@@ -1152,6 +1152,9 @@ export default function EditProductForm({
                                     const res =
                                       await edgestore.publicImages.upload({
                                         file: addedFileState.file,
+                                        options: {
+                                          temporary: true,
+                                        },
                                         input: { type: "product" },
                                         onProgressChange: async (progress) => {
                                           updateFileProgress(
@@ -1172,7 +1175,10 @@ export default function EditProductForm({
                                         },
                                       });
 
-                                    console.log(res);
+                                    const tempImages = [...imageUrls];
+                                    tempImages.push(res);
+
+                                    setImageUrls(tempImages);
                                   } catch (err) {
                                     updateFileProgress(
                                       addedFileState.key,
