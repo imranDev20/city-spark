@@ -72,6 +72,17 @@ export default function CreateInventoryForm({
           collectionPoint: "",
         },
       ],
+      collectionAvailabilityTime: '',
+      collectionEligibility:false,
+      deliveryEligibility:false,
+      countAvailableForCollection:"",
+      countAvailableForDelivery: "",
+      maxCollectionCount: "",
+      maxDeliveryCount: "",
+      minCollectionCount: "",
+      minDeliveryCount: "",
+      maxDeliveryTime: "",
+      productId: "",
     },
   });
   const { control, handleSubmit, watch, formState:{errors} } = form;
