@@ -161,6 +161,8 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
       return undefined;
     }, [fileRejections, dropzoneOptions]);
 
+    console.log(previewIndex);
+
     return (
       <div className="relative">
         <div>
@@ -255,7 +257,8 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
                   key={index}
                   className={
                     variants.image +
-                    " aspect-square h-full border border-input shadow-sm hover:border-primary cursor-pointer transition-all"
+                    "aspect-square h-full border border-input shadow-sm hover:border-primary cursor-pointer transition-all" +
+                    `${index === previewIndex ? "border-primary" : ""}`
                   }
                   onClick={() => setPreviewIndex(index)}
                 >
