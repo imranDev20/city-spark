@@ -36,7 +36,7 @@ import { z } from "zod";
 import { useEffect, useState, useTransition } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { LoadingButton } from "@/components/ui/loading-button";
-import { productSchema } from "../../schema";
+import { ProductFormInputType, productSchema } from "../../schema";
 import { updateProduct } from "../../actions";
 import { ContentLayout } from "@/app/admin/_components/content-layout";
 import DynamicBreadcrumb from "@/app/admin/_components/dynamic-breadcrumb";
@@ -65,7 +65,9 @@ import {
 import { cn } from "@/lib/utils";
 import useQueryString from "@/hooks/use-query-string";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEdgeStore } from "@/lib/edgestore";
+import { ClientResponse, useEdgeStore } from "@/lib/edgestore";
+import { urlToFileState } from "@/lib/functions";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -82,20 +84,20 @@ export type TemplateWithRelations = Prisma.TemplateGetPayload<{
   };
 }>;
 
-export type ProductFormInputType = z.infer<typeof productSchema>;
-
 export default function EditProductForm({
   productDetails,
   categories,
   templates,
   brands,
   templateDetails,
-}: {
+}: // productFileStates,
+{
   productDetails: ProductWithRelations;
   brands: Brand[];
   categories: Category[];
   templates: Template[];
   templateDetails: TemplateWithRelations | null;
+  // productFileStates: string;
 }) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -112,8 +114,7 @@ export default function EditProductForm({
 
   const [fileStates, setFileStates] = useState<FileState[]>([]);
   const { edgestore } = useEdgeStore();
-
-  console.log(fileStates);
+  const [productImagesLoading, setProductImagesLoading] = useState(true);
 
   function updateFileProgress(key: string, progress: FileState["progress"]) {
     setFileStates((fileStates) => {
@@ -150,13 +151,22 @@ export default function EditProductForm({
       material: "",
       template: "",
       features: [{ feature: "" }],
-      primaryCategory: "",
-      secondaryCategory: "",
-      tertiaryCategory: "",
-      quaternaryCategory: "",
       category: "",
       status: "DRAFT",
-      images: [],
+      images: [
+        {
+          image: {
+            name: "",
+            description: "",
+            lastModified: "",
+            lastModifiedDate: new Date(Date.now()),
+            size: 0,
+            thumbnailUrl: "",
+            type: "",
+            url: "",
+          },
+        },
+      ],
       manuals: [],
     },
   });
@@ -180,6 +190,11 @@ export default function EditProductForm({
   const { fields: templateFields } = useFieldArray({
     control,
     name: "templateFields",
+  });
+
+  const { append: appendImages } = useFieldArray({
+    control,
+    name: "images",
   });
 
   const breadcrumbItems = [
@@ -216,6 +231,7 @@ export default function EditProductForm({
         weight,
         categoryId,
         templateId,
+        images,
       } = productDetails;
 
       reset({
@@ -250,16 +266,85 @@ export default function EditProductForm({
           fieldOptions: item.fieldOptions || "",
           fieldValues: item.fieldValues || "",
         })),
+        images: images.map((image) => ({
+          image: {
+            description: image.description || "",
+            name: image.name || "",
+            size: image.size || 0,
+            lastModified: image.lastModified || "",
+            lastModifiedDate: image.lastModifiedDate || new Date(Date.now()),
+            url: image.url,
+            type: image.type || "",
+            thumbnailUrl: image.thumbnailUrl || "",
+          },
+        })),
       });
     }
-  }, [productDetails, reset, selectedTemplate, router, templateDetails]);
+  }, [productDetails, reset, selectedTemplate, templateDetails]);
+
+  console.log(form.formState.errors);
+
+  useEffect(() => {
+    if (productDetails) {
+      const imageToFile = async () => {
+        const results = await Promise.all(
+          productDetails.images.map(async (image) => {
+            try {
+              return await urlToFileState(image);
+            } catch (error) {
+              console.error("Error converting image to file:", error);
+              return null; // or some default value
+            }
+          })
+        );
+
+        return results.filter((result) => result !== null); // Remove any null results
+      };
+
+      // Call the async function and update state when it resolves
+
+      imageToFile()
+        .then((results) => {
+          setFileStates(results);
+          setProductImagesLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error processing images:", error);
+          // Handle the error appropriately
+        });
+    }
+  }, [productDetails]);
 
   const onEditProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
   ) => {
+    console.log(form.watch("images"));
+
     if (productDetails?.id) {
       startTransition(async () => {
         const result = await updateProduct(productDetails?.id, data);
+
+        const images = form.watch("images");
+
+        if (images) {
+          await Promise.all(
+            images.map(async ({ image }) => {
+              try {
+                const res = await edgestore.publicImages.confirmUpload({
+                  url: image.url,
+                });
+
+                return { url: image.url, success: true, result: res };
+              } catch (error) {
+                console.error(
+                  `Failed to confirm upload for ${image.url}:`,
+                  error
+                );
+                return { url: image.url, success: false, error };
+              }
+            })
+          );
+        }
         if (result.success) {
           toast({
             title: "Success",
@@ -276,6 +361,8 @@ export default function EditProductForm({
       });
     }
   };
+
+  console.log(form.getValues());
 
   return (
     <ContentLayout title="Edit Product">
@@ -1113,80 +1200,120 @@ export default function EditProductForm({
                   <CardTitle>Images</CardTitle>
                   <CardDescription>Upload product images here.</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <FormField
-                    control={control}
-                    name="images"
-                    render={({ field }) => (
-                      <FormItem className="mx-auto ">
-                        <FormLabel>
-                          <h2 className="text-xl font-semibold tracking-tight"></h2>
-                        </FormLabel>
-                        <FormControl>
-                          <MultiImageDropzone
-                            value={fileStates}
-                            dropzoneOptions={{
-                              maxFiles: 5,
-                              maxSize: 1024 * 1024 * 1, // 1MB
-                            }}
-                            onChange={(files) => {
-                              setFileStates(files);
-                            }}
-                            onFilesAdded={async (addedFiles) => {
-                              setFileStates([...fileStates, ...addedFiles]);
-                              await Promise.all(
-                                addedFiles.map(async (addedFileState) => {
-                                  if (!(addedFileState.file instanceof File)) {
-                                    console.error(
-                                      "Expected a File object, but received:",
-                                      addedFileState.file
-                                    );
-                                    updateFileProgress(
-                                      addedFileState.key,
-                                      "ERROR"
-                                    );
-                                    return;
-                                  }
 
-                                  try {
-                                    const res =
-                                      await edgestore.publicImages.upload({
-                                        file: addedFileState.file,
-                                        input: { type: "product" },
-                                        onProgressChange: async (progress) => {
-                                          updateFileProgress(
-                                            addedFileState.key,
+                <CardContent>
+                  {!productImagesLoading ? (
+                    <FormField
+                      control={control}
+                      name="images"
+                      render={({ field }) => (
+                        <FormItem className="mx-auto">
+                          <FormLabel>
+                            <h2 className="text-xl font-semibold tracking-tight"></h2>
+                          </FormLabel>
+                          <FormControl>
+                            <MultiImageDropzone
+                              value={fileStates}
+                              dropzoneOptions={{
+                                maxFiles: 6,
+                                maxSize: 1024 * 1024 * 1, // 1MB
+                              }}
+                              onChange={(files) => {
+                                setFileStates(files);
+                              }}
+                              onFilesAdded={async (addedFiles) => {
+                                const allFiles = [...fileStates, ...addedFiles];
+                                setFileStates(allFiles);
+
+                                // const tempUploadedImages: ClientResponse["publicImages"]["upload"][] =
+                                //   [];
+
+                                await Promise.all(
+                                  addedFiles.map(async (addedFileState) => {
+                                    if (
+                                      !(addedFileState.file instanceof File)
+                                    ) {
+                                      console.error(
+                                        "Expected a File object, but received:",
+                                        addedFileState.file
+                                      );
+                                      updateFileProgress(
+                                        addedFileState.key,
+                                        "ERROR"
+                                      );
+                                      return;
+                                    }
+
+                                    try {
+                                      const res =
+                                        await edgestore.publicImages.upload({
+                                          file: addedFileState.file,
+                                          options: {
+                                            temporary: true,
+                                          },
+                                          input: { type: "product" },
+                                          onProgressChange: async (
                                             progress
-                                          );
-                                          if (progress === 100) {
-                                            // wait 1 second to set it to complete
-                                            // so that the user can see the progress bar at 100%
-                                            await new Promise((resolve) =>
-                                              setTimeout(resolve, 1000)
-                                            );
+                                          ) => {
                                             updateFileProgress(
                                               addedFileState.key,
-                                              "COMPLETE"
+                                              progress
                                             );
-                                          }
+                                            if (progress === 100) {
+                                              // wait 1 second to set it to complete
+                                              // so that the user can see the progress bar at 100%
+                                              await new Promise((resolve) =>
+                                                setTimeout(resolve, 1000)
+                                              );
+
+                                              updateFileProgress(
+                                                addedFileState.key,
+                                                "COMPLETE"
+                                              );
+                                            }
+                                          },
+                                        });
+
+                                      appendImages({
+                                        image: {
+                                          url: res.url,
+                                          description:
+                                            "some random description",
+                                          lastModified:
+                                            addedFileState.file.lastModified.toString(),
+                                          lastModifiedDate: new Date(
+                                            Date.now()
+                                          ),
+                                          name: addedFileState.file.name,
+                                          size: addedFileState.file.size,
+                                          thumbnailUrl: res.thumbnailUrl || "",
+                                          type: addedFileState.file.type,
                                         },
                                       });
-
-                                    console.log(res);
-                                  } catch (err) {
-                                    updateFileProgress(
-                                      addedFileState.key,
-                                      "ERROR"
-                                    );
-                                  }
-                                })
-                              );
-                            }}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                                    } catch (err) {
+                                      updateFileProgress(
+                                        addedFileState.key,
+                                        "ERROR"
+                                      );
+                                    }
+                                  })
+                                );
+                              }}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  ) : (
+                    <div>
+                      <Skeleton className="h-[290px] w-[290]" />
+                      <div className="grid grid-cols-3 mt-5 gap-3">
+                        <Skeleton className="h-[87px] w-[87px]" />
+                        <Skeleton className="h-[87px] w-[87px]" />
+                        <Skeleton className="h-[87px] w-[87px]" />
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 

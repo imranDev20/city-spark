@@ -1,16 +1,23 @@
 "use client";
 
 import { formatFileSize } from "@edgestore/react/utils";
+import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { UploadCloudIcon, X } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
 import { useDropzone, type DropzoneOptions } from "react-dropzone";
+import {
+  ControllerRenderProps,
+  useFieldArray,
+  useFormContext,
+} from "react-hook-form";
 import { twMerge } from "tailwind-merge";
+import { ProductFormInputType } from "../schema";
 
 const variants = {
-  base: "relative rounded-md aspect-square flex justify-center items-center flex-col cursor-pointer min-h-[150px] min-w-[200px] border border-dashed border-gray-400 dark:border-gray-300 transition-colors duration-200 ease-in-out",
+  base: "relative rounded-md aspect-square flex justify-center items-center flex-col cursor-pointer border border-dashed border-gray-400 dark:border-gray-300 transition-colors duration-200 ease-in-out",
   image:
-    "border-0 p-0 w-full h-full relative shadow-md bg-slate-200 dark:bg-slate-900 rounded-md",
+    "p-0 w-full h-full relative  bg-slate-200 dark:bg-slate-900 rounded-md",
   active: "border-2",
   disabled:
     "bg-gray-200 border-gray-300 cursor-default pointer-events-none bg-opacity-30 dark:bg-gray-700",
@@ -54,6 +61,18 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
     ref
   ) => {
     const [customError, setCustomError] = React.useState<string>();
+    const [previewIndex, setPreviewIndex] = React.useState(0);
+    const [isFullScreen, setIsFullScreen] = React.useState(false);
+
+    const { control } = useFormContext<ProductFormInputType>();
+
+    const { remove: removeImage } = useFieldArray({
+      control,
+      name: "images",
+    });
+
+    const openFullScreen = () => setIsFullScreen(true);
+    const closeFullScreen = () => setIsFullScreen(false);
 
     const imageUrls = React.useMemo(() => {
       if (value) {
@@ -142,73 +161,198 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
       return undefined;
     }, [fileRejections, dropzoneOptions]);
 
-    return (
-      <div>
-        <div className="grid grid-cols-[repeat(1,1fr)] gap-2 sm:grid-cols-[repeat(2,1fr)] lg:grid-cols-[repeat(3,1fr)] xl:grid-cols-[repeat(4,1fr)]">
-          {/* Images */}
-          {value?.map(({ file, progress }, index) => (
-            <div
-              key={index}
-              className={variants.image + " aspect-square h-full"}
-            >
-              <Image
-                className="h-full w-full rounded-md object-cover"
-                width={200}
-                height={200}
-                src={imageUrls[index]}
-                alt={typeof file === "string" ? file : file.name}
-              />
+    console.log(previewIndex);
 
-              {/* Progress Bar */}
-              {typeof progress === "number" && (
-                <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-md bg-black bg-opacity-70">
-                  <CircleProgress progress={progress} />
-                </div>
-              )}
-              {/* Remove Image Icon */}
-              {imageUrls[index] && !disabled && progress === "PENDING" && (
-                <div
-                  className="group absolute right-0 top-0 -translate-y-1/4 translate-x-1/4 transform"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    void onChange?.(value.filter((_, i) => i !== index) ?? []);
-                  }}
-                >
-                  <div className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-md border border-solid border-gray-500 bg-white transition-all duration-300 hover:h-6 hover:w-6 dark:border-gray-400 dark:bg-black">
-                    <X
-                      className="text-gray-500 dark:text-gray-400"
-                      width={16}
-                      height={16}
-                    />
+    return (
+      <div className="relative">
+        <div>
+          {/* Dropzone */}
+
+          <div>
+            {value?.length === 0 ? (
+              <div
+                {...getRootProps({
+                  className: dropZoneClassName,
+                })}
+              >
+                {/* Main File Input */}
+                <input ref={ref} {...getInputProps()} />
+
+                <div className="flex flex-col items-center justify-center text-xs text-gray-400">
+                  <UploadCloudIcon className="mb-2 h-7 w-7" />
+                  <div className="text-gray-400">Drag images to upload</div>
+                  <div className="mt-3">
+                    <Button disabled={disabled} type="button">
+                      select
+                    </Button>
                   </div>
                 </div>
-              )}
-            </div>
-          ))}
-
-          {/* Dropzone */}
-          {(!value || value.length < (dropzoneOptions?.maxFiles ?? 0)) && (
-            <div
-              {...getRootProps({
-                className: dropZoneClassName,
-              })}
-            >
-              {/* Main File Input */}
-              <input ref={ref} {...getInputProps()} />
-              <div className="flex flex-col items-center justify-center text-xs text-gray-400">
-                <UploadCloudIcon className="mb-2 h-7 w-7" />
-                <div className="text-gray-400">drag & drop to upload</div>
-                <div className="mt-3">
-                  <Button disabled={disabled}>select</Button>
-                </div>
               </div>
+            ) : (
+              value && (
+                <div
+                  onClick={openFullScreen}
+                  className={
+                    variants.image +
+                    " aspect-square h-full border border-input shadow-sm group"
+                  }
+                >
+                  <Image
+                    className="h-full w-full rounded-md object-cover"
+                    fill
+                    src={imageUrls[previewIndex]}
+                    alt="Some images"
+                  />
+
+                  <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-md group-hover:bg-black group-hover:bg-opacity-70 transition-all">
+                    {value[previewIndex]?.progress === "COMPLETE" && (
+                      <MagnifyingGlassIcon className="text-white h-14 w-14 opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                    )}
+                  </div>
+
+                  {/* Progress Bar */}
+                  {typeof value[previewIndex]?.progress === "number" && (
+                    <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-md bg-black bg-opacity-70">
+                      <CircleProgress progress={value[previewIndex].progress} />
+                    </div>
+                  )}
+
+                  {/* Remove Image Icon */}
+                  {imageUrls[previewIndex] && !disabled && (
+                    <div
+                      className="group absolute right-0 top-0 -translate-y-1/4 translate-x-1/4 transform"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        void onChange?.(value.filter((_, i) => i !== 0) ?? []);
+
+                        removeImage(previewIndex);
+
+                        setPreviewIndex((currIndex) => {
+                          if (currIndex > 0) {
+                            return currIndex - 1;
+                          }
+                          return currIndex; // Return the current index if it's already 0
+                        });
+                      }}
+                    >
+                      <div className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-md border border-solid border-gray-500 bg-white transition-all duration-300 hover:h-6 hover:w-6 dark:border-gray-400 dark:bg-black">
+                        <X
+                          className="text-gray-500 dark:text-gray-400"
+                          width={16}
+                          height={16}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            )}
+          </div>
+
+          {value && (
+            <div className="grid gap-3 grid-cols-3 relative mt-5">
+              {/* Images  */}
+              {value?.map(({ file, progress }, index) => (
+                <div
+                  key={index}
+                  className={
+                    variants.image +
+                    "aspect-square h-full border border-input shadow-sm hover:border-primary cursor-pointer transition-all" +
+                    `${index === previewIndex ? "border-primary" : ""}`
+                  }
+                  onClick={() => setPreviewIndex(index)}
+                >
+                  <Image
+                    className="h-full w-full rounded-md object-cover"
+                    fill
+                    src={imageUrls[index]}
+                    alt={typeof file === "string" ? file : file.name}
+                  />
+
+                  {/* Progress Bar */}
+                  {typeof progress === "number" && (
+                    <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-md bg-black bg-opacity-70">
+                      <CircleProgress progress={progress} />
+                    </div>
+                  )}
+                  {/* Remove Image Icon */}
+                  {imageUrls[index] && !disabled && (
+                    <div
+                      className="group absolute right-0 top-0 -translate-y-1/4 translate-x-1/4 transform"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void onChange?.(
+                          value.filter((_, i) => i !== index) ?? []
+                        );
+
+                        removeImage(index);
+
+                        setPreviewIndex((currIndex) => {
+                          if (currIndex > 0) {
+                            return currIndex - 1;
+                          }
+                          return currIndex; // Return the current index if it's already 0
+                        });
+                      }}
+                    >
+                      <div className="flex h-4 w-4 cursor-pointer items-center justify-center rounded-sm border border-solid border-gray-500 bg-white transition-all duration-300 hover:h-5 hover:w-5 dark:border-gray-400 dark:bg-black">
+                        <X
+                          className="text-gray-500 dark:text-gray-400"
+                          width={16}
+                          height={16}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {value?.length > 0 &&
+                value.length < (dropzoneOptions?.maxFiles ?? 0) && (
+                  <div
+                    {...getRootProps({
+                      className: dropZoneClassName,
+                    })}
+                  >
+                    {/* Main File Input */}
+                    <input ref={ref} {...getInputProps()} />
+
+                    <div className="flex flex-col items-center justify-center text-xs text-gray-400">
+                      <UploadCloudIcon className="mb-2 h-7 w-7" />
+                    </div>
+                  </div>
+                )}
             </div>
           )}
+
+          {/* Error Text */}
+          <div className="mt-1 text-xs text-red-500">
+            {customError ?? errorMessage}
+          </div>
         </div>
-        {/* Error Text */}
-        <div className="mt-1 text-xs text-red-500">
-          {customError ?? errorMessage}
-        </div>
+
+        {isFullScreen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-90 flex justify-center items-center z-50 top-0"
+            onClick={closeFullScreen}
+          >
+            <div className="relative w-[90vw] h-[90vh]">
+              <Image
+                src={imageUrls[previewIndex]}
+                alt={"Hello"}
+                layout="fill"
+                objectFit="contain"
+                className="rounded-lg"
+              />
+            </div>
+            <button
+              className="absolute top-4 right-4 bg-white text-black px-4 py-2 rounded-md hover:bg-gray-200 transition-colors duration-200"
+              onClick={closeFullScreen}
+            >
+              Close
+            </button>
+          </div>
+        )}
       </div>
     );
   }

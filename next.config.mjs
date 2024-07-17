@@ -8,18 +8,23 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "images.unsplash.com",
-      },{
+      },
+      {
         protocol: "https",
         hostname: "www.kubota-chemix.co.jp",
       },
       {
         protocol: "https",
-        hostname: "www.shutterstock.com"
+        hostname: "www.shutterstock.com",
       },
       {
         protocol: "https",
-        hostname: "skipperpipes.in"
-      }
+        hostname: "skipperpipes.in",
+      },
+      {
+        protocol: "https",
+        hostname: "files.edgestore.dev",
+      },
     ],
   },
 };

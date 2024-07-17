@@ -17,7 +17,11 @@ const edgeStoreRouter = es.router({
       })
     )
     // e.g. /products/radiator.jpg
-    .path(({ input }) => [{ type: input.type }]),
+    .path(({ input }) => [{ type: input.type }])
+    .beforeDelete(({ ctx, fileInfo }) => {
+      console.log("beforeDelete", ctx, fileInfo);
+      return true; // allow delete
+    }),
 });
 const handler = createEdgeStoreNextHandler({
   router: edgeStoreRouter,
