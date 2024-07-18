@@ -16,7 +16,7 @@ export default function BrandTableHeader() {
       <div className="flex items-center gap-4 mb-5 mt-7">
         <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0 flex items-center">
           <Award className="mr-3 text-primary" />
-          Template List
+          Brand List
         </h1>
 
         <div className="hidden items-center gap-2 md:ml-auto md:flex">

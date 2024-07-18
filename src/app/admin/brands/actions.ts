@@ -10,7 +10,7 @@ export async function createBrand(data: FormInputType) {
         name: data.brandName,
         website: data.website,
         description: data.description,
-
+        status: data.status,
         image: {
           create: {
             url: "https://images.unsplash.com/photo-1565103446317-476a2b789651?q=80&w=2897&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -101,6 +101,9 @@ export async function updateBrandById(brandId: string, data: FormInputType) {
       },
       data: {
         name: data?.brandName,
+        description: data?.description,
+        website: data?.website,
+        status: data?.status,
       },
     });
 

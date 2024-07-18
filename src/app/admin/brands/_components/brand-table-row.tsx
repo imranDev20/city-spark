@@ -62,7 +62,7 @@ export default function BrandTableRow({
       </TableCell>
       <TableCell className="font-medium">{brand.name}</TableCell>
       <TableCell>
-        <Badge variant="outline">Draft</Badge>
+        <Badge variant="outline">{brand.status}</Badge>
       </TableCell>
       <TableCell className="hidden md:table-cell">$499.99</TableCell>
       <TableCell className="hidden md:table-cell">25</TableCell>

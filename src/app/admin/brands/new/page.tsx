@@ -51,13 +51,8 @@ const defaultValues = {
   description: "",
   brandName: "",
   website: "",
-  email: "",
-  phone: "",
+
   status: "",
-  productCategories: [],
-  brandStory: "",
-  ambassador: "",
-  tagline: "",
 };
 export type FormInputType = z.infer<typeof brandSchema>;
 export default function CreateBrandPage() {
@@ -67,7 +62,6 @@ export default function CreateBrandPage() {
 
   const form = useForm<FormInputType>({
     resolver: zodResolver(brandSchema),
-    defaultValues,
   });
   const { control, handleSubmit } = form;
   const onCreateBrandSubmit: SubmitHandler<FormInputType> = async (data) => {
@@ -220,28 +214,60 @@ export default function CreateBrandPage() {
                       <FormField
                         control={form.control}
                         name="status"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Status</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select status" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="draft">Draft</SelectItem>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="archived">
-                                  Archived
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )}
+                        render={
+                          ({ field }) => {
+                            return (
+                              <FormItem>
+                                <FormLabel>Status</FormLabel>
+                                <Select
+                                  value={field.value}
+                                  onValueChange={(currentValue) => {
+                                    if (currentValue !== "") {
+                                      field.onChange(currentValue);
+                                    }
+                                  }}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select status" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="DRAFT">Draft</SelectItem>
+                                    <SelectItem value="ACTIVE">
+                                      Active
+                                    </SelectItem>
+                                    <SelectItem value="ARCHIVED">
+                                      Archived
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </FormItem>
+                            );
+                          }
+                          //   (
+                          //   <FormItem>
+                          //     <FormLabel>Status</FormLabel>
+                          //     <Select
+                          //       onValueChange={field.onChange}
+                          //       defaultValue={field.value}
+                          //     >
+                          //       <FormControl>
+                          //         <SelectTrigger>
+                          //           <SelectValue placeholder="Select status" />
+                          //         </SelectTrigger>
+                          //       </FormControl>
+                          //       <SelectContent>
+                          //         <SelectItem value="draft">Draft</SelectItem>
+                          //         <SelectItem value="active">Active</SelectItem>
+                          //         <SelectItem value="archived">
+                          //           Archived
+                          //         </SelectItem>
+                          //       </SelectContent>
+                          //     </Select>
+                          //   </FormItem>
+                          // )
+                        }
                       />
                     </div>
                   </div>
