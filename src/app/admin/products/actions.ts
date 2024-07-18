@@ -147,6 +147,7 @@ export async function createProduct(data: ProductFormInputType) {
         manuals: {
           set: ["manual1.pdf", "manual2.pdf"],
         },
+
         images: {
           create: [
             {
