@@ -1,178 +1,424 @@
-"use-client";
-import React from "react";
-import { ControllerRenderProps } from "react-hook-form";
-import { FileRejection, useDropzone } from "react-dropzone";
-import { ImagePlus, Trash, Upload } from "lucide-react";
-import { Button } from "@/components/ui/button";
+"use client";
+
+import { formatFileSize } from "@edgestore/react/utils";
+import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { UploadCloudIcon, X } from "lucide-react";
 import Image from "next/image";
-import { Separator } from "@/components/ui/separator";
+import * as React from "react";
+import { useDropzone, type DropzoneOptions } from "react-dropzone";
+import { useFieldArray, useFormContext } from "react-hook-form";
+import { twMerge } from "tailwind-merge";
+import { ProductFormInputType } from "../schema";
 
-export default function ProductImageUploader(props: ControllerRenderProps) {
-  const [previews, setPreviews] = React.useState<(string | ArrayBuffer)[]>([]);
-  const [selectedPreview, setSelectedPreview] = React.useState<
-    string | ArrayBuffer | null
-  >(null);
-  const [error, setError] = React.useState<string | null>(null);
+const variants = {
+  base: "relative rounded-md aspect-square flex justify-center items-center flex-col cursor-pointer border border-dashed border-gray-400 hover:border-primary dark:border-gray-300 transition-all duration-200 ease-in-out hover:bg-gray-100",
+  image: "p-0 relative  bg-slate-200 dark:bg-slate-900 rounded-md",
+  active: "border-2",
+  disabled:
+    "bg-gray-200 border-gray-300 cursor-default pointer-events-none bg-opacity-30 dark:bg-gray-700",
+  accept: "border border-blue-500 bg-blue-500 bg-opacity-10",
+  reject: "border border-red-700 bg-red-700 bg-opacity-10",
+};
 
-  const { onChange } = props;
+export type FileState = {
+  file: File | string;
+  key: string; // used to identify the file in the progress callback
+  progress: "PENDING" | "COMPLETE" | "ERROR" | number;
+};
 
-  const onDrop = React.useCallback(
-    (acceptedFiles: File[], fileRejections: FileRejection[]) => {
-      console.log(`fileRejection`, fileRejections);
-      if (previews.length + acceptedFiles.length > 5) {
-        setError("You can only upload a maximum of 5 images.");
-        return;
-      }
+type InputProps = {
+  className?: string;
+  value?: FileState[];
+  onChange?: (files: FileState[]) => void | Promise<void>;
+  onFilesAdded?: (addedFiles: FileState[]) => void | Promise<void>;
+  disabled?: boolean;
+  dropzoneOptions?: Omit<DropzoneOptions, "disabled">;
+};
 
-      if (fileRejections.length > 0) {
-        let errorMessage = fileRejections[0]["errors"][0]["message"];
-        setError(errorMessage);
-      }
-      if (fileRejections.length == 0) {
-        setError(null);
-      }
+const ERROR_MESSAGES = {
+  fileTooLarge(maxSize: number) {
+    return `The file is too large. Max size is ${formatFileSize(maxSize)}.`;
+  },
+  fileInvalidType() {
+    return "Invalid file type.";
+  },
+  tooManyFiles(maxFiles: number) {
+    return `You can only add ${maxFiles} file(s).`;
+  },
+  fileNotSupported() {
+    return "The file is not supported.";
+  },
+};
 
-      const newPreviews = [...previews];
-      acceptedFiles.forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          newPreviews.push(reader.result as string | ArrayBuffer);
-          setPreviews(newPreviews);
-          if (!selectedPreview) {
-            setSelectedPreview(reader.result as string | ArrayBuffer);
+const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
+  (
+    { dropzoneOptions, value, className, disabled, onChange, onFilesAdded },
+    ref
+  ) => {
+    const [customError, setCustomError] = React.useState<string>();
+    const [previewIndex, setPreviewIndex] = React.useState(0);
+    const [isFullScreen, setIsFullScreen] = React.useState(false);
+
+    const { control } = useFormContext<ProductFormInputType>();
+
+    const { remove: removeImage } = useFieldArray({
+      control,
+      name: "images",
+    });
+
+    const openFullScreen = () => setIsFullScreen(true);
+    const closeFullScreen = () => setIsFullScreen(false);
+
+    const imageUrls = React.useMemo(() => {
+      if (value) {
+        return value.map((fileState) => {
+          if (typeof fileState.file === "string") {
+            // in case a url is passed in, use it to display the image
+            return fileState.file;
+          } else {
+            // in case a file is passed in, create a base64 url to display the image
+            return URL.createObjectURL(fileState.file);
           }
-        };
-        reader.readAsDataURL(file);
-      });
-      onChange(newPreviews);
-      // setError(null);
-    },
-    [previews, selectedPreview, onChange]
-  );
-  // console.log(`error`, error);
+        });
+      }
+      return [];
+    }, [value]);
 
-  const deleteImage = (index: number) => {
-    const newPreviews = previews.filter((_, i) => i !== index);
-    setPreviews(newPreviews);
-    if (selectedPreview === previews[index]) {
-      setSelectedPreview(newPreviews.length > 0 ? newPreviews[0] : null);
-    }
-    onChange(newPreviews);
-  };
+    // dropzone configuration
+    const {
+      getRootProps,
+      getInputProps,
+      fileRejections,
+      isFocused,
+      isDragAccept,
+      isDragReject,
+    } = useDropzone({
+      accept: { "image/*": [] },
+      disabled,
+      onDrop: (acceptedFiles) => {
+        const files = acceptedFiles;
+        setCustomError(undefined);
+        if (
+          dropzoneOptions?.maxFiles &&
+          (value?.length ?? 0) + files.length > dropzoneOptions.maxFiles
+        ) {
+          setCustomError(ERROR_MESSAGES.tooManyFiles(dropzoneOptions.maxFiles));
+          return;
+        }
+        if (files) {
+          const addedFiles = files.map<FileState>((file) => ({
+            file,
+            key: Math.random().toString(36).slice(2),
+            progress: "PENDING",
+          }));
+          void onFilesAdded?.(addedFiles);
+          void onChange?.([...(value ?? []), ...addedFiles]);
+        }
+      },
+      ...dropzoneOptions,
+    });
 
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
-    onDrop,
-    maxFiles: 5,
-    maxSize: 1000000,
-    accept: { "image/png": [], "image/jpg": [], "image/jpeg": [] },
-    noClick: true,
-  });
-  const dragDropError = (errorMessage: string) => {
-    setError(errorMessage);
-    return;
-  };
-  const handleClickOpen = () => {
-    if (previews.length > 5) {
-      setError("You can only upload a maximum of 5 images.");
-      return;
-    }
-    open();
-  };
+    // styling
+    const dropZoneClassName = React.useMemo(
+      () =>
+        twMerge(
+          variants.base,
+          isFocused && variants.active,
+          disabled && variants.disabled,
+          (isDragReject ?? fileRejections[0]) && variants.reject,
+          isDragAccept && variants.accept,
+          className
+        ).trim(),
+      [
+        isFocused,
+        fileRejections,
+        isDragAccept,
+        isDragReject,
+        disabled,
+        className,
+      ]
+    );
 
-  return (
-    <>
-      <div className="relative flex items-center justify-center mb-4">
-        {selectedPreview && (
-          <div className="border rounded-lg overflow-hidden w-full h-full min-h-56 flex items-end flex-col">
-            <div className="relative w-full h-[250px]">
+    // error validation messages
+    const errorMessage = React.useMemo(() => {
+      if (fileRejections[0]) {
+        const { errors } = fileRejections[0];
+        if (errors[0]?.code === "file-too-large") {
+          return ERROR_MESSAGES.fileTooLarge(dropzoneOptions?.maxSize ?? 0);
+        } else if (errors[0]?.code === "file-invalid-type") {
+          return ERROR_MESSAGES.fileInvalidType();
+        } else if (errors[0]?.code === "too-many-files") {
+          return ERROR_MESSAGES.tooManyFiles(dropzoneOptions?.maxFiles ?? 0);
+        } else {
+          return ERROR_MESSAGES.fileNotSupported();
+        }
+      }
+      return undefined;
+    }, [fileRejections, dropzoneOptions]);
+
+    return (
+      <div className="relative">
+        <div>
+          {/* Dropzone */}
+
+          <div>
+            {value?.length === 0 ? (
+              <div
+                {...getRootProps({
+                  className: dropZoneClassName,
+                })}
+              >
+                {/* Main File Input */}
+                <input ref={ref} {...getInputProps()} />
+
+                <div className="flex flex-col items-center justify-center text-xs text-gray-400">
+                  <UploadCloudIcon className="mb-2 h-7 w-7" />
+                  <div className="text-gray-400">Drag images to upload</div>
+                  <div className="mt-3">
+                    <Button disabled={disabled} type="button">
+                      select
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              value && (
+                <div
+                  onClick={openFullScreen}
+                  className={
+                    variants.image +
+                    " aspect-square h-full border border-input shadow-sm group relative cursor-pointer"
+                  }
+                >
+                  <Image
+                    className="h-full w-full rounded-md object-cover"
+                    fill
+                    src={imageUrls[previewIndex]}
+                    alt="Some images"
+                  />
+
+                  <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-md group-hover:bg-black group-hover:bg-opacity-70 transition-all">
+                    {value[previewIndex]?.progress === "COMPLETE" && (
+                      <MagnifyingGlassIcon className="text-white h-14 w-14 opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                    )}
+                  </div>
+
+                  {/* Progress Bar */}
+                  {typeof value[previewIndex]?.progress === "number" && (
+                    <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-md bg-black bg-opacity-70">
+                      <CircleProgress progress={value[previewIndex].progress} />
+                    </div>
+                  )}
+
+                  {/* Remove Image Icon */}
+                  {imageUrls[previewIndex] && !disabled && (
+                    <div
+                      className="group absolute right-0 top-0 -translate-y-1/4 translate-x-1/4 transform"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        void onChange?.(value.filter((_, i) => i !== 0) ?? []);
+
+                        removeImage(previewIndex);
+
+                        setPreviewIndex((currIndex) => {
+                          if (currIndex > 0) {
+                            return currIndex - 1;
+                          }
+                          return currIndex; // Return the current index if it's already 0
+                        });
+                      }}
+                    >
+                      <div className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-md border border-solid border-gray-500 bg-white transition-all duration-300 hover:h-6 hover:w-6 dark:border-gray-400 dark:bg-black">
+                        <X
+                          className="text-gray-500 dark:text-gray-400"
+                          width={16}
+                          height={16}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            )}
+          </div>
+
+          {value && (
+            <div className="grid gap-3 grid-cols-3 relative mt-5">
+              {/* Images  */}
+              {value?.map(({ file, progress }, index) => {
+                return (
+                  <div
+                    key={index}
+                    className={
+                      variants.image +
+                      "aspect-square h-[87px] border border-input shadow-sm hover:border-primary cursor-pointer transition-all relative rounded-md hover:rounded-md" +
+                      `${index === previewIndex ? "border border-primary" : ""}`
+                    }
+                    onClick={() => setPreviewIndex(index)}
+                  >
+                    <Image
+                      className="rounded-md object-cover"
+                      fill
+                      src={imageUrls[index]}
+                      alt={typeof file === "string" ? file : file.name}
+                    />
+
+                    {/* Progress Bar */}
+                    {typeof progress === "number" && (
+                      <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-md bg-black bg-opacity-70">
+                        <CircleProgress progress={progress} />
+                      </div>
+                    )}
+                    {/* Remove Image Icon */}
+                    {imageUrls[index] && !disabled && (
+                      <div
+                        className="group absolute right-0 top-0 -translate-y-1/4 translate-x-1/4 transform"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void onChange?.(
+                            value.filter((_, i) => i !== index) ?? []
+                          );
+
+                          removeImage(index);
+
+                          setPreviewIndex((currIndex) => {
+                            if (currIndex > 0) {
+                              return currIndex - 1;
+                            }
+                            return currIndex; // Return the current index if it's already 0
+                          });
+                        }}
+                      >
+                        <div className="flex h-4 w-4 cursor-pointer items-center justify-center rounded-sm border border-solid border-gray-500 bg-white transition-all duration-300 hover:h-5 hover:w-5 dark:border-gray-400 dark:bg-black">
+                          <X
+                            className="text-gray-500 dark:text-gray-400"
+                            width={16}
+                            height={16}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {value?.length > 0 &&
+                value.length < (dropzoneOptions?.maxFiles ?? 0) && (
+                  <div
+                    {...getRootProps({
+                      className: dropZoneClassName,
+                    })}
+                  >
+                    {/* Main File Input */}
+                    <input ref={ref} {...getInputProps()} />
+
+                    <div className="flex flex-col items-center justify-center text-xs text-gray-400">
+                      <UploadCloudIcon className="mb-2 h-7 w-7" />
+                    </div>
+                  </div>
+                )}
+            </div>
+          )}
+
+          {/* Error Text */}
+          <div className="mt-1 text-xs text-red-500">
+            {customError ?? errorMessage}
+          </div>
+        </div>
+
+        {isFullScreen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-90 flex justify-center items-center z-50 top-0"
+            onClick={closeFullScreen}
+          >
+            <div className="relative w-[90vw] h-[90vh]">
               <Image
-                src={selectedPreview as string}
-                alt="Uploaded image"
+                src={imageUrls[previewIndex]}
+                alt={"Hello"}
+                layout="fill"
+                objectFit="contain"
                 className="rounded-lg"
-                fill
-                style={{
-                  objectFit: "contain",
-                }}
               />
             </div>
-            <Separator />
-
-            <div className="mt-3 pb-3 pr-3">
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                onClick={() => deleteImage(previews.indexOf(selectedPreview))}
-              >
-                <Trash className="w-4 h-4 text-primary" />
-              </Button>
-            </div>
+            <button
+              className="absolute top-4 right-4 bg-white text-black px-4 py-2 rounded-md hover:bg-gray-200 transition-colors duration-200"
+              onClick={closeFullScreen}
+            >
+              Close
+            </button>
           </div>
         )}
       </div>
-      {previews.length < 5 && (
-        <div
-          {...getRootProps()}
-          className={`flex flex-col items-center justify-center gap-y-2 rounded-lg bg-gray-500/10 h-[300px]  ${
-            previews.length > 0 ? "hidden" : ""
-          } outline-dashed outline-1 outline-gray-500/20 relative`}
-        >
-          <ImagePlus
-            className=" size-10 text-gray-500"
-            onClick={handleClickOpen}
-          />
-          <input
-            {...getInputProps()}
-            type="file"
-            className="h-full w-full absolute opacity-0 cursor-pointer"
-            style={{
-              display: "block", //block!important isn't working
-            }}
-          />
-          {isDragActive ? (
-            <p className="text-center text-gray-500 px-3">Drop the image!</p>
-          ) : (
-            <p className="text-center text-gray-500 px-3">
-              <span className="font-semibold">Click here</span> or drag an image
-              to upload it
-            </p>
-          )}
-        </div>
-      )}
-      {error && <p className="text-red-500 mt-2">{error}</p>}
-      {previews.length > 0 && (
-        <div className="grid grid-cols-5 gap-2 w-full">
-          {previews.map((preview, index) => (
-            <div
-              key={index}
-              className="h-14 relative border-2 hover:border-primary overflow-hidden rounded-sm"
-            >
-              <Image
-                src={preview as string}
-                alt={`Uploaded image ${index + 1}`}
-                fill
-                className="rounded-sm cursor-pointer"
-                onClick={() => setSelectedPreview(preview)}
-                style={{
-                  objectFit: "contain",
-                }}
-              />
-            </div>
-          ))}
+    );
+  }
+);
+MultiImageDropzone.displayName = "MultiImageDropzone";
 
-          {previews.length < 5 && (
-            <div className="border-2 border-dashed  flex items-center justify-center rounded-sm hover:border-primary">
-              <button
-                type="button"
-                className="w-full h-full flex justify-center items-center"
-                onClick={handleClickOpen}
-              >
-                <Upload className="h-5 w-5 text-gray-500" />
-              </button>
-            </div>
-          )}
-        </div>
+const Button = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ className, ...props }, ref) => {
+  return (
+    <button
+      className={twMerge(
+        // base
+        "focus-visible:ring-ring inline-flex cursor-pointer items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50",
+        // color
+        "border border-gray-400 text-gray-400 shadow hover:bg-gray-100 hover:text-gray-500 dark:border-gray-600 dark:text-gray-100 dark:hover:bg-gray-700",
+        // size
+        "h-6 rounded-md px-2 text-xs",
+        className
       )}
-    </>
+      ref={ref}
+      {...props}
+    />
+  );
+});
+Button.displayName = "Button";
+
+export { MultiImageDropzone };
+
+function CircleProgress({ progress }: { progress: number }) {
+  const strokeWidth = 10;
+  const radius = 50;
+  const circumference = 2 * Math.PI * radius;
+
+  return (
+    <div className="relative h-16 w-16">
+      <svg
+        className="absolute top-0 left-0 -rotate-90 transform"
+        width="100%"
+        height="100%"
+        viewBox={`0 0 ${(radius + strokeWidth) * 2} ${
+          (radius + strokeWidth) * 2
+        }`}
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          className="text-gray-400"
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          fill="none"
+          cx={radius + strokeWidth}
+          cy={radius + strokeWidth}
+          r={radius}
+        />
+        <circle
+          className="text-white transition-all duration-300 ease-in-out"
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={((100 - progress) / 100) * circumference}
+          strokeLinecap="round"
+          fill="none"
+          cx={radius + strokeWidth}
+          cy={radius + strokeWidth}
+          r={radius}
+        />
+      </svg>
+      <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center text-xs text-white">
+        {Math.round(progress)}%
+      </div>
+    </div>
   );
 }

@@ -1,11 +1,27 @@
 import { initEdgeStore } from "@edgestore/server";
 import { createEdgeStoreNextHandler } from "@edgestore/server/adapters/next/app";
+import { z } from "zod";
+
 const es = initEdgeStore.create();
 /**
  * This is the main router for the Edge Store buckets.
  */
 const edgeStoreRouter = es.router({
-  publicImages: es.imageBucket(),
+  publicImages: es
+    .imageBucket({
+      maxSize: 1024 * 1024 * 1, // 1MB
+    })
+    .input(
+      z.object({
+        type: z.enum(["product", "account", "brand", "template"]),
+      })
+    )
+    // e.g. /products/radiator.jpg
+    .path(({ input }) => [{ type: input.type }])
+    .beforeDelete(({ ctx, fileInfo }) => {
+      console.log("beforeDelete", ctx, fileInfo);
+      return true; // allow delete
+    }),
 });
 const handler = createEdgeStoreNextHandler({
   router: edgeStoreRouter,

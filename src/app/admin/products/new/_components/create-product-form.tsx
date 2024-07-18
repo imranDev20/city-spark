@@ -52,15 +52,13 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-import { productSchema } from "../../schema";
+import { ProductFormInputType, productSchema } from "../../schema";
 import { createProduct } from "../../actions";
-import ProductImageUploader from "../../_components/product-image-uploader";
+
 import { Brand, Category, Template } from "@prisma/client";
 import { TemplateWithRelations } from "../../[product_id]/_components/edit-product-form";
 import ManualsInstructionsUpload from "../../_components/manuals-instructions-upload";
 import useQueryString from "@/hooks/use-query-string";
-
-export type ProductFormInputType = z.infer<typeof productSchema>;
 
 export default function CreateProductForm({
   categories,
@@ -982,9 +980,7 @@ export default function CreateProductForm({
                       <FormLabel>
                         <h2 className="text-xl font-semibold tracking-tight"></h2>
                       </FormLabel>
-                      <FormControl>
-                        <ProductImageUploader {...field} />
-                      </FormControl>
+                      <FormControl></FormControl>
                     </FormItem>
                   )}
                 />

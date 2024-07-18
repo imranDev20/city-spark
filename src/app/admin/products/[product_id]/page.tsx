@@ -25,7 +25,6 @@ export default async function AdminProductDetailsPage({
   const brands = await getBrands();
   const templates = await getTemplates();
   const categories = await getCategories();
-
   const templateDetails = await getTemplateById(
     (template_id || productDetails.templateId) as string
   );

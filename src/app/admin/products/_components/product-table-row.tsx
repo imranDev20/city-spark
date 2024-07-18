@@ -1,4 +1,5 @@
 "use client";
+
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Prisma } from "@prisma/client";
@@ -18,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import PlaceholderImage from "@/images/placeholder-image.jpg";
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -67,13 +69,24 @@ export default function ProductTableRow({
       className={`cursor-pointer ${isPending ? "opacity-30" : "opacity-100"}`}
     >
       <TableCell className="hidden sm:table-cell">
-        <Image
-          alt="Product image"
-          className="aspect-square rounded-md object-cover"
-          height="64"
-          src={product.images[0].url}
-          width="64"
-        />
+        {product.images[0]?.url ? (
+          <Image
+            alt="Product image"
+            className="aspect-square rounded-md object-cover border border-input"
+            height="64"
+            src={product.images[0].url}
+            width="64"
+          />
+        ) : (
+          <Image
+            alt="Product image"
+            className="aspect-square rounded-md object-cover border border-input"
+            height="64"
+            src={PlaceholderImage}
+            loading="lazy"
+            width="64"
+          />
+        )}
       </TableCell>
       <TableCell className="font-medium flex-1">{product.name}</TableCell>
       <TableCell>
