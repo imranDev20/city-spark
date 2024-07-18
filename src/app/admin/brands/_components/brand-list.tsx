@@ -39,7 +39,7 @@ export default async function BrandsList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {brands.map((brand) => (
+              {brands?.map((brand) => (
                 <BrandTableRow key={brand.id} brand={brand} />
               ))}
             </TableBody>
