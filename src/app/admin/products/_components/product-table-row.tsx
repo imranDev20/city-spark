@@ -95,9 +95,7 @@ export default function ProductTableRow({
       <TableCell className="hidden md:table-cell">
         {product.brand?.name}
       </TableCell>
-      <TableCell className="hidden md:table-cell">
-        {product.category.name}
-      </TableCell>
+      <TableCell className="hidden md:table-cell">{product.name}</TableCell>
       <TableCell className="hidden md:table-cell">
         {dayjs(product.createdAt).format("DD-MM-YY hh:mm A")}
       </TableCell>

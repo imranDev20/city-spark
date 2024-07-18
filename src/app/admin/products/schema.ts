@@ -84,7 +84,9 @@ export const productSchema = z.object({
       required_error: "Template is required.",
       invalid_type_error: "Template must be a string.",
     })
-    .min(1, "Template is required and can't be left blank."),
+    .min(1, "Template is required and can't be left blank.")
+    .optional(),
+
   templateFields: z
     .array(
       z.object({
@@ -140,6 +142,10 @@ export const productSchema = z.object({
       invalid_type_error: "Manuals must be an array of strings.",
     })
     .optional(),
+  primaryCategory: z.string().optional(),
+  secondaryCategory: z.string().optional(),
+  tertiaryCategory: z.string().optional(),
+  quaternaryCategory: z.string().optional(),
 });
 
 export type ProductFormInputType = z.infer<typeof productSchema>;

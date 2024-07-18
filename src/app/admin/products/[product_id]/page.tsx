@@ -16,15 +16,30 @@ export default async function AdminProductDetailsPage({
   };
   searchParams: {
     template_id: string;
+    primary_category_id: string;
+    secondary_category_id: string;
+    tertiary_category_id: string;
   };
 }) {
   const { product_id } = params;
-  const { template_id } = searchParams;
+  const {
+    template_id,
+    primary_category_id,
+    secondary_category_id,
+    tertiary_category_id,
+  } = searchParams;
 
   const productDetails = await getProductById(product_id);
   const brands = await getBrands();
   const templates = await getTemplates();
-  const categories = await getCategories();
+  const primaryCategories = (await getCategories("PRIMARY")) || [];
+  const secondaryCategories =
+    (await getCategories("SECONDARY", primary_category_id)) || [];
+  const tertiaryCategories =
+    (await getCategories("TERTIARY", secondary_category_id)) || [];
+  const quaternaryCategories =
+    (await getCategories("QUATERNARY", tertiary_category_id)) || [];
+
   const templateDetails = await getTemplateById(
     (template_id || productDetails.templateId) as string
   );
@@ -35,7 +50,10 @@ export default async function AdminProductDetailsPage({
         productDetails={productDetails}
         brands={brands}
         templates={templates}
-        categories={categories}
+        primaryCategories={primaryCategories}
+        secondaryCategories={secondaryCategories}
+        tertiaryCategories={tertiaryCategories}
+        quaternaryCategories={quaternaryCategories}
         templateDetails={templateDetails}
       />
     </>

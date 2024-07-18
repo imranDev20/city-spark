@@ -86,7 +86,7 @@ export type TemplateWithRelations = Prisma.TemplateGetPayload<{
 
 export default function EditProductForm({
   productDetails,
-  categories,
+  primaryCategories,
   templates,
   brands,
   templateDetails,
@@ -94,7 +94,10 @@ export default function EditProductForm({
 {
   productDetails: ProductWithRelations;
   brands: Brand[];
-  categories: Category[];
+  primaryCategories: Category[];
+  secondaryCategories: Category[];
+  tertiaryCategories: Category[];
+  quaternaryCategories: Category[];
   templates: Template[];
   templateDetails: TemplateWithRelations | null;
   // productFileStates: string;
@@ -110,7 +113,15 @@ export default function EditProductForm({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
   const selectedTemplate = searchParams.get("template_id") || null;
+  const selectedPrimaryCategory = searchParams.get("primary_category_id") || "";
+  const selectedSecondaryCategory =
+    searchParams.get("secondary_category_id") || "";
+  const selectedTertiaryCategory =
+    searchParams.get("tertiary_category_id") || "";
+  const selectedQuaternaryCategory =
+    searchParams.get("quaternary_category_id") || "";
 
   const [fileStates, setFileStates] = useState<FileState[]>([]);
   const { edgestore } = useEdgeStore();
@@ -232,6 +243,10 @@ export default function EditProductForm({
         categoryId,
         templateId,
         images,
+        primaryCategoryId,
+        secondaryCategoryId,
+        tertiaryCategoryId,
+        quaternaryCategoryId,
       } = productDetails;
 
       reset({
@@ -278,9 +293,25 @@ export default function EditProductForm({
             thumbnailUrl: image.thumbnailUrl || "",
           },
         })),
+
+        primaryCategory: selectedPrimaryCategory || primaryCategoryId || "",
+        secondaryCategory:
+          selectedSecondaryCategory || secondaryCategoryId || "",
+        tertiaryCategory: selectedTertiaryCategory || tertiaryCategoryId || "",
+        quaternaryCategory:
+          selectedQuaternaryCategory || quaternaryCategoryId || "",
       });
     }
-  }, [productDetails, reset, selectedTemplate, templateDetails]);
+  }, [
+    productDetails,
+    reset,
+    selectedTemplate,
+    templateDetails,
+    selectedPrimaryCategory,
+    selectedSecondaryCategory,
+    selectedTertiaryCategory,
+    selectedQuaternaryCategory,
+  ]);
 
   console.log(form.formState.errors);
 
@@ -695,6 +726,7 @@ export default function EditProductForm({
                         )}
                       />
                     </div>
+
                     <div className="grid gap-3">
                       <FormField
                         control={control}
@@ -710,6 +742,7 @@ export default function EditProductForm({
                         )}
                       />
                     </div>
+
                     <div className="grid gap-3">
                       <FormField
                         control={control}
@@ -725,65 +758,101 @@ export default function EditProductForm({
                         )}
                       />
                     </div>
-                    <div className="grid gap-3 col-span-3">
-                      <div className="grid gap-3 grid-cols-4">
-                        <FormField
-                          control={control}
-                          name="length"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Length</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Enter length" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={control}
-                          name="width"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Width</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Enter width" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={control}
-                          name="height"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Height</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Enter height" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
 
-                        <FormField
-                          control={control}
-                          name="material"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Material</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="Enter material"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                    <div className="grid gap-3">
+                      <FormField
+                        control={control}
+                        name="length"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Length</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter length" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-3">
+                      <FormField
+                        control={control}
+                        name="width"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Width</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter width" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-3">
+                      <FormField
+                        control={control}
+                        name="height"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Height</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter height" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-3">
+                      <FormField
+                        control={control}
+                        name="material"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Material</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter material" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-3">
+                      <FormField
+                        control={control}
+                        name="volume"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Volume</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter volume" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-3">
+                      <FormField
+                        control={control}
+                        name="shape"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Shape</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter shape" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </div>
                 </CardContent>
@@ -1018,7 +1087,7 @@ export default function EditProductForm({
                       name="category"
                       render={({ field }) => (
                         <FormItem className="grid gap-1">
-                          <FormLabel>Category</FormLabel>
+                          <FormLabel>Primary</FormLabel>
                           <FormControl>
                             <Popover
                               open={openCategoriesComboBox}
@@ -1032,7 +1101,7 @@ export default function EditProductForm({
                                   className="justify-between"
                                 >
                                   {field.value ? (
-                                    categories?.find(
+                                    primaryCategories?.find(
                                       (brand) => brand.id === field.value
                                     )?.name
                                   ) : (
@@ -1051,12 +1120,22 @@ export default function EditProductForm({
                                       No framework found.
                                     </CommandEmpty>
                                     <CommandGroup>
-                                      {categories?.map((category) => (
+                                      {primaryCategories?.map((category) => (
                                         <CommandItem
                                           key={category.id}
                                           value={category.name}
                                           onSelect={() => {
                                             field.onChange(category.id);
+
+                                            router.push(
+                                              `${pathname}?${createQueryString({
+                                                primary_category_id:
+                                                  category.id,
+                                              })}`,
+                                              {
+                                                scroll: false,
+                                              }
+                                            );
                                             setOpenCategoriesComboBox(false);
                                           }}
                                         >

@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { unstable_cache as cache } from "next/cache";
 import { ProductFormInputType } from "./schema";
+import { CategoryType, Category } from "@prisma/client";
 
 // Cached products for ssr in the list
 export const getProducts = cache(async () => {
@@ -71,15 +72,61 @@ export const getTemplateById = cache(async (templateId: string) => {
   }
 });
 
-export const getCategories = cache(async () => {
-  try {
-    const categories = await prisma.category.findMany({});
-    return categories;
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-    throw new Error("Failed to fetch categories");
+export const getCategories = cache(
+  async (categoryType: CategoryType, parentId?: string) => {
+    try {
+      let categories: Category[] = [];
+
+      switch (categoryType) {
+        case "PRIMARY":
+          categories =
+            (await prisma.category.findMany({
+              where: {
+                type: categoryType,
+              },
+            })) || [];
+
+          break;
+
+        case "SECONDARY":
+          categories =
+            (await prisma.category.findMany({
+              where: {
+                type: categoryType,
+                parentPrimaryCategoryId: parentId,
+              },
+            })) || [];
+          break;
+
+        case "TERTIARY":
+          categories =
+            (await prisma.category.findMany({
+              where: {
+                type: categoryType,
+                parentSecondaryCategoryId: parentId,
+              },
+            })) || [];
+          break;
+
+        case "QUATERNARY":
+          categories =
+            (await prisma.category.findMany({
+              where: {
+                type: categoryType,
+                parentTertiaryCategoryId: parentId,
+              },
+            })) || [];
+        default:
+          throw new Error(`Invalid category type: ${categoryType}`);
+      }
+
+      return categories;
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      throw new Error("Failed to fetch categories");
+    }
   }
-});
+);
 
 export const getProductById = cache(async (productId: string) => {
   try {
