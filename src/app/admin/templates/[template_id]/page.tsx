@@ -8,9 +8,12 @@ export default async function TemplateDetailsPage({
 }) {
   const { template_id } = params;
   const templateDetails = await getTemplateById(template_id);
+
   return (
     <div>
-      <EditTemplateForm templateDetails={templateDetails} />
+      {templateDetails && (
+        <EditTemplateForm templateDetails={templateDetails} />
+      )}
     </div>
   );
 }

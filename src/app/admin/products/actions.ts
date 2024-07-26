@@ -51,7 +51,7 @@ export const getTemplates = cache(async () => {
 
 export const getTemplateById = cache(async (templateId: string) => {
   if (!templateId) {
-    console.log("No template Id");
+    console.error("No template Id");
     return null;
   }
 
