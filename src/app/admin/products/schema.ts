@@ -79,12 +79,11 @@ export const productSchema = z.object({
     })
     .optional(),
   material: z.string().optional(),
+
   template: z
     .string({
-      required_error: "Template is required.",
       invalid_type_error: "Template must be a string.",
     })
-    .min(1, "Template is required and can't be left blank.")
     .optional(),
 
   templateFields: z

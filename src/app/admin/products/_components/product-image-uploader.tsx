@@ -204,7 +204,7 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
                   }
                 >
                   <Image
-                    className="h-full w-full rounded-md object-cover"
+                    className="h-full w-full rounded-md object-contain"
                     fill
                     src={imageUrls[previewIndex]}
                     alt="Some images"
@@ -365,12 +365,13 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
     );
   }
 );
+
 MultiImageDropzone.displayName = "MultiImageDropzone";
 
 export { MultiImageDropzone };
 
 function CircleProgress({ progress }: { progress: number }) {
-  const strokeWidth = 10;
+  const strokeWidth = 5;
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
 

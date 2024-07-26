@@ -9,11 +9,10 @@ import {
 } from "@/components/ui/table";
 
 import { getProducts } from "../actions";
-import ProductTableRow, { ProductWithRelations } from "./product-table-row";
-import Link from "next/link";
+import ProductTableRow from "./product-table-row";
 
 export default async function ProductList() {
-  const products = (await getProducts()) as ProductWithRelations[];
+  const products = await getProducts();
 
   return (
     <>
@@ -28,14 +27,12 @@ export default async function ProductList() {
                 <TableHead className="w-[30%]">Name</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="hidden md:table-cell">Brand</TableHead>
-                <TableHead className="hidden md:table-cell w-[19%]">
-                  Category
-                </TableHead>
+                <TableHead className="hidden md:table-cell">Category</TableHead>
 
                 <TableHead className="hidden md:table-cell w-[16%]">
                   Created at
                 </TableHead>
-                <TableHead>
+                <TableHead className="w-10">
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>

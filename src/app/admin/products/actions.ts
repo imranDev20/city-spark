@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { unstable_cache as cache } from "next/cache";
 import { ProductFormInputType } from "./schema";
 import { CategoryType, Category } from "@prisma/client";
+import { redirect } from "next/navigation";
 
 // Cached products for ssr in the list
 export const getProducts = cache(async () => {
@@ -12,7 +13,8 @@ export const getProducts = cache(async () => {
     const products = await prisma.product.findMany({
       include: {
         images: true,
-        category: true,
+        primaryCategory: true,
+        brand: true,
       },
     });
 
@@ -53,8 +55,6 @@ export const getTemplateById = cache(async (templateId: string) => {
     return null;
   }
 
-  console.log(templateId, "IN ACTION");
-
   try {
     const template = await prisma.template.findUnique({
       where: {
@@ -75,49 +75,49 @@ export const getTemplateById = cache(async (templateId: string) => {
 export const getCategories = cache(
   async (categoryType: CategoryType, parentId?: string) => {
     try {
-      let categories: Category[] = [];
+      let categories: Category[];
 
       switch (categoryType) {
         case "PRIMARY":
-          categories =
-            (await prisma.category.findMany({
-              where: {
-                type: categoryType,
-              },
-            })) || [];
-
+          categories = await prisma.category.findMany({
+            where: {
+              type: "PRIMARY",
+            },
+          });
           break;
 
         case "SECONDARY":
-          categories =
-            (await prisma.category.findMany({
-              where: {
-                type: categoryType,
-                parentPrimaryCategoryId: parentId,
-              },
-            })) || [];
+          categories = await prisma.category.findMany({
+            where: {
+              type: "SECONDARY",
+              parentPrimaryCategoryId: parentId,
+            },
+          });
           break;
 
         case "TERTIARY":
-          categories =
-            (await prisma.category.findMany({
-              where: {
-                type: categoryType,
-                parentSecondaryCategoryId: parentId,
-              },
-            })) || [];
+          categories = await prisma.category.findMany({
+            where: {
+              type: "TERTIARY",
+              parentSecondaryCategoryId: parentId,
+            },
+          });
           break;
 
         case "QUATERNARY":
-          categories =
-            (await prisma.category.findMany({
-              where: {
-                type: categoryType,
-                parentTertiaryCategoryId: parentId,
-              },
-            })) || [];
+          categories = await prisma.category.findMany({
+            where: {
+              type: "QUATERNARY",
+              parentTertiaryCategoryId: parentId,
+            },
+          });
+
+          break;
+
         default:
-          throw new Error(`Invalid category type: ${categoryType}`);
+          console.error("Error fetching categories:");
+          throw new Error("Failed to fetch categories");
+          break;
       }
 
       return categories;
@@ -263,12 +263,6 @@ export async function updateProduct(
             data.features?.map((feature) => ({ name: feature.feature })) || [],
         },
 
-        category: {
-          connect: {
-            id: data.category,
-          },
-        },
-
         brand: data.brand
           ? {
               connect: { id: data.brand },
@@ -278,6 +272,30 @@ export async function updateProduct(
         manuals: {
           set: data.manuals ?? [],
         },
+
+        primaryCategory: data.primaryCategory
+          ? {
+              connect: { id: data.primaryCategory },
+            }
+          : undefined,
+
+        secondaryCategory: data.secondaryCategory
+          ? {
+              connect: { id: data.secondaryCategory },
+            }
+          : undefined,
+
+        tertiaryCategory: data.tertiaryCategory
+          ? {
+              connect: { id: data.tertiaryCategory },
+            }
+          : undefined,
+
+        quaternaryCategory: data.quaternaryCategory
+          ? {
+              connect: { id: data.quaternaryCategory },
+            }
+          : undefined,
 
         // we can delete the current images from edgesotre
         // and at the same time delete it from db

@@ -25,7 +25,7 @@ export default function TemplateTableHeader() {
           </Button>
           <Link href="templates/new">
             <Button size="sm" className="whitespace-nowrap">
-              Add New Template
+              Add Template
             </Button>
           </Link>
         </div>
@@ -34,7 +34,7 @@ export default function TemplateTableHeader() {
       <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto mb-5">
         <Input
           type="search"
-          placeholder="Search products"
+          placeholder="Search templates"
           className="w-full sm:w-auto flex-1"
         />
         <Select>
