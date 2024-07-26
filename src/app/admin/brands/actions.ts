@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { unstable_cache as cache, revalidatePath } from "next/cache";
 import { FormInputType } from "./new/page";
 export async function createBrand(data: FormInputType) {
   try {
@@ -11,11 +11,9 @@ export async function createBrand(data: FormInputType) {
         website: data.website,
         description: data.description,
         status: data.status,
-        image: {
-          create: {
-            url: "https://images.unsplash.com/photo-1565103446317-476a2b789651?q=80&w=2897&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-          },
-        },
+        // image : {
+        //   create : data.images
+        // }
       },
     });
     console.log(createBrand);
@@ -34,15 +32,16 @@ export async function createBrand(data: FormInputType) {
   }
 }
 
-export async function getBrands() {
+export const getBrands = cache(async () => {
   try {
     const brands = await prisma.brand.findMany({});
+
     return brands;
   } catch (error) {
-    console.error("Error fetching brand:", error);
-    throw new Error("Failed to fetch brand");
+    console.error("Error fetching brands:", error);
+    throw new Error("Failed to fetch brands");
   }
-}
+});
 
 export async function deleteBrand(brandId: string) {
   try {
@@ -74,16 +73,19 @@ export async function deleteBrand(brandId: string) {
   }
 }
 
-export async function getBrandById(brandId: string) {
+export const getBrandById = cache(async (brandId: string) => {
   try {
     const brand = await prisma.brand.findUnique({
       where: {
         id: brandId,
       },
+      include: {
+        image: true,
+      },
     });
 
     if (!brand) {
-      throw new Error("Brand not found");
+      throw new Error("brand not found");
     }
 
     return brand;
@@ -91,7 +93,7 @@ export async function getBrandById(brandId: string) {
     console.error("Error fetching brand:", error);
     throw new Error("Failed to fetch brand");
   }
-}
+});
 
 export async function updateBrandById(brandId: string, data: FormInputType) {
   try {

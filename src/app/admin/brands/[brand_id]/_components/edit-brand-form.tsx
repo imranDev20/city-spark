@@ -37,7 +37,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useTransition } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
-import ImageUploader from "../../_components/image-uploader";
+// import ImageUploader from "../../_components/brand-image-uploader";
 import { updateBrandById } from "../../actions";
 import { brandSchema } from "../../new/schema";
 
@@ -294,9 +294,9 @@ export default function EditBrandForm({
                         <FormLabel>
                           <h2 className="text-xl font-semibold tracking-tight"></h2>
                         </FormLabel>
-                        <FormControl>
+                        {/* <FormControl>
                           <ImageUploader {...field} />
-                        </FormControl>
+                        </FormControl> */}
                       </FormItem>
                     )}
                   />

@@ -36,7 +36,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
-import ImageUploader from "../_components/image-uploader";
+// import ImageUploader from "../_components/brand-image-uploader";
+import ManualsInstructionsUpload from "../_components/manuals-instructions-upload";
 import { createBrand } from "../actions";
 import { brandSchema } from "./schema";
 
@@ -96,6 +97,7 @@ export default function CreateBrandPage() {
       }
     });
   };
+
   return (
     <ContentLayout title="Create Brands">
       <DynamicBreadcrumb items={breadcrumbItems} />
@@ -214,60 +216,34 @@ export default function CreateBrandPage() {
                       <FormField
                         control={form.control}
                         name="status"
-                        render={
-                          ({ field }) => {
-                            return (
-                              <FormItem>
-                                <FormLabel>Status</FormLabel>
-                                <Select
-                                  value={field.value}
-                                  onValueChange={(currentValue) => {
-                                    if (currentValue !== "") {
-                                      field.onChange(currentValue);
-                                    }
-                                  }}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select status" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="DRAFT">Draft</SelectItem>
-                                    <SelectItem value="ACTIVE">
-                                      Active
-                                    </SelectItem>
-                                    <SelectItem value="ARCHIVED">
-                                      Archived
-                                    </SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </FormItem>
-                            );
-                          }
-                          //   (
-                          //   <FormItem>
-                          //     <FormLabel>Status</FormLabel>
-                          //     <Select
-                          //       onValueChange={field.onChange}
-                          //       defaultValue={field.value}
-                          //     >
-                          //       <FormControl>
-                          //         <SelectTrigger>
-                          //           <SelectValue placeholder="Select status" />
-                          //         </SelectTrigger>
-                          //       </FormControl>
-                          //       <SelectContent>
-                          //         <SelectItem value="draft">Draft</SelectItem>
-                          //         <SelectItem value="active">Active</SelectItem>
-                          //         <SelectItem value="archived">
-                          //           Archived
-                          //         </SelectItem>
-                          //       </SelectContent>
-                          //     </Select>
-                          //   </FormItem>
-                          // )
-                        }
+                        render={({ field }) => {
+                          return (
+                            <FormItem>
+                              <FormLabel>Status</FormLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={(currentValue) => {
+                                  if (currentValue !== "") {
+                                    field.onChange(currentValue);
+                                  }
+                                }}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select status" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="DRAFT">Draft</SelectItem>
+                                  <SelectItem value="ACTIVE">Active</SelectItem>
+                                  <SelectItem value="ARCHIVED">
+                                    Archived
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          );
+                        }}
                       />
                     </div>
                   </div>
@@ -289,12 +265,33 @@ export default function CreateBrandPage() {
                         <FormLabel>
                           <h2 className="text-xl font-semibold tracking-tight"></h2>
                         </FormLabel>
-                        <FormControl>
+                        {/* <FormControl>
+                          <SingleImageDropzone 
+                           width={200}
+                           height={200}
+                           value={file}
+                           onChange={(file) => {
+                             setFile(file);
+                           }}
+                          {...field} />
+                        </FormControl> */}
+                        {/* <FormControl>
                           <ImageUploader {...field} />
-                        </FormControl>
+                        </FormControl> */}
                       </FormItem>
                     )}
                   />
+                </CardContent>
+              </Card>
+              <Card x-chunk="dashboard-07-chunk-5">
+                <CardHeader>
+                  <CardTitle>Manuals & Instructions</CardTitle>
+                  <CardDescription>
+                    Archive this product if it&apos;s no longer available.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ManualsInstructionsUpload />
                 </CardContent>
               </Card>
             </div>

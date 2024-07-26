@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { unstable_cache as cache, revalidatePath } from "next/cache";
 import { FormInputType } from "./new/page";
 
 export async function createTemplate(data: FormInputType) {
@@ -45,17 +45,16 @@ export async function createTemplate(data: FormInputType) {
   }
 }
 
-export async function getTemplates() {
+export const getTemplates = cache(async () => {
   try {
-    const templates = await prisma.template.findMany({
-      include: {},
-    });
+    const templates = await prisma.template.findMany({});
+
     return templates;
   } catch (error) {
-    console.error("Error fetching template:", error);
-    throw new Error("Failed to fetch template");
+    console.error("Error fetching templates:", error);
+    throw new Error("Failed to fetch templates");
   }
-}
+});
 
 export async function deleteTemplate(templateId: string) {
   try {
@@ -87,24 +86,27 @@ export async function deleteTemplate(templateId: string) {
   }
 }
 
-export async function getTemplateById(templateId: string) {
+export const getTemplateById = cache(async (templateId: string) => {
+  if (!templateId) {
+    return null;
+  }
+
   try {
     const template = await prisma.template.findUnique({
       where: {
         id: templateId,
       },
+      include: {
+        fields: true,
+      },
     });
-
-    if (!template) {
-      throw new Error("Template not found");
-    }
 
     return template;
   } catch (error) {
-    console.error("Error fetching template:", error);
-    throw new Error("Failed to fetch template");
+    console.error("Error fetching templates:", error);
+    throw new Error("Failed to fetch templates");
   }
-}
+});
 
 export async function updateTemplateById(
   templateId: string,

@@ -1,8 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
-import { unstable_cache as cache } from "next/cache";
+import { unstable_cache as cache, revalidatePath } from "next/cache";
 import { ProductFormInputType } from "./schema";
 
 // Cached products for ssr in the list
