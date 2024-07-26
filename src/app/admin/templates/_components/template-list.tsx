@@ -11,7 +11,7 @@ import TemplateTableRow from "./template-table-row";
 
 export default async function TemplateList() {
   const templates = await getTemplates();
-  console.log(templates);
+
   return (
     <>
       <div className="flex flex-col mb-4 mt-2 sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0"></div>
@@ -22,11 +22,6 @@ export default async function TemplateList() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden md:table-cell">Price</TableHead>
-                <TableHead className="hidden md:table-cell">
-                  Total Sales
-                </TableHead>
                 <TableHead className="hidden md:table-cell">
                   Created at
                 </TableHead>
@@ -37,10 +32,7 @@ export default async function TemplateList() {
             </TableHeader>
             <TableBody>
               {templates?.map((template) => (
-                <TemplateTableRow
-                  key={template.id}
-                  template={template}
-                ></TemplateTableRow>
+                <TemplateTableRow key={template.id} template={template} />
               ))}
             </TableBody>
           </Table>

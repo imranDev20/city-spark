@@ -10,22 +10,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import { Prisma } from "@prisma/client";
+import { Template } from "@prisma/client";
 import { MoreHorizontal } from "lucide-react";
 
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { deleteTemplate } from "../actions";
+import dayjs from "dayjs";
 
-type TemplateWithRelations = Prisma.TemplateGetPayload<{
-  include: {};
-}>;
-
-export default function TemplateTableRow({
-  template,
-}: {
-  template: TemplateWithRelations;
-}) {
+export default function TemplateTableRow({ template }: { template: Template }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -47,29 +40,17 @@ export default function TemplateTableRow({
       }
     });
   };
+
   return (
     <TableRow
       key={template.id}
       onClick={() => router.push(`/admin/templates/${template.id}`)}
       className={`cursor-pointer ${isPending ? "opacity-30" : "opacity-100"}`}
     >
-      {/* <TableCell className="hidden sm:table-cell">
-        <Image
-          alt="Product image"
-          className="aspect-square rounded-md object-cover"
-          height="64"
-          src="/placeholder.svg"
-          width="64"
-        />
-      </TableCell> */}
       <TableCell className="font-medium"> {template.name} </TableCell>
-      <TableCell>
-        <Badge variant="outline">Draft</Badge>
-      </TableCell>
-      <TableCell className="hidden md:table-cell">$499.99</TableCell>
-      <TableCell className="hidden md:table-cell">25</TableCell>
+
       <TableCell className="hidden md:table-cell">
-        2023-07-12 10:42 AM
+        {dayjs(template.createdAt).format("DD-MM-YY hh:mm A")}
       </TableCell>
       <TableCell>
         <DropdownMenu>

@@ -9,11 +9,12 @@ import { useDropzone, type DropzoneOptions } from "react-dropzone";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 import { ProductFormInputType } from "../schema";
+import { Button } from "@/components/ui/button";
 
 const variants = {
-  base: "relative rounded-md aspect-square flex justify-center items-center flex-col cursor-pointer border border-dashed border-gray-400 hover:border-primary dark:border-gray-300 transition-all duration-200 ease-in-out hover:bg-gray-100",
+  base: "relative rounded-md aspect-square flex justify-center items-center flex-col cursor-pointer border border-dashed border-input hover:border-primary dark:border-gray-300 transition-all duration-200 ease-in-out hover:bg-gray-500/15 bg-gray-500/10",
   image: "p-0 relative  bg-slate-200 dark:bg-slate-900 rounded-md",
-  active: "border-2",
+  active: "border",
   disabled:
     "bg-gray-200 border-gray-300 cursor-default pointer-events-none bg-opacity-30 dark:bg-gray-700",
   accept: "border border-blue-500 bg-blue-500 bg-opacity-10",
@@ -161,7 +162,7 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
         <div>
           {/* Dropzone */}
 
-          <div>
+          <>
             {value?.length === 0 ? (
               <div
                 {...getRootProps({
@@ -171,12 +172,24 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
                 {/* Main File Input */}
                 <input ref={ref} {...getInputProps()} />
 
-                <div className="flex flex-col items-center justify-center text-xs text-gray-400">
-                  <UploadCloudIcon className="mb-2 h-7 w-7" />
-                  <div className="text-gray-400">Drag images to upload</div>
+                <div className="flex flex-col items-center justify-center text-lg text-gray-400">
+                  <UploadCloudIcon className="mb-2 h-9 w-9 text-gray-500" />
+                  <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
+                    <span className="font-semibold">Click to upload</span>
+                    &nbsp; or drag and drop
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    SVG, PNG, JPG or JPEG
+                  </p>
                   <div className="mt-3">
-                    <Button disabled={disabled} type="button">
-                      select
+                    <Button
+                      disabled={disabled}
+                      type="button"
+                      variant="secondary"
+                      color="primary"
+                      size="sm"
+                    >
+                      Select
                     </Button>
                   </div>
                 </div>
@@ -191,7 +204,7 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
                   }
                 >
                   <Image
-                    className="h-full w-full rounded-md object-cover"
+                    className="h-full w-full rounded-md object-contain"
                     fill
                     src={imageUrls[previewIndex]}
                     alt="Some images"
@@ -240,7 +253,7 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
                 </div>
               )
             )}
-          </div>
+          </>
 
           {value && (
             <div className="grid gap-3 grid-cols-3 relative mt-5">
@@ -352,34 +365,13 @@ const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
     );
   }
 );
-MultiImageDropzone.displayName = "MultiImageDropzone";
 
-const Button = React.forwardRef<
-  HTMLButtonElement,
-  React.ButtonHTMLAttributes<HTMLButtonElement>
->(({ className, ...props }, ref) => {
-  return (
-    <button
-      className={twMerge(
-        // base
-        "focus-visible:ring-ring inline-flex cursor-pointer items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50",
-        // color
-        "border border-gray-400 text-gray-400 shadow hover:bg-gray-100 hover:text-gray-500 dark:border-gray-600 dark:text-gray-100 dark:hover:bg-gray-700",
-        // size
-        "h-6 rounded-md px-2 text-xs",
-        className
-      )}
-      ref={ref}
-      {...props}
-    />
-  );
-});
-Button.displayName = "Button";
+MultiImageDropzone.displayName = "MultiImageDropzone";
 
 export { MultiImageDropzone };
 
 function CircleProgress({ progress }: { progress: number }) {
-  const strokeWidth = 10;
+  const strokeWidth = 5;
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
 
