@@ -1,4 +1,5 @@
 "use client";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,9 +37,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
-import ImageUploader from "../_components/image-uploader";
 import { createBrand } from "../actions";
-import { brandSchema } from "./schema";
+import { brandSchema } from "../schema";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -72,11 +72,11 @@ export default function CreateBrandPage() {
   const { control, handleSubmit } = form;
   const onCreateBrandSubmit: SubmitHandler<FormInputType> = async (data) => {
     console.log(data);
-    const { brandName, website, images, status } = data;
+    const { brandName, website, image, status } = data;
     const payload = {
       brandName,
       website,
-      images,
+      image,
       status,
     };
     console.log(`payload`, payload);
@@ -257,15 +257,13 @@ export default function CreateBrandPage() {
                 <CardContent>
                   <FormField
                     control={form.control}
-                    name="images"
+                    name="image"
                     render={({ field }) => (
                       <FormItem className="mx-auto ">
                         <FormLabel>
                           <h2 className="text-xl font-semibold tracking-tight"></h2>
                         </FormLabel>
-                        <FormControl>
-                          <ImageUploader {...field} />
-                        </FormControl>
+                        <FormControl></FormControl>
                       </FormItem>
                     )}
                   />
