@@ -4,7 +4,6 @@ import { getProducts } from "../../products/actions";
 import EditInventoryForm from "../_components/edit-inventory-form";
 import { getInventoryById } from "../actions";
 
-
 export default async function InventoryDetailsPage({
   params,
   searchParams,
@@ -17,14 +16,14 @@ export default async function InventoryDetailsPage({
   };
 }) {
   const { inventory_id } = params;
-  const { product_id} = searchParams;
+  const { product_id } = searchParams;
   const inventoryDetails = await getInventoryById(inventory_id);
-  const products  = await getProducts();
+  const products = await getProducts();
+
   return (
-      <EditInventoryForm 
-      inventoryDetails= {inventoryDetails} 
-      products={products}      
-      />
-   
+    <EditInventoryForm
+      inventoryDetails={inventoryDetails}
+      products={products}
+    />
   );
 }

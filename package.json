@@ -5,9 +5,10 @@
   "scripts": {
     "postinstall": "prisma generate --no-engine",
     "dev": "next dev",
-    "build": "prisma generate --no-engine && next build",
+    "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "vercel-build": "prisma generate --no-engine && next build"
   },
   "dependencies": {
     "@edgestore/react": "^0.1.7",
