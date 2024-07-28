@@ -52,7 +52,7 @@ const breadcrumbItems = [
   },
 ];
 
-export type ProductsWithRelations = Prisma.ProductGetPayload<{
+export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
     images: true;
   };
@@ -67,7 +67,7 @@ export default function EditInventoryForm({
   products,
   inventoryDetails,
 }: {
-  products: ProductsWithRelations[];
+  products: ProductWithRelations[];
   inventoryDetails: InventoryWithRelations;
 }) {
   const [isPending, startTransition] = useTransition();
