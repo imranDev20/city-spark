@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { FormInputType } from "./new/page";
+
 export async function createBrand(data: FormInputType) {
   try {
     const createBrand = await prisma.brand.create({
@@ -10,15 +11,10 @@ export async function createBrand(data: FormInputType) {
         name: data.brandName,
         website: data.website,
         description: data.description,
-
-        image: {
-          create: {
-            url: "https://images.unsplash.com/photo-1565103446317-476a2b789651?q=80&w=2897&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-          },
-        },
+        image: data.image,
       },
     });
-    console.log(createBrand);
+
     revalidatePath("/admin/brands");
     return {
       message: "Brands created successfully!",
@@ -93,7 +89,7 @@ export async function getBrandById(brandId: string) {
   }
 }
 
-export async function updateBrandById(brandId: string, data: FormInputType) {
+export async function updateBrand(brandId: string, data: FormInputType) {
   try {
     const updatedbrand = await prisma.brand.update({
       where: {
@@ -101,10 +97,16 @@ export async function updateBrandById(brandId: string, data: FormInputType) {
       },
       data: {
         name: data?.brandName,
+        description: data.description,
+        countryOfOrigin: data.countryOfOrigin,
+        image: data.image,
+        status: data.status,
+        website: data.website,
       },
     });
 
     revalidatePath("/admin/brands");
+
     return {
       message: "Brand Updated successfully!",
       data: updatedbrand,

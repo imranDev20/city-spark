@@ -11,8 +11,12 @@ import {
 import { getProducts } from "../actions";
 import ProductTableRow from "./product-table-row";
 
+// const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export default async function ProductList() {
   const products = await getProducts();
+
+  // await sleep(2000);
 
   return (
     <>
