@@ -66,8 +66,7 @@ import { cn } from "@/lib/utils";
 import useQueryString from "@/hooks/use-query-string";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEdgeStore } from "@/lib/edgestore";
-import { urlToFileState } from "@/lib/functions";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -407,9 +406,9 @@ export default function EditProductForm({
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
               {`Edit ${productDetails?.name}`}
             </h1>
-            {/* <Badge variant="outline" className="ml-auto sm:ml-0">
-              In stock
-            </Badge> */}
+            <Badge variant="outline" className="ml-auto sm:ml-0">
+              {productDetails.status}
+            </Badge>
             <div className="hidden items-center gap-2 md:ml-auto md:flex">
               <Button variant="outline" size="sm">
                 Discard
@@ -1523,19 +1522,6 @@ export default function EditProductForm({
                 </CardHeader>
 
                 <CardContent>
-                  {/* {!productImagesLoading ? (
-                    "multi image compo goes"
-                  ) : (
-                    <div>
-                      <Skeleton className="h-[290px] w-[290]" />
-                      <div className="grid grid-cols-3 mt-5 gap-3">
-                        <Skeleton className="h-[87px] w-[87px]" />
-                        <Skeleton className="h-[87px] w-[87px]" />
-                        <Skeleton className="h-[87px] w-[87px]" />
-                      </div>
-                    </div>
-                  )} */}
-
                   <FormField
                     control={control}
                     name="images"
@@ -1557,9 +1543,6 @@ export default function EditProductForm({
                             onFilesAdded={async (addedFiles) => {
                               const allFiles = [...fileStates, ...addedFiles];
                               setFileStates(allFiles);
-
-                              // const tempUploadedImages: ClientResponse["publicImages"]["upload"][] =
-                              //   [];
 
                               await Promise.all(
                                 addedFiles.map(async (addedFileState) => {

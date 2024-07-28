@@ -50,6 +50,15 @@ export default function ProductsLoading() {
                   <TableCell className="text-right">
                     <Skeleton className="h-4 w-full" />
                   </TableCell>
+                  <TableCell className="text-right">
+                    <Skeleton className="h-4 w-full" />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Skeleton className="h-4 w-full" />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Skeleton className="h-4 w-full" />
+                  </TableCell>
                 </TableRow>
               ))}
           </TableBody>
@@ -57,7 +66,7 @@ export default function ProductsLoading() {
       </CardContent>
 
       <CardFooter>
-        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-36" />
       </CardFooter>
     </Card>
   );
