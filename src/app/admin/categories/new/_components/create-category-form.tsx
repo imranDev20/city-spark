@@ -55,6 +55,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Category } from "@prisma/client";
 import useQueryString from "@/hooks/use-query-string";
+import { FileState, SingleImageDropzone } from "./category-image-uploder";
 
 export default function CreateCategoryForm({
   parentCategories,
@@ -68,6 +69,11 @@ export default function CreateCategoryForm({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { createQueryString } = useQueryString();
+  const [fileState, setFileState] = useState<FileState>({
+    file: "",
+    key: "",
+    progress: "PENDING",
+  });
 
   const form = useForm<CategoryFormInputType>({
     resolver: zodResolver(categorySchema),
@@ -306,7 +312,27 @@ export default function CreateCategoryForm({
                         <h2 className="text-xl font-semibold tracking-tight"></h2>
                       </FormLabel>
                       <FormControl>
-                        <CategoryImageUploader {...field} />
+                        <SingleImageDropzone
+                          className=" sm:h-[310px] w-full"
+                          // width={200}
+                          // height={200}
+                          value={fileState}
+                          dropzoneOptions={
+                            {
+                              maxFiles: 1,
+                              maxSize: 1024 * 1024 * 1, // 1MB
+                            }
+                          }
+                          onChange={(file) => {
+                            const imageFileState:FileState =  {
+                              file: file as File,
+                              key: "image",
+                              progress: "PENDING",
+                            }
+                            setFileState(imageFileState);
+                            console.log(imageFileState);
+                          }}
+                        />
                       </FormControl>
                     </FormItem>
                   )}

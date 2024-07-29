@@ -14,6 +14,7 @@ import Link from "next/link";
 
 export default async function ProductList() {
   const products = (await getProducts()) as ProductWithRelations[];
+  console.log(`products`, products);
 
   return (
     <>
@@ -41,7 +42,7 @@ export default async function ProductList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.map((product) => (
+              {products?.map((product) => (
                 <ProductTableRow key={product.id} product={product} />
               ))}
             </TableBody>
