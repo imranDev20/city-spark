@@ -3,12 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "postinstall": "prisma generate --no-engine",
+    "postinstall": "prisma generate",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build"
+    "lint": "next lint"
   },
   "dependencies": {
     "@edgestore/react": "^0.1.7",
