@@ -2,11 +2,7 @@ import Image from "next/image";
 import { MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,18 +26,20 @@ export type InventoryWithRelations = Prisma.InventoryGetPayload<{
   include: {
     product: {
       include: {
-        images:true
-      }
-    }
+        images: true;
+      };
+    };
   };
 }>;
 
-export default function InventoryList({inventories}:{inventories:InventoryWithRelations[]}) {
+export default function InventoryList({
+  inventories,
+}: {
+  inventories: InventoryWithRelations[];
+}) {
   return (
     <>
-      
-
-      <Card>       
+      <Card>
         <CardContent>
           <Table>
             <TableHeader>
@@ -50,8 +48,8 @@ export default function InventoryList({inventories}:{inventories:InventoryWithRe
                   <span className="sr-only">Image</span>
                 </TableHead>
                 <TableHead>Name</TableHead>
-              
-                <TableHead className="hidden md:table-cell">Stock</TableHead>              
+
+                <TableHead className="hidden md:table-cell">Stock</TableHead>
                 <TableHead className="hidden md:table-cell">
                   Created at
                 </TableHead>
@@ -61,11 +59,9 @@ export default function InventoryList({inventories}:{inventories:InventoryWithRe
               </TableRow>
             </TableHeader>
             <TableBody>
-              {
-                inventories?.map((inventory) => (
-                  <InventoryTableRow key={inventory.id} inventory={inventory} />
-                ))
-              }
+              {inventories?.map((inventory) => (
+                <InventoryTableRow key={inventory.id} inventory={inventory} />
+              ))}
             </TableBody>
           </Table>
         </CardContent>
