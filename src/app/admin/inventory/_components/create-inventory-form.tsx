@@ -42,17 +42,16 @@ import { useToast } from "@/components/ui/use-toast";
 import { createInventory } from "../actions";
 import { useRouter } from "next/navigation";
 
-export type RelationsWithProducts = Prisma.ProductGetPayload<{
+export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
     images: true;
-    category: true;
   };
 }>;
 
 export default function CreateInventoryForm({
   products,
 }: {
-  products: RelationsWithProducts[];
+  products: ProductWithRelations[];
 }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -72,10 +71,10 @@ export default function CreateInventoryForm({
           collectionPoint: "",
         },
       ],
-      collectionAvailabilityTime: '',
-      collectionEligibility:false,
-      deliveryEligibility:false,
-      countAvailableForCollection:"",
+      collectionAvailabilityTime: "",
+      collectionEligibility: false,
+      deliveryEligibility: false,
+      countAvailableForCollection: "",
       countAvailableForDelivery: "",
       maxCollectionCount: "",
       maxDeliveryCount: "",
@@ -85,7 +84,12 @@ export default function CreateInventoryForm({
       productId: "",
     },
   });
-  const { control, handleSubmit, watch, formState:{errors} } = form;
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = form;
   console.log(errors);
   const {
     fields: areasFields,
@@ -318,54 +322,56 @@ export default function CreateInventoryForm({
                 </div>
                 <div className="mt-5">
                   <h3 className="font-semibold mb-2">Delivery Areas</h3>
-                  <p className="text-sm text-gray-400 mb-3">  Post code for delivery area</p>                               
-                    <div className="grid gap-3 ">
-                      {areasFields.map((areaField, index) => (
-                        <div
-                          key={areaField.id}
-                          className="grid gap-3 sm:grid-cols-8"
-                        >
-                          <div className="grid gap-3 col-span-7">
-                            <FormField
-                              name={`deliveryAreas.${index}.deliveryArea`}
-                              control={control}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      placeholder="Enter delivery post code"
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          <div className="grid gap-3 col-span-1">
-                            <Button
-                              variant="ghost"
-                              type="button"
-                              onClick={() => removeAreas(index)} // Remove the feature at the specified index
-                            >
-                              <Trash className="w-4 h-4 text-primary" />
-                            </Button>
-                          </div>
+                  <p className="text-sm text-gray-400 mb-3">
+                    {" "}
+                    Post code for delivery area
+                  </p>
+                  <div className="grid gap-3 ">
+                    {areasFields.map((areaField, index) => (
+                      <div
+                        key={areaField.id}
+                        className="grid gap-3 sm:grid-cols-8"
+                      >
+                        <div className="grid gap-3 col-span-7">
+                          <FormField
+                            name={`deliveryAreas.${index}.deliveryArea`}
+                            control={control}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Enter delivery post code"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </div>
-                      ))}
-                      <div>
-                        <Button
-                          type="button"
-                          onClick={() =>
-                            appendDeliveryAreas({ deliveryArea: "" })
-                          } // Append a new feature with empty string
-                        >
-                          Add new
-                        </Button>
+                        <div className="grid gap-3 col-span-1">
+                          <Button
+                            variant="ghost"
+                            type="button"
+                            onClick={() => removeAreas(index)} // Remove the feature at the specified index
+                          >
+                            <Trash className="w-4 h-4 text-primary" />
+                          </Button>
+                        </div>
                       </div>
+                    ))}
+                    <div>
+                      <Button
+                        type="button"
+                        onClick={() =>
+                          appendDeliveryAreas({ deliveryArea: "" })
+                        } // Append a new feature with empty string
+                      >
+                        Add new
+                      </Button>
                     </div>
-                
-                </div>                                                        
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -443,54 +449,58 @@ export default function CreateInventoryForm({
                   </div>
                 </div>
                 <div className="mt-5">
-                <h3 className="font-semibold mb-3">Collection Point / Branches</h3>
-                <p className="text-sm text-gray-400 mb-3"> Post code for collection point / branches</p>                                           
-                    <div className="grid gap-3">
-                      {collectionFields.map((collectionField, index) => (
-                        <div
-                          key={collectionField.id}
-                          className="grid gap-3 sm:grid-cols-8"
-                        >
-                          <div className="grid gap-3 col-span-7">
-                            <FormField
-                              name={`collectionPoints.${index}.collectionPoint`}
-                              control={control}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      placeholder="Enter collection post code"
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          <div className="grid gap-3 col-span-1">
-                            <Button
-                              variant="ghost"
-                              type="button"
-                              onClick={() => removeCollection(index)} // Remove the feature at the specified index
-                            >
-                              <Trash className="w-4 h-4 text-primary" />
-                            </Button>
-                          </div>
+                  <h3 className="font-semibold mb-3">
+                    Collection Point / Branches
+                  </h3>
+                  <p className="text-sm text-gray-400 mb-3">
+                    {" "}
+                    Post code for collection point / branches
+                  </p>
+                  <div className="grid gap-3">
+                    {collectionFields.map((collectionField, index) => (
+                      <div
+                        key={collectionField.id}
+                        className="grid gap-3 sm:grid-cols-8"
+                      >
+                        <div className="grid gap-3 col-span-7">
+                          <FormField
+                            name={`collectionPoints.${index}.collectionPoint`}
+                            control={control}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Enter collection post code"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </div>
-                      ))}
-                      <div>
-                        <Button
-                          type="button"
-                          onClick={() =>
-                            appendCollection({ collectionPoint: "" })
-                          } // Append a new feature with empty string
-                        >
-                          Add new
-                        </Button>
+                        <div className="grid gap-3 col-span-1">
+                          <Button
+                            variant="ghost"
+                            type="button"
+                            onClick={() => removeCollection(index)} // Remove the feature at the specified index
+                          >
+                            <Trash className="w-4 h-4 text-primary" />
+                          </Button>
+                        </div>
                       </div>
+                    ))}
+                    <div>
+                      <Button
+                        type="button"
+                        onClick={() =>
+                          appendCollection({ collectionPoint: "" })
+                        } // Append a new feature with empty string
+                      >
+                        Add new
+                      </Button>
                     </div>
-                 
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -538,7 +548,7 @@ export default function CreateInventoryForm({
                             disabled={!watch("deliveryEligibility")}
                           />
                         </FormControl>
-                        <FormMessage />                        
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -563,7 +573,6 @@ export default function CreateInventoryForm({
                           />
                         </FormControl>
                         <FormMessage />
-                       
                       </FormItem>
                     )}
                   />

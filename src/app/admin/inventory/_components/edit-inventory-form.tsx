@@ -52,13 +52,12 @@ const breadcrumbItems = [
   },
 ];
 
-export type RelationsWithProducts = Prisma.ProductGetPayload<{
+export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
     images: true;
-    category: true;
   };
 }>;
-export type RelationsWithInventory = Prisma.InventoryGetPayload<{
+export type InventoryWithRelations = Prisma.InventoryGetPayload<{
   include: {
     product: true;
   };
@@ -68,8 +67,8 @@ export default function EditInventoryForm({
   products,
   inventoryDetails,
 }: {
-  products: RelationsWithProducts[];
-  inventoryDetails: RelationsWithInventory;
+  products: ProductWithRelations[];
+  inventoryDetails: InventoryWithRelations;
 }) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -93,10 +92,10 @@ export default function EditInventoryForm({
           collectionPoint: "",
         },
       ],
-      collectionAvailabilityTime: '',
-      collectionEligibility:false,
-      deliveryEligibility:false,
-      countAvailableForCollection:"",
+      collectionAvailabilityTime: "",
+      collectionEligibility: false,
+      deliveryEligibility: false,
+      countAvailableForCollection: "",
       countAvailableForDelivery: "",
       maxCollectionCount: "",
       maxDeliveryCount: "",
@@ -104,7 +103,6 @@ export default function EditInventoryForm({
       minDeliveryCount: "",
       maxDeliveryTime: "",
       productId: "",
-      
     },
   });
   const {

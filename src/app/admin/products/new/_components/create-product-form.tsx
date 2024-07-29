@@ -61,13 +61,19 @@ import ManualsInstructionsUpload from "../../_components/manuals-instructions-up
 import useQueryString from "@/hooks/use-query-string";
 
 export default function CreateProductForm({
-  categories,
+  primaryCategories,
+  secondaryCategories,
+  tertiaryCategories,
+  quaternaryCategories,
   templates,
   brands,
   templateDetails,
 }: {
   brands: Brand[];
-  categories: Category[];
+  primaryCategories: Category[];
+  secondaryCategories: Category[];
+  tertiaryCategories: Category[];
+  quaternaryCategories: Category[];
   templates: Template[];
   templateDetails: TemplateWithRelations | null;
 }) {
@@ -851,8 +857,9 @@ export default function CreateProductForm({
                                 className="justify-between"
                               >
                                 {field.value ? (
-                                  categories?.find(
-                                    (brand) => brand.id === field.value
+                                  primaryCategories?.find(
+                                    (primaryCat) =>
+                                      primaryCat.id === field.value
                                   )?.name
                                 ) : (
                                   <p className="text-muted-foreground">
@@ -870,26 +877,28 @@ export default function CreateProductForm({
                                     No framework found.
                                   </CommandEmpty>
                                   <CommandGroup>
-                                    {categories?.map((category) => (
-                                      <CommandItem
-                                        key={category.id}
-                                        value={category.name}
-                                        onSelect={() => {
-                                          field.onChange(category.id);
-                                          setOpenCategoriesComboBox(false);
-                                        }}
-                                      >
-                                        <Check
-                                          className={cn(
-                                            "mr-2 h-4 w-4",
-                                            field.value === category.id
-                                              ? "opacity-100"
-                                              : "opacity-0"
-                                          )}
-                                        />
-                                        {category.name}
-                                      </CommandItem>
-                                    ))}
+                                    {primaryCategories?.map(
+                                      (primaryCategory) => (
+                                        <CommandItem
+                                          key={primaryCategory.id}
+                                          value={primaryCategory.name}
+                                          onSelect={() => {
+                                            field.onChange(primaryCategory.id);
+                                            setOpenCategoriesComboBox(false);
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              field.value === primaryCategory.id
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            )}
+                                          />
+                                          {primaryCategory.name}
+                                        </CommandItem>
+                                      )
+                                    )}
                                   </CommandGroup>
                                 </CommandList>
                               </Command>
