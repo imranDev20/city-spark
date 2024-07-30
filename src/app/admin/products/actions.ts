@@ -137,7 +137,11 @@ export const getProductById = cache(async (productId: string) => {
       },
       include: {
         brand: true,
-        productTemplate: true,
+        productTemplate: {
+          include: {
+            fields: true,
+          },
+        },
       },
     });
 
@@ -154,17 +158,22 @@ export const getProductById = cache(async (productId: string) => {
 
 export async function createProduct(data: ProductFormInputType) {
   try {
-    const createdProductTemplate = await prisma.productTemplate.create({
-      data: {
-        templateId: data.productTemplate || "",
-        fields: {
-          create: data.productTemplateFields?.map((field) => ({
-            fieldId: field.fieldId,
-            fieldValue: field.fieldValue,
-          })),
+    let createdProductTemplateId: string | undefined;
+
+    if (data.productTemplate) {
+      const createdProductTemplate = await prisma.productTemplate.create({
+        data: {
+          templateId: data.productTemplate || "",
+          fields: {
+            create: data.productTemplateFields?.map((field) => ({
+              templateFieldId: field.fieldId,
+              fieldValue: field.fieldValue,
+            })),
+          },
         },
-      },
-    });
+      });
+      createdProductTemplateId = createdProductTemplate.id;
+    }
 
     const createdProduct = await prisma.product.create({
       data: {
@@ -185,9 +194,9 @@ export async function createProduct(data: ProductFormInputType) {
         height: data.height,
         material: data.material,
         volume: data.volume,
-        productTemplate: createdProductTemplate.id
+        productTemplate: createdProductTemplateId
           ? {
-              connect: { id: createdProductTemplate.id },
+              connect: { id: createdProductTemplateId },
             }
           : undefined,
         features: data.features?.map((item) => item.feature),
@@ -231,7 +240,7 @@ export async function createProduct(data: ProductFormInputType) {
 
     return {
       message: "Product created successfully!",
-      // data: createdProduct,
+      data: createdProduct,
       success: true,
     };
   } catch (error) {

@@ -140,6 +140,8 @@ export default function EditTemplateForm({
     },
   ];
 
+  console.log(templateDetails);
+
   return (
     <ContentLayout title="Edit Template">
       <FormProvider {...form}>

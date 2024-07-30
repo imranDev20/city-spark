@@ -140,8 +140,8 @@ model ProductTemplateField {
     id                String          @id @default(cuid())
     productTemplateId String
     productTemplate   ProductTemplate @relation(fields: [productTemplateId], references: [id], onDelete: Cascade)
-    fieldId           String
-    field             TemplateField   @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+    templateFieldId   String
+    templateField     TemplateField   @relation(fields: [templateFieldId], references: [id], onDelete: Cascade)
     fieldValue        String?
     createdAt         DateTime        @default(now())
     updatedAt         DateTime        @updatedAt

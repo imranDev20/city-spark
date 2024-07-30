@@ -76,8 +76,6 @@ export default function CreateTemplatePage() {
     name: "fields",
   });
 
-  console.log(formState.errors);
-
   // Handle form submission
   const onCreateTemplateSubmit: SubmitHandler<TemplateFormInputType> = async (
     data

@@ -76,9 +76,9 @@ export type ProductWithRelations = Prisma.ProductGetPayload<{
     productTemplate: {
       include: {
         template: {
-          include:{
-            fields: true
-          }
+          include: {
+            fields: true;
+          };
         };
       };
     };
@@ -290,7 +290,8 @@ export default function EditProductForm({
         warranty: warranty ?? "",
         category: categoryId ?? "",
         productTemplate: selectedTemplate || productTemplateId || "",
-        productTemplateFields: productDetails.productTemplate?.template.,
+        // productTemplateFields:
+
         images: images.map((image) => ({
           image,
         })),

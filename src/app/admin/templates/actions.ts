@@ -11,6 +11,7 @@ export async function createTemplate(data: TemplateFormInputType) {
       data: {
         name: data.name,
         description: data.description,
+        status: data.status,
         fields: {
           create: data.fields.map((item) => ({
             fieldName: item.fieldName,
@@ -22,8 +23,8 @@ export async function createTemplate(data: TemplateFormInputType) {
     });
 
     revalidatePath("/admin/templates");
-    revalidatePath("/admin/products");
     revalidatePath("/admin/products/[product_id]", "page");
+    revalidatePath("/admin/products/new");
 
     return {
       message: "Template created successfully!",
@@ -108,8 +109,6 @@ export async function updateTemplate(
   templateId: string,
   data: TemplateFormInputType
 ) {
-  console.log(data);
-
   try {
     // First, fetch the existing template with its fields
     const existingTemplate = await prisma.template.findUnique({
@@ -164,11 +163,10 @@ export async function updateTemplate(
       include: { fields: true },
     });
 
-    console.log(updatedTemplate);
-
     revalidatePath("/admin/templates");
     revalidatePath(`/admin/templates/${updatedTemplate.id}`);
     revalidatePath("/admin/products/[product_id]", "page");
+    revalidatePath("/admin/products/new");
 
     return {
       message: "Template updated successfully!",
