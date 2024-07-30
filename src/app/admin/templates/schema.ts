@@ -17,14 +17,13 @@ export const templateSchema = z.object({
   fields: z
     .array(
       z.object({
+        fieldId: z.string().trim().optional(),
         fieldName: z.string().trim().min(1, "Field Name is required"),
         fieldType: zodFieldType,
-        fieldValue: z.string().trim().max(255).optional(),
         fieldOptions: z.string().trim().optional(),
       })
     )
     .min(1),
   status: zodStatus.optional(),
 });
-
 export type TemplateFormInputType = z.infer<typeof templateSchema>;

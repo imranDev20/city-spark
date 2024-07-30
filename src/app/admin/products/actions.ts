@@ -41,7 +41,6 @@ export const getTemplates = cache(async () => {
       },
     });
 
-    console.log(templates);
     return templates;
   } catch (error) {
     console.error("Error fetching templates:", error);
@@ -64,6 +63,8 @@ export const getTemplateById = cache(async (templateId: string) => {
         fields: true,
       },
     });
+
+    console.log(template);
 
     return template;
   } catch (error) {
@@ -136,7 +137,7 @@ export const getProductById = cache(async (productId: string) => {
       },
       include: {
         brand: true,
-        template: true,
+        productTemplate: true,
       },
     });
 
@@ -153,6 +154,18 @@ export const getProductById = cache(async (productId: string) => {
 
 export async function createProduct(data: ProductFormInputType) {
   try {
+    const createdProductTemplate = await prisma.productTemplate.create({
+      data: {
+        templateId: data.productTemplate || "",
+        fields: {
+          create: data.productTemplateFields?.map((field) => ({
+            fieldId: field.fieldId,
+            fieldValue: field.fieldValue,
+          })),
+        },
+      },
+    });
+
     const createdProduct = await prisma.product.create({
       data: {
         name: data.name,
@@ -172,9 +185,9 @@ export async function createProduct(data: ProductFormInputType) {
         height: data.height,
         material: data.material,
         volume: data.volume,
-        template: data.template
+        productTemplate: createdProductTemplate.id
           ? {
-              connect: { id: data.template },
+              connect: { id: createdProductTemplate.id },
             }
           : undefined,
         features: data.features?.map((item) => item.feature),
@@ -218,7 +231,7 @@ export async function createProduct(data: ProductFormInputType) {
 
     return {
       message: "Product created successfully!",
-      data: createdProduct,
+      // data: createdProduct,
       success: true,
     };
   } catch (error) {
@@ -256,9 +269,9 @@ export async function updateProduct(
         material: data.material,
         volume: data.volume,
         status: data.status,
-        template: data.template
+        productTemplate: data.productTemplate
           ? {
-              connect: { id: data.template },
+              connect: { id: data.productTemplate },
             }
           : undefined,
         features: data.features?.map((item) => item.feature),
@@ -300,13 +313,13 @@ export async function updateProduct(
       },
     });
 
-    if (data.templateFields) {
+    if (data.productTemplateFields) {
       const updatedTemplate = await prisma.template.update({
-        where: { id: data.template },
+        where: { id: data.productTemplate },
         data: {
           fields: {
             deleteMany: {}, // This will delete all existing fields
-            create: data.templateFields.map((field) => ({
+            create: data.productTemplateFields.map((field) => ({
               fieldName: field.fieldName,
               fieldType: field.fieldType,
               fieldOptions: field.fieldOptions,

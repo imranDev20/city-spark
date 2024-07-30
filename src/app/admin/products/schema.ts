@@ -1,26 +1,5 @@
 import { z } from "zod";
 
-// Image schema with detailed error messages and trimmed text fields
-export const imageSchema = z.object({
-  url: z.string().trim(),
-  thumbnailUrl: z.string().trim().optional(),
-  description: z.string().trim().optional(),
-  name: z.string().trim().optional(),
-  size: z
-    .number({
-      invalid_type_error: "Size must be a number.",
-    })
-    .int("Size must be an integer.")
-    .optional(),
-  lastModified: z.string().trim().optional(),
-  lastModifiedDate: z
-    .date({
-      invalid_type_error: "Last modified date must be a valid date.",
-    })
-    .optional(),
-  type: z.string().trim().optional(),
-});
-
 // Product schema with detailed error messages and trimmed text fields
 export const productSchema = z.object({
   name: z
@@ -80,15 +59,16 @@ export const productSchema = z.object({
     })
     .optional(),
   material: z.string().trim().optional(),
-  template: z
+  productTemplate: z
     .string({
       invalid_type_error: "Template must be a string.",
     })
     .trim()
     .optional(),
-  templateFields: z
+  productTemplateFields: z
     .array(
       z.object({
+        fieldId: z.string().trim().min(1, "Field ID is required"),
         fieldName: z
           .string({
             required_error: "Field name is required.",
@@ -143,4 +123,3 @@ export const productSchema = z.object({
 });
 
 export type ProductFormInputType = z.infer<typeof productSchema>;
-export type ImageFormInputType = z.infer<typeof imageSchema>;

@@ -73,7 +73,15 @@ export type ProductWithRelations = Prisma.ProductGetPayload<{
     images: true;
     brand: true;
     features: true;
-    template: true;
+    productTemplate: {
+      include: {
+        template: {
+          include:{
+            fields: true
+          }
+        };
+      };
+    };
   };
 }>;
 
@@ -175,7 +183,7 @@ export default function EditProductForm({
       width: 0,
       height: 0,
       material: "",
-      template: "",
+      productTemplate: "",
       features: [{ feature: "" }],
       category: "",
       status: "DRAFT",
@@ -206,7 +214,7 @@ export default function EditProductForm({
 
   const { fields: templateFields } = useFieldArray({
     control,
-    name: "templateFields",
+    name: "productTemplateFields",
   });
 
   const { append: appendImages } = useFieldArray({
@@ -247,7 +255,8 @@ export default function EditProductForm({
         type,
         weight,
         categoryId,
-        templateId,
+        productTemplateId,
+        productTemplate,
         images,
         primaryCategoryId,
         secondaryCategoryId,
@@ -280,13 +289,8 @@ export default function EditProductForm({
         status: status ?? "DRAFT",
         warranty: warranty ?? "",
         category: categoryId ?? "",
-        template: selectedTemplate || templateId || "",
-        templateFields: templateDetails?.fields.map((item) => ({
-          fieldName: item.fieldName,
-          fieldType: item.fieldType,
-          fieldOptions: item.fieldOptions || "",
-          fieldValue: item.fieldValue || "",
-        })),
+        productTemplate: selectedTemplate || productTemplateId || "",
+        productTemplateFields: productDetails.productTemplate?.template.,
         images: images.map((image) => ({
           image,
         })),
@@ -845,7 +849,7 @@ export default function EditProductForm({
                     <div className="col-span-4 grid gap-3">
                       <FormField
                         control={control}
-                        name="template"
+                        name="productTemplate"
                         render={({ field }) => (
                           <FormItem className="w-full flex flex-col gap-1">
                             <FormLabel>Templates</FormLabel>
@@ -945,7 +949,7 @@ export default function EditProductForm({
                         >
                           <FormField
                             control={control}
-                            name={`templateFields.${index}.fieldValue`}
+                            name={`productTemplateFields.${index}.fieldValue`}
                             render={({ field }) => (
                               <FormItem className="w-full flex flex-col gap-1">
                                 <FormLabel>{templateField.fieldName}</FormLabel>

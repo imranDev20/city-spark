@@ -2,10 +2,10 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { FormInputType } from "./new/page";
 import { unstable_cache as cache } from "next/cache";
+import { TemplateFormInputType } from "./schema";
 
-export async function createTemplate(data: FormInputType) {
+export async function createTemplate(data: TemplateFormInputType) {
   try {
     const createTemplate = await prisma.template.create({
       data: {
@@ -15,7 +15,7 @@ export async function createTemplate(data: FormInputType) {
           create: data.fields.map((item) => ({
             fieldName: item.fieldName,
             fieldType: item.fieldType,
-            fieldValue: item.fieldValue || "",
+            fieldOptions: item.fieldOptions,
           })),
         },
       },
@@ -104,28 +104,64 @@ export const getTemplateById = cache(async (templateId: string) => {
   }
 });
 
-export async function updateTemplate(templateId: string, data: FormInputType) {
-  console.log(data.fields);
+export async function updateTemplate(
+  templateId: string,
+  data: TemplateFormInputType
+) {
+  console.log(data);
 
   try {
+    // First, fetch the existing template with its fields
+    const existingTemplate = await prisma.template.findUnique({
+      where: { id: templateId },
+      include: { fields: true },
+    });
+
+    if (!existingTemplate) {
+      throw new Error("Template not found");
+    }
+
+    // Prepare arrays for update, create, and delete operations
+    const fieldsToUpdate = [];
+    const fieldsToCreate = [];
+    const fieldIdsToKeep = new Set();
+
+    // Categorize fields
+    for (const field of data.fields) {
+      if (field.fieldId) {
+        fieldsToUpdate.push(field);
+        fieldIdsToKeep.add(field.fieldId);
+      } else {
+        fieldsToCreate.push(field);
+      }
+    }
+
+    // Identify fields to delete
+    const fieldIdsToDelete = existingTemplate.fields
+      .filter((field) => !fieldIdsToKeep.has(field.id))
+      .map((field) => field.id);
+
+    // Perform the update
     const updatedTemplate = await prisma.template.update({
-      where: {
-        id: templateId,
-      },
+      where: { id: templateId },
       data: {
         name: data.name,
         description: data.description,
         status: data.status,
         fields: {
-          deleteMany: {}, // This will delete all existing fields
-          create: data.fields.map((field) => ({
-            fieldName: field.fieldName,
-            fieldType: field.fieldType,
-            fieldOptions: field.fieldOptions,
-            fieldValue: field.fieldValue,
+          update: fieldsToUpdate.map((field) => ({
+            where: { id: field.fieldId },
+            data: {
+              fieldName: field.fieldName,
+              fieldType: field.fieldType,
+              fieldOptions: field.fieldOptions,
+            },
           })),
+          create: fieldsToCreate,
+          deleteMany: { id: { in: fieldIdsToDelete } },
         },
       },
+      include: { fields: true },
     });
 
     console.log(updatedTemplate);

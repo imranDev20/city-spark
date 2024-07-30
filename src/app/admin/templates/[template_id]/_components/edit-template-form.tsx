@@ -63,13 +63,14 @@ export default function EditTemplateForm({
     defaultValues: {
       name: "",
       description: "",
-      fields: [{ fieldName: "", fieldType: "TEXT", fieldOptions: "" }],
+      fields: [
+        { fieldId: "", fieldName: "", fieldType: "TEXT", fieldOptions: "" },
+      ],
       status: "DRAFT",
     },
   });
 
   const { toast } = useToast();
-  const router = useRouter();
 
   const [isPending, startTransition] = useTransition();
   const {
@@ -89,6 +90,7 @@ export default function EditTemplateForm({
   const onEditTemplateSubmit: SubmitHandler<TemplateFormInputType> = async (
     data
   ) => {
+    console.log(data);
     if (templateDetails?.id) {
       startTransition(async () => {
         const result = await updateTemplate(templateDetails?.id, data);
@@ -118,9 +120,9 @@ export default function EditTemplateForm({
         description: description ?? "",
         status: status ?? "DRAFT",
         fields: fields.map((field) => ({
+          fieldId: field.id,
           fieldName: field.fieldName,
           fieldType: field.fieldType,
-          fieldValue: field.fieldValue || "",
           fieldOptions: field.fieldOptions || "",
         })),
       });
@@ -333,7 +335,7 @@ export default function EditTemplateForm({
                             append({
                               fieldName: "",
                               fieldType: "TEXT",
-                              fieldValue: "",
+                              fieldOptions: "",
                             })
                           }
                         >
@@ -377,9 +379,6 @@ export default function EditTemplateForm({
                                   <SelectItem value="ACTIVE">Active</SelectItem>
                                   <SelectItem value="ARCHIVED">
                                     Archived
-                                  </SelectItem>
-                                  <SelectItem value="DISCONTINUED">
-                                    Discondinued
                                   </SelectItem>
                                 </SelectContent>
                               </Select>
