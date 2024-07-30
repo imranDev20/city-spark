@@ -1,10 +1,9 @@
 import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
-import { FaRegStar, FaRegStarHalf } from "react-icons/fa";
-
 import Image from "next/image";
+import { FaRegStar, FaRegStarHalf } from "react-icons/fa";
 import dummyImg from "../../../../images/dummy-img.png";
 
-export default function BestSellingProductsCard() {
+export default function NewProducts() {
   const products = [
     {
       id: "1",
@@ -26,7 +25,7 @@ export default function BestSellingProductsCard() {
   return (
     <div className="w-[85%] mx-auto mt-10  p-4 mb-10">
       <div className="flex justify-between">
-        <h2 className="font-semibold text-2xl mb-4">Best Selling Products</h2>
+        <h2 className="font-semibold text-2xl mb-4">New Products</h2>
         <span className="flex gap-3 mt-2 mr-3 text-gray-400 ">
           <ArrowRightIcon className="border-gray-400 p-0.5  border rounded-full h-5 w-5" />
           <ArrowLeftIcon className="border-gray-400 p-0.5  border rounded-full h-5 w-5" />
@@ -70,10 +69,10 @@ export default function BestSellingProductsCard() {
             </div>
 
             <div className="flex justify-between mt-2">
-              <button className="bg-primary text-white py-1 px-5 rounded-sm  ">
+              <button className="bg-primary text-white   py-1 px-5 rounded-sm  ">
                 Collection
               </button>
-              <button className="bg-primary text-white py-1 px-5 rounded-sm  ">
+              <button className="bg-primary text-white   py-1 px-5 rounded-sm  ">
                 Delivery
               </button>
             </div>
