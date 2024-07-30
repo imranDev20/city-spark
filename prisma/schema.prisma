@@ -1,25 +1,37 @@
 generator client {
-    provider   = "prisma-client-js"
-    engineType = "library"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-    provider  = "postgresql"
-    url       = env("DATABASE_URL")
-    directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+    provider = "postgresql"
+    url      = env("DATABASE_URL") // uses connection pooling
+    // directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
 model Category {
-    id              String       @id @default(cuid())
-    name            String
-    type            CategoryType
-    parentCategory  Category?    @relation("ChildCategories", fields: [parentId], references: [id])
-    parentId        String?
-    childCategories Category[]   @relation("ChildCategories")
-    products        Product[]
-    image           Image?
-    createdAt       DateTime     @default(now())
-    updatedAt       DateTime     @updatedAt
+    id                        String       @id @default(cuid())
+    name                      String
+    type                      CategoryType
+    parentCategory            Category?    @relation("ChildCategories", fields: [parentId], references: [id])
+    parentId                  String?
+    childCategories           Category[]   @relation("ChildCategories")
+    parentPrimaryCategory     Category?    @relation("PrimaryChildCategories", fields: [parentPrimaryCategoryId], references: [id])
+    parentPrimaryCategoryId   String?
+    primaryChildCategories    Category[]   @relation("PrimaryChildCategories")
+    parentSecondaryCategory   Category?    @relation("SecondaryChildCategories", fields: [parentSecondaryCategoryId], references: [id])
+    parentSecondaryCategoryId String?
+    secondaryChildCategories  Category[]   @relation("SecondaryChildCategories")
+    parentTertiaryCategory    Category?    @relation("TertiaryChildCategories", fields: [parentTertiaryCategoryId], references: [id])
+    parentTertiaryCategoryId  String?
+    tertiaryChildCategories   Category[]   @relation("TertiaryChildCategories")
+    products                  Product[]
+    primaryProducts           Product[]    @relation("PrimaryProductCategory")
+    secondaryProducts         Product[]    @relation("SecondaryProductCategory")
+    tertiaryProducts          Product[]    @relation("TertiaryProductCategory")
+    quaternaryProducts        Product[]    @relation("QuaternaryProductCategory")
+    image                     Image?
+    createdAt                 DateTime     @default(now())
+    updatedAt                 DateTime     @updatedAt
 }
 
 enum CategoryType {
@@ -30,36 +42,46 @@ enum CategoryType {
 }
 
 model Product {
-    id               String     @id @default(cuid())
-    name             String     @unique
-    description      String?
-    model            String?
-    type             String?
-    warranty         String?
-    guarantee        String?
-    tradePrice       Float?
-    contractPrice    Float?
-    promotionalPrice Float?
-    unit             String?
-    weight           Float?
-    color            String?
-    length           Float?
-    width            Float?
-    height           Float?
-    material         String?
-    template         Template?  @relation(fields: [templateId], references: [id])
-    templateId       String?
-    features         Feature[]
-    category         Category   @relation(fields: [categoryId], references: [id])
-    categoryId       String
-    brand            Brand?     @relation(fields: [brandId], references: [id])
-    brandId          String?
-    status           Status     @default(DRAFT)
-    manuals          String[]
-    images           Image[]
-    createdAt        DateTime   @default(now())
-    updatedAt        DateTime   @updatedAt
-    inventory        Inventory?
+    id                  String    @id @default(cuid())
+    name                String    @unique
+    description         String?
+    model               String?
+    type                String?
+    warranty            String?
+    guarantee           String?
+    tradePrice          Float?
+    contractPrice       Float?
+    promotionalPrice    Float?
+    unit                String?
+    weight              Float?
+    color               String?
+    length              Float?
+    width               Float?
+    height              Float?
+    material            String?
+    template            Template? @relation(fields: [templateId], references: [id])
+    templateId          String?
+    features            Feature[]
+    category            Category? @relation(fields: [categoryId], references: [id])
+    categoryId          String?
+    primaryCategory     Category? @relation("PrimaryProductCategory", fields: [primaryCategoryId], references: [id])
+    primaryCategoryId   String?
+    secondaryCategory   Category? @relation("SecondaryProductCategory", fields: [secondaryCategoryId], references: [id])
+    secondaryCategoryId String?
+    tertiaryCategory    Category? @relation("TertiaryProductCategory", fields: [tertiaryCategoryId], references: [id])
+    tertiaryCategoryId  String?
+
+    quaternaryCategory   Category? @relation("QuaternaryProductCategory", fields: [quaternaryCategoryId], references: [id])
+    quaternaryCategoryId String?
+
+    brand     Brand?     @relation(fields: [brandId], references: [id])
+    brandId   String?
+    status    Status     @default(DRAFT)
+    manuals   String[]
+    images    Image[]
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
+    inventory Inventory?
 }
 
 model Brand {
@@ -70,7 +92,7 @@ model Brand {
     status          Status    @default(DRAFT)
     website         String?
     countryOfOrigin String?
-    image           Image?
+    image           String?
     createdAt       DateTime  @default(now())
     updatedAt       DateTime  @updatedAt
 }
@@ -102,8 +124,6 @@ model Image {
     type             String?
     product          Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
     productId        String?
-    brand            Brand?    @relation(fields: [brandId], references: [id], onDelete: Cascade)
-    brandId          String?   @unique
     category         Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
     categoryId       String?   @unique
     createdAt        DateTime  @default(now())

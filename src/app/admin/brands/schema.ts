@@ -8,6 +8,9 @@ export const brandSchema = z.object({
     .max(500, "Description cannot exceed 500 characters")
     .optional(),
   website: z.string().optional(),
-  images: z.string().optional(),
+  countryOfOrigin: z.string().optional(),
+  image: z.string().optional(),
   status: z.any().optional(),
 });
+
+export type BrandFormInputType = z.infer<typeof brandSchema>;

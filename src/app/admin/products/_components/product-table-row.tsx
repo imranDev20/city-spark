@@ -25,7 +25,7 @@ export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
     images: true;
     brand: true;
-    category: true;
+    primaryCategory: true;
   };
 }>;
 
@@ -93,10 +93,10 @@ export default function ProductTableRow({
         <Badge variant="outline">{product.status}</Badge>
       </TableCell>
       <TableCell className="hidden md:table-cell">
-        {product.brand?.name}
+        {product.brand?.name || "N/A"}
       </TableCell>
       <TableCell className="hidden md:table-cell">
-        {product.category.name}
+        {product.primaryCategory?.name || "N/A"}
       </TableCell>
       <TableCell className="hidden md:table-cell">
         {dayjs(product.createdAt).format("DD-MM-YY hh:mm A")}

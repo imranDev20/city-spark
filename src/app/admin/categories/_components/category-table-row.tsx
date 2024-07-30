@@ -94,7 +94,6 @@ export default function CategoriesTableRow({
       </TableCell>
 
       <TableCell className="hidden md:table-cell">
-        {" "}
         {dayjs(category.createdAt).format("DD-MM-YY hh:mm A")}
       </TableCell>
 

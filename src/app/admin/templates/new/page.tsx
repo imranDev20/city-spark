@@ -39,7 +39,7 @@ import { z } from "zod";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import { createTemplate } from "../actions";
-import { templateSchema } from "./schema";
+import { templateSchema } from "../schema";
 
 // Define breadcrumb items
 const breadcrumbItems = [
@@ -68,7 +68,7 @@ export default function CreateTemplatePage() {
       name: "",
       description: "",
       fields: [{ fieldName: "", fieldType: "", fieldValue: "" }],
-      status: "draft",
+      status: "DRAFT",
     },
   });
 

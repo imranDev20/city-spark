@@ -1,4 +1,5 @@
 "use client";
+
 import { ContentLayout } from "@/app/admin/_components/content-layout";
 import DynamicBreadcrumb from "@/app/admin/_components/dynamic-breadcrumb";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +33,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft, Trash } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { LoadingButton } from "@/components/ui/loading-button";
 import { Prisma } from "@prisma/client";
@@ -45,30 +46,34 @@ import {
 } from "react-hook-form";
 import { z } from "zod";
 import { updateTemplateById } from "../../actions";
-import { templateSchema } from "../../new/schema";
-console.log(updateTemplateById);
-// Define default values and types
+import { templateSchema } from "../../schema";
 
 export type FormInputType = z.infer<typeof templateSchema>;
-export type TemplateWithRelations = Prisma.TemplateGetPayload<{}>;
+
+export type TemplateWithRelations = Prisma.TemplateGetPayload<{
+  include: {
+    fields: true;
+  };
+}>;
+
 export default function EditTemplateForm({
   templateDetails,
 }: {
   templateDetails: TemplateWithRelations;
 }) {
-  // Initialize form using useForm and zodResolver for validation
   const form = useForm<FormInputType>({
     resolver: zodResolver(templateSchema),
     defaultValues: {
       name: "",
       description: "",
       fields: [{ fieldName: "", fieldType: "", fieldValue: "" }],
-      status: "draft",
+      status: "DRAFT",
     },
   });
+
   const { toast } = useToast();
   const router = useRouter();
-  const params = useParams();
+
   const [isPending, startTransition] = useTransition();
   const {
     control,
@@ -76,10 +81,12 @@ export default function EditTemplateForm({
     reset,
     formState: { isDirty },
   } = form;
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: "fields",
   });
+
   const [fieldTypes, setFieldTypes] = useState(
     fields.map((field) => field.fieldType)
   );
@@ -97,8 +104,6 @@ export default function EditTemplateForm({
         const result = await updateTemplateById(templateDetails?.id, data);
 
         if (result.success) {
-          // Handle successful deletion (e.g., show a success message, update UI)
-          console.log(result.message);
           toast({
             title: "Template Updated",
             description: result.message,
@@ -112,7 +117,6 @@ export default function EditTemplateForm({
             description: result.message,
             variant: "destructive",
           });
-          console.error(result.message);
         }
       });
     }
@@ -370,11 +374,9 @@ export default function EditTemplateForm({
                                   <SelectValue placeholder="Select Status" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="draft">Draft</SelectItem>
-                                  <SelectItem value="published">
-                                    Active
-                                  </SelectItem>
-                                  <SelectItem value="archived">
+                                  <SelectItem value="DRAFT">Draft</SelectItem>
+                                  <SelectItem value="ACTIVE">Active</SelectItem>
+                                  <SelectItem value="ARCHIVED">
                                     Archived
                                   </SelectItem>
                                 </SelectContent>

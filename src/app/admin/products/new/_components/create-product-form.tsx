@@ -479,6 +479,7 @@ export default function CreateProductForm({
                       )}
                     />
                   </div>
+
                   <div className="grid gap-3">
                     <FormField
                       control={control}
@@ -494,6 +495,7 @@ export default function CreateProductForm({
                       )}
                     />
                   </div>
+
                   <div className="grid gap-3">
                     <FormField
                       control={control}
@@ -509,62 +511,101 @@ export default function CreateProductForm({
                       )}
                     />
                   </div>
-                  <div className="grid gap-3 col-span-3">
-                    <div className="grid gap-3 grid-cols-4">
-                      <FormField
-                        control={control}
-                        name="length"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Length</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter length" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={control}
-                        name="width"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Width</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter width" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={control}
-                        name="height"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Height</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter height" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
 
-                      <FormField
-                        control={control}
-                        name="material"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Material</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter material" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                  <div className="grid gap-3">
+                    <FormField
+                      control={control}
+                      name="length"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Length</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter length" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid gap-3">
+                    <FormField
+                      control={control}
+                      name="width"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Width</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter width" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid gap-3">
+                    <FormField
+                      control={control}
+                      name="height"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Height</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter height" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid gap-3">
+                    <FormField
+                      control={control}
+                      name="material"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Material</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter material" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid gap-3">
+                    <FormField
+                      control={control}
+                      name="volume"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Volume</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter volume" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid gap-3">
+                    <FormField
+                      control={control}
+                      name="shape"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Shape</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter shape" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
               </CardContent>

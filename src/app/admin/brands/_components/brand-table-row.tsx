@@ -33,15 +33,17 @@ export default function BrandTableRow({
       const result = await deleteBrand(brand.id);
 
       if (result.success) {
-        console.log(result.message);
-
         toast({
           title: "Brand Deleted",
-          description: "The brand has been successfully deleted.",
-          variant: "destructive",
+          description: result.message,
+          variant: "success",
         });
       } else {
-        console.error(result.message);
+        toast({
+          title: "Failed",
+          description: result.message,
+          variant: "destructive",
+        });
       }
     });
   };

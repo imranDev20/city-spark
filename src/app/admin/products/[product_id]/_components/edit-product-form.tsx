@@ -63,9 +63,8 @@ import {
 import { cn } from "@/lib/utils";
 import useQueryString from "@/hooks/use-query-string";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ClientResponse, useEdgeStore } from "@/lib/edgestore";
-import { urlToFileState } from "@/lib/functions";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useEdgeStore } from "@/lib/edgestore";
+import { Badge } from "@/components/ui/badge";
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -84,35 +83,62 @@ export type TemplateWithRelations = Prisma.TemplateGetPayload<{
 
 export default function EditProductForm({
   productDetails,
-  categories,
+  primaryCategories,
+  secondaryCategories,
+  tertiaryCategories,
+  quaternaryCategories,
   templates,
   brands,
   templateDetails,
-}: // productFileStates,
-{
+}: {
   productDetails: ProductWithRelations;
   brands: Brand[];
-  categories: Category[];
+  primaryCategories: Category[];
+  secondaryCategories: Category[];
+  tertiaryCategories: Category[];
+  quaternaryCategories: Category[];
   templates: Template[];
   templateDetails: TemplateWithRelations | null;
-  // productFileStates: string;
 }) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+
   const [openBrandComboBox, setOpenBrandComboBox] = useState<boolean>(false);
+
   const [openTemplateComboBox, setOpenTemplateComboBox] =
     useState<boolean>(false);
-  const [openCategoriesComboBox, setOpenCategoriesComboBox] =
+
+  const [openPrimaryCategoriesComboBox, setOpenPrimaryCategoriesComboBox] =
     useState<boolean>(false);
+
+  const [openSecondaryCategoriesComboBox, setOpenSecondaryCategoriesComboBox] =
+    useState<boolean>(false);
+
+  const [openTertiaryCategoreisComboBox, setOpenTertiaryCategoriesComboBox] =
+    useState<boolean>(false);
+
+  const [
+    openQuaternaryCategoriesComboBox,
+    setOpenQuaternaryCategoriesComboBox,
+  ] = useState<boolean>(false);
+
   const { createQueryString } = useQueryString();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
   const selectedTemplate = searchParams.get("template_id") || null;
+
+  const selectedPrimaryCategory = searchParams.get("primary_category_id") || "";
+  const selectedSecondaryCategory =
+    searchParams.get("secondary_category_id") || "";
+  const selectedTertiaryCategory =
+    searchParams.get("tertiary_category_id") || "";
+  const selectedQuaternaryCategory =
+    searchParams.get("quaternary_category_id") || "";
 
   const [fileStates, setFileStates] = useState<FileState[]>([]);
   const { edgestore } = useEdgeStore();
-  const [productImagesLoading, setProductImagesLoading] = useState(true);
 
   function updateFileProgress(key: string, progress: FileState["progress"]) {
     setFileStates((fileStates) => {
@@ -230,6 +256,10 @@ export default function EditProductForm({
         categoryId,
         templateId,
         images,
+        primaryCategoryId,
+        secondaryCategoryId,
+        tertiaryCategoryId,
+        quaternaryCategoryId,
       } = productDetails;
 
       reset({
@@ -276,47 +306,44 @@ export default function EditProductForm({
             thumbnailUrl: image.thumbnailUrl || "",
           },
         })),
+
+        primaryCategory: selectedPrimaryCategory || primaryCategoryId || "",
+
+        secondaryCategory:
+          selectedSecondaryCategory || secondaryCategoryId || "",
+
+        tertiaryCategory: selectedTertiaryCategory || tertiaryCategoryId || "",
+
+        quaternaryCategory:
+          selectedQuaternaryCategory || quaternaryCategoryId || "",
       });
     }
-  }, [productDetails, reset, selectedTemplate, templateDetails]);
-
-  console.log(form.formState.errors);
+  }, [
+    productDetails,
+    reset,
+    selectedTemplate,
+    templateDetails,
+    selectedPrimaryCategory,
+    selectedSecondaryCategory,
+    selectedTertiaryCategory,
+    selectedQuaternaryCategory,
+  ]);
 
   useEffect(() => {
     if (productDetails) {
-      const imageToFile = async () => {
-        const results = await Promise.all(
-          productDetails.images.map(async (image) => {
-            try {
-              return await urlToFileState(image);
-            } catch (error) {
-              console.error("Error converting image to file:", error);
-              return null; // or some default value
-            }
-          })
-        );
-
-        return results.filter((result) => result !== null); // Remove any null results
-      };
-
-      // Call the async function and update state when it resolves
-      imageToFile()
-        .then((results) => {
-          setFileStates(results);
-          setProductImagesLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error processing images:", error);
-          // Handle the error appropriately
-        });
+      setFileStates(
+        productDetails.images.map((item) => ({
+          file: item.url,
+          key: item.id,
+          progress: "COMPLETE",
+        }))
+      );
     }
   }, [productDetails]);
 
   const onEditProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
   ) => {
-    console.log(form.watch("images"));
-
     if (productDetails?.id) {
       startTransition(async () => {
         const result = await updateProduct(productDetails?.id, data);
@@ -343,6 +370,8 @@ export default function EditProductForm({
           );
         }
         if (result.success) {
+          router.push(`/admin/products/${result.data?.id}`);
+
           toast({
             title: "Success",
             description: result.message,
@@ -358,8 +387,6 @@ export default function EditProductForm({
       });
     }
   };
-
-  console.log(form.getValues());
 
   return (
     <ContentLayout title="Edit Product">
@@ -377,9 +404,9 @@ export default function EditProductForm({
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
               {`Edit ${productDetails?.name}`}
             </h1>
-            {/* <Badge variant="outline" className="ml-auto sm:ml-0">
-              In stock
-            </Badge> */}
+            <Badge variant="outline" className="ml-auto sm:ml-0">
+              {productDetails.status}
+            </Badge>
             <div className="hidden items-center gap-2 md:ml-auto md:flex">
               <Button variant="outline" size="sm">
                 Discard
@@ -693,6 +720,7 @@ export default function EditProductForm({
                         )}
                       />
                     </div>
+
                     <div className="grid gap-3">
                       <FormField
                         control={control}
@@ -708,6 +736,7 @@ export default function EditProductForm({
                         )}
                       />
                     </div>
+
                     <div className="grid gap-3">
                       <FormField
                         control={control}
@@ -723,65 +752,101 @@ export default function EditProductForm({
                         )}
                       />
                     </div>
-                    <div className="grid gap-3 col-span-3">
-                      <div className="grid gap-3 grid-cols-4">
-                        <FormField
-                          control={control}
-                          name="length"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Length</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Enter length" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={control}
-                          name="width"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Width</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Enter width" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={control}
-                          name="height"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Height</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Enter height" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
 
-                        <FormField
-                          control={control}
-                          name="material"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Material</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="Enter material"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                    <div className="grid gap-3">
+                      <FormField
+                        control={control}
+                        name="length"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Length</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter length" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-3">
+                      <FormField
+                        control={control}
+                        name="width"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Width</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter width" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-3">
+                      <FormField
+                        control={control}
+                        name="height"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Height</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter height" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-3">
+                      <FormField
+                        control={control}
+                        name="material"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Material</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter material" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-3">
+                      <FormField
+                        control={control}
+                        name="volume"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Volume</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter volume" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid gap-3">
+                      <FormField
+                        control={control}
+                        name="shape"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Shape</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter shape" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </div>
                 </CardContent>
@@ -919,10 +984,7 @@ export default function EditProductForm({
                                       }}
                                       value={field.value}
                                     >
-                                      <SelectTrigger
-                                        id="secondary-category"
-                                        aria-label="Select secondary category"
-                                      >
+                                      <SelectTrigger>
                                         <SelectValue placeholder="Select subcategory" />
                                       </SelectTrigger>
                                       <SelectContent>
@@ -1013,14 +1075,14 @@ export default function EditProductForm({
                   <div className="grid gap-6 sm:grid-cols-2">
                     <FormField
                       control={control}
-                      name="category"
+                      name="primaryCategory"
                       render={({ field }) => (
                         <FormItem className="grid gap-1">
-                          <FormLabel>Category</FormLabel>
+                          <FormLabel>Primary</FormLabel>
                           <FormControl>
                             <Popover
-                              open={openCategoriesComboBox}
-                              onOpenChange={setOpenCategoriesComboBox}
+                              open={openPrimaryCategoriesComboBox}
+                              onOpenChange={setOpenPrimaryCategoriesComboBox}
                             >
                               <PopoverTrigger asChild>
                                 <Button
@@ -1030,12 +1092,12 @@ export default function EditProductForm({
                                   className="justify-between"
                                 >
                                   {field.value ? (
-                                    categories?.find(
+                                    primaryCategories?.find(
                                       (brand) => brand.id === field.value
                                     )?.name
                                   ) : (
                                     <p className="text-muted-foreground">
-                                      Select a brand
+                                      Select a primary category
                                     </p>
                                   )}
                                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -1049,26 +1111,50 @@ export default function EditProductForm({
                                       No framework found.
                                     </CommandEmpty>
                                     <CommandGroup>
-                                      {categories?.map((category) => (
-                                        <CommandItem
-                                          key={category.id}
-                                          value={category.name}
-                                          onSelect={() => {
-                                            field.onChange(category.id);
-                                            setOpenCategoriesComboBox(false);
-                                          }}
-                                        >
-                                          <Check
-                                            className={cn(
-                                              "mr-2 h-4 w-4",
-                                              field.value === category.id
-                                                ? "opacity-100"
-                                                : "opacity-0"
-                                            )}
-                                          />
-                                          {category.name}
-                                        </CommandItem>
-                                      ))}
+                                      {primaryCategories?.map(
+                                        (primaryCategory) => (
+                                          <CommandItem
+                                            key={primaryCategory.id}
+                                            value={primaryCategory.name}
+                                            onSelect={() => {
+                                              field.onChange(
+                                                primaryCategory.id
+                                              );
+
+                                              router.push(
+                                                `${pathname}?${createQueryString(
+                                                  {
+                                                    primary_category_id:
+                                                      primaryCategory.id,
+
+                                                    secondary_category_id: "",
+                                                    tertiary_category_id: "",
+                                                    quaternary_category_id: "",
+                                                  }
+                                                )}`,
+                                                {
+                                                  scroll: false,
+                                                }
+                                              );
+
+                                              setOpenPrimaryCategoriesComboBox(
+                                                false
+                                              );
+                                            }}
+                                          >
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                field.value ===
+                                                  primaryCategory.id
+                                                  ? "opacity-100"
+                                                  : "opacity-0"
+                                              )}
+                                            />
+                                            {primaryCategory.name}
+                                          </CommandItem>
+                                        )
+                                      )}
                                     </CommandGroup>
                                   </CommandList>
                                 </Command>
@@ -1080,66 +1166,301 @@ export default function EditProductForm({
                       )}
                     />
 
-                    <div className="grid gap-3">
-                      <Label htmlFor="secondary-category">
-                        Secondary (optional)
-                      </Label>
-                      <Select>
-                        <SelectTrigger
-                          id="secondary-category"
-                          aria-label="Select secondary category"
-                        >
-                          <SelectValue placeholder="Select subcategory" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="t-shirts">T-Shirts</SelectItem>
-                          <SelectItem value="hoodies">Hoodies</SelectItem>
-                          <SelectItem value="sweatshirts">
-                            Sweatshirts
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-3">
-                      <Label htmlFor="tertiary-category">
-                        Tertiary (optional)
-                      </Label>
-                      <Select>
-                        <SelectTrigger
-                          id="tertiary-category"
-                          aria-label="Select tertiary category"
-                        >
-                          <SelectValue placeholder="Select subcategory" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="t-shirts">T-Shirts</SelectItem>
-                          <SelectItem value="hoodies">Hoodies</SelectItem>
-                          <SelectItem value="sweatshirts">
-                            Sweatshirts
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-3">
-                      <Label htmlFor="quaternary-category">
-                        Quaternary (optional)
-                      </Label>
-                      <Select>
-                        <SelectTrigger
-                          id="quaternary-category"
-                          aria-label="Select quaternary category"
-                        >
-                          <SelectValue placeholder="Select subcategory" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="t-shirts">T-Shirts</SelectItem>
-                          <SelectItem value="hoodies">Hoodies</SelectItem>
-                          <SelectItem value="sweatshirts">
-                            Sweatshirts
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <FormField
+                      control={control}
+                      name="secondaryCategory"
+                      render={({ field }) => (
+                        <FormItem className="grid gap-1">
+                          <FormLabel>Secondary</FormLabel>
+                          <FormControl>
+                            <Popover
+                              open={openSecondaryCategoriesComboBox}
+                              onOpenChange={setOpenSecondaryCategoriesComboBox}
+                            >
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  aria-expanded={
+                                    openSecondaryCategoriesComboBox
+                                  }
+                                  className="justify-between"
+                                >
+                                  {field.value ? (
+                                    secondaryCategories?.find(
+                                      (brand) => brand.id === field.value
+                                    )?.name
+                                  ) : (
+                                    <p className="text-muted-foreground">
+                                      Select a secondary category
+                                    </p>
+                                  )}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="p-0">
+                                <Command>
+                                  <CommandInput placeholder="Search brands..." />
+                                  <CommandList>
+                                    <CommandEmpty>
+                                      No framework found.
+                                    </CommandEmpty>
+                                    <CommandGroup>
+                                      {secondaryCategories?.map(
+                                        (secondaryCategory) => (
+                                          <CommandItem
+                                            key={secondaryCategory.id}
+                                            value={secondaryCategory.name}
+                                            onSelect={() => {
+                                              field.onChange(
+                                                secondaryCategory.id
+                                              );
+
+                                              router.push(
+                                                `${pathname}?${createQueryString(
+                                                  {
+                                                    primary_category_id:
+                                                      selectedPrimaryCategory ||
+                                                      "",
+                                                    secondary_category_id:
+                                                      secondaryCategory.id,
+
+                                                    tertiary_category_id: "",
+                                                    quaternary_category_id: "",
+                                                  }
+                                                )}`,
+                                                {
+                                                  scroll: false,
+                                                }
+                                              );
+                                              setOpenSecondaryCategoriesComboBox(
+                                                false
+                                              );
+                                            }}
+                                          >
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                field.value ===
+                                                  secondaryCategory.id
+                                                  ? "opacity-100"
+                                                  : "opacity-0"
+                                              )}
+                                            />
+                                            {secondaryCategory.name}
+                                          </CommandItem>
+                                        )
+                                      )}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={control}
+                      name="tertiaryCategory"
+                      render={({ field }) => (
+                        <FormItem className="grid gap-1">
+                          <FormLabel>Tertiary</FormLabel>
+                          <FormControl>
+                            <Popover
+                              open={openTertiaryCategoreisComboBox}
+                              onOpenChange={setOpenTertiaryCategoriesComboBox}
+                            >
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  aria-expanded={
+                                    openSecondaryCategoriesComboBox
+                                  }
+                                  className="justify-between"
+                                >
+                                  {field.value ? (
+                                    tertiaryCategories?.find(
+                                      (tertCat) => tertCat.id === field.value
+                                    )?.name
+                                  ) : (
+                                    <p className="text-muted-foreground">
+                                      Select a tertiary category
+                                    </p>
+                                  )}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="p-0">
+                                <Command>
+                                  <CommandInput placeholder="Search brands..." />
+                                  <CommandList>
+                                    <CommandEmpty>
+                                      No framework found.
+                                    </CommandEmpty>
+                                    <CommandGroup>
+                                      {tertiaryCategories?.map(
+                                        (tertiaryCategory) => (
+                                          <CommandItem
+                                            key={tertiaryCategory.id}
+                                            value={tertiaryCategory.name}
+                                            onSelect={() => {
+                                              field.onChange(
+                                                tertiaryCategory.id
+                                              );
+
+                                              router.push(
+                                                `${pathname}?${createQueryString(
+                                                  {
+                                                    primary_category_id:
+                                                      selectedPrimaryCategory ||
+                                                      "",
+
+                                                    secondary_category_id:
+                                                      selectedSecondaryCategory ||
+                                                      "",
+
+                                                    tertiary_category_id:
+                                                      tertiaryCategory.id,
+
+                                                    quaternary_category_id: "",
+                                                  }
+                                                )}`,
+                                                {
+                                                  scroll: false,
+                                                }
+                                              );
+
+                                              setOpenTertiaryCategoriesComboBox(
+                                                false
+                                              );
+                                            }}
+                                          >
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                field.value ===
+                                                  tertiaryCategory.id
+                                                  ? "opacity-100"
+                                                  : "opacity-0"
+                                              )}
+                                            />
+                                            {tertiaryCategory.name}
+                                          </CommandItem>
+                                        )
+                                      )}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={control}
+                      name="quaternaryCategory"
+                      render={({ field }) => (
+                        <FormItem className="grid gap-1">
+                          <FormLabel>Quaternary</FormLabel>
+                          <FormControl>
+                            <Popover
+                              open={openQuaternaryCategoriesComboBox}
+                              onOpenChange={setOpenQuaternaryCategoriesComboBox}
+                            >
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  className="justify-between"
+                                >
+                                  {field.value ? (
+                                    quaternaryCategories?.find(
+                                      (quatCat) => quatCat.id === field.value
+                                    )?.name
+                                  ) : (
+                                    <p className="text-muted-foreground">
+                                      Select a quaternary category
+                                    </p>
+                                  )}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="p-0">
+                                <Command>
+                                  <CommandInput placeholder="Search quaternary category..." />
+                                  <CommandList>
+                                    <CommandEmpty>
+                                      No categories found
+                                    </CommandEmpty>
+                                    <CommandGroup>
+                                      {quaternaryCategories?.map(
+                                        (quaternaryCategory) => (
+                                          <CommandItem
+                                            key={quaternaryCategory.id}
+                                            value={quaternaryCategory.name}
+                                            onSelect={() => {
+                                              field.onChange(
+                                                quaternaryCategory.id
+                                              );
+
+                                              router.push(
+                                                `${pathname}?${createQueryString(
+                                                  {
+                                                    primary_category_id:
+                                                      selectedPrimaryCategory ||
+                                                      "",
+
+                                                    secondary_category_id:
+                                                      selectedSecondaryCategory ||
+                                                      "",
+
+                                                    tertiary_category_id:
+                                                      selectedTertiaryCategory ||
+                                                      "",
+
+                                                    quaternary_category_id:
+                                                      quaternaryCategory.id,
+                                                  }
+                                                )}`,
+                                                {
+                                                  scroll: false,
+                                                }
+                                              );
+                                              setOpenQuaternaryCategoriesComboBox(
+                                                false
+                                              );
+                                            }}
+                                          >
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                field.value ===
+                                                  quaternaryCategory.id
+                                                  ? "opacity-100"
+                                                  : "opacity-0"
+                                              )}
+                                            />
+                                            {quaternaryCategory.name}
+                                          </CommandItem>
+                                        )
+                                      )}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -1199,118 +1520,97 @@ export default function EditProductForm({
                 </CardHeader>
 
                 <CardContent>
-                  {!productImagesLoading ? (
-                    <FormField
-                      control={control}
-                      name="images"
-                      render={({ field }) => (
-                        <FormItem className="mx-auto">
-                          <FormLabel>
-                            <h2 className="text-xl font-semibold tracking-tight"></h2>
-                          </FormLabel>
-                          <FormControl>
-                            <MultiImageDropzone
-                              value={fileStates}
-                              dropzoneOptions={{
-                                maxFiles: 6,
-                                maxSize: 1024 * 1024 * 1, // 1MB
-                              }}
-                              onChange={(files) => {
-                                setFileStates(files);
-                              }}
-                              onFilesAdded={async (addedFiles) => {
-                                const allFiles = [...fileStates, ...addedFiles];
-                                setFileStates(allFiles);
+                  <FormField
+                    control={control}
+                    name="images"
+                    render={({ field }) => (
+                      <FormItem className="mx-auto">
+                        <FormLabel>
+                          <h2 className="text-xl font-semibold tracking-tight"></h2>
+                        </FormLabel>
+                        <FormControl>
+                          <MultiImageDropzone
+                            value={fileStates}
+                            dropzoneOptions={{
+                              maxFiles: 6,
+                              maxSize: 1024 * 1024 * 1, // 1MB
+                            }}
+                            onChange={(files) => {
+                              setFileStates(files);
+                            }}
+                            onFilesAdded={async (addedFiles) => {
+                              const allFiles = [...fileStates, ...addedFiles];
+                              setFileStates(allFiles);
 
-                                // const tempUploadedImages: ClientResponse["publicImages"]["upload"][] =
-                                //   [];
+                              await Promise.all(
+                                addedFiles.map(async (addedFileState) => {
+                                  if (!(addedFileState.file instanceof File)) {
+                                    console.error(
+                                      "Expected a File object, but received:",
+                                      addedFileState.file
+                                    );
+                                    updateFileProgress(
+                                      addedFileState.key,
+                                      "ERROR"
+                                    );
+                                    return;
+                                  }
 
-                                await Promise.all(
-                                  addedFiles.map(async (addedFileState) => {
-                                    if (
-                                      !(addedFileState.file instanceof File)
-                                    ) {
-                                      console.error(
-                                        "Expected a File object, but received:",
-                                        addedFileState.file
-                                      );
-                                      updateFileProgress(
-                                        addedFileState.key,
-                                        "ERROR"
-                                      );
-                                      return;
-                                    }
-
-                                    try {
-                                      const res =
-                                        await edgestore.publicImages.upload({
-                                          file: addedFileState.file,
-                                          options: {
-                                            temporary: true,
-                                          },
-                                          input: { type: "product" },
-                                          onProgressChange: async (
+                                  try {
+                                    const res =
+                                      await edgestore.publicImages.upload({
+                                        file: addedFileState.file,
+                                        options: {
+                                          temporary: true,
+                                        },
+                                        input: { type: "product" },
+                                        onProgressChange: async (progress) => {
+                                          updateFileProgress(
+                                            addedFileState.key,
                                             progress
-                                          ) => {
+                                          );
+                                          if (progress === 100) {
+                                            // wait 1 second to set it to complete
+                                            // so that the user can see the progress bar at 100%
+                                            await new Promise((resolve) =>
+                                              setTimeout(resolve, 1000)
+                                            );
+
                                             updateFileProgress(
                                               addedFileState.key,
-                                              progress
+                                              "COMPLETE"
                                             );
-                                            if (progress === 100) {
-                                              // wait 1 second to set it to complete
-                                              // so that the user can see the progress bar at 100%
-                                              await new Promise((resolve) =>
-                                                setTimeout(resolve, 1000)
-                                              );
-
-                                              updateFileProgress(
-                                                addedFileState.key,
-                                                "COMPLETE"
-                                              );
-                                            }
-                                          },
-                                        });
-
-                                      appendImages({
-                                        image: {
-                                          url: res.url,
-                                          description:
-                                            "some random description",
-                                          lastModified:
-                                            addedFileState.file.lastModified.toString(),
-                                          lastModifiedDate: new Date(
-                                            Date.now()
-                                          ),
-                                          name: addedFileState.file.name,
-                                          size: addedFileState.file.size,
-                                          thumbnailUrl: res.thumbnailUrl || "",
-                                          type: addedFileState.file.type,
+                                          }
                                         },
                                       });
-                                    } catch (err) {
-                                      updateFileProgress(
-                                        addedFileState.key,
-                                        "ERROR"
-                                      );
-                                    }
-                                  })
-                                );
-                              }}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  ) : (
-                    <div>
-                      <Skeleton className="h-[290px] w-[290]" />
-                      <div className="grid grid-cols-3 mt-5 gap-3">
-                        <Skeleton className="h-[87px] w-[87px]" />
-                        <Skeleton className="h-[87px] w-[87px]" />
-                        <Skeleton className="h-[87px] w-[87px]" />
-                      </div>
-                    </div>
-                  )}
+
+                                    appendImages({
+                                      image: {
+                                        url: res.url,
+                                        description: "some random description",
+                                        lastModified:
+                                          addedFileState.file.lastModified.toString(),
+                                        lastModifiedDate: new Date(Date.now()),
+                                        name: addedFileState.file.name,
+                                        size: addedFileState.file.size,
+                                        thumbnailUrl: res.thumbnailUrl || "",
+                                        type: addedFileState.file.type,
+                                      },
+                                    });
+                                  } catch (err) {
+                                    updateFileProgress(
+                                      addedFileState.key,
+                                      "ERROR"
+                                    );
+                                  }
+                                })
+                              );
+                            }}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </CardContent>
               </Card>
 

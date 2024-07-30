@@ -2,8 +2,9 @@ import { Suspense } from "react";
 import { ContentLayout } from "../_components/content-layout";
 import DynamicBreadcrumb from "../_components/dynamic-breadcrumb";
 import { ProductPagination } from "./_components/product-pagination";
-import ProductList from "./_components/products-list";
+import ProductList from "./_components/product-list";
 import ProductTableHeader from "./_components/product-table-header";
+import ProductsLoading from "./_components/products-loading";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -16,9 +17,11 @@ export default function AdminProductsPage() {
       <DynamicBreadcrumb items={breadcrumbItems} />
 
       <ProductTableHeader />
-      <Suspense fallback="Loading...">
+
+      <Suspense fallback={<ProductsLoading />}>
         <ProductList />
       </Suspense>
+
       <ProductPagination />
     </ContentLayout>
   );
