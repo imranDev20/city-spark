@@ -33,6 +33,8 @@ export default async function AdminProductDetailsPage({
   const brands = await getBrands();
   const templates = await getTemplates();
 
+  console.log(templates);
+
   const primaryCategories = await getCategories("PRIMARY");
 
   const secondaryCategories = await getCategories(

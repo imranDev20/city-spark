@@ -23,7 +23,7 @@ import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState, useTransition } from "react";
 import { Switch } from "@/components/ui/switch";
-import { Prisma } from "@prisma/client";
+import { Prisma, Product } from "@prisma/client";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { InventoryFormInputType, inventorySchema } from "../schema";
 import { Popover, PopoverTrigger } from "@radix-ui/react-popover";
@@ -52,11 +52,6 @@ const breadcrumbItems = [
   },
 ];
 
-export type ProductWithRelations = Prisma.ProductGetPayload<{
-  include: {
-    images: true;
-  };
-}>;
 export type InventoryWithRelations = Prisma.InventoryGetPayload<{
   include: {
     product: true;
@@ -67,7 +62,7 @@ export default function EditInventoryForm({
   products,
   inventoryDetails,
 }: {
-  products: ProductWithRelations[];
+  products: Product[];
   inventoryDetails: InventoryWithRelations;
 }) {
   const [isPending, startTransition] = useTransition();

@@ -1,16 +1,30 @@
 import { z } from "zod";
+import { FieldType, Status } from "@prisma/client";
+
+const zodFieldType = z.enum(
+  Object.keys(FieldType) as [
+    keyof typeof FieldType,
+    ...Array<keyof typeof FieldType>
+  ]
+);
+const zodStatus = z.enum(
+  Object.keys(Status) as [keyof typeof Status, ...Array<keyof typeof Status>]
+);
 
 export const templateSchema = z.object({
-  name: z.string().min(1, "Name is required and can't be left blank"),
-  description: z.string().optional(),
+  name: z.string().trim().min(1, "Name is required and can't be left blank"),
+  description: z.string().trim().optional(),
   fields: z
     .array(
       z.object({
-        fieldName: z.string().min(1, "Field Name is required"),
-        fieldType: z.string().min(1, "Select value is required"),
-        fieldValue: z.string().max(255).optional(),
+        fieldName: z.string().trim().min(1, "Field Name is required"),
+        fieldType: zodFieldType,
+        fieldValue: z.string().trim().max(255).optional(),
+        fieldOptions: z.string().trim().optional(),
       })
     )
     .min(1),
-  status: z.enum(["DRAFT", "ACTIVE", "ARCHIVE"]).optional(), // At least one field must be submitted
+  status: zodStatus.optional(),
 });
+
+export type TemplateFormInputType = z.infer<typeof templateSchema>;

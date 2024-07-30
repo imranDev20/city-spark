@@ -20,18 +20,14 @@ import { deleteInventory } from "../actions";
 
 export type InventoryWithRelations = Prisma.InventoryGetPayload<{
   include: {
-    product: {
-      include: {
-        images:true
-      }
-    }
+    product: true;
   };
 }>;
 
 export default function InventoryTableRow({
   inventory,
 }: {
-  inventory: InventoryWithRelations
+  inventory: InventoryWithRelations;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -72,15 +68,17 @@ export default function InventoryTableRow({
           alt="Product image"
           className="aspect-square rounded-md object-cover"
           height="64"
-          src={inventory?.product.images[0].url}
+          src={inventory?.product.images[0]}
           width="64"
         />
       </TableCell>
-      <TableCell className="font-medium flex-1">{inventory?.product.name}</TableCell>      
+      <TableCell className="font-medium flex-1">
+        {inventory?.product.name}
+      </TableCell>
       <TableCell className="hidden md:table-cell">
         {inventory.stockCount}
       </TableCell>
-     
+
       <TableCell className="hidden md:table-cell">
         {dayjs(inventory.createdAt).format("DD-MM-YY hh:mm A")}
       </TableCell>

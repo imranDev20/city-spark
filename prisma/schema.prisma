@@ -30,7 +30,7 @@ model Category {
     secondaryProducts         Product[]    @relation("SecondaryProductCategory")
     tertiaryProducts          Product[]    @relation("TertiaryProductCategory")
     quaternaryProducts        Product[]    @relation("QuaternaryProductCategory")
-    image                     Image?
+    image                     String?
     createdAt                 DateTime     @default(now())
     updatedAt                 DateTime     @updatedAt
 }
@@ -43,46 +43,45 @@ enum CategoryType {
 }
 
 model Product {
-    id                  String    @id @default(cuid())
-    name                String    @unique
-    description         String?
-    model               String?
-    type                String?
-    warranty            String?
-    guarantee           String?
-    tradePrice          Float?
-    contractPrice       Float?
-    promotionalPrice    Float?
-    unit                String?
-    weight              Float?
-    color               String?
-    length              Float?
-    width               Float?
-    height              Float?
-    material            String?
-    template            Template? @relation(fields: [templateId], references: [id])
-    templateId          String?
-    features            Feature[]
-    category            Category? @relation(fields: [categoryId], references: [id])
-    categoryId          String?
-    primaryCategory     Category? @relation("PrimaryProductCategory", fields: [primaryCategoryId], references: [id])
-    primaryCategoryId   String?
-    secondaryCategory   Category? @relation("SecondaryProductCategory", fields: [secondaryCategoryId], references: [id])
-    secondaryCategoryId String?
-    tertiaryCategory    Category? @relation("TertiaryProductCategory", fields: [tertiaryCategoryId], references: [id])
-    tertiaryCategoryId  String?
-
-    quaternaryCategory   Category? @relation("QuaternaryProductCategory", fields: [quaternaryCategoryId], references: [id])
+    id                   String     @id @default(cuid())
+    name                 String     @unique
+    description          String?
+    model                String?
+    type                 String?
+    warranty             String?
+    guarantee            String?
+    tradePrice           Float?
+    contractPrice        Float?
+    promotionalPrice     Float?
+    unit                 String?
+    weight               Float?
+    color                String?
+    length               Float?
+    width                Float?
+    height               Float?
+    material             String?
+    volume               String?
+    template             Template?  @relation(fields: [templateId], references: [id])
+    templateId           String?
+    features             String[]
+    category             Category?  @relation(fields: [categoryId], references: [id])
+    categoryId           String?
+    primaryCategory      Category?  @relation("PrimaryProductCategory", fields: [primaryCategoryId], references: [id])
+    primaryCategoryId    String?
+    secondaryCategory    Category?  @relation("SecondaryProductCategory", fields: [secondaryCategoryId], references: [id])
+    secondaryCategoryId  String?
+    tertiaryCategory     Category?  @relation("TertiaryProductCategory", fields: [tertiaryCategoryId], references: [id])
+    tertiaryCategoryId   String?
+    quaternaryCategory   Category?  @relation("QuaternaryProductCategory", fields: [quaternaryCategoryId], references: [id])
     quaternaryCategoryId String?
-
-    brand     Brand?     @relation(fields: [brandId], references: [id])
-    brandId   String?
-    status    Status     @default(DRAFT)
-    manuals   String[]
-    images    Image[]
-    createdAt DateTime   @default(now())
-    updatedAt DateTime   @updatedAt
-    inventory Inventory?
+    brand                Brand?     @relation(fields: [brandId], references: [id])
+    brandId              String?
+    status               Status?    @default(DRAFT)
+    manuals              String[]
+    images               String[]
+    createdAt            DateTime   @default(now())
+    updatedAt            DateTime   @updatedAt
+    inventory            Inventory?
 }
 
 model Brand {
@@ -90,21 +89,12 @@ model Brand {
     name            String    @unique
     products        Product[]
     description     String?
-    status          Status    @default(DRAFT)
+    status          Status?   @default(DRAFT)
     website         String?
     countryOfOrigin String?
     image           String?
     createdAt       DateTime  @default(now())
     updatedAt       DateTime  @updatedAt
-}
-
-model Feature {
-    id        String   @id @default(cuid())
-    name      String
-    productId String
-    product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
 }
 
 enum Status {
@@ -113,29 +103,12 @@ enum Status {
     ARCHIVED
 }
 
-model Image {
-    id               String    @id @default(cuid())
-    url              String
-    thumbnailUrl     String?
-    description      String?
-    name             String?
-    size             Int?
-    lastModified     String?
-    lastModifiedDate DateTime?
-    type             String?
-    product          Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
-    productId        String?
-    category         Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-    categoryId       String?   @unique
-    createdAt        DateTime  @default(now())
-    updatedAt        DateTime  @updatedAt
-}
-
 model Template {
     id          String          @id @default(cuid())
     name        String
     description String?
     fields      TemplateField[]
+    status      Status?
     products    Product[]
     createdAt   DateTime        @default(now())
     updatedAt   DateTime        @updatedAt
@@ -146,7 +119,7 @@ model TemplateField {
     fieldName    String
     fieldType    FieldType
     fieldOptions String?
-    fieldValues  String?
+    fieldValue   String?
     templateId   String
     template     Template  @relation(fields: [templateId], references: [id], onDelete: Cascade)
 }

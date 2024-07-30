@@ -37,18 +37,15 @@ import { useRouter } from "next/navigation";
 
 import { LoadingButton } from "@/components/ui/loading-button";
 import { Prisma } from "@prisma/client";
-import { Fragment, useEffect, useState, useTransition } from "react";
+import { Fragment, useEffect, useTransition } from "react";
 import {
   FormProvider,
   SubmitHandler,
   useFieldArray,
   useForm,
 } from "react-hook-form";
-import { z } from "zod";
-import { updateTemplateById } from "../../actions";
-import { templateSchema } from "../../schema";
-
-export type FormInputType = z.infer<typeof templateSchema>;
+import { updateTemplate } from "../../actions";
+import { TemplateFormInputType, templateSchema } from "../../schema";
 
 export type TemplateWithRelations = Prisma.TemplateGetPayload<{
   include: {
@@ -61,12 +58,12 @@ export default function EditTemplateForm({
 }: {
   templateDetails: TemplateWithRelations;
 }) {
-  const form = useForm<FormInputType>({
+  const form = useForm<TemplateFormInputType>({
     resolver: zodResolver(templateSchema),
     defaultValues: {
       name: "",
       description: "",
-      fields: [{ fieldName: "", fieldType: "", fieldValue: "" }],
+      fields: [{ fieldName: "", fieldType: "TEXT", fieldOptions: "" }],
       status: "DRAFT",
     },
   });
@@ -80,6 +77,7 @@ export default function EditTemplateForm({
     handleSubmit,
     reset,
     formState: { isDirty },
+    watch,
   } = form;
 
   const { fields, append, remove } = useFieldArray({
@@ -87,21 +85,13 @@ export default function EditTemplateForm({
     name: "fields",
   });
 
-  const [fieldTypes, setFieldTypes] = useState(
-    fields.map((field) => field.fieldType)
-  );
-
-  const handleFieldTypeChange = (index: number, value: string) => {
-    const newFieldTypes = [...fieldTypes];
-    newFieldTypes[index] = value;
-    setFieldTypes(newFieldTypes);
-  };
-
   // Handle form submission
-  const onEditTemplateSubmit: SubmitHandler<FormInputType> = async (data) => {
+  const onEditTemplateSubmit: SubmitHandler<TemplateFormInputType> = async (
+    data
+  ) => {
     if (templateDetails?.id) {
       startTransition(async () => {
-        const result = await updateTemplateById(templateDetails?.id, data);
+        const result = await updateTemplate(templateDetails?.id, data);
 
         if (result.success) {
           toast({
@@ -109,8 +99,6 @@ export default function EditTemplateForm({
             description: result.message,
             variant: "success",
           });
-
-          router.push("/admin/templates");
         } else {
           toast({
             title: "Templates Saved failed",
@@ -124,10 +112,17 @@ export default function EditTemplateForm({
 
   useEffect(() => {
     if (templateDetails) {
-      const { name, description } = templateDetails;
+      const { name, description, fields, status } = templateDetails;
       reset({
         name: name ?? "",
         description: description ?? "",
+        status: status ?? "DRAFT",
+        fields: fields.map((field) => ({
+          fieldName: field.fieldName,
+          fieldType: field.fieldType,
+          fieldValue: field.fieldValue || "",
+          fieldOptions: field.fieldOptions || "",
+        })),
       });
     }
   }, [templateDetails, reset]);
@@ -162,7 +157,7 @@ export default function EditTemplateForm({
                 {`Edit ${templateDetails?.name}`}
               </h1>
               <Badge variant="outline" className="ml-auto sm:ml-0">
-                Active
+                {templateDetails?.status}
               </Badge>
               <div className="hidden items-center gap-2 md:ml-auto md:flex">
                 <Button variant="outline" size="sm">
@@ -175,7 +170,7 @@ export default function EditTemplateForm({
                   loading={isPending}
                   className="text-xs font-semibold h-8"
                 >
-                  Update Template
+                  Save Changes
                 </LoadingButton>
               </div>
             </div>
@@ -274,19 +269,17 @@ export default function EditTemplateForm({
                                       <Select
                                         onValueChange={(value) => {
                                           field.onChange(value);
-                                          handleFieldTypeChange(index, value);
                                         }}
                                         defaultValue={field.value}
-                                        value={fieldTypes[index]}
                                       >
                                         <SelectTrigger aria-label="Field Type">
                                           <SelectValue placeholder="Select Field Type" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                          <SelectItem value="text">
+                                          <SelectItem value="TEXT">
                                             Text
                                           </SelectItem>
-                                          <SelectItem value="select">
+                                          <SelectItem value="SELECT">
                                             Select
                                           </SelectItem>
                                         </SelectContent>
@@ -298,17 +291,17 @@ export default function EditTemplateForm({
                               />
                             </div>
 
-                            {fieldTypes[index] === "select" && (
+                            {watch("fields")[index].fieldType === "SELECT" && (
                               <div className="grid gap-3 col-span-8">
                                 <FormField
-                                  name={`fields.${index}.fieldValue`}
+                                  name={`fields.${index}.fieldOptions`}
                                   control={control}
                                   render={({ field }) => (
                                     <FormItem>
                                       <FormControl>
                                         <Input
                                           {...field}
-                                          placeholder="Enter Value"
+                                          placeholder="Enter options (separated by commas)"
                                         />
                                       </FormControl>
                                       <FormMessage />
@@ -339,7 +332,7 @@ export default function EditTemplateForm({
                           onClick={() =>
                             append({
                               fieldName: "",
-                              fieldType: "select",
+                              fieldType: "TEXT",
                               fieldValue: "",
                             })
                           }
@@ -360,30 +353,39 @@ export default function EditTemplateForm({
                   <CardContent>
                     <div className="grid gap-6">
                       <FormField
-                        name="status"
                         control={control}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel htmlFor="status">Status</FormLabel>
-                            <FormControl>
-                              <Select>
-                                <SelectTrigger
-                                  id="status"
-                                  aria-label="Select status"
-                                >
-                                  <SelectValue placeholder="Select Status" />
-                                </SelectTrigger>
+                        name="status"
+                        render={({ field }) => {
+                          return (
+                            <FormItem>
+                              <FormLabel>Status</FormLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={(currentValue) => {
+                                  if (currentValue !== "") {
+                                    field.onChange(currentValue);
+                                  }
+                                }}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select status" />
+                                  </SelectTrigger>
+                                </FormControl>
                                 <SelectContent>
                                   <SelectItem value="DRAFT">Draft</SelectItem>
                                   <SelectItem value="ACTIVE">Active</SelectItem>
                                   <SelectItem value="ARCHIVED">
                                     Archived
                                   </SelectItem>
+                                  <SelectItem value="DISCONTINUED">
+                                    Discondinued
+                                  </SelectItem>
                                 </SelectContent>
                               </Select>
-                            </FormControl>
-                          </FormItem>
-                        )}
+                            </FormItem>
+                          );
+                        }}
                       />
                     </div>
                   </CardContent>
@@ -402,7 +404,7 @@ export default function EditTemplateForm({
                 loading={isPending}
                 className="text-xs font-semibold h-8"
               >
-                Update Template
+                Save Changes
               </LoadingButton>
             </div>
           </form>

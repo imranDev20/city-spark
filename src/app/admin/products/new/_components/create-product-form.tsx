@@ -131,7 +131,7 @@ export default function CreateProductForm({
           fieldName: item.fieldName,
           fieldType: item.fieldType,
           fieldOptions: item.fieldOptions || "",
-          fieldValues: item.fieldValues || "",
+          fieldValue: item.fieldValue || "",
         })),
       });
     }
@@ -726,7 +726,7 @@ export default function CreateProductForm({
                       >
                         <FormField
                           control={control}
-                          name={`templateFields.${index}.fieldValues`}
+                          name={`templateFields.${index}.fieldValue`}
                           render={({ field }) => (
                             <FormItem className="w-full flex flex-col gap-1">
                               <FormLabel>{templateField.fieldName}</FormLabel>

@@ -181,16 +181,7 @@ export default function EditProductForm({
       status: "DRAFT",
       images: [
         {
-          image: {
-            name: "",
-            description: "",
-            lastModified: "",
-            lastModifiedDate: new Date(Date.now()),
-            size: 0,
-            thumbnailUrl: "",
-            type: "",
-            url: "",
-          },
+          image: "",
         },
       ],
       manuals: [],
@@ -271,7 +262,7 @@ export default function EditProductForm({
         color: color ?? "",
         features:
           features?.map((feature) => ({
-            feature: feature.name,
+            feature,
           })) ?? [],
         height: height ?? 0,
         description: description ?? "",
@@ -294,19 +285,10 @@ export default function EditProductForm({
           fieldName: item.fieldName,
           fieldType: item.fieldType,
           fieldOptions: item.fieldOptions || "",
-          fieldValues: item.fieldValues || "",
+          fieldValue: item.fieldValue || "",
         })),
         images: images.map((image) => ({
-          image: {
-            description: image.description || "",
-            name: image.name || "",
-            size: image.size || 0,
-            lastModified: image.lastModified || "",
-            lastModifiedDate: image.lastModifiedDate || new Date(Date.now()),
-            url: image.url,
-            type: image.type || "",
-            thumbnailUrl: image.thumbnailUrl || "",
-          },
+          image,
         })),
 
         primaryCategory: selectedPrimaryCategory || primaryCategoryId || "",
@@ -334,9 +316,9 @@ export default function EditProductForm({
   useEffect(() => {
     if (productDetails) {
       setFileStates(
-        productDetails.images.map((item) => ({
-          file: item.url,
-          key: item.id,
+        productDetails.images.map((image) => ({
+          file: image,
+          key: Math.random().toString(36).slice(2),
           progress: "COMPLETE",
         }))
       );
@@ -357,16 +339,13 @@ export default function EditProductForm({
             images.map(async ({ image }) => {
               try {
                 const res = await edgestore.publicImages.confirmUpload({
-                  url: image.url,
+                  url: image,
                 });
 
-                return { url: image.url, success: true, result: res };
+                return { url: image, success: true, result: res };
               } catch (error) {
-                console.error(
-                  `Failed to confirm upload for ${image.url}:`,
-                  error
-                );
-                return { url: image.url, success: false, error };
+                console.error(`Failed to confirm upload for ${image}:`, error);
+                return { url: image, success: false, error };
               }
             })
           );
@@ -966,7 +945,7 @@ export default function EditProductForm({
                         >
                           <FormField
                             control={control}
-                            name={`templateFields.${index}.fieldValues`}
+                            name={`templateFields.${index}.fieldValue`}
                             render={({ field }) => (
                               <FormItem className="w-full flex flex-col gap-1">
                                 <FormLabel>{templateField.fieldName}</FormLabel>
@@ -974,7 +953,7 @@ export default function EditProductForm({
                                 <FormControl>
                                   {templateField.fieldType === "TEXT" ? (
                                     <Input
-                                      placeholder="Enter features and benefits"
+                                      placeholder={`Enter ${templateField.fieldName}`}
                                       {...field}
                                     />
                                   ) : (
@@ -987,7 +966,9 @@ export default function EditProductForm({
                                       value={field.value}
                                     >
                                       <SelectTrigger>
-                                        <SelectValue placeholder="Select subcategory" />
+                                        <SelectValue
+                                          placeholder={`Enter ${templateField.fieldName}`}
+                                        />
                                       </SelectTrigger>
                                       <SelectContent>
                                         {templateField.fieldOptions
@@ -1587,17 +1568,7 @@ export default function EditProductForm({
                                       });
 
                                     appendImages({
-                                      image: {
-                                        url: res.url,
-                                        description: "some random description",
-                                        lastModified:
-                                          addedFileState.file.lastModified.toString(),
-                                        lastModifiedDate: new Date(Date.now()),
-                                        name: addedFileState.file.name,
-                                        size: addedFileState.file.size,
-                                        thumbnailUrl: res.thumbnailUrl || "",
-                                        type: addedFileState.file.type,
-                                      },
+                                      image: res.url,
                                     });
                                   } catch (err) {
                                     updateFileProgress(

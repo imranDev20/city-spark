@@ -12,25 +12,18 @@ export async function createTemplate(data: FormInputType) {
         name: data.name,
         description: data.description,
         fields: {
-          create: [
-            {
-              fieldName: "Sample Field Name",
-              fieldType: "TEXT",
-              fieldValues: null,
-            },
-            {
-              fieldName: "Sample field 2",
-              fieldType: "SELECT",
-              fieldOptions: "Option1, option2, option 3",
-              fieldValues: "Option 1",
-            },
-          ],
+          create: data.fields.map((item) => ({
+            fieldName: item.fieldName,
+            fieldType: item.fieldType,
+            fieldValue: item.fieldValue || "",
+          })),
         },
       },
     });
-    console.log(createTemplate);
 
     revalidatePath("/admin/templates");
+    revalidatePath("/admin/products");
+    revalidatePath("/admin/products/[product_id]", "page");
 
     return {
       message: "Template created successfully!",
@@ -111,25 +104,39 @@ export const getTemplateById = cache(async (templateId: string) => {
   }
 });
 
-export async function updateTemplateById(
-  templateId: string,
-  data: FormInputType
-) {
+export async function updateTemplate(templateId: string, data: FormInputType) {
+  console.log(data.fields);
+
   try {
-    const updatedtemplate = await prisma.template.update({
+    const updatedTemplate = await prisma.template.update({
       where: {
         id: templateId,
       },
       data: {
         name: data.name,
         description: data.description,
+        status: data.status,
+        fields: {
+          deleteMany: {}, // This will delete all existing fields
+          create: data.fields.map((field) => ({
+            fieldName: field.fieldName,
+            fieldType: field.fieldType,
+            fieldOptions: field.fieldOptions,
+            fieldValue: field.fieldValue,
+          })),
+        },
       },
     });
 
+    console.log(updatedTemplate);
+
     revalidatePath("/admin/templates");
+    revalidatePath(`/admin/templates/${updatedTemplate.id}`);
+    revalidatePath("/admin/products/[product_id]", "page");
+
     return {
-      message: "Templates Updated successfully!",
-      data: updatedtemplate,
+      message: "Template updated successfully!",
+      data: updatedTemplate,
       success: true,
     };
   } catch (error) {

@@ -24,7 +24,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef, useState, useTransition } from "react";
 import { Switch } from "@/components/ui/switch";
-import { Prisma } from "@prisma/client";
+import { Prisma, Product } from "@prisma/client";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { InventoryFormInputType, inventorySchema } from "../schema";
 import { Popover, PopoverTrigger } from "@radix-ui/react-popover";
@@ -42,16 +42,10 @@ import { useToast } from "@/components/ui/use-toast";
 import { createInventory } from "../actions";
 import { useRouter } from "next/navigation";
 
-export type ProductWithRelations = Prisma.ProductGetPayload<{
-  include: {
-    images: true;
-  };
-}>;
-
 export default function CreateInventoryForm({
   products,
 }: {
-  products: ProductWithRelations[];
+  products: Product[];
 }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
