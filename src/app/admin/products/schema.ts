@@ -9,6 +9,7 @@ export const productSchema = z.object({
     })
     .trim()
     .min(1, "Product name is required and can't be left blank."),
+
   description: z
     .string({
       required_error: "Product description is required.",
@@ -65,9 +66,16 @@ export const productSchema = z.object({
     })
     .trim()
     .optional(),
+  template: z
+    .string({
+      invalid_type_error: "Template must be a string.",
+    })
+    .trim()
+    .optional(),
   productTemplateFields: z
     .array(
       z.object({
+        id: z.string().trim().optional(),
         fieldId: z.string().trim().min(1, "Field ID is required"),
         fieldName: z
           .string({

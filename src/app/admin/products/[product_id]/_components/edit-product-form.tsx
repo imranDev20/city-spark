@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -75,9 +74,9 @@ export type ProductWithRelations = Prisma.ProductGetPayload<{
     features: true;
     productTemplate: {
       include: {
-        template: {
+        fields: {
           include: {
-            fields: true;
+            templateField: true;
           };
         };
       };
@@ -183,6 +182,7 @@ export default function EditProductForm({
       width: 0,
       height: 0,
       material: "",
+      template: "",
       productTemplate: "",
       features: [{ feature: "" }],
       category: "",
@@ -201,6 +201,7 @@ export default function EditProductForm({
     control,
     formState: { isDirty },
     handleSubmit,
+    getValues,
   } = form;
 
   const {
@@ -289,8 +290,9 @@ export default function EditProductForm({
         status: status ?? "DRAFT",
         warranty: warranty ?? "",
         category: categoryId ?? "",
-        productTemplate: selectedTemplate || productTemplateId || "",
-        // productTemplateFields:
+        template: selectedTemplate || productTemplate?.templateId || "",
+
+        productTemplate: productTemplateId ?? "",
 
         images: images.map((image) => ({
           image,
@@ -330,15 +332,48 @@ export default function EditProductForm({
     }
   }, [productDetails]);
 
+  console.log(getValues());
+
+  useEffect(() => {
+    if (productDetails && selectedTemplate) {
+      reset({
+        ...getValues(),
+        productTemplateFields: templateDetails?.fields.map((field) => ({
+          id: field.id,
+          fieldId: field.id,
+          fieldName: field.fieldName,
+          fieldType: field.fieldType ?? "TEXT",
+          fieldOptions: field.fieldOptions ?? "",
+          fieldValue: "",
+        })),
+      });
+    } else {
+      reset({
+        ...getValues(),
+        productTemplateFields: productDetails.productTemplate?.fields.map(
+          (field) => ({
+            id: field.id,
+            fieldId: field.templateFieldId,
+            fieldName: field.templateField.fieldName,
+            fieldOptions: field.templateField.fieldOptions ?? "",
+            fieldType: field.templateField.fieldType ?? "TEXT",
+            fieldValue: field.fieldValue ?? "",
+          })
+        ),
+      });
+    }
+  }, [productDetails, reset, selectedTemplate, templateDetails, getValues]);
+
   const onEditProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
   ) => {
+    console.log(data);
+
     if (productDetails?.id) {
       startTransition(async () => {
         const result = await updateProduct(productDetails?.id, data);
 
         const images = form.watch("images");
-
         if (images) {
           await Promise.all(
             images.map(async ({ image }) => {
@@ -346,7 +381,6 @@ export default function EditProductForm({
                 const res = await edgestore.publicImages.confirmUpload({
                   url: image,
                 });
-
                 return { url: image, success: true, result: res };
               } catch (error) {
                 console.error(`Failed to confirm upload for ${image}:`, error);
@@ -357,7 +391,6 @@ export default function EditProductForm({
         }
         if (result.success) {
           router.push(`/admin/products/${result.data?.id}`);
-
           toast({
             title: "Success",
             description: result.message,
@@ -394,7 +427,7 @@ export default function EditProductForm({
               {productDetails.status}
             </Badge>
             <div className="hidden items-center gap-2 md:ml-auto md:flex">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" type="button">
                 Discard
               </Button>
 
@@ -850,7 +883,7 @@ export default function EditProductForm({
                     <div className="col-span-4 grid gap-3">
                       <FormField
                         control={control}
-                        name="productTemplate"
+                        name="template"
                         render={({ field }) => (
                           <FormItem className="w-full flex flex-col gap-1">
                             <FormLabel>Templates</FormLabel>
@@ -964,7 +997,7 @@ export default function EditProductForm({
                                   ) : (
                                     <Select
                                       onValueChange={(currentValue) => {
-                                        if (currentValue !== "") {
+                                        if (currentValue) {
                                           field.onChange(currentValue);
                                         }
                                       }}
@@ -980,10 +1013,10 @@ export default function EditProductForm({
                                           ?.split(",")
                                           .map((option) => (
                                             <SelectItem
-                                              value={option}
+                                              value={option.trim()}
                                               key={option}
                                             >
-                                              {option}
+                                              {option.trim()}
                                             </SelectItem>
                                           ))}
                                       </SelectContent>
@@ -1486,9 +1519,6 @@ export default function EditProductForm({
                                   <SelectItem value="ACTIVE">Active</SelectItem>
                                   <SelectItem value="ARCHIVED">
                                     Archived
-                                  </SelectItem>
-                                  <SelectItem value="DISCONTINUED">
-                                    Discondinued
                                   </SelectItem>
                                 </SelectContent>
                               </Select>

@@ -22,6 +22,7 @@ export default async function TemplateList() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[60%]">Name</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="hidden md:table-cell">
                   Created at
                 </TableHead>

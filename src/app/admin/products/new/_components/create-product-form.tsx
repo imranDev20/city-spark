@@ -143,7 +143,7 @@ export default function CreateProductForm({
     if (templateDetails) {
       form.reset({
         ...form.getValues(),
-        productTemplate: selectedTemplate || "",
+        template: selectedTemplate || "",
         productTemplateFields: templateDetails?.fields.map((item) => ({
           fieldId: item.id,
           fieldName: item.fieldName,
@@ -646,7 +646,7 @@ export default function CreateProductForm({
                   <div className="col-span-4 grid gap-3">
                     <FormField
                       control={control}
-                      name="productTemplate"
+                      name="template"
                       render={({ field }) => (
                         <FormItem className="w-full flex flex-col gap-1">
                           <FormLabel>Templates</FormLabel>
@@ -1018,9 +1018,6 @@ export default function CreateProductForm({
                                 <SelectItem value="ACTIVE">Active</SelectItem>
                                 <SelectItem value="ARCHIVED">
                                   Archived
-                                </SelectItem>
-                                <SelectItem value="DISCONTINUED">
-                                  Discondinued
                                 </SelectItem>
                               </SelectContent>
                             </Select>

@@ -33,7 +33,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft, Trash } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import { LoadingButton } from "@/components/ui/loading-button";
 import { Prisma } from "@prisma/client";

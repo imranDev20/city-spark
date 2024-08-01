@@ -119,9 +119,6 @@ export default function CreateTemplatePage() {
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
               Create Template
             </h1>
-            <Badge variant="outline" className="ml-auto sm:ml-0">
-              Active
-            </Badge>
             <div className="hidden items-center gap-2 md:ml-auto md:flex">
               <Button variant="outline" size="sm" type="button">
                 Discard
