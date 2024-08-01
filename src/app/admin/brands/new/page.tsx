@@ -32,54 +32,60 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import { createBrand } from "../actions";
-import { brandSchema } from "../schema";
+import { BrandFormInputType, brandSchema } from "../schema";
+import {
+  FileState,
+  SingleImageDropzone,
+} from "../_components/brand-image-uploader";
+import { useEdgeStore } from "@/lib/edgestore";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
   { label: "Brands", href: "/admin/brands" },
-  { label: "Create Brand", href: "/admin/brands/new", isCurrentPage: true },
+  { label: "Add New Brand", href: "/admin/brands/new", isCurrentPage: true },
 ];
 
-const defaultValues = {
-  name: "",
-  description: "",
-  brandName: "",
-  website: "",
-  email: "",
-  phone: "",
-  status: "",
-  productCategories: [],
-  brandStory: "",
-  ambassador: "",
-  tagline: "",
-};
-export type FormInputType = z.infer<typeof brandSchema>;
 export default function CreateBrandPage() {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { toast } = useToast();
+  const [fileState, setFileState] = useState<FileState | null>(null);
+  const { edgestore } = useEdgeStore();
 
-  const form = useForm<FormInputType>({
+  function updateFileProgress(key: string, progress: FileState["progress"]) {
+    setFileState((fileState) => {
+      const newFileState = structuredClone(fileState);
+
+      if (newFileState) {
+        newFileState.progress = progress;
+      }
+
+      console.log(newFileState);
+      return newFileState;
+    });
+  }
+
+  const form = useForm<BrandFormInputType>({
     resolver: zodResolver(brandSchema),
-    defaultValues,
+    defaultValues: {
+      brandName: "",
+      countryOfOrigin: "",
+      description: "",
+      image: "",
+      status: "DRAFT",
+    },
   });
   const { control, handleSubmit } = form;
-  const onCreateBrandSubmit: SubmitHandler<FormInputType> = async (data) => {
-    console.log(data);
-    const { brandName, website, image, status } = data;
-    const payload = {
-      brandName,
-      website,
-      image,
-      status,
-    };
-    console.log(`payload`, payload);
+
+  const onCreateBrandSubmit: SubmitHandler<BrandFormInputType> = async (
+    data
+  ) => {
     startTransition(async () => {
       const result = await createBrand(data);
       if (result.success) {
@@ -115,11 +121,9 @@ export default function CreateBrandPage() {
               </Button>
             </Link>
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-              Pro Controller Brand
+              Add New Brand
             </h1>
-            <Badge variant="outline" className="ml-auto sm:ml-0">
-              Active
-            </Badge>
+
             <div className="hidden items-center gap-2 md:ml-auto md:flex">
               <Button variant="outline" size="sm">
                 Discard
@@ -148,7 +152,7 @@ export default function CreateBrandPage() {
                 <CardContent>
                   <div className="grid gap-3">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="brandName"
                       render={({ field }) => (
                         <FormItem>
@@ -163,7 +167,7 @@ export default function CreateBrandPage() {
                   </div>
                   <div className="grid gap-3 mt-2">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="description"
                       render={({ field }) => (
                         <FormItem>
@@ -193,13 +197,30 @@ export default function CreateBrandPage() {
                 <CardContent>
                   <div className="grid gap-3">
                     <FormField
-                      control={form.control}
+                      control={control}
                       name="website"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Website</FormLabel>
                           <FormControl>
                             <Input placeholder="Enter website URL" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={control}
+                      name="countryOfOrigin"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Country of Origin</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Enter country of origin"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -218,7 +239,7 @@ export default function CreateBrandPage() {
                   <div className="grid gap-6">
                     <div className="grid gap-3">
                       <FormField
-                        control={form.control}
+                        control={control}
                         name="status"
                         render={({ field }) => (
                           <FormItem>
@@ -233,9 +254,9 @@ export default function CreateBrandPage() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="draft">Draft</SelectItem>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="archived">
+                                <SelectItem value="DRAFT">Draft</SelectItem>
+                                <SelectItem value="ACTIVE">Active</SelectItem>
+                                <SelectItem value="ARCHIVED">
                                   Archived
                                 </SelectItem>
                               </SelectContent>
@@ -256,14 +277,75 @@ export default function CreateBrandPage() {
                 </CardHeader>
                 <CardContent>
                   <FormField
-                    control={form.control}
+                    control={control}
                     name="image"
                     render={({ field }) => (
-                      <FormItem className="mx-auto ">
+                      <FormItem className="mx-auto">
                         <FormLabel>
                           <h2 className="text-xl font-semibold tracking-tight"></h2>
                         </FormLabel>
-                        <FormControl></FormControl>
+
+                        <FormControl>
+                          <SingleImageDropzone
+                            value={fileState}
+                            dropzoneOptions={{
+                              maxFiles: 1,
+                              maxSize: 1024 * 1024 * 1, // 1MB
+                            }}
+                            onChange={(file) => {
+                              setFileState(file);
+                            }}
+                            onFilesAdded={async (addedFile) => {
+                              if (!(addedFile.file instanceof File)) {
+                                console.error(
+                                  "Expected a File object, but received:",
+                                  addedFile.file
+                                );
+                                updateFileProgress(addedFile.key, "ERROR");
+                                return;
+                              }
+
+                              setFileState(addedFile);
+
+                              try {
+                                const res = await edgestore.publicImages.upload(
+                                  {
+                                    file: addedFile.file,
+                                    options: {
+                                      temporary: true,
+                                    },
+
+                                    input: { type: "brand" },
+
+                                    onProgressChange: async (progress) => {
+                                      updateFileProgress(
+                                        addedFile.key,
+                                        progress
+                                      );
+
+                                      if (progress === 100) {
+                                        // wait 1 second to set it to complete
+                                        // so that the user can see the progress bar at 100%
+                                        await new Promise((resolve) =>
+                                          setTimeout(resolve, 1000)
+                                        );
+
+                                        updateFileProgress(
+                                          addedFile.key,
+                                          "COMPLETE"
+                                        );
+                                      }
+                                    },
+                                  }
+                                );
+
+                                field.onChange(res.url);
+                              } catch (err) {
+                                updateFileProgress(addedFile.key, "ERROR");
+                              }
+                            }}
+                          />
+                        </FormControl>
                       </FormItem>
                     )}
                   />

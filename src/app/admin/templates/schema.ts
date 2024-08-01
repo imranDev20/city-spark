@@ -7,7 +7,8 @@ const zodFieldType = z.enum(
     ...Array<keyof typeof FieldType>
   ]
 );
-const zodStatus = z.enum(
+
+export const zodStatus = z.enum(
   Object.keys(Status) as [keyof typeof Status, ...Array<keyof typeof Status>]
 );
 
