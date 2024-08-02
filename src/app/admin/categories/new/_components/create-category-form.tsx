@@ -37,8 +37,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { CategoryFormInputType, categorySchema } from "../../schema";
 import { createCategory } from "../../actions";
-
-import CategoryImageUploader from "../../_components/category-image-uploader";
 import {
   Popover,
   PopoverContent,
@@ -55,6 +53,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Category } from "@prisma/client";
 import useQueryString from "@/hooks/use-query-string";
+import { useEdgeStore } from "@/lib/edgestore";
 import { FileState, SingleImageDropzone } from "./category-image-uploder";
 
 export default function CreateCategoryForm({
@@ -69,11 +68,20 @@ export default function CreateCategoryForm({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { createQueryString } = useQueryString();
-  const [fileState, setFileState] = useState<FileState>({
-    file: "",
-    key: "",
-    progress: "PENDING",
-  });
+  const [fileState, setFileState] = useState<FileState | null>(null);
+  const { edgestore } = useEdgeStore();
+  function updateFileProgress(key: string, progress: FileState["progress"]) {
+    setFileState((fileState) => {
+      const newFileState = structuredClone(fileState);
+
+      if (newFileState) {
+        newFileState.progress = progress;
+      }
+
+      console.log(newFileState);
+      return newFileState;
+    });
+  }
 
   const form = useForm<CategoryFormInputType>({
     resolver: zodResolver(categorySchema),
@@ -83,7 +91,7 @@ export default function CreateCategoryForm({
       type: "PRIMARY",
     },
   });
-  const { control, handleSubmit, watch, setValue } = form;
+  const { control, handleSubmit, watch,} = form;
 
   const onCreateCategorySubmit: SubmitHandler<CategoryFormInputType> = async (
     data
@@ -297,48 +305,89 @@ export default function CreateCategoryForm({
           </div>
 
           <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-            <Card x-chunk="dashboard-07-chunk-5">
-              <CardHeader>
-                <CardTitle>Images</CardTitle>
-                <CardDescription>Upload category images.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <FormField
-                  control={control}
-                  name="image"
-                  render={({ field }) => (
-                    <FormItem className="mx-auto ">
-                      <FormLabel>
-                        <h2 className="text-xl font-semibold tracking-tight"></h2>
-                      </FormLabel>
-                      <FormControl>
-                        <SingleImageDropzone
-                          className=" sm:h-[310px] w-full"
-                          // width={200}
-                          // height={200}
-                          value={fileState}
-                          dropzoneOptions={
-                            {
+          <Card x-chunk="dashboard-07-chunk-5">
+                <CardHeader>
+                  <CardTitle>Images</CardTitle>
+                  <CardDescription>
+                    Upload your brand images here.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FormField
+                    control={control}
+                    name="image"
+                    render={({ field }) => (
+                      <FormItem className="mx-auto">
+                        <FormLabel>
+                          <h2 className="text-xl font-semibold tracking-tight"></h2>
+                        </FormLabel>
+
+                        <FormControl>
+                          <SingleImageDropzone
+                            value={fileState}
+                            dropzoneOptions={{
                               maxFiles: 1,
                               maxSize: 1024 * 1024 * 1, // 1MB
-                            }
-                          }
-                          onChange={(file) => {
-                            const imageFileState:FileState =  {
-                              file: file as File,
-                              key: "image",
-                              progress: "PENDING",
-                            }
-                            setFileState(imageFileState);
-                            console.log(imageFileState);
-                          }}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
+                            }}
+                            onChange={(file) => {
+                              setFileState(file);
+                            }}
+                            onFilesAdded={async (addedFile) => {
+                              if (!(addedFile.file instanceof File)) {
+                                console.error(
+                                  "Expected a File object, but received:",
+                                  addedFile.file
+                                );
+                                updateFileProgress(addedFile.key, "ERROR");
+                                return;
+                              }
+
+                              setFileState(addedFile);
+
+                              try {
+                                const res = await edgestore.publicImages.upload(
+                                  {
+                                    file: addedFile.file,
+                                    options: {
+                                      temporary: true,
+                                    },
+
+                                    input: { type: "category" },
+
+                                    onProgressChange: async (progress) => {
+                                      updateFileProgress(
+                                        addedFile.key,
+                                        progress
+                                      );
+
+                                      if (progress === 100) {
+                                        // wait 1 second to set it to complete
+                                        // so that the user can see the progress bar at 100%
+                                        await new Promise((resolve) =>
+                                          setTimeout(resolve, 1000)
+                                        );
+
+                                        updateFileProgress(
+                                          addedFile.key,
+                                          "COMPLETE"
+                                        );
+                                      }
+                                    },
+                                  }
+                                );
+
+                                field.onChange(res.url);
+                              } catch (err) {
+                                updateFileProgress(addedFile.key, "ERROR");
+                              }
+                            }}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
           </div>
         </div>
         <div className="flex items-center justify-center gap-2 md:hidden">
