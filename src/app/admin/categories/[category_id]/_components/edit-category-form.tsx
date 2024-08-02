@@ -38,7 +38,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { CategoryFormInputType, categorySchema } from "../../schema";
 import { updateCategory } from "../../actions";
 
-import CategoryImageUploader from "../../_components/category-image-uploader";
 import {
   Popover,
   PopoverContent,
@@ -57,6 +56,11 @@ import { Category, CategoryType } from "@prisma/client";
 import useQueryString from "@/hooks/use-query-string";
 import { ContentLayout } from "@/app/admin/_components/content-layout";
 import DynamicBreadcrumb from "@/app/admin/_components/dynamic-breadcrumb";
+import {
+  FileState,
+  SingleImageDropzone,
+} from "../../new/_components/category-image-uploder";
+import { useEdgeStore } from "@/lib/edgestore";
 
 export default function EditCategoryForm({
   categoryDetails,
@@ -97,6 +101,22 @@ export default function EditCategoryForm({
     },
   });
 
+  const [fileState, setFileState] = useState<FileState | null>(null);
+  const { edgestore } = useEdgeStore();
+
+  function updateFileProgress(key: string, progress: FileState["progress"]) {
+    setFileState((fileState) => {
+      const newFileState = structuredClone(fileState);
+
+      if (newFileState) {
+        newFileState.progress = progress;
+      }
+
+      console.log(newFileState);
+      return newFileState;
+    });
+  }
+
   const {
     control,
     handleSubmit,
@@ -112,14 +132,24 @@ export default function EditCategoryForm({
         name: categoryDetails?.name || "",
         type: selectedCategoryType || categoryDetails.type,
         parentCategory: parentCategoryId || "",
+        image: categoryDetails?.image ?? "",
       });
     }
   }, [categoryDetails, reset, selectedCategoryType, parentCategoryId]);
+  useEffect(() => {
+    if (categoryDetails?.image) {
+      setFileState({
+        file: categoryDetails.image,
+        key: categoryDetails.image,
+        progress: "COMPLETE",
+      });
+    }
+  }, [categoryDetails]);
 
   const onEditCategorySubmit: SubmitHandler<CategoryFormInputType> = async (
     data
   ) => {
-    if (categoryDetails) {
+    if (categoryDetails?.id) {
       startTransition(async () => {
         const result = await updateCategory(categoryDetails?.id, data);
 
@@ -355,12 +385,71 @@ export default function EditCategoryForm({
                     control={control}
                     name="image"
                     render={({ field }) => (
-                      <FormItem className="mx-auto ">
+                      <FormItem className="mx-auto">
                         <FormLabel>
                           <h2 className="text-xl font-semibold tracking-tight"></h2>
                         </FormLabel>
+
                         <FormControl>
-                          <CategoryImageUploader {...field} />
+                          <SingleImageDropzone
+                            value={fileState}
+                            dropzoneOptions={{
+                              maxFiles: 1,
+                              maxSize: 1024 * 1024 * 1, // 1MB
+                            }}
+                            onChange={(file) => {
+                              setFileState(file);
+                            }}
+                            onFilesAdded={async (addedFile) => {
+                              if (!(addedFile.file instanceof File)) {
+                                console.error(
+                                  "Expected a File object, but received:",
+                                  addedFile.file
+                                );
+                                updateFileProgress(addedFile.key, "ERROR");
+                                return;
+                              }
+
+                              setFileState(addedFile);
+
+                              try {
+                                const res = await edgestore.publicImages.upload(
+                                  {
+                                    file: addedFile.file,
+                                    options: {
+                                      temporary: true,
+                                    },
+
+                                    input: { type: "category" },
+
+                                    onProgressChange: async (progress) => {
+                                      updateFileProgress(
+                                        addedFile.key,
+                                        progress
+                                      );
+
+                                      if (progress === 100) {
+                                        // wait 1 second to set it to complete
+                                        // so that the user can see the progress bar at 100%
+                                        await new Promise((resolve) =>
+                                          setTimeout(resolve, 1000)
+                                        );
+
+                                        updateFileProgress(
+                                          addedFile.key,
+                                          "COMPLETE"
+                                        );
+                                      }
+                                    },
+                                  }
+                                );
+
+                                field.onChange(res.url);
+                              } catch (err) {
+                                updateFileProgress(addedFile.key, "ERROR");
+                              }
+                            }}
+                          />
                         </FormControl>
                       </FormItem>
                     )}

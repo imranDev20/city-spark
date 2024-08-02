@@ -30,8 +30,6 @@ import {
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
-import { z } from "zod";
-
 import { useEffect, useState, useTransition } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { LoadingButton } from "@/components/ui/loading-button";

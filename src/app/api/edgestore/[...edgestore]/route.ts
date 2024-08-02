@@ -13,7 +13,7 @@ const edgeStoreRouter = es.router({
     })
     .input(
       z.object({
-        type: z.enum(["product", "account", "brand", "template"]),
+        type: z.enum(["product", "account", "brand", "template","category"]),
       })
     )
     // e.g. /products/radiator.jpg
