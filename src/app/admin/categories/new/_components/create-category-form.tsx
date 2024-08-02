@@ -309,7 +309,7 @@ export default function CreateCategoryForm({
                 <CardHeader>
                   <CardTitle>Images</CardTitle>
                   <CardDescription>
-                    Upload your brand images here.
+                    Upload your category image here.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

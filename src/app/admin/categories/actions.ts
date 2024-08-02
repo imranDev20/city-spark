@@ -126,6 +126,7 @@ export async function updateCategory(
         name: data.name,
         type: data.type,
         parentId: data.parentCategory || null,
+        image: data.image,
       },
     });
 
