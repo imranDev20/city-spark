@@ -7,7 +7,8 @@ import { FiFacebook, FiInstagram, FiTwitter, FiYoutube } from "react-icons/fi";
 const StorefrontFooter: React.FC = () => {
   return (
     <footer>
-      <div className="mx-auto w-[85%] flex justify-between mb-10 mt-20">
+      <hr className="border-gray-300   mt-14" />
+      <div className="mx-auto w-[85%] flex justify-between mb-10 mt-8">
         <div>
           <h2 className="text-sm font-bold mb-4">
             Sign up for news and offers
@@ -26,22 +27,30 @@ const StorefrontFooter: React.FC = () => {
         <div>
           <h2 className="text-sm font-bold mb-4">Connect with us</h2>
           <div className="flex space-x-2   ">
-            <FiYoutube
-              className="border border-black p-2 rounded-md"
-              size={40}
-            />
-            <FiFacebook
-              className="border border-black p-2 rounded-md"
-              size={40}
-            />
-            <FiInstagram
-              className="border border-black p-2 rounded-md"
-              size={40}
-            />
-            <FiTwitter
-              className="border border-black p-2 rounded-md"
-              size={40}
-            />
+            <Link href={"#"}>
+              <FiYoutube
+                className="border border-black p-2 rounded-md"
+                size={40}
+              />
+            </Link>
+            <Link href={"#"}>
+              <FiFacebook
+                className="border border-black p-2 rounded-md"
+                size={40}
+              />
+            </Link>
+            <Link href={"#"}>
+              <FiInstagram
+                className="border border-black p-2 rounded-md"
+                size={40}
+              />
+            </Link>
+            <Link href={"#"}>
+              <FiTwitter
+                className="border border-black p-2 rounded-md"
+                size={40}
+              />
+            </Link>
           </div>
         </div>
       </div>

@@ -66,7 +66,7 @@ export default function BestSellingProductsCard() {
                 inc. VAT
               </span>{" "}
             </h2>
-            <div className="flex justify-around bg-gray-200 mt-1  rounded-md text-lg  ">
+            <div className="flex justify-between bg-gray-200 mt-1  rounded-md text-lg px-4  ">
               <button>-</button> <p>1</p> <button>+</button>
             </div>
 
