@@ -8,7 +8,7 @@ const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
   { label: "Category", href: "/admin/categories" },
   {
-    label: "Create Category",
+    label: "Add New Category",
     href: "/admin/categories/new",
     isCurrentPage: true,
   },

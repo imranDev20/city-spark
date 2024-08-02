@@ -1,5 +1,5 @@
-// Import necessary components and libraries
 "use client";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,13 +33,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft, Trash } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Fragment, useState, useTransition } from "react";
+import { Fragment, useTransition } from "react";
 import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
-import { z } from "zod";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import { createTemplate } from "../actions";
-import { templateSchema } from "../schema";
+import { TemplateFormInputType, templateSchema } from "../schema";
 
 // Define breadcrumb items
 const breadcrumbItems = [
@@ -52,56 +51,39 @@ const breadcrumbItems = [
   },
 ];
 
-// Define default values and types
-
-export type FormInputType = z.infer<typeof templateSchema>;
-
 // Component definition
 export default function CreateTemplatePage() {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { toast } = useToast();
+
   // Initialize form using useForm and zodResolver for validation
-  const form = useForm<FormInputType>({
+  const form = useForm<TemplateFormInputType>({
     resolver: zodResolver(templateSchema),
     defaultValues: {
       name: "",
       description: "",
-      fields: [{ fieldName: "", fieldType: "", fieldValue: "" }],
+      fields: [
+        { fieldId: "", fieldName: "", fieldType: "TEXT", fieldOptions: "" },
+      ],
       status: "DRAFT",
     },
   });
 
-  const { control, handleSubmit } = form;
+  const { control, handleSubmit, watch, formState } = form;
   const { fields, append, remove } = useFieldArray({
     control,
     name: "fields",
   });
-  const [fieldTypes, setFieldTypes] = useState(
-    fields.map((field) => field.fieldType)
-  );
-
-  const handleFieldTypeChange = (index: number, value: string) => {
-    const newFieldTypes = [...fieldTypes];
-    newFieldTypes[index] = value;
-    setFieldTypes(newFieldTypes);
-  };
 
   // Handle form submission
-  const onCreateTemplateSubmit: SubmitHandler<FormInputType> = async (data) => {
-    const { name, status, fields, description } = data;
-    const payload = {
-      name,
-      status,
-      fields,
-      description,
-    };
-    console.log(`payload`, payload);
+  const onCreateTemplateSubmit: SubmitHandler<TemplateFormInputType> = async (
+    data
+  ) => {
     startTransition(async () => {
       const result = await createTemplate(data);
+
       if (result.success) {
-        // Handle successful deletion (e.g., show a success message, update UI)
-        console.log(result.message);
         toast({
           title: "Brand Template",
           description: result.message,
@@ -137,11 +119,8 @@ export default function CreateTemplatePage() {
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
               Create Template
             </h1>
-            <Badge variant="outline" className="ml-auto sm:ml-0">
-              Active
-            </Badge>
             <div className="hidden items-center gap-2 md:ml-auto md:flex">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" type="button">
                 Discard
               </Button>
               <LoadingButton
@@ -151,7 +130,7 @@ export default function CreateTemplatePage() {
                 loading={isPending}
                 className="text-xs font-semibold h-8"
               >
-                Save Tempalte
+                Save Template
               </LoadingButton>
             </div>
           </div>
@@ -250,19 +229,17 @@ export default function CreateTemplatePage() {
                                     <Select
                                       onValueChange={(value) => {
                                         field.onChange(value);
-                                        handleFieldTypeChange(index, value);
                                       }}
-                                      defaultValue={field.value}
-                                      value={fieldTypes[index]}
+                                      value={field.value}
                                     >
                                       <SelectTrigger aria-label="Field Type">
                                         <SelectValue placeholder="Select Field Type" />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        <SelectItem value="text">
+                                        <SelectItem value="TEXT">
                                           Text
                                         </SelectItem>
-                                        <SelectItem value="select">
+                                        <SelectItem value="SELECT">
                                           Select
                                         </SelectItem>
                                       </SelectContent>
@@ -274,10 +251,10 @@ export default function CreateTemplatePage() {
                             />
                           </div>
 
-                          {fieldTypes[index] === "select" && (
+                          {watch("fields")[index].fieldType === "SELECT" && (
                             <div className="grid gap-3 col-span-8">
                               <FormField
-                                name={`fields.${index}.fieldValue`}
+                                name={`fields.${index}.fieldOptions`}
                                 control={control}
                                 render={({ field }) => (
                                   <FormItem>
@@ -314,9 +291,10 @@ export default function CreateTemplatePage() {
                         type="button"
                         onClick={() =>
                           append({
+                            fieldId: "",
                             fieldName: "",
-                            fieldType: "select",
-                            fieldValue: "",
+                            fieldType: "TEXT",
+                            fieldOptions: "",
                           })
                         }
                       >
@@ -342,7 +320,14 @@ export default function CreateTemplatePage() {
                         <FormItem>
                           <FormLabel htmlFor="status">Status</FormLabel>
                           <FormControl>
-                            <Select>
+                            <Select
+                              onValueChange={(value) => {
+                                if (value) {
+                                  field.onChange(value);
+                                }
+                              }}
+                              value={field.value}
+                            >
                               <SelectTrigger
                                 id="status"
                                 aria-label="Select status"
@@ -350,11 +335,9 @@ export default function CreateTemplatePage() {
                                 <SelectValue placeholder="Select Status" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="draft">Draft</SelectItem>
-                                <SelectItem value="published">
-                                  Active
-                                </SelectItem>
-                                <SelectItem value="archived">
+                                <SelectItem value="DRAFT">Draft</SelectItem>
+                                <SelectItem value="ACTIVE">Active</SelectItem>
+                                <SelectItem value="ARCHIVED">
                                   Archived
                                 </SelectItem>
                               </SelectContent>

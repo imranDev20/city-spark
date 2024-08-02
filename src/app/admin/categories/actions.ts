@@ -53,16 +53,15 @@ export async function createCategory(data: CategoryFormInputType) {
         name: data.name,
         type: data.type,
         parentId: data.parentCategory || null,
-        image: {
-          create: {
-            url: "https://images.unsplash.com/photo-1565103446317-476a2b789651?q=80&w=2897&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            description: "Category image 1",
-          },
-        },
+        image: data.image,
       },
     });
 
     revalidatePath("/admin/categories");
+    revalidatePath("/admin/categories/new");
+    revalidatePath(`/admin/categories/${createdCategory.id}`);
+    revalidatePath("/admin/categories/[category_id]", "page");
+
     return {
       message: "Category created successfully!",
       data: createdCategory,
@@ -84,7 +83,6 @@ export const getCategories = cache(async () => {
     const categories = await prisma.category.findMany({
       include: {
         parentCategory: true,
-        image: true,
       },
     });
 
@@ -128,10 +126,14 @@ export async function updateCategory(
         name: data.name,
         type: data.type,
         parentId: data.parentCategory || null,
+        image: data.image,
       },
     });
 
     revalidatePath("/admin/categories");
+    revalidatePath("/admin/categories/new");
+    revalidatePath(`/admin/categories/${updatedCategory.id}`);
+    revalidatePath("/admin/categories/[category_id]", "page");
 
     return {
       message: "Category updated successfully!",

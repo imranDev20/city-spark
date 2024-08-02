@@ -5,14 +5,12 @@ import { revalidatePath } from "next/cache";
 import { unstable_cache as cache } from "next/cache";
 import { ProductFormInputType } from "./schema";
 import { CategoryType, Category } from "@prisma/client";
-import { redirect } from "next/navigation";
 
 // Cached products for ssr in the list
 export const getProducts = cache(async () => {
   try {
     const products = await prisma.product.findMany({
       include: {
-        images: true,
         primaryCategory: true,
         brand: true,
       },
@@ -42,6 +40,7 @@ export const getTemplates = cache(async () => {
         fields: true,
       },
     });
+
     return templates;
   } catch (error) {
     console.error("Error fetching templates:", error);
@@ -135,10 +134,16 @@ export const getProductById = cache(async (productId: string) => {
         id: productId,
       },
       include: {
-        images: true,
         brand: true,
-        features: true,
-        template: true,
+        productTemplate: {
+          include: {
+            fields: {
+              include: {
+                templateField: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -155,70 +160,112 @@ export const getProductById = cache(async (productId: string) => {
 
 export async function createProduct(data: ProductFormInputType) {
   try {
-    console.log(`data`, data);
-    const createdProduct = await prisma.product.create({
-      data: {
-        name: "Sample Product",
-        description: "This is a sample product description.",
-        model: "ABC123",
-        type: "Electronics",
-        warranty: "1 year",
-        guarantee: "30 days",
-        tradePrice: 299.99,
-        contractPrice: 279.99,
-        promotionalPrice: 259.99,
-        unit: "pcs",
-        weight: 1.5,
-        color: "Black",
-        length: 10.0,
-        width: 5.0,
-        height: 3.0,
-        material: "Plastic",
+    let createdProductTemplateId: string | undefined;
 
-        template: {
-          connect: {
-            id: "clykb82130000tc4yw0v2du0u",
+    if (data.productTemplateFields && data.productTemplateFields?.length > 0) {
+      const createdProductTemplate = await prisma.productTemplate.create({
+        data: {
+          templateId: data.template || "",
+          fields: {
+            create: data.productTemplateFields?.map((field) => ({
+              templateFieldId: field.fieldId,
+              fieldValue: field.fieldValue,
+            })),
           },
         },
+      });
+      createdProductTemplateId = createdProductTemplate.id;
+    }
 
-        features: {
-          create: [{ name: "Feature 1" }, { name: "Feature 2" }],
-        },
-
-        category: {
-          connect: { id: "clyjum3y5000511qgrq4szisu" }, // Replace with actual category ID
-        },
-        brand: {
-          connect: { id: "clylgt71m00009gvbup4hari6" }, // Replace with actual brand ID
-        },
-        manuals: {
-          set: ["manual1.pdf", "manual2.pdf"],
-        },
-
-        images: {
-          create: [
-            {
-              url: "https://images.unsplash.com/photo-1565103446317-476a2b789651?q=80&w=2897&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Example Unsplash image URL
-              description: "Product Image 1",
-            },
-            {
-              url: "https://images.unsplash.com/photo-1565103446317-476a2b789651?q=80&w=2897&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Example Unsplash image URL
-              description: "Product Image 2",
-            },
-          ],
-        },
+    const createdProduct = await prisma.product.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        model: data.model,
+        type: data.type,
+        warranty: data.warranty,
+        guarantee: data.guarantee,
+        tradePrice: data.tradePrice,
+        contractPrice: data.contractPrice,
+        promotionalPrice: data.promotionalPrice,
+        unit: data.unit,
+        weight: data.weight,
+        color: data.color,
+        length: data.length,
+        width: data.width,
+        height: data.height,
+        material: data.material,
+        volume: data.volume,
+        productTemplate: createdProductTemplateId
+          ? {
+              connect: { id: createdProductTemplateId },
+            }
+          : undefined,
+        features: data.features?.map((item) => item.feature),
+        category: data.category
+          ? {
+              connect: { id: data.category },
+            }
+          : undefined,
+        primaryCategory: data.primaryCategory
+          ? {
+              connect: { id: data.primaryCategory },
+            }
+          : undefined,
+        secondaryCategory: data.secondaryCategory
+          ? {
+              connect: { id: data.secondaryCategory },
+            }
+          : undefined,
+        tertiaryCategory: data.tertiaryCategory
+          ? {
+              connect: { id: data.tertiaryCategory },
+            }
+          : undefined,
+        quaternaryCategory: data.quaternaryCategory
+          ? {
+              connect: { id: data.quaternaryCategory },
+            }
+          : undefined,
+        brand: data.brand
+          ? {
+              connect: { id: data.brand },
+            }
+          : undefined,
+        status: data.status || "DRAFT",
+        manuals: data.manuals,
+        images: data.images?.map((item) => item.image),
       },
     });
 
+    await prisma.inventory.create({
+      data: {
+        productId: createdProduct.id,
+        deliveryEligibility: false,
+        collectionEligibility: false,
+        countAvailableForCollection: 0,
+        countAvailableForDelivery: 0,
+        maxCollectionCount: 0,
+        maxDeliveryCount: 0,
+        minCollectionCount: 0,
+        minDeliveryCount: 0,
+        stockCount: 0,
+        collectionAvailabilityTime: "",
+        collectionPoints: [],
+        deliveryAreas: [],
+      },
+    });
+
+    revalidatePath("/admin/inventory");
     revalidatePath("/admin/products");
 
     return {
-      message: "Products created successfully!",
+      message: "Product created successfully!",
       data: createdProduct,
       success: true,
     };
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return {
       message: "An error occurred while creating the product.",
       success: false,
@@ -231,6 +278,29 @@ export async function updateProduct(
   data: ProductFormInputType
 ) {
   try {
+    const updatedProductTemplate = await prisma.productTemplate.update({
+      where: { id: data.productTemplate },
+      data: {
+        templateId: data.template,
+        fields: {
+          deleteMany: {},
+          create: data.productTemplateFields?.map((productTemplateField) => ({
+            templateFieldId: productTemplateField.fieldId,
+            fieldValue: productTemplateField.fieldValue,
+          })),
+        },
+      },
+      include: {
+        fields: {
+          include: {
+            productTemplate: true,
+          },
+        },
+      },
+    });
+
+    // productTemplateId = updatedProductTemplate.id;
+
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
       data: {
@@ -250,47 +320,37 @@ export async function updateProduct(
         width: data.width,
         height: data.height,
         material: data.material,
+        volume: data.volume,
         status: data.status,
-        template: data.template
+        productTemplate: updatedProductTemplate.id
           ? {
-              connect: { id: data.template },
+              connect: { id: updatedProductTemplate.id },
             }
           : undefined,
-
-        features: {
-          deleteMany: {}, // Clear existing features
-          create:
-            data.features?.map((feature) => ({ name: feature.feature })) || [],
-        },
-
+        features: data.features?.map((item) => item.feature),
         brand: data.brand
           ? {
               connect: { id: data.brand },
             }
           : undefined,
-
         manuals: {
           set: data.manuals ?? [],
         },
-
         primaryCategory: data.primaryCategory
           ? {
               connect: { id: data.primaryCategory },
             }
           : undefined,
-
         secondaryCategory: data.secondaryCategory
           ? {
               connect: { id: data.secondaryCategory },
             }
           : undefined,
-
         tertiaryCategory: data.tertiaryCategory
           ? {
               connect: { id: data.tertiaryCategory },
             }
           : undefined,
-
         quaternaryCategory: data.quaternaryCategory
           ? {
               connect: { id: data.quaternaryCategory },
@@ -301,40 +361,10 @@ export async function updateProduct(
         // and at the same time delete it from db
         // then create new image urls
 
-        images: {
-          deleteMany: {}, // Clear existing images
-          create:
-            data.images?.map(({ image }, index) => ({
-              url: image.url,
-              description: `${data.name}-${index}`,
-              name: image.name,
-              size: image.size,
-              lastModified: image.lastModified?.toString(),
-              thumbnailUrl: image.thumbnailUrl,
-              type: image.type,
-            })) || [],
-        },
-
+        images: data.images?.map((item) => item.image),
         updatedAt: new Date(), // Ensures updatedAt is set to the current date and time
       },
     });
-
-    if (data.templateFields) {
-      await prisma.template.update({
-        where: { id: data.template },
-        data: {
-          fields: {
-            deleteMany: {}, // This will delete all existing fields
-            create: data.templateFields.map((field) => ({
-              fieldName: field.fieldName,
-              fieldType: field.fieldType,
-              fieldOptions: field.fieldOptions,
-              fieldValues: field.fieldValues,
-            })),
-          },
-        },
-      });
-    }
 
     revalidatePath("/admin/products");
     revalidatePath(`/admin/products/${productId}`);
@@ -369,6 +399,7 @@ export async function deleteProduct(productId: string) {
       },
     });
 
+    revalidatePath("/admin/products");
     revalidatePath("/admin/products");
 
     return {
