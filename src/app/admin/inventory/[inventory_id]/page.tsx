@@ -2,7 +2,7 @@ import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import { getProducts } from "../../products/actions";
 import EditInventoryForm from "../_components/edit-inventory-form";
-import { getInventoryById } from "../actions";
+import { getInventoryItemById } from "../actions";
 
 export default async function InventoryDetailsPage({
   params,
@@ -16,8 +16,7 @@ export default async function InventoryDetailsPage({
   };
 }) {
   const { inventory_id } = params;
-  const { product_id } = searchParams;
-  const inventoryDetails = await getInventoryById(inventory_id);
+  const inventoryDetails = await getInventoryItemById(inventory_id);
   const products = await getProducts();
 
   return (

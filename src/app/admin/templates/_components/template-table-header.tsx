@@ -25,7 +25,7 @@ export default function TemplateTableHeader() {
           </Button>
           <Link href="templates/new">
             <Button size="sm" className="whitespace-nowrap">
-              Add Template
+              Add New Template
             </Button>
           </Link>
         </div>

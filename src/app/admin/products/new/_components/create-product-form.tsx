@@ -31,7 +31,6 @@ import {
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
-import { z } from "zod";
 
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -55,10 +54,27 @@ import { cn } from "@/lib/utils";
 import { ProductFormInputType, productSchema } from "../../schema";
 import { createProduct } from "../../actions";
 
-import { Brand, Category, Template } from "@prisma/client";
-import { TemplateWithRelations } from "../../[product_id]/_components/edit-product-form";
+import { Brand, Category, Prisma, Template } from "@prisma/client";
 import ManualsInstructionsUpload from "../../_components/manuals-instructions-upload";
 import useQueryString from "@/hooks/use-query-string";
+import { TemplateWithRelations } from "../../[product_id]/_components/edit-product-form";
+
+export type ProductWithRelations = Prisma.ProductGetPayload<{
+  include: {
+    images: true;
+    brand: true;
+    features: true;
+    productTemplate: {
+      include: {
+        template: {
+          include: {
+            fields: true;
+          };
+        };
+      };
+    };
+  };
+}>;
 
 export default function CreateProductForm({
   primaryCategories,
@@ -108,6 +124,7 @@ export default function CreateProductForm({
   });
 
   const { control, handleSubmit } = form;
+
   const {
     fields: featureFields,
     append: appendFeature,
@@ -119,7 +136,7 @@ export default function CreateProductForm({
 
   const { fields: templateFields } = useFieldArray({
     control,
-    name: "templateFields",
+    name: "productTemplateFields",
   });
 
   useEffect(() => {
@@ -127,11 +144,11 @@ export default function CreateProductForm({
       form.reset({
         ...form.getValues(),
         template: selectedTemplate || "",
-        templateFields: templateDetails?.fields.map((item) => ({
+        productTemplateFields: templateDetails?.fields.map((item) => ({
+          fieldId: item.id,
           fieldName: item.fieldName,
           fieldType: item.fieldType,
           fieldOptions: item.fieldOptions || "",
-          fieldValues: item.fieldValues || "",
         })),
       });
     }
@@ -726,7 +743,7 @@ export default function CreateProductForm({
                       >
                         <FormField
                           control={control}
-                          name={`templateFields.${index}.fieldValues`}
+                          name={`productTemplateFields.${index}.fieldValue`}
                           render={({ field }) => (
                             <FormItem className="w-full flex flex-col gap-1">
                               <FormLabel>{templateField.fieldName}</FormLabel>
@@ -1001,9 +1018,6 @@ export default function CreateProductForm({
                                 <SelectItem value="ACTIVE">Active</SelectItem>
                                 <SelectItem value="ARCHIVED">
                                   Archived
-                                </SelectItem>
-                                <SelectItem value="DISCONTINUED">
-                                  Discondinued
                                 </SelectItem>
                               </SelectContent>
                             </Select>

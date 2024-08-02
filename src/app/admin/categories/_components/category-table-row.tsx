@@ -13,18 +13,19 @@ import { useToast } from "@/components/ui/use-toast";
 import { Prisma } from "@prisma/client";
 import dayjs from "dayjs";
 import { MoreHorizontal } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import React, { useTransition } from "react";
 
 import Image from "next/image";
 import useQueryString from "@/hooks/use-query-string";
 import { deleteCategory } from "../actions";
+
 export type CategoryWithRelations = Prisma.CategoryGetPayload<{
   include: {
     parentCategory: true;
-    image: true;
   };
 }>;
+
 export default function CategoriesTableRow({
   category,
 }: {
@@ -76,7 +77,7 @@ export default function CategoriesTableRow({
             alt="Category Image"
             className="aspect-square rounded-md object-cover"
             height="64"
-            src={category.image?.url}
+            src={category.image}
             // src=''
             width="64"
           />

@@ -69,12 +69,12 @@ export default function ProductTableRow({
       className={`cursor-pointer ${isPending ? "opacity-30" : "opacity-100"}`}
     >
       <TableCell className="hidden sm:table-cell">
-        {product.images[0]?.url ? (
+        {product.images[0] ? (
           <Image
             alt="Product image"
             className="aspect-square rounded-md object-cover border border-input"
             height="64"
-            src={product.images[0].url}
+            src={product.images[0]}
             width="64"
           />
         ) : (
@@ -101,6 +101,7 @@ export default function ProductTableRow({
       <TableCell className="hidden md:table-cell">
         {dayjs(product.createdAt).format("DD-MM-YY hh:mm A")}
       </TableCell>
+
       <TableCell>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

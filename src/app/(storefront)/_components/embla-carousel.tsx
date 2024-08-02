@@ -5,6 +5,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import bannerImage1 from "@/images/banners.jpg";
 import Image from "next/image";
 import "./carousel.css";
+
 export default function EmblaCarousel() {
   const [emblaRef] = useEmblaCarousel({ loop: true }, [Autoplay()]);
   const content = [

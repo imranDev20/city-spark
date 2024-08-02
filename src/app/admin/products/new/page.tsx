@@ -41,17 +41,14 @@ export default async function AdminCreateProductPage({
   const templateDetails = await getTemplateById(template_id as string);
 
   const primaryCategories = await getCategories("PRIMARY");
-
   const secondaryCategories = await getCategories(
     "SECONDARY",
     primary_category_id
   );
-
   const tertiaryCategories = await getCategories(
     "TERTIARY",
     secondary_category_id
   );
-
   const quaternaryCategories = await getCategories(
     "QUATERNARY",
     tertiary_category_id

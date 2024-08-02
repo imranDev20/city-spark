@@ -6,7 +6,6 @@ generator client {
 datasource db {
     provider = "postgresql"
     url      = env("POSTGRES_PRISMA_URL")
-    // directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
 model Category {
@@ -30,7 +29,7 @@ model Category {
     secondaryProducts         Product[]    @relation("SecondaryProductCategory")
     tertiaryProducts          Product[]    @relation("TertiaryProductCategory")
     quaternaryProducts        Product[]    @relation("QuaternaryProductCategory")
-    image                     Image?
+    image                     String?
     createdAt                 DateTime     @default(now())
     updatedAt                 DateTime     @updatedAt
 }
@@ -43,46 +42,48 @@ enum CategoryType {
 }
 
 model Product {
-    id                  String    @id @default(cuid())
-    name                String    @unique
-    description         String?
-    model               String?
-    type                String?
-    warranty            String?
-    guarantee           String?
-    tradePrice          Float?
-    contractPrice       Float?
-    promotionalPrice    Float?
-    unit                String?
-    weight              Float?
-    color               String?
-    length              Float?
-    width               Float?
-    height              Float?
-    material            String?
-    template            Template? @relation(fields: [templateId], references: [id])
-    templateId          String?
-    features            Feature[]
-    category            Category? @relation(fields: [categoryId], references: [id])
-    categoryId          String?
-    primaryCategory     Category? @relation("PrimaryProductCategory", fields: [primaryCategoryId], references: [id])
-    primaryCategoryId   String?
-    secondaryCategory   Category? @relation("SecondaryProductCategory", fields: [secondaryCategoryId], references: [id])
-    secondaryCategoryId String?
-    tertiaryCategory    Category? @relation("TertiaryProductCategory", fields: [tertiaryCategoryId], references: [id])
-    tertiaryCategoryId  String?
-
-    quaternaryCategory   Category? @relation("QuaternaryProductCategory", fields: [quaternaryCategoryId], references: [id])
+    id                   String           @id @default(cuid())
+    name                 String           @unique
+    description          String?
+    model                String?
+    type                 String?
+    warranty             String?
+    guarantee            String?
+    tradePrice           Float?
+    contractPrice        Float?
+    promotionalPrice     Float?
+    unit                 String?
+    weight               Float?
+    color                String?
+    length               Float?
+    width                Float?
+    height               Float?
+    material             String?
+    volume               String?
+    productTemplate      ProductTemplate? @relation(fields: [productTemplateId], references: [id])
+    productTemplateId    String?
+    features             String[]
+    category             Category?        @relation(fields: [categoryId], references: [id])
+    categoryId           String?
+    primaryCategory      Category?        @relation("PrimaryProductCategory", fields: [primaryCategoryId], references: [id])
+    primaryCategoryId    String?
+    secondaryCategory    Category?        @relation("SecondaryProductCategory", fields: [secondaryCategoryId], references: [id])
+    secondaryCategoryId  String?
+    tertiaryCategory     Category?        @relation("TertiaryProductCategory", fields: [tertiaryCategoryId], references: [id])
+    tertiaryCategoryId   String?
+    quaternaryCategory   Category?        @relation("QuaternaryProductCategory", fields: [quaternaryCategoryId], references: [id])
     quaternaryCategoryId String?
-
-    brand     Brand?     @relation(fields: [brandId], references: [id])
-    brandId   String?
-    status    Status     @default(DRAFT)
-    manuals   String[]
-    images    Image[]
-    createdAt DateTime   @default(now())
-    updatedAt DateTime   @updatedAt
-    inventory Inventory?
+    brand                Brand?           @relation(fields: [brandId], references: [id])
+    brandId              String?
+    status               Status?          @default(DRAFT)
+    manuals              String[]
+    images               String[]
+    inventory            Inventory?
+    cartItems            CartItem[]
+    orderItems           OrderItem[]
+    wishlistedBy         User[]           @relation("UserWishlist")
+    createdAt            DateTime         @default(now())
+    updatedAt            DateTime         @updatedAt
 }
 
 model Brand {
@@ -90,21 +91,12 @@ model Brand {
     name            String    @unique
     products        Product[]
     description     String?
-    status          Status    @default(DRAFT)
+    status          Status?   @default(DRAFT)
     website         String?
     countryOfOrigin String?
     image           String?
     createdAt       DateTime  @default(now())
     updatedAt       DateTime  @updatedAt
-}
-
-model Feature {
-    id        String   @id @default(cuid())
-    name      String
-    productId String
-    product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
 }
 
 enum Status {
@@ -113,42 +105,48 @@ enum Status {
     ARCHIVED
 }
 
-model Image {
-    id               String    @id @default(cuid())
-    url              String
-    thumbnailUrl     String?
-    description      String?
-    name             String?
-    size             Int?
-    lastModified     String?
-    lastModifiedDate DateTime?
-    type             String?
-    product          Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
-    productId        String?
-    category         Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-    categoryId       String?   @unique
-    createdAt        DateTime  @default(now())
-    updatedAt        DateTime  @updatedAt
-}
-
 model Template {
-    id          String          @id @default(cuid())
-    name        String
-    description String?
-    fields      TemplateField[]
-    products    Product[]
-    createdAt   DateTime        @default(now())
-    updatedAt   DateTime        @updatedAt
+    id               String            @id @default(cuid())
+    name             String            @unique
+    description      String?
+    fields           TemplateField[]
+    status           Status?
+    productTemplates ProductTemplate[]
+    createdAt        DateTime          @default(now())
+    updatedAt        DateTime          @updatedAt
 }
 
 model TemplateField {
-    id           String    @id @default(cuid())
-    fieldName    String
-    fieldType    FieldType
-    fieldOptions String?
-    fieldValues  String?
-    templateId   String
-    template     Template  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+    id                    String                 @id @default(cuid())
+    fieldName             String
+    fieldType             FieldType
+    fieldOptions          String?
+    templateId            String
+    productTemplateFields ProductTemplateField[]
+    template              Template               @relation(fields: [templateId], references: [id], onDelete: Cascade)
+    createdAt             DateTime               @default(now())
+    updatedAt             DateTime               @updatedAt
+}
+
+model ProductTemplate {
+    id         String                 @id @default(cuid())
+    fields     ProductTemplateField[]
+    template   Template               @relation(fields: [templateId], references: [id])
+    templateId String
+    products   Product[]
+    createdAt  DateTime               @default(now())
+    updatedAt  DateTime               @updatedAt
+}
+
+model ProductTemplateField {
+    id                String          @id @default(cuid())
+    productTemplateId String
+    productTemplate   ProductTemplate @relation(fields: [productTemplateId], references: [id], onDelete: Cascade)
+    templateFieldId   String
+    templateField     TemplateField   @relation(fields: [templateFieldId], references: [id], onDelete: Cascade)
+    fieldValue        String?
+    createdAt         DateTime        @default(now())
+    updatedAt         DateTime        @updatedAt
 }
 
 enum FieldType {
@@ -175,4 +173,132 @@ model Inventory {
     productId                   String   @unique
     createdAt                   DateTime @default(now())
     updatedAt                   DateTime @updatedAt
+}
+
+model User {
+    id        String    @id @default(cuid())
+    firstName String?
+    lastName  String?
+    email     String    @unique
+    phone     String?
+    password  String
+    role      Role      @default(USER)
+    carts     Cart[]
+    orders    Order[]
+    addresses Address[]
+    wishlist  Product[] @relation("UserWishlist")
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+}
+
+model Cart {
+    id         String     @id @default(cuid())
+    userId     String
+    user       User       @relation(fields: [userId], references: [id])
+    cartItems  CartItem[]
+    totalPrice Float?     @default(0)
+    order      Order?
+    createdAt  DateTime   @default(now())
+    updatedAt  DateTime   @updatedAt
+}
+
+model CartItem {
+    id        String   @id @default(cuid())
+    cartId    String
+    cart      Cart     @relation(fields: [cartId], references: [id])
+    productId String
+    product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+    quantity  Int?     @default(0)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+enum Role {
+    ADMIN
+    USER
+}
+
+model Order {
+    id              String         @id @default(cuid())
+    userId          String
+    user            User           @relation(fields: [userId], references: [id])
+    cartId          String         @unique
+    cart            Cart           @relation(fields: [cartId], references: [id])
+    orderItems      OrderItem[]
+    totalPrice      Float?         @default(0)
+    status          Status         @default(DRAFT)
+    paymentMethod   String?
+    paymentStatus   PaymentStatus  @default(UNPAID)
+    trackingNumber  String?
+    trackingUrl     String?
+    shippingAddress String?
+    shippingMethod  String?
+    shippingStatus  ShippingStatus @default(NOT_SHIPPED)
+    shippingPrice   Float?
+    shippingDate    DateTime?
+    deliveryDate    DateTime?
+    invoice         String?
+    invoiceUrl      String?
+    paymentDate     DateTime?
+    refundDate      DateTime?
+    refundStatus    RefundStatus   @default(NOT_REFUND)
+    refundAmount    Float?
+    refundReason    String?
+    refundNote      String?
+    createdAt       DateTime       @default(now())
+    updatedAt       DateTime       @updatedAt
+}
+
+model OrderItem {
+    id        String   @id @default(cuid())
+    orderId   String
+    order     Order    @relation(fields: [orderId], references: [id])
+    productId String
+    product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+    quantity  Int?     @default(0)
+    price     Float
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Address {
+    id                String   @id @default(cuid())
+    userId            String
+    user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    addressLine1      String
+    addressLine2      String?
+    city              String
+    state             String
+    postalCode        String
+    country           String
+    isBilling         Boolean  @default(false)
+    isShipping        Boolean  @default(false)
+    isDefaultBilling  Boolean  @default(false)
+    isDefaultShipping Boolean  @default(false)
+    createdAt         DateTime @default(now())
+    updatedAt         DateTime @updatedAt
+}
+
+enum PaymentStatus {
+    PENDING
+    REFUND
+    PAID
+    UNPAID
+    CANCELLED
+}
+
+enum ShippingStatus {
+    NOT_SHIPPED
+    SHIPPED
+    DELIVERED
+    RETURNED
+    CANCELLED
+}
+
+enum RefundStatus {
+    NOT_REFUND
+    PENDING
+    APPROVED
+    REJECTED
+    CANCELLED
 }
