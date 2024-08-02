@@ -1,5 +1,5 @@
+import img from "@/images/dummy-img.png";
 import Image from "next/image";
-import img from "../../../../images/dummy-img.png";
 
 export default function Features() {
   return (

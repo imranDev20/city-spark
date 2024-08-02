@@ -1,7 +1,9 @@
+import { Button } from "@/components/ui/button";
+
+import dummyImg from "@/images/dummy-img.png";
 import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import { FaRegStar, FaRegStarHalf } from "react-icons/fa";
-import dummyImg from "../../../../images/dummy-img.png";
 
 export default function NewProducts() {
   const products = [
@@ -65,16 +67,12 @@ export default function NewProducts() {
               </span>{" "}
             </h2>
             <div className="flex justify-around bg-gray-200 mt-1  rounded-md text-lg  ">
-              <button>-</button> <span>1</span> <button>+</button>
+              <button>-</button> <p>1</p> <button>+</button>
             </div>
 
             <div className="flex justify-between mt-2">
-              <button className="bg-primary text-white   py-1 px-5 rounded-sm  ">
-                Collection
-              </button>
-              <button className="bg-primary text-white   py-1 px-5 rounded-sm  ">
-                Delivery
-              </button>
+              <Button className="px-6">Collection</Button>
+              <Button className="px-7">Delivery</Button>
             </div>
           </div>
         ))}

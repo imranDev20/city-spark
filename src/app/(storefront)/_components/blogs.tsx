@@ -1,5 +1,6 @@
+import { Button } from "@/components/ui/button";
+import img from "@/images/bg-img.jpg";
 import Image from "next/image";
-import img from "../../../../images/bg-img.jpg";
 
 export default function Blogs() {
   return (
@@ -18,9 +19,10 @@ export default function Blogs() {
           Lorem Ipsum is simply dummy text of the printing <br /> and
           typesetting industry.
         </p>
-        <button className="px-5 py-2 bg-white text-black font-semibold rounded hover:bg-gray-200">
+
+        <Button className="bg-white text-black hover:bg-white">
           READ BLOG
-        </button>
+        </Button>
       </div>
     </div>
   );

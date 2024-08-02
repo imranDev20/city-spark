@@ -1,5 +1,7 @@
+import { Button } from "@/components/ui/button";
+
+import img from "@/images/bg-img.jpg";
 import Image from "next/image";
-import img from "../../../../images/bg-img.jpg";
 
 export default function BrandStore() {
   return (
@@ -18,9 +20,10 @@ export default function BrandStore() {
           Lorem Ipsum is simply dummy text of the printing and <br />{" "}
           typesetting industry.
         </p>
-        <button className="px-6 py-2 bg-black rounded hover:bg-gray-700 uppercase">
+        {/* <button className="px-6 py-2 bg-black rounded hover:bg-gray-700 uppercase">
           Visit Brand Shop
-        </button>
+        </button> */}
+        <Button className="bg-black hover:bg-black">Visit Brand Shop</Button>
       </div>
     </div>
   );
