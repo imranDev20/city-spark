@@ -23,7 +23,7 @@ import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState, useTransition } from "react";
 import { Switch } from "@/components/ui/switch";
-import { Prisma } from "@prisma/client";
+import { Prisma, Product } from "@prisma/client";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { InventoryFormInputType, inventorySchema } from "../schema";
 import { Popover, PopoverTrigger } from "@radix-ui/react-popover";
@@ -38,27 +38,12 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
-import { updateInventory } from "../actions";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { updateInventoryItem } from "../actions";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
-import useQueryString from "@/hooks/use-query-string";
-const breadcrumbItems = [
-  { label: "Dashboard", href: "/admin" },
-  { label: "Inventory", href: "/admin/inventory" },
-  {
-    label: `Edit Inventory`,
-    isCurrentPage: true,
-  },
-];
 
-export type RelationsWithProducts = Prisma.ProductGetPayload<{
-  include: {
-    images: true;
-    category: true;
-  };
-}>;
-export type RelationsWithInventory = Prisma.InventoryGetPayload<{
+export type InventoryWithRelations = Prisma.InventoryGetPayload<{
   include: {
     product: true;
   };
@@ -68,17 +53,16 @@ export default function EditInventoryForm({
   products,
   inventoryDetails,
 }: {
-  products: RelationsWithProducts[];
-  inventoryDetails: RelationsWithInventory;
+  products: Product[];
+  inventoryDetails: InventoryWithRelations;
 }) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const [openParentComboBox, setOpenParentComboBox] = useState<boolean>(false);
-  const { createQueryString } = useQueryString();
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const selectedProduct = searchParams.get("product_id") || null;
+
   const form = useForm<InventoryFormInputType>({
     resolver: zodResolver(inventorySchema),
     defaultValues: {
@@ -93,10 +77,10 @@ export default function EditInventoryForm({
           collectionPoint: "",
         },
       ],
-      collectionAvailabilityTime: '',
-      collectionEligibility:false,
-      deliveryEligibility:false,
-      countAvailableForCollection:"",
+      collectionAvailabilityTime: "",
+      collectionEligibility: false,
+      deliveryEligibility: false,
+      countAvailableForCollection: "",
       countAvailableForDelivery: "",
       maxCollectionCount: "",
       maxDeliveryCount: "",
@@ -104,7 +88,6 @@ export default function EditInventoryForm({
       minDeliveryCount: "",
       maxDeliveryTime: "",
       productId: "",
-      
     },
   });
   const {
@@ -164,11 +147,9 @@ export default function EditInventoryForm({
   const onEditInventorySubmit: SubmitHandler<InventoryFormInputType> = async (
     data
   ) => {
-    console.log(data);
-
     if (inventoryDetails?.id) {
       startTransition(async () => {
-        const result = await updateInventory(inventoryDetails?.id, data);
+        const result = await updateInventoryItem(inventoryDetails?.id, data);
         if (result.success) {
           toast({
             title: "Success",
@@ -185,13 +166,23 @@ export default function EditInventoryForm({
       });
     }
   };
+
+  const breadcrumbItems = [
+    { label: "Dashboard", href: "/admin" },
+    { label: "Inventory", href: "/admin/inventory" },
+    {
+      label: `Edit ${inventoryDetails?.product.name}`,
+      isCurrentPage: true,
+    },
+  ];
+
   return (
     <ContentLayout title="Edit Inventory">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <Form {...form}>
         <form onSubmit={handleSubmit(onEditInventorySubmit)}>
           <div className="flex items-center gap-4 mb-5 mt-7">
-            <Link href="/admin/inventories">
+            <Link href="/admin/inventory">
               <Button variant="outline" size="icon" className="h-7 w-7">
                 <ChevronLeft className="h-4 w-4" />
                 <span className="sr-only">Back</span>
@@ -199,11 +190,11 @@ export default function EditInventoryForm({
             </Link>
 
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-              Edit Inventory
+              Edit {inventoryDetails.product.name}
             </h1>
 
             <div className="hidden items-center gap-2 md:ml-auto md:flex">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" type="button">
                 Discard
               </Button>
               <LoadingButton
@@ -213,7 +204,7 @@ export default function EditInventoryForm({
                 loading={isPending}
                 className="text-xs font-semibold h-8"
               >
-                Update Inventory
+                Save Changes
               </LoadingButton>
             </div>
           </div>
@@ -246,6 +237,7 @@ export default function EditInventoryForm({
                                     variant="outline"
                                     role="combobox"
                                     className="justify-between"
+                                    disabled
                                   >
                                     {field.value ? (
                                       products.find(

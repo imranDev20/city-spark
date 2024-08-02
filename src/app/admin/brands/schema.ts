@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zodStatus } from "../templates/schema";
 
 export const brandSchema = z.object({
   brandName: z.string().min(1, "Brand name is required and must be unique"),
@@ -10,7 +11,7 @@ export const brandSchema = z.object({
   website: z.string().optional(),
   countryOfOrigin: z.string().optional(),
   image: z.string().optional(),
-  status: z.any().optional(),
+  status: zodStatus.optional(),
 });
 
 export type BrandFormInputType = z.infer<typeof brandSchema>;

@@ -1,23 +1,8 @@
-import Image from "next/image";
-import { MoreHorizontal } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -26,22 +11,21 @@ import {
 import { InventoryPagination } from "./inventory-pagination";
 import { Prisma } from "@prisma/client";
 import InventoryTableRow from "./inventory-table-row";
+
 export type InventoryWithRelations = Prisma.InventoryGetPayload<{
   include: {
-    product: {
-      include: {
-        images:true
-      }
-    }
+    product: true;
   };
 }>;
 
-export default function InventoryList({inventories}:{inventories:InventoryWithRelations[]}) {
+export default function InventoryList({
+  inventories,
+}: {
+  inventories: InventoryWithRelations[];
+}) {
   return (
     <>
-      
-
-      <Card>       
+      <Card>
         <CardContent>
           <Table>
             <TableHeader>
@@ -50,22 +34,20 @@ export default function InventoryList({inventories}:{inventories:InventoryWithRe
                   <span className="sr-only">Image</span>
                 </TableHead>
                 <TableHead>Name</TableHead>
-              
-                <TableHead className="hidden md:table-cell">Stock</TableHead>              
+
+                <TableHead className="hidden md:table-cell">Stock</TableHead>
                 <TableHead className="hidden md:table-cell">
                   Created at
                 </TableHead>
-                <TableHead>
+                <TableHead className="w-10">
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {
-                inventories?.map((inventory) => (
-                  <InventoryTableRow key={inventory.id} inventory={inventory} />
-                ))
-              }
+              {inventories?.map((inventory) => (
+                <InventoryTableRow key={inventory.id} inventory={inventory} />
+              ))}
             </TableBody>
           </Table>
         </CardContent>

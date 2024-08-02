@@ -3,7 +3,7 @@ import { ContentLayout } from "../_components/content-layout";
 import DynamicBreadcrumb from "../_components/dynamic-breadcrumb";
 import InventoryList from "./_components/inventory-list";
 import InventoryTableHeader from "./_components/inventory-table-header";
-import { getAllInventory } from "./actions";
+import { getInventorItems as getInventorItems } from "./actions";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -11,16 +11,15 @@ const breadcrumbItems = [
 ];
 
 export default async function InventoryPage() {
-  const inventories = await getAllInventory();
- 
+  const inventories = await getInventorItems();
+
   return (
     <ContentLayout title="Inventory">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <InventoryTableHeader />
       <Suspense fallback="Loading...">
-      <InventoryList inventories={inventories} />
+        <InventoryList inventories={inventories} />
       </Suspense>
-     
     </ContentLayout>
   );
 }

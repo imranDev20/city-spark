@@ -121,7 +121,7 @@ export default function CreateCategoryForm({
             </Button>
           </Link>
           <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-            Create Category
+            Add New Category
           </h1>
 
           <div className="hidden items-center gap-2 md:ml-auto md:flex">

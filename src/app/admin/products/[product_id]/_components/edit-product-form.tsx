@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -71,7 +70,15 @@ export type ProductWithRelations = Prisma.ProductGetPayload<{
     images: true;
     brand: true;
     features: true;
-    template: true;
+    productTemplate: {
+      include: {
+        fields: {
+          include: {
+            templateField: true;
+          };
+        };
+      };
+    };
   };
 }>;
 
@@ -174,21 +181,13 @@ export default function EditProductForm({
       height: 0,
       material: "",
       template: "",
+      productTemplate: "",
       features: [{ feature: "" }],
       category: "",
       status: "DRAFT",
       images: [
         {
-          image: {
-            name: "",
-            description: "",
-            lastModified: "",
-            lastModifiedDate: new Date(Date.now()),
-            size: 0,
-            thumbnailUrl: "",
-            type: "",
-            url: "",
-          },
+          image: "",
         },
       ],
       manuals: [],
@@ -200,6 +199,7 @@ export default function EditProductForm({
     control,
     formState: { isDirty },
     handleSubmit,
+    getValues,
   } = form;
 
   const {
@@ -213,7 +213,7 @@ export default function EditProductForm({
 
   const { fields: templateFields } = useFieldArray({
     control,
-    name: "templateFields",
+    name: "productTemplateFields",
   });
 
   const { append: appendImages } = useFieldArray({
@@ -254,7 +254,8 @@ export default function EditProductForm({
         type,
         weight,
         categoryId,
-        templateId,
+        productTemplateId,
+        productTemplate,
         images,
         primaryCategoryId,
         secondaryCategoryId,
@@ -269,7 +270,7 @@ export default function EditProductForm({
         color: color ?? "",
         features:
           features?.map((feature) => ({
-            feature: feature.name,
+            feature,
           })) ?? [],
         height: height ?? 0,
         description: description ?? "",
@@ -287,24 +288,12 @@ export default function EditProductForm({
         status: status ?? "DRAFT",
         warranty: warranty ?? "",
         category: categoryId ?? "",
-        template: selectedTemplate || templateId || "",
-        templateFields: templateDetails?.fields.map((item) => ({
-          fieldName: item.fieldName,
-          fieldType: item.fieldType,
-          fieldOptions: item.fieldOptions || "",
-          fieldValues: item.fieldValues || "",
-        })),
+        template: selectedTemplate || productTemplate?.templateId || "",
+
+        productTemplate: productTemplateId ?? "",
+
         images: images.map((image) => ({
-          image: {
-            description: image.description || "",
-            name: image.name || "",
-            size: image.size || 0,
-            lastModified: image.lastModified || "",
-            lastModifiedDate: image.lastModifiedDate || new Date(Date.now()),
-            url: image.url,
-            type: image.type || "",
-            thumbnailUrl: image.thumbnailUrl || "",
-          },
+          image,
         })),
 
         primaryCategory: selectedPrimaryCategory || primaryCategoryId || "",
@@ -332,46 +321,74 @@ export default function EditProductForm({
   useEffect(() => {
     if (productDetails) {
       setFileStates(
-        productDetails.images.map((item) => ({
-          file: item.url,
-          key: item.id,
+        productDetails.images.map((image) => ({
+          file: image,
+          key: Math.random().toString(36).slice(2),
           progress: "COMPLETE",
         }))
       );
     }
   }, [productDetails]);
 
+  console.log(getValues());
+
+  useEffect(() => {
+    if (productDetails && selectedTemplate) {
+      reset({
+        ...getValues(),
+        productTemplateFields: templateDetails?.fields.map((field) => ({
+          id: field.id,
+          fieldId: field.id,
+          fieldName: field.fieldName,
+          fieldType: field.fieldType ?? "TEXT",
+          fieldOptions: field.fieldOptions ?? "",
+          fieldValue: "",
+        })),
+      });
+    } else {
+      reset({
+        ...getValues(),
+        productTemplateFields: productDetails.productTemplate?.fields.map(
+          (field) => ({
+            id: field.id,
+            fieldId: field.templateFieldId,
+            fieldName: field.templateField.fieldName,
+            fieldOptions: field.templateField.fieldOptions ?? "",
+            fieldType: field.templateField.fieldType ?? "TEXT",
+            fieldValue: field.fieldValue ?? "",
+          })
+        ),
+      });
+    }
+  }, [productDetails, reset, selectedTemplate, templateDetails, getValues]);
+
   const onEditProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
   ) => {
+    console.log(data);
+
     if (productDetails?.id) {
       startTransition(async () => {
         const result = await updateProduct(productDetails?.id, data);
 
         const images = form.watch("images");
-
         if (images) {
           await Promise.all(
             images.map(async ({ image }) => {
               try {
                 const res = await edgestore.publicImages.confirmUpload({
-                  url: image.url,
+                  url: image,
                 });
-
-                return { url: image.url, success: true, result: res };
+                return { url: image, success: true, result: res };
               } catch (error) {
-                console.error(
-                  `Failed to confirm upload for ${image.url}:`,
-                  error
-                );
-                return { url: image.url, success: false, error };
+                console.error(`Failed to confirm upload for ${image}:`, error);
+                return { url: image, success: false, error };
               }
             })
           );
         }
         if (result.success) {
           router.push(`/admin/products/${result.data?.id}`);
-
           toast({
             title: "Success",
             description: result.message,
@@ -408,7 +425,7 @@ export default function EditProductForm({
               {productDetails.status}
             </Badge>
             <div className="hidden items-center gap-2 md:ml-auto md:flex">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" type="button">
                 Discard
               </Button>
 
@@ -964,7 +981,7 @@ export default function EditProductForm({
                         >
                           <FormField
                             control={control}
-                            name={`templateFields.${index}.fieldValues`}
+                            name={`productTemplateFields.${index}.fieldValue`}
                             render={({ field }) => (
                               <FormItem className="w-full flex flex-col gap-1">
                                 <FormLabel>{templateField.fieldName}</FormLabel>
@@ -972,30 +989,32 @@ export default function EditProductForm({
                                 <FormControl>
                                   {templateField.fieldType === "TEXT" ? (
                                     <Input
-                                      placeholder="Enter features and benefits"
+                                      placeholder={`Enter ${templateField.fieldName}`}
                                       {...field}
                                     />
                                   ) : (
                                     <Select
                                       onValueChange={(currentValue) => {
-                                        if (currentValue !== "") {
+                                        if (currentValue) {
                                           field.onChange(currentValue);
                                         }
                                       }}
                                       value={field.value}
                                     >
                                       <SelectTrigger>
-                                        <SelectValue placeholder="Select subcategory" />
+                                        <SelectValue
+                                          placeholder={`Enter ${templateField.fieldName}`}
+                                        />
                                       </SelectTrigger>
                                       <SelectContent>
                                         {templateField.fieldOptions
                                           ?.split(",")
                                           .map((option) => (
                                             <SelectItem
-                                              value={option}
+                                              value={option.trim()}
                                               key={option}
                                             >
-                                              {option}
+                                              {option.trim()}
                                             </SelectItem>
                                           ))}
                                       </SelectContent>
@@ -1499,9 +1518,6 @@ export default function EditProductForm({
                                   <SelectItem value="ARCHIVED">
                                     Archived
                                   </SelectItem>
-                                  <SelectItem value="DISCONTINUED">
-                                    Discondinued
-                                  </SelectItem>
                                 </SelectContent>
                               </Select>
                             </FormItem>
@@ -1585,17 +1601,7 @@ export default function EditProductForm({
                                       });
 
                                     appendImages({
-                                      image: {
-                                        url: res.url,
-                                        description: "some random description",
-                                        lastModified:
-                                          addedFileState.file.lastModified.toString(),
-                                        lastModifiedDate: new Date(Date.now()),
-                                        name: addedFileState.file.name,
-                                        size: addedFileState.file.size,
-                                        thumbnailUrl: res.thumbnailUrl || "",
-                                        type: addedFileState.file.type,
-                                      },
+                                      image: res.url,
                                     });
                                   } catch (err) {
                                     updateFileProgress(

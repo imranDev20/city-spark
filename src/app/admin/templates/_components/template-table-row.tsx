@@ -48,7 +48,9 @@ export default function TemplateTableRow({ template }: { template: Template }) {
       className={`cursor-pointer ${isPending ? "opacity-30" : "opacity-100"}`}
     >
       <TableCell className="font-medium"> {template.name} </TableCell>
-
+      <TableCell>
+        <Badge variant="outline">{template.status}</Badge>
+      </TableCell>
       <TableCell className="hidden md:table-cell">
         {dayjs(template.createdAt).format("DD-MM-YY hh:mm A")}
       </TableCell>
