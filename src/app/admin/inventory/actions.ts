@@ -5,15 +5,11 @@ import { revalidatePath } from "next/cache";
 import { unstable_cache as cache } from "next/cache";
 import { InventoryFormInputType } from "./schema";
 
-export const getAllInventory = cache(async () => {
+export const getInventorItems = cache(async () => {
   try {
     const inventory = await prisma.inventory.findMany({
       include: {
-        product: {
-          include: {
-            images: true,
-          },
-        },
+        product: true,
       },
     });
 
@@ -24,50 +20,7 @@ export const getAllInventory = cache(async () => {
   }
 });
 
-export async function createInventory(data: InventoryFormInputType) {
-  try {
-    console.log(`data`, data);
-
-    const createdInventory = await prisma.inventory.create({
-      data: {
-        productId: data.productId,
-        deliveryEligibility: data.deliveryEligibility,
-        collectionEligibility: data.collectionEligibility,
-        maxDeliveryTime: data.maxDeliveryTime,
-        collectionAvailabilityTime: data.collectionAvailabilityTime,
-        deliveryAreas: data.deliveryAreas?.map((area) =>
-          area.deliveryArea.toUpperCase()
-        ),
-        collectionPoints: data.collectionPoints?.map((point) =>
-          point.collectionPoint.toUpperCase()
-        ),
-        countAvailableForDelivery: Number(data.countAvailableForDelivery),
-        countAvailableForCollection: Number(data.countAvailableForCollection),
-        minDeliveryCount: Number(data.minDeliveryCount),
-        minCollectionCount: Number(data.minCollectionCount),
-        maxDeliveryCount: Number(data.maxDeliveryCount),
-        maxCollectionCount: Number(data.maxCollectionCount),
-        stockCount: Number(data.stock),
-      },
-    });
-
-    revalidatePath("/admin/inventories");
-
-    return {
-      message: "Inventory created successfully!",
-      data: createdInventory,
-      success: true,
-    };
-  } catch (error) {
-    console.log(error);
-    return {
-      message: "An error occurred while creating the inventory.",
-      success: false,
-    };
-  }
-}
-
-export async function deleteInventory(inventoryId: string) {
+export async function deleteInventoryItem(inventoryId: string) {
   try {
     if (!inventoryId) {
       return {
@@ -98,7 +51,7 @@ export async function deleteInventory(inventoryId: string) {
   }
 }
 
-export const getInventoryById = cache(async (inventoryId: string) => {
+export const getInventoryItemById = cache(async (inventoryId: string) => {
   try {
     const inventory = await prisma.inventory.findUnique({
       where: {
@@ -120,7 +73,7 @@ export const getInventoryById = cache(async (inventoryId: string) => {
   }
 });
 
-export async function updateInventory(
+export async function updateInventoryItem(
   inventoryId: string,
   data: InventoryFormInputType
 ) {

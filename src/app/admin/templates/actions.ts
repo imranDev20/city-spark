@@ -2,35 +2,29 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { FormInputType } from "./new/page";
 import { unstable_cache as cache } from "next/cache";
+import { TemplateFormInputType } from "./schema";
 
-export async function createTemplate(data: FormInputType) {
+export async function createTemplate(data: TemplateFormInputType) {
   try {
     const createTemplate = await prisma.template.create({
       data: {
         name: data.name,
         description: data.description,
+        status: data.status,
         fields: {
-          create: [
-            {
-              fieldName: "Sample Field Name",
-              fieldType: "TEXT",
-              fieldValues: null,
-            },
-            {
-              fieldName: "Sample field 2",
-              fieldType: "SELECT",
-              fieldOptions: "Option1, option2, option 3",
-              fieldValues: "Option 1",
-            },
-          ],
+          create: data.fields.map((item) => ({
+            fieldName: item.fieldName,
+            fieldType: item.fieldType,
+            fieldOptions: item.fieldOptions,
+          })),
         },
       },
     });
-    console.log(createTemplate);
 
     revalidatePath("/admin/templates");
+    revalidatePath("/admin/products/[product_id]", "page");
+    revalidatePath("/admin/products/new");
 
     return {
       message: "Template created successfully!",
@@ -111,25 +105,72 @@ export const getTemplateById = cache(async (templateId: string) => {
   }
 });
 
-export async function updateTemplateById(
+export async function updateTemplate(
   templateId: string,
-  data: FormInputType
+  data: TemplateFormInputType
 ) {
   try {
-    const updatedtemplate = await prisma.template.update({
-      where: {
-        id: templateId,
-      },
+    // First, fetch the existing template with its fields
+    const existingTemplate = await prisma.template.findUnique({
+      where: { id: templateId },
+      include: { fields: true },
+    });
+
+    if (!existingTemplate) {
+      throw new Error("Template not found");
+    }
+
+    // Prepare arrays for update, create, and delete operations
+    const fieldsToUpdate = [];
+    const fieldsToCreate = [];
+    const fieldIdsToKeep = new Set();
+
+    // Categorize fields
+    for (const field of data.fields) {
+      if (field.fieldId) {
+        fieldsToUpdate.push(field);
+        fieldIdsToKeep.add(field.fieldId);
+      } else {
+        fieldsToCreate.push(field);
+      }
+    }
+
+    // Identify fields to delete
+    const fieldIdsToDelete = existingTemplate.fields
+      .filter((field) => !fieldIdsToKeep.has(field.id))
+      .map((field) => field.id);
+
+    // Perform the update
+    const updatedTemplate = await prisma.template.update({
+      where: { id: templateId },
       data: {
         name: data.name,
         description: data.description,
+        status: data.status,
+        fields: {
+          update: fieldsToUpdate.map((field) => ({
+            where: { id: field.fieldId },
+            data: {
+              fieldName: field.fieldName,
+              fieldType: field.fieldType,
+              fieldOptions: field.fieldOptions,
+            },
+          })),
+          create: fieldsToCreate,
+          deleteMany: { id: { in: fieldIdsToDelete } },
+        },
       },
+      include: { fields: true },
     });
 
     revalidatePath("/admin/templates");
+    revalidatePath(`/admin/templates/${updatedTemplate.id}`);
+    revalidatePath("/admin/products/[product_id]", "page");
+    revalidatePath("/admin/products/new");
+
     return {
-      message: "Templates Updated successfully!",
-      data: updatedtemplate,
+      message: "Template updated successfully!",
+      data: updatedTemplate,
       success: true,
     };
   } catch (error) {

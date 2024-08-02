@@ -1,166 +1,163 @@
+import { Input } from "@/components/ui/input";
+import img from "@/images/payment.png";
+import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { FiFacebook, FiInstagram, FiTwitter, FiYoutube } from "react-icons/fi";
 const StorefrontFooter: React.FC = () => {
   return (
-    <footer className="bg-gray-100 py-12 dark:bg-gray-800">
-      <div className="container grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4 lg:gap-12">
-        <div className="flex flex-col items-start gap-4">
-          <Link href="#" className="flex items-center gap-2">
-            <MountainIcon className="h-6 w-6" />
-            <span className="text-lg font-semibold">Acme Store</span>
-          </Link>
-          <p className="text-gray-500 dark:text-gray-400">
-            Your one-stop shop for quality products.
-          </p>
-          <div className="flex items-center gap-2">
-            <PhoneIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-            <span className="text-gray-500 dark:text-gray-400">
-              +1 (555) 555-5555
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <MailOpenIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-            <span className="text-gray-500 dark:text-gray-400">
-              support@acmestore.com
-            </span>
+    <footer>
+      <div className="mx-auto w-[85%] flex justify-between mb-10 mt-20">
+        <div>
+          <h2 className="text-sm font-bold mb-4">
+            Sign up for news and offers
+          </h2>
+          <div className="flex gap-2">
+            <Input type="email" placeholder="Email" className="w-60" />
+            <button className="bg-black text-white font-semibold py-1 px-4 rounded-md">
+              SIGN UP
+            </button>
           </div>
         </div>
-        <div className="grid gap-2">
-          <h4 className="text-lg font-semibold">Shop</h4>
-          <Link
-            href="#"
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-          >
-            All Products
-          </Link>
-          <Link
-            href="#"
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-          >
-            Clothing
-          </Link>
-          <Link
-            href="#"
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-          >
-            Electronics
-          </Link>
-          <Link
-            href="#"
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-          >
-            Home & Garden
-          </Link>
+        <div>
+          <h2 className="text-sm font-bold mb-4">Easy Payment</h2>
+          <Image src={img} alt="payment" className="w-60" />
         </div>
-        <div className="grid gap-2">
-          <h4 className="text-lg font-semibold">Company</h4>
-          <Link
-            href="#"
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-          >
-            About Us
-          </Link>
-          <Link
-            href="#"
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-          >
-            Careers
-          </Link>
-          <Link
-            href="#"
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-          >
-            Blog
-          </Link>
-          <Link
-            href="#"
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-          >
-            Contact
-          </Link>
+        <div>
+          <h2 className="text-sm font-bold mb-4">Connect with us</h2>
+          <div className="flex space-x-2   ">
+            <FiYoutube
+              className="border border-black p-2 rounded-md"
+              size={40}
+            />
+            <FiFacebook
+              className="border border-black p-2 rounded-md"
+              size={40}
+            />
+            <FiInstagram
+              className="border border-black p-2 rounded-md"
+              size={40}
+            />
+            <FiTwitter
+              className="border border-black p-2 rounded-md"
+              size={40}
+            />
+          </div>
         </div>
-        <div className="grid gap-2">
-          <h4 className="text-lg font-semibold">Legal</h4>
-          <Link
-            href="#"
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-          >
-            Terms of Service
-          </Link>
-          <Link
-            href="#"
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-          >
-            Privacy Policy
-          </Link>
-          <Link
-            href="#"
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-          >
-            Refund Policy
-          </Link>
-          <Link
-            href="#"
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-          >
-            Shipping Info
-          </Link>
+      </div>
+      <div className="bg-black pt-12 pb-6 text-white ">
+        <div className="container grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4 lg:gap-12 w-[85%] mx-auto">
+          <div className="grid gap-2 text-xs">
+            <h4 className=" text-base  font-semibold">Products</h4>
+            <Link href="#" className="  hover:text-gray-400  ">
+              Boilers
+            </Link>
+            <Link href="#" className=" hover:text-gray-400">
+              Boilers Spares
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Heating & Plumbing
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Electricals
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Bathroom & Kitchen
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Offers
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Gift Cards
+            </Link>
+          </div>
+          <div className="grid gap-2 text-xs">
+            <h4 className=" text-base  font-semibold">Overview</h4>
+            <Link href="#" className="  hover:text-gray-400  ">
+              About us
+            </Link>
+            <Link href="#" className=" hover:text-gray-400">
+              Frequently Asked Questions
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Careers at TradeTools
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Tool Repairs
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Franchising
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              TradeTools Member Program
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Renegade Project Bike
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Spare Parts Request
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Tradio
+            </Link>
+          </div>
+
+          <div className="grid gap-2 text-xs">
+            <h4 className=" text-base  font-semibold">Store Information</h4>
+            <Link href="#" className="  hover:text-gray-400  ">
+              Store Listing
+            </Link>
+            <Link href="#" className=" hover:text-gray-400">
+              Store Locator
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Contact Us
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Payment Options
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              2 Hour Tool Delivery
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Information and Recalls
+            </Link>
+          </div>
+          <div className="grid gap-2 text-xs">
+            <h4 className=" text-base  font-semibold">Policies</h4>
+            <Link href="#" className="  hover:text-gray-400  ">
+              Privacy Policy
+            </Link>
+            <Link href="#" className=" hover:text-gray-400">
+              Copyright Statement
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Notice and Disclaimers
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Member Terms and Conditions
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Social Terms and Conditions
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Returns Policy
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Shipping and Freight
+            </Link>
+            <Link href="#" className="hover:text-gray-400">
+              Warranty Overview and Policy
+            </Link>
+          </div>
+        </div>
+        <div className="text-gray-600">
+          <hr className="my-10 border-gray-600" />
+          <p className="ml-14">Copyright © City Spark 2024</p>
         </div>
       </div>
     </footer>
   );
 };
-
-const MailOpenIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg
-    {...props}
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21.2 8.4c.5.38.8.97.8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 .8-1.6l8-6a2 2 0 0 1 2.4 0l8 6Z" />
-    <path d="m22 10-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 10" />
-  </svg>
-);
-
-const MountainIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg
-    {...props}
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
-  </svg>
-);
-
-const PhoneIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg
-    {...props}
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-  </svg>
-);
 
 export default StorefrontFooter;

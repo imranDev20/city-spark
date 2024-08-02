@@ -1,19 +1,8 @@
-import Image from "next/image";
-import { MoreHorizontal } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -22,13 +11,10 @@ import {
 import { InventoryPagination } from "./inventory-pagination";
 import { Prisma } from "@prisma/client";
 import InventoryTableRow from "./inventory-table-row";
+
 export type InventoryWithRelations = Prisma.InventoryGetPayload<{
   include: {
-    product: {
-      include: {
-        images: true;
-      };
-    };
+    product: true;
   };
 }>;
 
@@ -53,7 +39,7 @@ export default function InventoryList({
                 <TableHead className="hidden md:table-cell">
                   Created at
                 </TableHead>
-                <TableHead>
+                <TableHead className="w-10">
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>

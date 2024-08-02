@@ -44,14 +44,6 @@ import {
 } from "../../_components/brand-image-uploader";
 import { useEdgeStore } from "@/lib/edgestore";
 
-const defaultValues = {
-  name: "",
-  description: "",
-  brandName: "",
-  website: "",
-  status: "",
-};
-
 export type BrandWithRelations = Prisma.BrandGetPayload<{}>;
 
 export default function EditBrandForm({
@@ -61,7 +53,13 @@ export default function EditBrandForm({
 }) {
   const form = useForm<BrandFormInputType>({
     resolver: zodResolver(brandSchema),
-    defaultValues,
+    defaultValues: {
+      description: "",
+      brandName: "",
+      website: "",
+      status: "DRAFT",
+      countryOfOrigin: "",
+    },
   });
 
   const { toast } = useToast();
@@ -94,11 +92,12 @@ export default function EditBrandForm({
     if (brandDetails) {
       const { name, website, description, status, image, countryOfOrigin } =
         brandDetails;
+
       reset({
         brandName: name ?? "",
         description: description ?? "",
         website: website ?? "",
-        status: status ?? "",
+        status: status ?? "DRAFT",
         image: image ?? "",
         countryOfOrigin: countryOfOrigin ?? "",
       });
@@ -120,6 +119,7 @@ export default function EditBrandForm({
     if (brandDetails?.id) {
       startTransition(async () => {
         const result = await updateBrand(brandDetails?.id, data);
+
         if (result.success) {
           toast({
             title: "Brand Updated",
@@ -247,6 +247,23 @@ export default function EditBrandForm({
                           <FormLabel>Website</FormLabel>
                           <FormControl>
                             <Input placeholder="Enter website URL" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="countryOfOrigin"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Country of Origin</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Enter country of origin"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
