@@ -6,7 +6,6 @@ generator client {
 datasource db {
     provider = "postgresql"
     url      = env("POSTGRES_PRISMA_URL")
-    // directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
 model Category {
@@ -80,6 +79,9 @@ model Product {
     manuals              String[]
     images               String[]
     inventory            Inventory?
+    cartItems            CartItem[]
+    orderItems           OrderItem[]
+    wishlistedBy         User[]           @relation("UserWishlist")
     createdAt            DateTime         @default(now())
     updatedAt            DateTime         @updatedAt
 }
@@ -171,4 +173,130 @@ model Inventory {
     productId                   String   @unique
     createdAt                   DateTime @default(now())
     updatedAt                   DateTime @updatedAt
+}
+
+model User {
+    id        String    @id @default(cuid())
+    name      String?
+    email     String    @unique
+    password  String
+    role      Role      @default(USER)
+    carts     Cart[]
+    orders    Order[]
+    addresses Address[]
+    wishlist  Product[] @relation("UserWishlist")
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+}
+
+model Cart {
+    id         String     @id @default(cuid())
+    userId     String
+    user       User       @relation(fields: [userId], references: [id])
+    cartItems  CartItem[]
+    totalPrice Float?     @default(0)
+    order      Order?
+    createdAt  DateTime   @default(now())
+    updatedAt  DateTime   @updatedAt
+}
+
+model CartItem {
+    id        String   @id @default(cuid())
+    cartId    String
+    cart      Cart     @relation(fields: [cartId], references: [id])
+    productId String
+    product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+    quantity  Int?     @default(0)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+enum Role {
+    ADMIN
+    USER
+}
+
+model Order {
+    id              String         @id @default(cuid())
+    userId          String
+    user            User           @relation(fields: [userId], references: [id])
+    cartId          String         @unique
+    cart            Cart           @relation(fields: [cartId], references: [id])
+    orderItems      OrderItem[]
+    totalPrice      Float?         @default(0)
+    status          Status         @default(DRAFT)
+    paymentMethod   String?
+    paymentStatus   PaymentStatus  @default(UNPAID)
+    trackingNumber  String?
+    trackingUrl     String?
+    shippingAddress String?
+    shippingMethod  String?
+    shippingStatus  ShippingStatus @default(NOT_SHIPPED)
+    shippingPrice   Float?
+    shippingDate    DateTime?
+    deliveryDate    DateTime?
+    invoice         String?
+    invoiceUrl      String?
+    paymentDate     DateTime?
+    refundDate      DateTime?
+    refundStatus    RefundStatus   @default(NOT_REFUND)
+    refundAmount    Float?
+    refundReason    String?
+    refundNote      String?
+    createdAt       DateTime       @default(now())
+    updatedAt       DateTime       @updatedAt
+}
+
+model OrderItem {
+    id        String   @id @default(cuid())
+    orderId   String
+    order     Order    @relation(fields: [orderId], references: [id])
+    productId String
+    product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+    quantity  Int?     @default(0)
+    price     Float
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Address {
+    id                String   @id @default(cuid())
+    userId            String
+    user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    addressLine1      String
+    addressLine2      String?
+    city              String
+    state             String
+    postalCode        String
+    country           String
+    isBilling         Boolean  @default(false)
+    isShipping        Boolean  @default(false)
+    isDefaultBilling  Boolean  @default(false)
+    isDefaultShipping Boolean  @default(false)
+    createdAt         DateTime @default(now())
+    updatedAt         DateTime @updatedAt
+}
+
+enum PaymentStatus {
+    PENDING
+    REFUND
+    PAID
+    UNPAID
+    CANCELLED
+}
+
+enum ShippingStatus {
+    NOT_SHIPPED
+    SHIPPED
+    DELIVERED
+    RETURNED
+    CANCELLED
+}
+
+enum RefundStatus {
+    NOT_REFUND
+    PENDING
+    APPROVED
+    REJECTED
+    CANCELLED
 }
