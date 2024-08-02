@@ -58,6 +58,10 @@ export async function createCategory(data: CategoryFormInputType) {
     });
 
     revalidatePath("/admin/categories");
+    revalidatePath("/admin/categories/new");
+    revalidatePath(`/admin/categories/${createdCategory.id}`);
+    revalidatePath("/admin/categories/[category_id]", "page");
+
     return {
       message: "Category created successfully!",
       data: createdCategory,
@@ -126,6 +130,9 @@ export async function updateCategory(
     });
 
     revalidatePath("/admin/categories");
+    revalidatePath("/admin/categories/new");
+    revalidatePath(`/admin/categories/${updatedCategory.id}`);
+    revalidatePath("/admin/categories/[category_id]", "page");
 
     return {
       message: "Category updated successfully!",

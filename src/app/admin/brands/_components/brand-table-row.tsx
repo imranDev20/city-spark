@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { deleteBrand } from "../actions";
 import PlaceholderImage from "@/images/placeholder-image.jpg";
+import dayjs from "dayjs";
 
 export default function BrandTableRow({ brand }: { brand: Brand }) {
   const router = useRouter();
@@ -70,12 +71,10 @@ export default function BrandTableRow({ brand }: { brand: Brand }) {
       </TableCell>
       <TableCell className="font-medium">{brand.name}</TableCell>
       <TableCell>
-        <Badge variant="outline">Draft</Badge>
+        <Badge variant="outline">{brand.status}</Badge>
       </TableCell>
-      <TableCell className="hidden md:table-cell">$499.99</TableCell>
-      <TableCell className="hidden md:table-cell">25</TableCell>
       <TableCell className="hidden md:table-cell">
-        2023-07-12 10:42 AM
+        {dayjs(brand.createdAt).format("DD-MM-YY hh:mm A")}
       </TableCell>
       <TableCell>
         <DropdownMenu>

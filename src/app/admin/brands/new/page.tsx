@@ -77,8 +77,9 @@ export default function CreateBrandPage() {
       brandName: "",
       countryOfOrigin: "",
       description: "",
-      image: "",
+      website: "",
       status: "DRAFT",
+      image: "",
     },
   });
   const { control, handleSubmit } = form;

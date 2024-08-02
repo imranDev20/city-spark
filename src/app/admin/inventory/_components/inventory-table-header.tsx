@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/select";
 import Link from "next/link";
 
-import {PackagePlus } from "lucide-react";
+import { PackagePlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -18,18 +18,13 @@ export default function InventoryTableHeader() {
       <div className="flex items-center gap-4 mb-5 mt-7">
         <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0 flex items-center">
           <PackagePlus className="mr-3 text-primary" />
-          Inventory List
+          My Inventory
         </h1>
 
-        <div className="hidden items-center gap-2 md:ml-auto md:flex">
+        <div className="hidden items-center gap-2 md:ml-auto md:flex opacity-0 pointer-events-none">
           <Button variant="outline" size="sm">
             Download Excel
           </Button>
-          <Link href="inventory/new">
-            <Button size="sm" className="whitespace-nowrap">
-              Add New Inventory
-            </Button>
-          </Link>
         </div>
       </div>
 

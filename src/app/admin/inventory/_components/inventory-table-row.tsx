@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { deleteInventory } from "../actions";
+import { deleteInventoryItem } from "../actions";
 
 export type InventoryWithRelations = Prisma.InventoryGetPayload<{
   include: {
@@ -33,11 +33,13 @@ export default function InventoryTableRow({
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
+  console.log(inventory);
+
   const handleDelete = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.stopPropagation(); // Stop the propagation to prevent routing
 
     startTransition(async () => {
-      const result = await deleteInventory(inventory.id);
+      const result = await deleteInventoryItem(inventory.id);
 
       if (result.success) {
         toast({
@@ -68,7 +70,7 @@ export default function InventoryTableRow({
           alt="Product image"
           className="aspect-square rounded-md object-cover"
           height="64"
-          src={inventory?.product.images[0]}
+          src={inventory.product.images[0]}
           width="64"
         />
       </TableCell>
@@ -93,13 +95,6 @@ export default function InventoryTableRow({
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem>Edit</DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
-                handleDelete(e);
-              }}
-            >
-              Delete
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>

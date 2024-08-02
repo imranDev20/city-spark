@@ -238,6 +238,25 @@ export async function createProduct(data: ProductFormInputType) {
       },
     });
 
+    await prisma.inventory.create({
+      data: {
+        productId: createdProduct.id,
+        deliveryEligibility: false,
+        collectionEligibility: false,
+        countAvailableForCollection: 0,
+        countAvailableForDelivery: 0,
+        maxCollectionCount: 0,
+        maxDeliveryCount: 0,
+        minCollectionCount: 0,
+        minDeliveryCount: 0,
+        stockCount: 0,
+        collectionAvailabilityTime: "",
+        collectionPoints: [],
+        deliveryAreas: [],
+      },
+    });
+
+    revalidatePath("/admin/inventory");
     revalidatePath("/admin/products");
 
     return {
@@ -259,10 +278,6 @@ export async function updateProduct(
   data: ProductFormInputType
 ) {
   try {
-    let productTemplateId: string | undefined;
-
-    console.log(data);
-
     const updatedProductTemplate = await prisma.productTemplate.update({
       where: { id: data.productTemplate },
       data: {
@@ -283,8 +298,6 @@ export async function updateProduct(
         },
       },
     });
-
-    console.log(updatedProductTemplate);
 
     // productTemplateId = updatedProductTemplate.id;
 
@@ -309,9 +322,9 @@ export async function updateProduct(
         material: data.material,
         volume: data.volume,
         status: data.status,
-        productTemplate: productTemplateId
+        productTemplate: updatedProductTemplate.id
           ? {
-              connect: { id: productTemplateId },
+              connect: { id: updatedProductTemplate.id },
             }
           : undefined,
         features: data.features?.map((item) => item.feature),
@@ -386,6 +399,7 @@ export async function deleteProduct(productId: string) {
       },
     });
 
+    revalidatePath("/admin/products");
     revalidatePath("/admin/products");
 
     return {

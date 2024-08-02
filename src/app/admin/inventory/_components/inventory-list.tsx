@@ -39,7 +39,7 @@ export default function InventoryList({
                 <TableHead className="hidden md:table-cell">
                   Created at
                 </TableHead>
-                <TableHead>
+                <TableHead className="w-10">
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>
