@@ -32,7 +32,6 @@ export default async function AdminProductDetailsPage({
   const productDetails = await getProductById(product_id);
   const brands = await getBrands();
   const templates = await getTemplates();
-
   const primaryCategories = await getCategories("PRIMARY");
 
   const secondaryCategories = await getCategories(
@@ -51,7 +50,7 @@ export default async function AdminProductDetailsPage({
   );
 
   const templateDetails = await getTemplateById(
-    (template_id || productDetails.templateId) as string
+    (template_id || productDetails.productTemplate?.templateId) as string
   );
 
   return (

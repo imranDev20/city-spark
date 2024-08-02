@@ -10,20 +10,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import { Prisma } from "@prisma/client";
+import { Brand, Prisma } from "@prisma/client";
 import { MoreHorizontal } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { deleteBrand } from "../actions";
-type BrandeWithRelations = Prisma.BrandGetPayload<{
-  include: {};
-}>;
-export default function BrandTableRow({
-  brand,
-}: {
-  brand: BrandeWithRelations;
-}) {
+import PlaceholderImage from "@/images/placeholder-image.jpg";
+import dayjs from "dayjs";
+
+export default function BrandTableRow({ brand }: { brand: Brand }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -54,22 +50,31 @@ export default function BrandTableRow({
       className={`cursor-pointer ${isPending ? "opacity-30" : "opacity-100"}`}
     >
       <TableCell className="hidden sm:table-cell">
-        <Image
-          alt="Product image"
-          className="aspect-square rounded-md object-cover"
-          height="64"
-          src="/placeholder.svg"
-          width="64"
-        />
+        {brand.image ? (
+          <Image
+            alt="Product image"
+            className="aspect-square rounded-md object-cover border border-input"
+            height="64"
+            src={brand.image}
+            width="64"
+          />
+        ) : (
+          <Image
+            alt="Product image"
+            className="aspect-square rounded-md object-cover border border-input"
+            height="64"
+            src={PlaceholderImage}
+            loading="lazy"
+            width="64"
+          />
+        )}
       </TableCell>
       <TableCell className="font-medium">{brand.name}</TableCell>
       <TableCell>
-        <Badge variant="outline">Draft</Badge>
+        <Badge variant="outline">{brand.status}</Badge>
       </TableCell>
-      <TableCell className="hidden md:table-cell">$499.99</TableCell>
-      <TableCell className="hidden md:table-cell">25</TableCell>
       <TableCell className="hidden md:table-cell">
-        2023-07-12 10:42 AM
+        {dayjs(brand.createdAt).format("DD-MM-YY hh:mm A")}
       </TableCell>
       <TableCell>
         <DropdownMenu>

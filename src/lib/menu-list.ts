@@ -89,38 +89,16 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: "/orders",
           label: "Orders",
-          // active: pathname.includes("/orders"),
+          active: pathname.includes("/orders"),
           icon: ShoppingCart,
-          submenus: [
-            {
-              href: "/orders",
-              label: "All Orders",
-              active: pathname === "/admin/orders",
-            },
-            {
-              href: "/orders/new",
-              label: "Create Order",
-              active: pathname === "/admin/new",
-            },
-          ],
+          submenus: [],
         },
         {
           href: "/users",
           label: "Users",
-          // active: pathname.includes("/users"),
+          active: pathname.includes("/users"),
           icon: Users,
-          submenus: [
-            {
-              href: "/users",
-              label: "All Users",
-              active: pathname === "/admin/users",
-            },
-            {
-              href: "/users/new",
-              label: "Create User",
-              active: pathname === "/admin/users/new",
-            },
-          ],
+          submenus: [],
         },
       ],
     },
