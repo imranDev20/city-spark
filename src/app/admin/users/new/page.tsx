@@ -1,9 +1,11 @@
 "use client";
+
 import Link from "next/link";
-import React from "react";
+import React, { Fragment, useTransition } from "react";
 import { ChevronLeft, Trash, Upload } from "lucide-react";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
+
 import {
   Form,
   FormControl,
@@ -13,13 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import {
   Card,
   CardContent,
@@ -27,12 +23,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { userSchema } from "./schema";
-import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
+
+import { FromInputType, userSchema } from "./schema";
+import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
+import { createUser } from "./actions";
+import { Separator } from "@/components/ui/separator";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -52,31 +52,58 @@ const defaultValues = {
   },
 };
 
-type FromInputType = z.infer<typeof userSchema>;
-
 export default function CreateUserPage() {
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const { toast } = useToast();
   const form = useForm<FromInputType>({
     resolver: zodResolver(userSchema),
-    defaultValues,
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      password: "",
+      address: [
+        {
+          city: "",
+          postalCode: "",
+          state: "",
+          addressLine1: "",
+          addressLine2: "",
+          country: "",
+        },
+      ],
+    },
   });
   const { control, handleSubmit } = form;
 
-  const onCreateUserSubmit: SubmitHandler<FromInputType> = async (data) => {
-    const { avatar, status, phone, name, email, address } = data;
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "address",
+  });
 
-    const payload = {
-      avatar,
-      status,
-      phone,
-      name,
-      email,
-      address: {
-        city: address.city,
-        postcode: address.postcode,
-        street: address.street,
-      },
-    };
-    console.log(`payload`, payload);
+  const onCreateUserSubmit: SubmitHandler<FromInputType> = async (data) => {
+    startTransition(async () => {
+      const result = await createUser(data);
+
+      if (result.success) {
+        toast({
+          title: "Create User",
+          description: result.message,
+          variant: "success",
+        });
+
+        router.push("/admin/users");
+      } else {
+        toast({
+          title: "Users Saved failed",
+          description: result.message,
+          variant: "destructive",
+        });
+        console.error(result.message);
+      }
+    });
   };
 
   return (
@@ -118,15 +145,28 @@ export default function CreateUserPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <FormField
                       control={form.control}
-                      name="name"
+                      name="firstName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Name</FormLabel>
+                          <FormLabel>First Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter name" {...field} />
+                            <Input placeholder="First Name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Last Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Last Name" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -163,13 +203,14 @@ export default function CreateUserPage() {
                     />
                     <FormField
                       control={form.control}
-                      name="address.street"
+                      name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Street</FormLabel>
+                          <FormLabel>Password</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="Enter street address"
+                              type="password"
+                              placeholder="Enter password"
                               {...field}
                             />
                           </FormControl>
@@ -179,72 +220,180 @@ export default function CreateUserPage() {
                     />
                     <FormField
                       control={form.control}
-                      name="address.postcode"
+                      name="confirmPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Postcode</FormLabel>
+                          <FormLabel>Confirm Password</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter postcode" {...field} />
+                            <Input
+                              type="password"
+                              placeholder="Enter confirm password"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="address.city"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>City</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter city" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Address</CardTitle>
+                  <CardDescription>Provide address details</CardDescription>
+                </CardHeader>
+                <CardContent>
+                <div className="grid gap-3 space-y-4">
+                    {fields.map((field, index) => (
+                      <Fragment key={field.id}>
+                        <div
+                          key={field.id}
+                          className="grid gap-3 sm:grid-cols-9"
+                        >
+                          <div className="grid gap-3 col-span-4">
+                            <FormField
+                              name={`address.${index}.city`}
+                              control={control}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Enter city"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div className="grid gap-3 col-span-4">
+                            <FormField
+                              name={`address.${index}.state`}
+                              control={control}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Enter state"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div className="grid gap-3 col-span-4">
+                            <FormField
+                              name={`address.${index}.postalCode`}
+                              control={control}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Enter postalcode"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div className="grid gap-3 col-span-4">
+                            <FormField
+                              name={`address.${index}.addressLine1`}
+                              control={control}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Enter address line 1"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div className="grid gap-3 col-span-4">
+                            <FormField
+                              name={`address.${index}.addressLine2`}
+                              control={control}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Enter address line 2"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div className="grid gap-3 col-span-4">
+                            <FormField
+                              name={`address.${index}.country`}
+                              control={control}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Enter country"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                         
+
+                        
+
+                          <div className="col-span-1 flex justify-end items-center">
+                            <Button
+                              disabled={fields.length === 1}
+                              variant="ghost"
+                              onClick={() => remove(index)}
+                            >
+                              <Trash className="w-4 h-4 text-primary" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        {fields.length - 1 !== index && <Separator />}
+                      </Fragment>
+                    ))}
+
+                    <div>
+                      <Button
+                        type="button"
+                        onClick={() =>
+                          append({
+                            city: "",
+                            country:"",
+                            postalCode:"",
+                            state:"",
+                            addressLine1:"",
+                            addressLine2:"",
+                          })
+                        }
+                      >
+                        Add new
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-              <Card x-chunk="dashboard-07-chunk-3">
-                <CardHeader>
-                  <CardTitle>Status</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-6">
-                    <div className="grid gap-3">
-                      <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Status</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select status" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="draft">Draft</SelectItem>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="archived">
-                                  Archived
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
               <Card x-chunk="dashboard-07-chunk-5">
                 <CardHeader>
                   <CardTitle>Avatar</CardTitle>

@@ -1,25 +1,48 @@
 "use server";
-import { userSchema } from "./schema";
+import prisma from "@/lib/prisma";
+import { FromInputType, userSchema } from "./schema";
+import { revalidatePath } from "next/cache";
 
 export type FormState = {
   message: string;
 };
 
-export async function createUserAction(
-  previousState: FormState,
-  data: FormData
-) {
-  console.log(previousState);
-  const formData = Object.fromEntries(data);
-  const parsed = userSchema.safeParse(formData);
+export async function createUser(data: FromInputType) {
+  try {
+    const createUser = await prisma.user.create({
+      data: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        phone: data.phone, 
+        password: data.password,   
+        addresses: {
+          create: data.address.map((item) => ({
+            city: item.city,
+            postalCode: item.postalCode,
+            state: item.state,
+            addressLine1: item.addressLine1,
+            addressLine2: item.addressLine2,
+            country: item.country,
+          })),
+        },
+      },
+    });
 
-  console.log(parsed);
+    revalidatePath("/admin/users");
+    revalidatePath("/admin/users/[user_id]", "page");
+    revalidatePath("/admin/users/new");
 
-  if (!parsed.success) {
     return {
-      message: "Invalid form data",
+      message: "User created successfully!",
+      data: createUser,
+      success: true,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "An error occurred while creating the user.",
+      success: false,
     };
   }
-
-  return { message: "User created successfully" };
 }
