@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { Fragment, useTransition } from "react";
+import React, { Fragment, useState, useTransition } from "react";
 import { ChevronLeft, Trash, Upload } from "lucide-react";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
@@ -33,6 +33,9 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { createUser } from "./actions";
 import { Separator } from "@/components/ui/separator";
+import { LoadingButton } from "@/components/ui/loading-button";
+import { FileState, SingleImageDropzone } from "./_components/user-image-uploder";
+import { useEdgeStore } from "@/lib/edgestore";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -56,6 +59,20 @@ export default function CreateUserPage() {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { toast } = useToast();
+  const [fileState, setFileState] = useState<FileState | null>(null);
+  const { edgestore } = useEdgeStore();
+  function updateFileProgress(key: string, progress: FileState["progress"]) {
+    setFileState((fileState) => {
+      const newFileState = structuredClone(fileState);
+
+      if (newFileState) {
+        newFileState.progress = progress;
+      }
+
+      console.log(newFileState);
+      return newFileState;
+    });
+  }
   const form = useForm<FromInputType>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -129,9 +146,15 @@ export default function CreateUserPage() {
               <Button variant="outline" size="sm">
                 Discard
               </Button>
-              <Button size="sm" type="submit">
+              <LoadingButton
+                type="submit"
+                disabled={isPending}
+                size="sm"
+                loading={isPending}
+                className="text-xs font-semibold h-8"
+              >
                 Save User
-              </Button>
+              </LoadingButton>
             </div>
           </div>
 
@@ -244,7 +267,7 @@ export default function CreateUserPage() {
                   <CardDescription>Provide address details</CardDescription>
                 </CardHeader>
                 <CardContent>
-                <div className="grid gap-3 space-y-4">
+                  <div className="grid gap-3 space-y-4">
                     {fields.map((field, index) => (
                       <Fragment key={field.id}>
                         <div
@@ -353,9 +376,6 @@ export default function CreateUserPage() {
                               )}
                             />
                           </div>
-                         
-
-                        
 
                           <div className="col-span-1 flex justify-end items-center">
                             <Button
@@ -378,11 +398,11 @@ export default function CreateUserPage() {
                         onClick={() =>
                           append({
                             city: "",
-                            country:"",
-                            postalCode:"",
-                            state:"",
-                            addressLine1:"",
-                            addressLine2:"",
+                            country: "",
+                            postalCode: "",
+                            state: "",
+                            addressLine1: "",
+                            addressLine2: "",
                           })
                         }
                       >
@@ -394,29 +414,104 @@ export default function CreateUserPage() {
               </Card>
             </div>
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-              <Card x-chunk="dashboard-07-chunk-5">
+            <Card x-chunk="dashboard-07-chunk-5">
                 <CardHeader>
-                  <CardTitle>Avatar</CardTitle>
+                  <CardTitle>Images</CardTitle>
                   <CardDescription>
-                    Upload your profile pictures
+                    Upload your category image here.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <FormField
-                    control={form.control}
+                    control={control}
                     name="avatar"
                     render={({ field }) => (
-                      <FormItem className="mx-auto ">
+                      <FormItem className="mx-auto">
                         <FormLabel>
                           <h2 className="text-xl font-semibold tracking-tight"></h2>
                         </FormLabel>
-                        <FormControl>Image uploader</FormControl>
+
+                        <FormControl>
+                          <SingleImageDropzone
+                            value={fileState}
+                            dropzoneOptions={{
+                              maxFiles: 1,
+                              maxSize: 1024 * 1024 * 1, // 1MB
+                            }}
+                            onChange={(file) => {
+                              setFileState(file);
+                            }}
+                            onFilesAdded={async (addedFile) => {
+                              if (!(addedFile.file instanceof File)) {
+                                console.error(
+                                  "Expected a File object, but received:",
+                                  addedFile.file
+                                );
+                                updateFileProgress(addedFile.key, "ERROR");
+                                return;
+                              }
+
+                              setFileState(addedFile);
+
+                              try {
+                                const res = await edgestore.publicImages.upload(
+                                  {
+                                    file: addedFile.file,
+                                    options: {
+                                      temporary: true,
+                                    },
+
+                                    input: { type: "category" },
+
+                                    onProgressChange: async (progress) => {
+                                      updateFileProgress(
+                                        addedFile.key,
+                                        progress
+                                      );
+
+                                      if (progress === 100) {
+                                        // wait 1 second to set it to complete
+                                        // so that the user can see the progress bar at 100%
+                                        await new Promise((resolve) =>
+                                          setTimeout(resolve, 1000)
+                                        );
+
+                                        updateFileProgress(
+                                          addedFile.key,
+                                          "COMPLETE"
+                                        );
+                                      }
+                                    },
+                                  }
+                                );
+
+                                field.onChange(res.url);
+                              } catch (err) {
+                                updateFileProgress(addedFile.key, "ERROR");
+                              }
+                            }}
+                          />
+                        </FormControl>
                       </FormItem>
                     )}
                   />
                 </CardContent>
               </Card>
             </div>
+          </div>
+          <div className="flex items-center justify-center gap-2 md:hidden">
+            <Button variant="outline" size="sm">
+              Discard
+            </Button>
+            <LoadingButton
+              type="submit"
+              disabled={isPending}
+              size="sm"
+              loading={isPending}
+              className="text-xs font-semibold h-8"
+            >
+              Save Category
+            </LoadingButton>
           </div>
         </form>
       </Form>

@@ -15,7 +15,8 @@ export async function createUser(data: FromInputType) {
         lastName: data.lastName,
         email: data.email,
         phone: data.phone, 
-        password: data.password,   
+        password: data.password, 
+        avatar: data.avatar,          
         addresses: {
           create: data.address.map((item) => ({
             city: item.city,

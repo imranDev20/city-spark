@@ -1,14 +1,7 @@
 import { z } from 'zod';
 
-// Custom validation function for file
-const fileValidation = z.custom((file) => {
-  return file instanceof File;
-}, {
-  message: "Invalid file",
-});
-
 export const userSchema = z.object({
-  avatar: fileValidation.optional(),
+  avatar: z.string().optional(),
   firstName: z.string().min(1, "First Name is required"),
   lastName: z.string().min(1, "Last Name is required"),
   password: z.string()
