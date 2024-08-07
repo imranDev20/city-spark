@@ -2,7 +2,7 @@
 import prisma from "@/lib/prisma";
 import { FromInputType, userSchema } from "./schema";
 import { revalidatePath } from "next/cache";
-
+import { unstable_cache as cache } from "next/cache";
 export type FormState = {
   message: string;
 };
@@ -43,6 +43,52 @@ export async function createUser(data: FromInputType) {
     console.log(error);
     return {
       message: "An error occurred while creating the user.",
+      success: false,
+    };
+  }
+}
+export const getUsers = cache(async () => {
+ 
+  try {    
+    const users = await prisma.user.findMany({
+      include:{
+        addresses: true,
+      }
+    });
+    return users;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw new Error(
+      "An error occurred while fetching users. Please try again later."
+    );
+  }
+});
+
+export async function deleteUser(userId: string) {
+  try {
+    if (!userId) {
+      return {
+        message: "User ID is required",
+        success: false,
+      };
+    }
+
+    // Delete the user
+    await prisma.user.delete({
+      where: {
+        id: userId,
+      },
+    });
+
+    revalidatePath("/admin/users");    
+    return {
+      message: "User deleted successfully!",
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return {
+      message: "An error occurred while deleting the user.",
       success: false,
     };
   }
