@@ -6,10 +6,9 @@ import { UploadCloudIcon, X } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
 import { useDropzone, type DropzoneOptions } from "react-dropzone";
-import { useFieldArray, useFormContext } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 import { Button } from "@/components/ui/button";
-import { BrandFormInputType } from "../schema";
+
 
 const variants = {
   base: "relative rounded-md aspect-square flex justify-center items-center flex-col cursor-pointer border border-dashed border-input hover:border-primary dark:border-gray-300 transition-all duration-200 ease-in-out hover:bg-gray-500/15 bg-gray-500/10",

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import React, { Fragment, useState, useTransition } from "react";
-import { ChevronLeft, Trash, Upload } from "lucide-react";
+import { ChevronLeft, Trash } from "lucide-react";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 

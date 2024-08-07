@@ -173,7 +173,7 @@ export default function EditCategoryForm({
   };
 
   return (
-    <ContentLayout title="Create Category">
+    <ContentLayout title="Edit Category">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <Form {...form}>
         <form onSubmit={handleSubmit(onEditCategorySubmit)}>

@@ -1,6 +1,6 @@
 "use server";
 import prisma from "@/lib/prisma";
-import { FromInputType, userSchema } from "./schema";
+import { FromInputType} from "./schema";
 import { revalidatePath } from "next/cache";
 import { unstable_cache as cache } from "next/cache";
 export type FormState = {
