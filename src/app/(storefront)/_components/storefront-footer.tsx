@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import img from "@/images/payment.png";
 import Image from "next/image";
@@ -15,9 +16,9 @@ const StorefrontFooter: React.FC = () => {
           </h2>
           <div className="flex gap-2">
             <Input type="email" placeholder="Email" className="w-60" />
-            <button className="bg-black text-white font-semibold py-1 px-4 rounded-md">
+            <Button className="bg-black hover:bg-black text-white font-semibold py-1 px-4 rounded-md">
               SIGN UP
-            </button>
+            </Button>
           </div>
         </div>
         <div>

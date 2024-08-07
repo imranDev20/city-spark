@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import img from "@/images/dummy-img.png";
 import Image from "next/image";
 
@@ -9,9 +10,9 @@ export default function Features() {
           <p className="text-3xl font-semibold text-white ">
             Lorem ipsum dolor sit amet
           </p>
-          <button className="bg-white text-xl font-bold px-3 py-1 rounded-md mt-3">
+          <Button className="bg-white hover:bg-white text-black text-xl font-bold px-3 py-1 rounded-md mt-3">
             VISIT STORE
-          </button>
+          </Button>
         </div>
         <Image src={img} alt="img" />
       </div>
@@ -20,9 +21,9 @@ export default function Features() {
           <p className="text-3xl font-semibold text-white ">
             Lorem ipsum dolor sit amet
           </p>
-          <button className="bg-white text-xl font-bold px-3 py-1 rounded-md mt-3">
+          <Button className="bg-white hover:bg-white text-black text-xl font-bold px-3 py-1 rounded-md mt-3">
             VISIT STORE
-          </button>
+          </Button>
         </div>
         <Image src={img} alt="img" />
       </div>
@@ -31,9 +32,9 @@ export default function Features() {
           <p className="text-3xl font-semibold text-white ">
             Lorem ipsum dolor sit amet
           </p>
-          <button className="bg-white text-xl font-bold px-3 py-1 rounded-md mt-3">
+          <Button className="bg-white hover:bg-white text-black text-xl font-bold px-3 py-1 rounded-md mt-3">
             VISIT STORE
-          </button>
+          </Button>
         </div>
         <Image src={img} alt="img" />
       </div>
@@ -42,9 +43,9 @@ export default function Features() {
           <p className="text-3xl font-semibold text-white ">
             Lorem ipsum dolor sit amet
           </p>
-          <button className="bg-white text-xl font-bold px-3 py-1 rounded-md mt-3">
+          <Button className="bg-white hover:bg-white text-black text-xl font-bold px-3 py-1 rounded-md mt-3">
             VISIT STORE
-          </button>
+          </Button>
         </div>
         <Image src={img} alt="img" />
       </div>
