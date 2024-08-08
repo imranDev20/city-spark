@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import PlaceholderImage from "@/images/placeholder-image.jpg";
-import { deleteUser } from "../new/actions";
+import { deleteUser } from "../actions";
 
 export type UserWithRelations = Prisma.UserGetPayload<{
   include: {

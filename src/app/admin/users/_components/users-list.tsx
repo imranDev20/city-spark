@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getUsers } from "../new/actions";
+import { getUsers } from "../actions";
 import UserTableRow from "./user-table-row";
 
 export default async function UserList() {

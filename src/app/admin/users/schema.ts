@@ -17,6 +17,7 @@ export const userSchema = z.object({
   address:z
   .array(
     z.object({     
+      addressId: z.string().trim().optional(),
       city: z.string().trim().min(1,"City is required"),
       postalCode: z.string().trim().min(1, "Postal Code is required"),
       state: z.string().trim().min(1, "State is required"),  
