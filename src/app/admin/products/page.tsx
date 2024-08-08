@@ -15,13 +15,10 @@ export default function AdminProductsPage() {
   return (
     <ContentLayout title="Products">
       <DynamicBreadcrumb items={breadcrumbItems} />
-
       <ProductTableHeader />
-
       <Suspense fallback={<ProductsLoading />}>
         <ProductList />
       </Suspense>
-
       <ProductPagination />
     </ContentLayout>
   );

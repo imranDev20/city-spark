@@ -1,6 +1,13 @@
 "use client";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+
+import { TableCell, TableRow } from "@/components/ui/table";
+import { Prisma } from "@prisma/client";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import dayjs from "dayjs";
+
+import React, { useTransition } from "react";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,59 +15,69 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TableCell, TableRow } from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
-import { Brand} from "@prisma/client";
+import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
-import { deleteBrand } from "../actions";
+import { useToast } from "@/components/ui/use-toast";
 import PlaceholderImage from "@/images/placeholder-image.jpg";
-import dayjs from "dayjs";
+import { deleteUser } from "../actions";
 
-export default function BrandTableRow({ brand }: { brand: Brand }) {
+export type UserWithRelations = Prisma.UserGetPayload<{
+  include: {
+  addresses:true
+  };
+}>;
+
+export default function UserTableRow({
+  user,
+}: {
+  user: UserWithRelations;
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
-  const handleDelete = () => {
+  const handleDelete = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    e.stopPropagation(); // Stop the propagation to prevent routing
+
     startTransition(async () => {
-      const result = await deleteBrand(brand.id);
+      const result = await deleteUser(user.id);
 
       if (result.success) {
         toast({
-          title: "Brand Deleted",
-          description: result.message,
+          title: "User Deleted",
+          description: "The user has been successfully deleted.",
           variant: "success",
         });
       } else {
+        // Handle error (e.g., show an error message)
         toast({
-          title: "Failed",
-          description: result.message,
+          title: "Error Deleting User",
+          description:
+            "There was an error deleting the user. Please try again.",
           variant: "destructive",
         });
       }
     });
   };
+
   return (
     <TableRow
-      key={brand.id}
-      onClick={() => router.push(`/admin/brands/${brand.id}`)}
+      key={user.id}
+      onClick={() => router.push(`/admin/users/${user.id}`)}
       className={`cursor-pointer ${isPending ? "opacity-30" : "opacity-100"}`}
     >
       <TableCell className="hidden sm:table-cell">
-        {brand.image ? (
+        {user.avatar ? (
           <Image
-            alt="Product image"
+            alt="User Image"
             className="aspect-square rounded-md object-cover border border-input"
             height="64"
-            src={brand.image}
+            src={user.avatar}
             width="64"
           />
         ) : (
           <Image
-            alt="Product image"
+            alt="User Image"
             className="aspect-square rounded-md object-cover border border-input"
             height="64"
             src={PlaceholderImage}
@@ -69,13 +86,19 @@ export default function BrandTableRow({ brand }: { brand: Brand }) {
           />
         )}
       </TableCell>
-      <TableCell className="font-medium">{brand.name}</TableCell>
-      <TableCell>
-        <Badge variant="outline">{brand.status}</Badge>
+      <TableCell className="font-medium flex-1">{user.firstName}</TableCell>
+      <TableCell className="font-medium flex-1">{user.lastName}</TableCell>
+      
+      <TableCell className="hidden md:table-cell">
+        {user.email || "N/A"}
       </TableCell>
       <TableCell className="hidden md:table-cell">
-        {dayjs(brand.createdAt).format("DD-MM-YY hh:mm A")}
+        {user.phone || "N/A"}
       </TableCell>
+      <TableCell className="hidden md:table-cell">
+        {dayjs(user.createdAt).format("DD-MM-YY hh:mm A")}
+      </TableCell>
+
       <TableCell>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -86,11 +109,10 @@ export default function BrandTableRow({ brand }: { brand: Brand }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>Edit</DropdownMenuItem>
+            <DropdownMenuItem   onClick={() => router.push(`/admin/users/${user.id}`)}>Edit</DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => {
-                e.stopPropagation();
-                handleDelete();
+                handleDelete(e);
               }}
             >
               Delete
