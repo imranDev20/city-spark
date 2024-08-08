@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import img from "@/images/bg-img.jpg";
+import img from "@/images/banner-bg2.png";
 import Image from "next/image";
 
 export default function Blogs() {
