@@ -417,9 +417,9 @@ export default function CreateUserPage() {
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
             <Card x-chunk="dashboard-07-chunk-5">
                 <CardHeader>
-                  <CardTitle>Images</CardTitle>
+                  <CardTitle>Avatar</CardTitle>
                   <CardDescription>
-                    Upload your category image here.
+                    Upload your avatar  here.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
