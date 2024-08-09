@@ -8,8 +8,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { InventoryPagination } from "./inventory-pagination";
 import { Prisma } from "@prisma/client";
+import { InventoryPagination } from "./inventory-pagination";
 import InventoryTableRow from "./inventory-table-row";
 
 export type InventoryWithRelations = Prisma.InventoryGetPayload<{

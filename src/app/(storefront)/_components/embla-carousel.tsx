@@ -1,14 +1,16 @@
 "use client";
+import bannerImage1 from "@/images/banners.jpg";
 import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
-
-import bannerImage1 from "@/images/banners.jpg";
 import Image from "next/image";
 import "./carousel.css";
 
 export default function EmblaCarousel() {
   const [emblaRef] = useEmblaCarousel({ loop: true }, [Autoplay()]);
   const content = [
+    {
+      image: bannerImage1,
+    },
     {
       image: bannerImage1,
     },

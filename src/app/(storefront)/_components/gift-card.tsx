@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import img from "@/images/dummy-img.png";
 import Image from "next/image";
 
@@ -10,9 +11,9 @@ export default function GiftCard() {
             <p className="text-3xl font-semibold text-white uppercase">
               Lorem ipsum dolor sit amet
             </p>
-            <button className="bg-white text-xl font-bold px-3 py-1 rounded-sm mt-3">
+            <Button className="bg-white hover:bg-white text-black text-xl font-bold px-3 py-1 rounded-sm mt-3">
               SEE OFFER
-            </button>
+            </Button>
           </div>
 
           <Image src={img} alt="img" />
@@ -22,9 +23,9 @@ export default function GiftCard() {
             <p className="text-3xl font-semibold text-white uppercase">
               Lorem ipsum dolor sit amet
             </p>
-            <button className="bg-white text-xl font-bold px-3 py-1 rounded-sm mt-3">
+            <Button className="bg-white hover:bg-white text-black text-xl font-bold px-3 py-1 rounded-sm mt-3">
               GIFT CARD
-            </button>
+            </Button>
           </div>
 
           <Image src={img} alt="img" />

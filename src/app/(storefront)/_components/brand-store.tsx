@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 
-import img from "@/images/bg-img.jpg";
+import img from "@/images/baneer-bg1.jpeg";
 import Image from "next/image";
 
 export default function BrandStore() {

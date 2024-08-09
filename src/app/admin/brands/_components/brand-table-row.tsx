@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import { Brand, Prisma } from "@prisma/client";
+import { Brand} from "@prisma/client";
 import { MoreHorizontal } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
