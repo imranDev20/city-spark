@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import React, { Fragment, useState, useTransition } from "react";
+import React, { Fragment, useEffect, useState, useTransition } from "react";
 import { ChevronLeft, Trash } from "lucide-react";
-import { ContentLayout } from "../../_components/content-layout";
-import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 
 import {
   Form,
@@ -24,38 +22,36 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { FromInputType, userSchema } from "../schema";
 import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
-import { createUser } from "../actions";
+
 import { Separator } from "@/components/ui/separator";
 import { LoadingButton } from "@/components/ui/loading-button";
-import { FileState, SingleImageDropzone } from "./_components/user-image-uploder";
+
 import { useEdgeStore } from "@/lib/edgestore";
+import { ContentLayout } from "@/app/admin/_components/content-layout";
+import DynamicBreadcrumb from "@/app/admin/_components/dynamic-breadcrumb";
+import {
+  FileState,
+  SingleImageDropzone,
+} from "../../new/_components/user-image-uploder";
+import { Address, User } from "@prisma/client";
+import { updateUser } from "../../actions";
+import { FromInputType, userSchema } from "../../schema";
 
-const breadcrumbItems = [
-  { label: "Dashboard", href: "/admin" },
-  { label: "Users", href: "/admin/users" },
-  { label: "Create User", href: "/admin/users/new", isCurrentPage: true },
-];
 
-const defaultValues = {
-  avatar: "",
-  name: "",
-  email: "",
-  phone: "",
-  address: {
-    street: "",
-    postcode: "",
-    city: "",
-  },
-};
 
-export default function CreateUserPage() {
+export default function EditUserFrom({
+  userDetails,
+  addresses,
+}: {
+  userDetails: User | null;
+  addresses: Address[] | null;
+}) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { toast } = useToast();
@@ -73,16 +69,17 @@ export default function CreateUserPage() {
       return newFileState;
     });
   }
+
   const form = useForm<FromInputType>({
     resolver: zodResolver(userSchema),
     defaultValues: {
       firstName: "",
       lastName: "",
       email: "",
-      phone: "",
-      password: "",
+      phone: "",    
       address: [
         {
+          addressId: "",
           city: "",
           postalCode: "",
           state: "",
@@ -93,42 +90,83 @@ export default function CreateUserPage() {
       ],
     },
   });
-  const { control, handleSubmit } = form;
-
+  const { control, handleSubmit, reset,    formState: { isDirty }, } = form;
   const { fields, append, remove } = useFieldArray({
     control,
     name: "address",
   });
+  useEffect(() => {
+    if (userDetails) {
+      const { firstName, lastName, email, phone, password } = userDetails;
+      reset({
+        firstName: firstName ?? "",
+        lastName: lastName ?? "",
+        email: email ?? "",
+        phone: phone ?? "",
+        password: password ?? "",
+        confirmPassword: password ?? "",
+        address: addresses?.map((address) => ({
+          addressId: address.id,
+          addressLine1: address.addressLine1 ?? "",
+          addressLine2: address.addressLine2 ?? "",
+          city: address.city ?? "",
+          postalCode: address.postalCode ?? "",
+          state: address.state ?? "",
+          country: address.country ?? "",
+        })),
+      });
+    }
+  }, [userDetails, reset, addresses]);
 
-  const onCreateUserSubmit: SubmitHandler<FromInputType> = async (data) => {
-    startTransition(async () => {
-      const result = await createUser(data);
 
-      if (result.success) {
-        toast({
-          title: "Create User",
-          description: result.message,
-          variant: "success",
-        });
+  useEffect(() => {
+    if (userDetails?.avatar) {
+      setFileState({
+        file: userDetails?.avatar,
+        key: userDetails?.avatar,
+        progress: "COMPLETE",
+      });
+    }
+  }, [userDetails]);
 
-        router.push("/admin/users");
-      } else {
-        toast({
-          title: "Users Saved failed",
-          description: result.message,
-          variant: "destructive",
-        });
-        console.error(result.message);
-      }
-    });
+
+  const breadcrumbItems = [
+    { label: "Dashboard", href: "/admin" },
+    { label: "Users", href: "/admin/users" },
+    {
+      label: userDetails?.firstName || "",
+      href: "/admin/users/new",
+      isCurrentPage: true,
+    },
+  ];
+
+  const onEditUserSubmit: SubmitHandler<FromInputType> = async (data) => {
+    if (userDetails?.id) {
+      startTransition(async () => {
+        const result = await updateUser(userDetails?.id, data);
+        if (result.success) {
+          toast({
+            title: "User Updated",
+            description: result.message,
+            variant: "success",
+          });
+        } else {
+          toast({
+            title: "User Saved failed",
+            description: result.message,
+            variant: "destructive",
+          });
+        }
+      });
+    }
   };
 
   return (
-    <ContentLayout title="Create User">
+    <ContentLayout title="Edit User">
       <DynamicBreadcrumb items={breadcrumbItems} />
 
       <Form {...form}>
-        <form onSubmit={handleSubmit(onCreateUserSubmit)}>
+        <form onSubmit={handleSubmit(onEditUserSubmit)}>
           <div className="flex items-center gap-4 mb-5 mt-7">
             <Link href="/admin/users">
               <Button variant="outline" size="icon" className="h-7 w-7">
@@ -137,7 +175,7 @@ export default function CreateUserPage() {
               </Button>
             </Link>
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-              Create User
+              Edit Users {userDetails?.firstName}
             </h1>
             <Badge variant="outline" className="ml-auto sm:ml-0">
               Active
@@ -148,12 +186,12 @@ export default function CreateUserPage() {
               </Button>
               <LoadingButton
                 type="submit"
-                disabled={isPending}
+                disabled={!isDirty ||isPending}
                 size="sm"
                 loading={isPending}
                 className="text-xs font-semibold h-8"
               >
-                Save User
+                Update User
               </LoadingButton>
             </div>
           </div>
@@ -224,7 +262,7 @@ export default function CreateUserPage() {
                         </FormItem>
                       )}
                     />
-                    <FormField
+                       <FormField
                       control={form.control}
                       name="password"
                       render={({ field }) => (
@@ -396,8 +434,7 @@ export default function CreateUserPage() {
                       <Button
                         type="button"
                         onClick={() =>
-                          append({
-                            addressId: "",
+                          append({                          
                             city: "",
                             country: "",
                             postalCode: "",
@@ -415,7 +452,7 @@ export default function CreateUserPage() {
               </Card>
             </div>
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-            <Card x-chunk="dashboard-07-chunk-5">
+              <Card x-chunk="dashboard-07-chunk-5">
                 <CardHeader>
                   <CardTitle>Avatar</CardTitle>
                   <CardDescription>

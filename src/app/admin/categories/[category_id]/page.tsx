@@ -1,6 +1,4 @@
 import { CategoryType } from "@prisma/client";
-import { ContentLayout } from "../../_components/content-layout";
-import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import { getCategoryById, getParentCategories } from "../actions";
 import EditCategoryForm from "./_components/edit-category-form";
 

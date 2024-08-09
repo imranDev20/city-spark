@@ -1,5 +1,3 @@
-import { ContentLayout } from "../../_components/content-layout";
-import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import { getProducts } from "../../products/actions";
 import EditInventoryForm from "../_components/edit-inventory-form";
 import { getInventoryItemById } from "../actions";
