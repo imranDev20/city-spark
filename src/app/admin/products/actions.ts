@@ -74,50 +74,20 @@ export const getTemplateById = cache(async (templateId: string) => {
 export const getCategories = cache(
   async (categoryType: CategoryType, parentId?: string) => {
     try {
-      let categories: Category[];
-
-      switch (categoryType) {
-        case "PRIMARY":
-          categories = await prisma.category.findMany({
+      const categories = await prisma.category.findMany({
+        where: {
+          type: categoryType,
+        },
+        include: {
+          parentCategory: {
             where: {
-              type: "PRIMARY",
+              id: parentId,
             },
-          });
-          break;
+          },
+        },
+      });
 
-        case "SECONDARY":
-          categories = await prisma.category.findMany({
-            where: {
-              type: "SECONDARY",
-              parentPrimaryCategoryId: parentId,
-            },
-          });
-          break;
-
-        case "TERTIARY":
-          categories = await prisma.category.findMany({
-            where: {
-              type: "TERTIARY",
-              parentSecondaryCategoryId: parentId,
-            },
-          });
-          break;
-
-        case "QUATERNARY":
-          categories = await prisma.category.findMany({
-            where: {
-              type: "QUATERNARY",
-              parentTertiaryCategoryId: parentId,
-            },
-          });
-
-          break;
-
-        default:
-          console.error("Error fetching categories:");
-          throw new Error("Failed to fetch categories");
-          break;
-      }
+      console.log(categories, categoryType, parentId);
 
       return categories;
     } catch (error) {

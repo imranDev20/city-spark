@@ -129,22 +129,25 @@ export default function EditCategoryForm({
   useEffect(() => {
     if (categoryDetails) {
       reset({
-        name: categoryDetails?.name || "",
-        type: selectedCategoryType || categoryDetails.type,
-        parentCategory: parentCategoryId || "",
-        image: categoryDetails?.image ?? "",
+        name: categoryDetails?.name,
+        type: watch("type"),
+        parentCategory: categoryDetails.parentId || "",
+        image: categoryDetails?.image || "",
       });
     }
-  }, [categoryDetails, reset, selectedCategoryType, parentCategoryId]);
-  useEffect(() => {
-    if (categoryDetails?.image) {
-      setFileState({
-        file: categoryDetails.image,
-        key: categoryDetails.image,
-        progress: "COMPLETE",
-      });
-    }
-  }, [categoryDetails]);
+  }, [categoryDetails, reset, watch]);
+
+  console.log(watch("type"));
+
+  // useEffect(() => {
+  //   if (categoryDetails?.image) {
+  //     setFileState({
+  //       file: categoryDetails.image,
+  //       key: categoryDetails.image,
+  //       progress: "COMPLETE",
+  //     });
+  //   }
+  // }, [categoryDetails]);
 
   const onEditCategorySubmit: SubmitHandler<CategoryFormInputType> = async (
     data
@@ -154,7 +157,6 @@ export default function EditCategoryForm({
         const result = await updateCategory(categoryDetails?.id, data);
 
         if (result.success) {
-          console.log(result.message);
           toast({
             title: "Category Saved",
             description: result.message,
@@ -239,7 +241,7 @@ export default function EditCategoryForm({
                         <FormItem>
                           <FormLabel>Category Type</FormLabel>
                           <Select
-                            value={selectedCategoryType || field.value}
+                            value={field.value}
                             onValueChange={(currentValue) => {
                               if (currentValue !== "") {
                                 field.onChange(currentValue);
@@ -252,7 +254,6 @@ export default function EditCategoryForm({
                                   { scroll: false }
                                 );
                               }
-                              setValue("parentCategory", "");
                             }}
                           >
                             <FormControl>

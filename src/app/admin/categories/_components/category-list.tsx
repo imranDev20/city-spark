@@ -11,7 +11,7 @@ import {
 import { getCategories } from "../actions";
 import CategoriesTableRow from "./category-table-row";
 
-export default async function CategoriesList() {
+export default async function CategoryList() {
   const categories = await getCategories();
 
   return (

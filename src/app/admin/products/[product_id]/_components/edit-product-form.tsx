@@ -297,7 +297,6 @@ export default function EditProductForm({
         })),
 
         primaryCategory: selectedPrimaryCategory || primaryCategoryId || "",
-
         secondaryCategory:
           selectedSecondaryCategory || secondaryCategoryId || "",
 

@@ -78,7 +78,6 @@ export default function CategoriesTableRow({
             className="aspect-square rounded-md object-cover"
             height="64"
             src={category.image}
-            // src=''
             width="64"
           />
         )}
