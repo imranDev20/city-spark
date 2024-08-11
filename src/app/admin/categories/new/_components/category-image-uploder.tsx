@@ -9,7 +9,6 @@ import { useDropzone, type DropzoneOptions } from "react-dropzone";
 import { twMerge } from "tailwind-merge";
 import { Button } from "@/components/ui/button";
 
-
 const variants = {
   base: "relative rounded-md aspect-square flex justify-center items-center flex-col cursor-pointer border border-dashed border-input hover:border-primary dark:border-gray-300 transition-all duration-200 ease-in-out hover:bg-gray-500/15 bg-gray-500/10",
   image: "p-0 relative  bg-slate-200 dark:bg-slate-900 rounded-md ",
@@ -189,15 +188,18 @@ const SingleImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
                 onClick={openFullScreen}
                 className={
                   variants.image +
-                  "aspect-square h-[291px] border border-input shadow-sm group relative cursor-pointer"
+                  "aspect-square h-[290px] border border-input shadow-sm group relative cursor-pointer"
                 }
               >
                 {imageUrl && (
                   <Image
                     className="h-full w-full rounded-md object-contain"
                     fill
+                    style={{
+                      objectFit: "contain",
+                    }}
                     src={imageUrl}
-                    alt="Some images"
+                    alt="Category Image"
                   />
                 )}
 
@@ -251,10 +253,12 @@ const SingleImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
               {imageUrl && (
                 <Image
                   src={imageUrl}
-                  alt={"Hello"}
-                  layout="fill"
-                  objectFit="contain"
+                  alt="Hello"
                   className="rounded-lg"
+                  fill
+                  style={{
+                    objectFit: "contain",
+                  }}
                 />
               )}
             </div>

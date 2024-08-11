@@ -10,7 +10,10 @@ const CategoryTypeEnum = z.enum([
 export const categorySchema = z.object({
   name: z.string().min(1, "Category name is required and must be unique"),
   image: z.string().optional(),
-  parentCategory: z.string().optional(),
+  parentPrimaryCategory: z.string().optional(),
+  parentSecondaryCategory: z.string().optional(),
+  parentTertiaryCategory: z.string().optional(),
+
   type: CategoryTypeEnum.refine(
     (val) => CategoryTypeEnum.options.includes(val as any),
     {

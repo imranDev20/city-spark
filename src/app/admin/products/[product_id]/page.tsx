@@ -53,8 +53,6 @@ export default async function AdminProductDetailsPage({
     (template_id || productDetails.productTemplate?.templateId) as string
   );
 
-  console.log(secondaryCategories);
-
   return (
     <>
       <EditProductForm

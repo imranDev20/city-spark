@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { ContentLayout } from "../_components/content-layout";
 import DynamicBreadcrumb from "../_components/dynamic-breadcrumb";
-import CategoriesList from "./_components/categories-list";
+import CategoryList from "./_components/category-list";
 import { CategoriesPagination } from "./_components/categories-pagination";
 import CategoryTableHeader from "./_components/category-table-header";
 
@@ -20,7 +20,7 @@ export default function AdminCategoriesPage() {
       <DynamicBreadcrumb items={breadcrumbItems} />
       <CategoryTableHeader />
       <Suspense fallback="Loading...">
-        <CategoriesList />
+        <CategoryList />
       </Suspense>
       <CategoriesPagination />
     </ContentLayout>

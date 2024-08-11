@@ -4,35 +4,14 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { unstable_cache as cache } from "next/cache";
 import { CategoryFormInputType, CategoryType } from "./schema";
+import { backendClient } from "@/app/api/edgestore/[...edgestore]/route";
 
 // Fetch parent categories
 export const getParentCategories = cache(async (categoryType: CategoryType) => {
-  let parentCategoryType: CategoryType | null = null;
-
-  if (!categoryType) {
-    return null;
-  }
-
   try {
-    switch (categoryType) {
-      case "PRIMARY":
-        return null;
-      case "SECONDARY":
-        parentCategoryType = "PRIMARY";
-        break;
-      case "TERTIARY":
-        parentCategoryType = "SECONDARY";
-        break;
-      case "QUATERNARY":
-        parentCategoryType = "TERTIARY";
-        break;
-      default:
-        throw new Error(`Invalid category type: ${categoryType}`);
-    }
-
     const categories = await prisma.category.findMany({
       where: {
-        type: parentCategoryType,
+        type: categoryType,
       },
     });
 
@@ -52,7 +31,9 @@ export async function createCategory(data: CategoryFormInputType) {
       data: {
         name: data.name,
         type: data.type,
-        parentId: data.parentCategory || null,
+        parentPrimaryCategoryId: data.parentPrimaryCategory || null,
+        parentSecondaryCategoryId: data.parentSecondaryCategory || null,
+        parentTertiaryCategoryId: data.parentTertiaryCategory || null,
         image: data.image,
       },
     });
@@ -82,7 +63,12 @@ export const getCategories = cache(async () => {
   try {
     const categories = await prisma.category.findMany({
       include: {
-        parentCategory: true,
+        parentPrimaryCategory: true,
+        parentSecondaryCategory: true,
+        parentTertiaryCategory: true,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
@@ -101,7 +87,9 @@ export const getCategoryById = cache(async (categoryId: string) => {
         id: categoryId,
       },
       include: {
-        parentCategory: true,
+        parentPrimaryCategory: true,
+        parentSecondaryCategory: true,
+        parentTertiaryCategory: true,
       },
     });
 
@@ -118,6 +106,18 @@ export async function updateCategory(
   data: CategoryFormInputType
 ) {
   try {
+    const existingCategory = await prisma.category.findUnique({
+      where: {
+        id: categoryId,
+      },
+    });
+
+    if (existingCategory?.image && existingCategory?.image !== data.image) {
+      await backendClient.publicImages.deleteFile({
+        url: existingCategory?.image,
+      });
+    }
+
     const updatedCategory = await prisma.category.update({
       where: {
         id: categoryId,
@@ -125,7 +125,9 @@ export async function updateCategory(
       data: {
         name: data.name,
         type: data.type,
-        parentId: data.parentCategory || null,
+        parentPrimaryCategoryId: data.parentPrimaryCategory || null,
+        parentSecondaryCategoryId: data.parentSecondaryCategory || null,
+        parentTertiaryCategoryId: data.parentTertiaryCategory || null,
         image: data.image,
       },
     });
@@ -134,6 +136,7 @@ export async function updateCategory(
     revalidatePath("/admin/categories/new");
     revalidatePath(`/admin/categories/${updatedCategory.id}`);
     revalidatePath("/admin/categories/[category_id]", "page");
+    revalidatePath("/admin/products/[product_id]", "page");
 
     return {
       message: "Category updated successfully!",
@@ -156,11 +159,29 @@ export async function deleteCategory(categoryId: string) {
   }
 
   try {
+    const existingCategory = await prisma.category.findUnique({
+      where: {
+        id: categoryId,
+      },
+    });
+
+    if (existingCategory?.image) {
+      await backendClient.publicImages.deleteFile({
+        url: existingCategory?.image,
+      });
+    }
+
     await prisma.category.delete({
       where: {
         id: categoryId,
       },
     });
+
+    revalidatePath("/admin/categories");
+    revalidatePath("/admin/categories/new");
+    revalidatePath(`/admin/categories/${categoryId}`);
+    revalidatePath("/admin/categories/[category_id]", "page");
+    revalidatePath("/admin/products/[product_id]", "page");
 
     return {
       message: "Category deleted successfully!",
