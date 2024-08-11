@@ -329,8 +329,6 @@ export default function EditProductForm({
     }
   }, [productDetails]);
 
-  console.log(getValues());
-
   useEffect(() => {
     if (productDetails && selectedTemplate) {
       reset({
@@ -364,8 +362,6 @@ export default function EditProductForm({
   const onEditProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
   ) => {
-    console.log(data);
-
     if (productDetails?.id) {
       startTransition(async () => {
         const result = await updateProduct(productDetails?.id, data);
@@ -403,6 +399,8 @@ export default function EditProductForm({
       });
     }
   };
+
+  console.log("first");
 
   return (
     <ContentLayout title="Edit Product">
@@ -1483,6 +1481,7 @@ export default function EditProductForm({
                 </CardContent>
               </Card>
             </div>
+
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
               <Card x-chunk="dashboard-07-chunk-3">
                 <CardHeader>
@@ -1646,6 +1645,7 @@ export default function EditProductForm({
               </Card>
             </div>
           </div>
+
           <div className="flex items-center justify-center gap-2 md:hidden">
             <Button variant="outline" size="sm">
               Discard

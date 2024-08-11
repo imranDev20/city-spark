@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import React, { useEffect, useState, useTransition } from "react";
-import { Check, ChevronLeft, ChevronsUpDown } from "lucide-react";
+import { ContentLayout } from "@/app/admin/_components/content-layout";
+import DynamicBreadcrumb from "@/app/admin/_components/dynamic-breadcrumb";
 import {
   Form,
   FormControl,
@@ -11,15 +10,18 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Category } from "@prisma/client";
+import React, { useEffect, useState, useTransition } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { CategoryFormInputType } from "../../schema";
+import { updateCategory } from "../../actions";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
 import {
   Card,
   CardContent,
@@ -27,80 +29,31 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-
-import { CATEGORY_TYPE } from "@/constant/constants";
-import { LoadingButton } from "@/components/ui/loading-button";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useToast } from "@/components/ui/use-toast";
-import { CategoryFormInputType, categorySchema } from "../../schema";
-import { updateCategory } from "../../actions";
-
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { cn } from "@/lib/utils";
-import { Category, CategoryType } from "@prisma/client";
-import useQueryString from "@/hooks/use-query-string";
-import { ContentLayout } from "@/app/admin/_components/content-layout";
-import DynamicBreadcrumb from "@/app/admin/_components/dynamic-breadcrumb";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
   FileState,
   SingleImageDropzone,
 } from "../../new/_components/category-image-uploder";
 import { useEdgeStore } from "@/lib/edgestore";
+import { CATEGORY_TYPE } from "@/constant/constants";
 
-export default function EditCategoryForm({
-  categoryDetails,
+const EditCategoryForm = ({
   parentCategories,
+  categoryDetails,
 }: {
   parentCategories: Category[] | null;
   categoryDetails: Category | null;
-}) {
+}) => {
+  const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { toast } = useToast();
-  const [isPending, startTransition] = useTransition();
-  const [openParentComboBox, setOpenParentComboBox] = useState<boolean>(false);
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const { createQueryString } = useQueryString();
-
-  const selectedCategoryType = searchParams.get(
-    "category_type"
-  ) as CategoryType | null;
-  const parentCategoryId = searchParams.get("parent_category_id") || null;
-
-  const breadcrumbItems = [
-    { label: "Dashboard", href: "/admin" },
-    { label: "Category", href: "/admin/categories" },
-    {
-      label: categoryDetails?.name || "",
-      href: "/admin/categories/new",
-      isCurrentPage: true,
-    },
-  ];
-
-  const form = useForm<CategoryFormInputType>({
-    resolver: zodResolver(categorySchema),
-    defaultValues: {
-      name: "",
-      parentCategory: "",
-      type: "PRIMARY",
-    },
-  });
-
   const [fileState, setFileState] = useState<FileState | null>(null);
   const { edgestore } = useEdgeStore();
 
@@ -111,17 +64,21 @@ export default function EditCategoryForm({
       if (newFileState) {
         newFileState.progress = progress;
       }
-
-      console.log(newFileState);
       return newFileState;
     });
   }
 
+  const form = useForm<CategoryFormInputType>({
+    defaultValues: {
+      name: "",
+      parentCategory: "",
+      type: "PRIMARY",
+    },
+  });
+
   const {
     control,
     handleSubmit,
-    watch,
-    setValue,
     reset,
     formState: { isDirty },
   } = form;
@@ -129,46 +86,44 @@ export default function EditCategoryForm({
   useEffect(() => {
     if (categoryDetails) {
       reset({
-        name: categoryDetails?.name,
-        type: watch("type"),
-        parentCategory: categoryDetails.parentId || "",
-        image: categoryDetails?.image || "",
+        name: categoryDetails?.name ?? "",
+        parentCategory: categoryDetails.parentId ?? "",
+        type: categoryDetails.type ?? "PRIMARY",
       });
     }
-  }, [categoryDetails, reset, watch]);
+  }, [categoryDetails, reset]);
 
-  console.log(watch("type"));
-
-  // useEffect(() => {
-  //   if (categoryDetails?.image) {
-  //     setFileState({
-  //       file: categoryDetails.image,
-  //       key: categoryDetails.image,
-  //       progress: "COMPLETE",
-  //     });
-  //   }
-  // }, [categoryDetails]);
+  const breadcrumbItems = [
+    { label: "Dashboard", href: "/admin" },
+    { label: "Categories", href: "/admin/categories" },
+    {
+      label: `${categoryDetails?.name}`,
+      isCurrentPage: true,
+    },
+  ];
 
   const onEditCategorySubmit: SubmitHandler<CategoryFormInputType> = async (
     data
   ) => {
+    console.log(data);
+
     if (categoryDetails?.id) {
       startTransition(async () => {
         const result = await updateCategory(categoryDetails?.id, data);
 
         if (result.success) {
+          router.push(`/admin/categories/${result.data?.id}`);
           toast({
-            title: "Category Saved",
+            title: "Success",
             description: result.message,
             variant: "success",
           });
         } else {
           toast({
-            title: "Category Saved failed",
+            title: "Error",
             description: result.message,
             variant: "destructive",
           });
-          console.error(result.message);
         }
       });
     }
@@ -181,19 +136,26 @@ export default function EditCategoryForm({
         <form onSubmit={handleSubmit(onEditCategorySubmit)}>
           <div className="flex items-center gap-4 mb-5 mt-7">
             <Link href="/admin/categories">
-              <Button variant="outline" size="icon" className="h-7 w-7">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-7 w-7"
+                type="button"
+              >
                 <ChevronLeft className="h-4 w-4" />
                 <span className="sr-only">Back</span>
               </Button>
             </Link>
+
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
               {`Edit ${categoryDetails?.name}`}
             </h1>
 
             <div className="hidden items-center gap-2 md:ml-auto md:flex">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" type="button">
                 Discard
               </Button>
+
               <LoadingButton
                 type="submit"
                 disabled={!isDirty || isPending}
@@ -208,178 +170,84 @@ export default function EditCategoryForm({
 
           <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
             <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
-              <Card>
+              <Card x-chunk="dashboard-07-chunk-0">
                 <CardHeader>
                   <CardTitle>Category Details</CardTitle>
                   <CardDescription>
-                    Please provide the category details.
+                    Please provide the category name and description.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-3 grid-cols-2">
-                    <FormField
-                      control={control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Category Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Enter category name"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={control}
-                      name="type"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Category Type</FormLabel>
-                          <Select
-                            value={field.value}
-                            onValueChange={(currentValue) => {
-                              if (currentValue !== "") {
-                                field.onChange(currentValue);
-
-                                router.push(
-                                  `${pathname}?${createQueryString({
-                                    category_type: currentValue,
-                                    parent_category_id: "",
-                                  })}`,
-                                  { scroll: false }
-                                );
-                              }
-                            }}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select category type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {CATEGORY_TYPE.map((category) => {
-                                return (
-                                  <SelectItem key={category} value={category}>
-                                    {category.charAt(0).toUpperCase() +
-                                      category.slice(1).toLowerCase()}
-                                  </SelectItem>
-                                );
-                              })}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {watch("type") !== "PRIMARY" && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Parent Category</CardTitle>
-                    <CardDescription>
-                      Select the parent category if applicable.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
+                  <div className="grid gap-6 sm:grid-cols-2">
                     <div className="grid gap-3">
                       <FormField
                         control={control}
-                        name="parentCategory"
+                        name="name"
                         render={({ field }) => (
-                          <FormItem className="w-full flex flex-col gap-1">
-                            <FormLabel>Parent Category</FormLabel>
+                          <FormItem>
+                            <FormLabel>Name</FormLabel>
                             <FormControl>
-                              <Popover
-                                open={openParentComboBox}
-                                onOpenChange={setOpenParentComboBox}
-                              >
-                                <PopoverTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    className="justify-between"
-                                  >
-                                    {field.value ? (
-                                      parentCategories?.find(
-                                        (category) =>
-                                          category.id === field.value
-                                      )?.name
-                                    ) : (
-                                      <p className="text-muted-foreground">
-                                        Select a parent category
-                                      </p>
-                                    )}
-                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                  </Button>
-                                </PopoverTrigger>
-
-                                <PopoverContent className="w-[200px] p-0 popover-content-width-same-as-its-trigger">
-                                  <Command>
-                                    <CommandInput placeholder="Search parent category..." />
-                                    <CommandList>
-                                      <CommandEmpty>
-                                        No parent category found.
-                                      </CommandEmpty>
-                                      <CommandGroup>
-                                        {parentCategories?.map((category) => (
-                                          <CommandItem
-                                            key={category.id}
-                                            value={category.id}
-                                            onSelect={() => {
-                                              field.onChange(category.id);
-
-                                              router.push(
-                                                `${pathname}?${createQueryString(
-                                                  {
-                                                    parent_category_id:
-                                                      category.id,
-                                                  }
-                                                )}`
-                                              );
-
-                                              setOpenParentComboBox(false);
-                                            }}
-                                          >
-                                            <Check
-                                              className={cn(
-                                                "mr-2 h-4 w-4",
-                                                field.value === category.id
-                                                  ? "opacity-100"
-                                                  : "opacity-0"
-                                              )}
-                                            />
-                                            {category.name}
-                                          </CommandItem>
-                                        ))}
-                                      </CommandGroup>
-                                    </CommandList>
-                                  </Command>
-                                </PopoverContent>
-                              </Popover>
+                              <Input
+                                placeholder="Enter category name"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
-                  </CardContent>
-                </Card>
-              )}
+
+                    <div className="grid gap-3">
+                      <FormField
+                        control={control}
+                        name="type"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Type</FormLabel>
+                            <FormControl>
+                              <Select
+                                onValueChange={(currentValue) => {
+                                  if (currentValue) {
+                                    field.onChange(currentValue);
+                                  }
+                                }}
+                                value={field.value}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue
+                                    placeholder={`Enter category type`}
+                                  />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {CATEGORY_TYPE.map((categoryType) => (
+                                    <SelectItem
+                                      value={categoryType}
+                                      key={categoryType}
+                                    >
+                                      {categoryType}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
               <Card x-chunk="dashboard-07-chunk-5">
                 <CardHeader>
                   <CardTitle>Images</CardTitle>
-                  <CardDescription>Upload category images.</CardDescription>
+                  <CardDescription>
+                    Upload your brand images here.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <FormField
@@ -421,7 +289,7 @@ export default function EditCategoryForm({
                                       temporary: true,
                                     },
 
-                                    input: { type: "category" },
+                                    input: { type: "brand" },
 
                                     onProgressChange: async (progress) => {
                                       updateFileProgress(
@@ -459,13 +327,15 @@ export default function EditCategoryForm({
               </Card>
             </div>
           </div>
+
           <div className="flex items-center justify-center gap-2 md:hidden">
             <Button variant="outline" size="sm">
               Discard
             </Button>
+
             <LoadingButton
               type="submit"
-              disabled={isPending}
+              disabled={!isDirty || isPending}
               size="sm"
               loading={isPending}
               className="text-xs font-semibold h-8"
@@ -477,4 +347,6 @@ export default function EditCategoryForm({
       </Form>
     </ContentLayout>
   );
-}
+};
+
+export default EditCategoryForm;
