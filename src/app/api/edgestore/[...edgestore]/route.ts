@@ -1,5 +1,6 @@
 import { initEdgeStore } from "@edgestore/server";
 import { createEdgeStoreNextHandler } from "@edgestore/server/adapters/next/app";
+import { initEdgeStoreClient } from "@edgestore/server/core";
 import { z } from "zod";
 
 const es = initEdgeStore.create();
@@ -13,7 +14,7 @@ const edgeStoreRouter = es.router({
     })
     .input(
       z.object({
-        type: z.enum(["product", "account", "brand", "template","category"]),
+        type: z.enum(["product", "account", "brand", "template", "category"]),
       })
     )
     // e.g. /products/radiator.jpg
@@ -26,6 +27,11 @@ const edgeStoreRouter = es.router({
 const handler = createEdgeStoreNextHandler({
   router: edgeStoreRouter,
 });
+
+export const backendClient = initEdgeStoreClient({
+  router: edgeStoreRouter,
+});
+
 export { handler as GET, handler as POST };
 /**
  * This type is used to create the type-safe client for the frontend.

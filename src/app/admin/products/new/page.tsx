@@ -45,6 +45,7 @@ export default async function AdminCreateProductPage({
     "SECONDARY",
     primary_category_id
   );
+
   const tertiaryCategories = await getCategories(
     "TERTIARY",
     secondary_category_id

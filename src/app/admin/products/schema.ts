@@ -22,43 +22,15 @@ export const productSchema = z.object({
   type: z.string().trim().optional(),
   warranty: z.string().trim().optional(),
   guarantee: z.string().trim().optional(),
-  tradePrice: z
-    .number({
-      invalid_type_error: "Trade price must be a number.",
-    })
-    .optional(),
-  contractPrice: z
-    .number({
-      invalid_type_error: "Contract price must be a number.",
-    })
-    .optional(),
-  promotionalPrice: z
-    .number({
-      invalid_type_error: "Promotional price must be a number.",
-    })
-    .optional(),
+  tradePrice: z.string().optional(),
+  contractPrice: z.string().optional(),
+  promotionalPrice: z.string().optional(),
   unit: z.string().trim().optional(),
-  weight: z
-    .number({
-      invalid_type_error: "Weight must be a number.",
-    })
-    .optional(),
+  weight: z.string().optional(),
   color: z.string().trim().optional(),
-  length: z
-    .number({
-      invalid_type_error: "Length must be a number.",
-    })
-    .optional(),
-  width: z
-    .number({
-      invalid_type_error: "Width must be a number.",
-    })
-    .optional(),
-  height: z
-    .number({
-      invalid_type_error: "Height must be a number.",
-    })
-    .optional(),
+  length: z.string().optional(),
+  width: z.string().optional(),
+  height: z.string().optional(),
   material: z.string().trim().optional(),
   productTemplate: z
     .string({

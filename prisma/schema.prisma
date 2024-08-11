@@ -56,6 +56,7 @@ model Product {
     height               Float?
     material             String?
     volume               String?
+    shape                String?
     productTemplate      ProductTemplate? @relation(fields: [productTemplateId], references: [id])
     productTemplateId    String?
     features             String[]

@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { unstable_cache as cache } from "next/cache";
 import { CategoryFormInputType, CategoryType } from "./schema";
+import { backendClient } from "@/app/api/edgestore/[...edgestore]/route";
 
 // Fetch parent categories
 export const getParentCategories = cache(async (categoryType: CategoryType) => {
@@ -105,6 +106,18 @@ export async function updateCategory(
   data: CategoryFormInputType
 ) {
   try {
+    const existingCategory = await prisma.category.findUnique({
+      where: {
+        id: categoryId,
+      },
+    });
+
+    if (existingCategory?.image && existingCategory?.image !== data.image) {
+      await backendClient.publicImages.deleteFile({
+        url: existingCategory?.image,
+      });
+    }
+
     const updatedCategory = await prisma.category.update({
       where: {
         id: categoryId,
@@ -123,6 +136,7 @@ export async function updateCategory(
     revalidatePath("/admin/categories/new");
     revalidatePath(`/admin/categories/${updatedCategory.id}`);
     revalidatePath("/admin/categories/[category_id]", "page");
+    revalidatePath("/admin/products/[product_id]", "page");
 
     return {
       message: "Category updated successfully!",
@@ -145,6 +159,18 @@ export async function deleteCategory(categoryId: string) {
   }
 
   try {
+    const existingCategory = await prisma.category.findUnique({
+      where: {
+        id: categoryId,
+      },
+    });
+
+    if (existingCategory?.image) {
+      await backendClient.publicImages.deleteFile({
+        url: existingCategory?.image,
+      });
+    }
+
     await prisma.category.delete({
       where: {
         id: categoryId,

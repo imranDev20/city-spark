@@ -173,12 +173,21 @@ const EditCategoryForm = ({
   const onEditCategorySubmit: SubmitHandler<CategoryFormInputType> = async (
     data
   ) => {
-    console.log(data);
-
     if (categoryDetails?.id) {
       startTransition(async () => {
         const result = await updateCategory(categoryDetails?.id, data);
 
+        const image = form.watch("image");
+        if (image) {
+          try {
+            await edgestore.publicImages.confirmUpload({
+              url: image,
+            });
+          } catch (error) {
+            console.error(`Failed to confirm upload for ${image}:`, error);
+            throw new Error(`Failed to upload ${image}`);
+          }
+        }
         if (result.success) {
           // router.push(`/admin/categories/${result.data?.id}`);
           toast({
@@ -225,7 +234,12 @@ const EditCategoryForm = ({
             </h1>
 
             <div className="hidden items-center gap-2 md:ml-auto md:flex">
-              <Button variant="outline" size="sm" type="button">
+              <Button
+                variant="outline"
+                size="sm"
+                type="button"
+                onClick={() => reset()}
+              >
                 Discard
               </Button>
 
@@ -661,6 +675,10 @@ const EditCategoryForm = ({
                             }}
                             onChange={(file) => {
                               setFileState(file);
+
+                              if (!file) {
+                                field.onChange(null);
+                              }
                             }}
                             onFilesAdded={async (addedFile) => {
                               if (!(addedFile.file instanceof File)) {
@@ -678,8 +696,12 @@ const EditCategoryForm = ({
                                 const res = await edgestore.publicImages.upload(
                                   {
                                     file: addedFile.file,
-                                    options: { temporary: true },
-                                    input: { type: "brand" },
+                                    options: {
+                                      temporary: true,
+                                    },
+
+                                    input: { type: "category" },
+
                                     onProgressChange: async (progress) => {
                                       updateFileProgress(
                                         addedFile.key,
@@ -721,7 +743,9 @@ const EditCategoryForm = ({
 
             <LoadingButton
               type="submit"
-              disabled={!isDirty || isPending}
+              disabled={
+                !isDirty || isPending || typeof fileState?.progress === "number"
+              }
               size="sm"
               loading={isPending}
               className="text-xs font-semibold h-8"

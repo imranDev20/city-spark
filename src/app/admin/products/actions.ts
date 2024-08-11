@@ -78,13 +78,6 @@ export const getCategories = cache(
         where: {
           type: categoryType,
         },
-        include: {
-          parentCategory: {
-            where: {
-              id: parentId,
-            },
-          },
-        },
       });
 
       console.log(categories, categoryType, parentId);
@@ -130,53 +123,58 @@ export const getProductById = cache(async (productId: string) => {
 
 export async function createProduct(data: ProductFormInputType) {
   try {
-    let createdProductTemplateId: string | undefined;
-
-    if (data.productTemplateFields && data.productTemplateFields?.length > 0) {
-      const createdProductTemplate = await prisma.productTemplate.create({
+    let createdProductTemplate;
+    if (data.template) {
+      createdProductTemplate = await prisma.productTemplate.create({
         data: {
           templateId: data.template || "",
           fields: {
-            create: data.productTemplateFields?.map((field) => ({
-              templateFieldId: field.fieldId,
-              fieldValue: field.fieldValue,
+            create: data.productTemplateFields?.map((productTemplateField) => ({
+              templateFieldId: productTemplateField.fieldId,
+              fieldValue: productTemplateField.fieldValue,
             })),
           },
         },
+        include: {
+          fields: {
+            include: {
+              productTemplate: true,
+            },
+          },
+        },
       });
-      createdProductTemplateId = createdProductTemplate.id;
     }
 
     const createdProduct = await prisma.product.create({
       data: {
         name: data.name,
         description: data.description,
-        model: data.model,
-        type: data.type,
-        warranty: data.warranty,
-        guarantee: data.guarantee,
-        tradePrice: data.tradePrice,
-        contractPrice: data.contractPrice,
-        promotionalPrice: data.promotionalPrice,
-        unit: data.unit,
-        weight: data.weight,
-        color: data.color,
-        length: data.length,
-        width: data.width,
-        height: data.height,
-        material: data.material,
-        volume: data.volume,
-        productTemplate: createdProductTemplateId
+        model: data.model ?? null,
+        type: data.type ?? null,
+        warranty: data.warranty ?? null,
+        guarantee: data.guarantee ?? null,
+        tradePrice: data.tradePrice ? parseFloat(data.tradePrice) : null,
+        contractPrice: data.contractPrice
+          ? parseFloat(data.contractPrice)
+          : null,
+        promotionalPrice: data.promotionalPrice
+          ? parseFloat(data.promotionalPrice)
+          : null,
+        unit: data.unit ?? null,
+        weight: data.weight ? parseFloat(data.weight) : null,
+        color: data.color ?? null,
+        length: data.length ? parseFloat(data.length) : null,
+        width: data.width ? parseFloat(data.width) : null,
+        height: data.height ? parseFloat(data.height) : null,
+        material: data.material ?? null,
+        volume: data.volume ?? null,
+        shape: data.shape ?? null,
+        productTemplate: createdProductTemplate?.id
           ? {
-              connect: { id: createdProductTemplateId },
+              connect: { id: createdProductTemplate.id },
             }
           : undefined,
         features: data.features?.map((item) => item.feature),
-        category: data.category
-          ? {
-              connect: { id: data.category },
-            }
-          : undefined,
         primaryCategory: data.primaryCategory
           ? {
               connect: { id: data.primaryCategory },
@@ -269,29 +267,32 @@ export async function updateProduct(
       },
     });
 
-    // productTemplateId = updatedProductTemplate.id;
-
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
       data: {
         name: data.name,
         description: data.description,
-        model: data.model,
-        type: data.type,
-        warranty: data.warranty,
-        guarantee: data.guarantee,
-        tradePrice: data.tradePrice,
-        contractPrice: data.contractPrice,
-        promotionalPrice: data.promotionalPrice,
-        unit: data.unit,
-        weight: data.weight,
-        color: data.color,
-        length: data.length,
-        width: data.width,
-        height: data.height,
+        model: data.model ?? null,
+        type: data.type ?? null,
+        warranty: data.warranty ?? null,
+        guarantee: data.guarantee ?? null,
+        tradePrice: data.tradePrice ? parseFloat(data.tradePrice) : null,
+        contractPrice: data.contractPrice
+          ? parseFloat(data.contractPrice)
+          : null,
+        promotionalPrice: data.promotionalPrice
+          ? parseFloat(data.promotionalPrice)
+          : null,
+        unit: data.unit ?? null,
+        weight: data.weight ? parseFloat(data.weight) : null,
+        color: data.color ?? null,
+        length: data.length ? parseFloat(data.length) : null,
+        width: data.width ? parseFloat(data.width) : null,
+        height: data.height ? parseFloat(data.height) : null,
         material: data.material,
-        volume: data.volume,
-        status: data.status,
+        volume: data.volume ?? null,
+        shape: data.shape ?? null,
+        status: data.status ?? "DRAFT",
         productTemplate: updatedProductTemplate.id
           ? {
               connect: { id: updatedProductTemplate.id },

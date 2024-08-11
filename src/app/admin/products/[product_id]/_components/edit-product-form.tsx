@@ -170,15 +170,15 @@ export default function EditProductForm({
       type: "",
       warranty: "",
       guarantee: "",
-      tradePrice: 0,
-      contractPrice: 0,
-      promotionalPrice: 0,
+      tradePrice: "",
+      contractPrice: "",
+      promotionalPrice: "",
       unit: "",
-      weight: 0,
+      weight: "",
       color: "",
-      length: 0,
-      width: 0,
-      height: 0,
+      length: "",
+      width: "",
+      height: "",
       material: "",
       template: "",
       productTemplate: "",
@@ -253,6 +253,8 @@ export default function EditProductForm({
         warranty,
         width,
         manuals,
+        volume,
+        shape,
         tradePrice,
         type,
         weight,
@@ -267,29 +269,31 @@ export default function EditProductForm({
 
       reset({
         name: name ?? "",
-        contractPrice: contractPrice ?? 0,
+        contractPrice: contractPrice?.toString() ?? "",
         brand: brandId ?? "",
         color: color ?? "",
         features:
           features?.map((feature) => ({
             feature,
           })) ?? [],
-        height: height ?? 0,
+        height: height?.toString() ?? "",
         description: description ?? "",
-        length: length ?? 0,
+        length: length?.toString() ?? "",
         manuals: manuals ?? [],
         guarantee: guarantee ?? "",
         type: type ?? "",
         material: material ?? "",
         model: model ?? "",
-        tradePrice: tradePrice ?? 0,
+        tradePrice: tradePrice?.toString() ?? "",
         unit: unit ?? "",
-        promotionalPrice: promotionalPrice ?? 0,
-        weight: weight ?? 0,
-        width: width ?? 0,
+        promotionalPrice: promotionalPrice?.toString() ?? "",
+        weight: weight?.toString() ?? "",
+        width: width?.toString() ?? "",
         status: status ?? "DRAFT",
         warranty: warranty ?? "",
         template: selectedTemplate || productTemplate?.templateId || "",
+        volume: volume ?? "",
+        shape: shape ?? "",
 
         productTemplate: productTemplateId ?? "",
 
@@ -383,6 +387,7 @@ export default function EditProductForm({
             })
           );
         }
+
         if (result.success) {
           router.push(`/admin/products/${result.data?.id}`);
           toast({

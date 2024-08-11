@@ -117,8 +117,19 @@ export default function CreateCategoryForm({
     startTransition(async () => {
       const result = await createCategory(data);
 
+      const image = form.watch("image");
+      if (image) {
+        try {
+          await edgestore.publicImages.confirmUpload({
+            url: image,
+          });
+        } catch (error) {
+          console.error(`Failed to confirm upload for ${image}:`, error);
+          throw new Error(`Failed to upload ${image}`);
+        }
+      }
+
       if (result.success) {
-        console.log(result.message);
         toast({
           title: "Category Saved",
           description: result.message,
@@ -161,7 +172,7 @@ export default function CreateCategoryForm({
             </Button>
             <LoadingButton
               type="submit"
-              disabled={isPending}
+              disabled={isPending || typeof fileState?.progress === "number"}
               size="sm"
               loading={isPending}
               className="text-xs font-semibold h-8"

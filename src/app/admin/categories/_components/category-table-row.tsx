@@ -19,6 +19,7 @@ import React, { useTransition } from "react";
 import Image from "next/image";
 import useQueryString from "@/hooks/use-query-string";
 import { deleteCategory } from "../actions";
+import PlaceholderImage from "@/images/placeholder-image.jpg";
 
 export type CategoryWithRelations = Prisma.CategoryGetPayload<{
   include: {
@@ -81,12 +82,21 @@ export default function CategoriesTableRow({
       className={`cursor-pointer ${isPending ? "opacity-30" : "opacity-100"}`}
     >
       <TableCell className="hidden sm:table-cell">
-        {category?.image && (
+        {category?.image ? (
           <Image
             alt="Category Image"
             className="aspect-square rounded-md object-cover"
             height="64"
             src={category.image}
+            width="64"
+          />
+        ) : (
+          <Image
+            alt="Category Image image"
+            className="aspect-square rounded-md object-cover border border-input"
+            height="64"
+            src={PlaceholderImage}
+            loading="lazy"
             width="64"
           />
         )}
