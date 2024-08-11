@@ -80,6 +80,7 @@ const EditCategoryForm = ({
   const { edgestore } = useEdgeStore();
 
   const selectedType = searchParams.get("category_type") as CategoryType;
+
   const selectedPrimaryCategory = searchParams.get("parent_primary_id") ?? "";
   const selectedSecondaryCategory =
     searchParams.get("parent_secondary_id") ?? "";
@@ -189,7 +190,6 @@ const EditCategoryForm = ({
           }
         }
         if (result.success) {
-          // router.push(`/admin/categories/${result.data?.id}`);
           toast({
             title: "Success",
             description: result.message,
@@ -298,6 +298,7 @@ const EditCategoryForm = ({
                                 onValueChange={(currentValue) => {
                                   if (currentValue) {
                                     field.onChange(currentValue);
+
                                     router.push(
                                       `${pathname}?${createQueryString({
                                         category_type: currentValue,

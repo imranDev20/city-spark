@@ -27,6 +27,7 @@ export default function AdminPanelLayout({
       >
         {children}
       </main>
+
       <footer
         className={cn(
           "transition-[margin-left] ease-in-out duration-300",

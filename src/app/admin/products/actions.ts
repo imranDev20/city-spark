@@ -4,15 +4,17 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { unstable_cache as cache } from "next/cache";
 import { ProductFormInputType } from "./schema";
-import { CategoryType, Category } from "@prisma/client";
+import { CategoryType } from "@prisma/client";
 
-// Cached products for ssr in the list
 export const getProducts = cache(async () => {
   try {
     const products = await prisma.product.findMany({
       include: {
         primaryCategory: true,
         brand: true,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
@@ -25,7 +27,11 @@ export const getProducts = cache(async () => {
 
 export const getBrands = cache(async () => {
   try {
-    const brands = await prisma.brand.findMany({});
+    const brands = await prisma.brand.findMany({
+      orderBy: {
+        name: "asc",
+      },
+    });
     return brands;
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -38,6 +44,9 @@ export const getTemplates = cache(async () => {
     const templates = await prisma.template.findMany({
       include: {
         fields: true,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
@@ -60,7 +69,11 @@ export const getTemplateById = cache(async (templateId: string) => {
         id: templateId,
       },
       include: {
-        fields: true,
+        fields: {
+          orderBy: {
+            createdAt: "asc",
+          },
+        },
       },
     });
 
@@ -71,24 +84,23 @@ export const getTemplateById = cache(async (templateId: string) => {
   }
 });
 
-export const getCategories = cache(
-  async (categoryType: CategoryType, parentId?: string) => {
-    try {
-      const categories = await prisma.category.findMany({
-        where: {
-          type: categoryType,
-        },
-      });
+export const getCategories = cache(async (categoryType: CategoryType) => {
+  try {
+    const categories = await prisma.category.findMany({
+      where: {
+        type: categoryType,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
 
-      console.log(categories, categoryType, parentId);
-
-      return categories;
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      throw new Error("Failed to fetch categories");
-    }
+    return categories;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    throw new Error("Failed to fetch categories");
   }
-);
+});
 
 export const getProductById = cache(async (productId: string) => {
   try {
@@ -246,26 +258,30 @@ export async function updateProduct(
   data: ProductFormInputType
 ) {
   try {
-    const updatedProductTemplate = await prisma.productTemplate.update({
-      where: { id: data.productTemplate },
-      data: {
-        templateId: data.template,
-        fields: {
-          deleteMany: {},
-          create: data.productTemplateFields?.map((productTemplateField) => ({
-            templateFieldId: productTemplateField.fieldId,
-            fieldValue: productTemplateField.fieldValue,
-          })),
-        },
-      },
-      include: {
-        fields: {
-          include: {
-            productTemplate: true,
+    let updatedProductTemplate;
+
+    if (data.productTemplate) {
+      updatedProductTemplate = await prisma.productTemplate.update({
+        where: { id: data.productTemplate },
+        data: {
+          templateId: data.template,
+          fields: {
+            deleteMany: {},
+            create: data.productTemplateFields?.map((productTemplateField) => ({
+              templateFieldId: productTemplateField.fieldId,
+              fieldValue: productTemplateField.fieldValue,
+            })),
           },
         },
-      },
-    });
+        include: {
+          fields: {
+            include: {
+              productTemplate: true,
+            },
+          },
+        },
+      });
+    }
 
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
@@ -293,7 +309,7 @@ export async function updateProduct(
         volume: data.volume ?? null,
         shape: data.shape ?? null,
         status: data.status ?? "DRAFT",
-        productTemplate: updatedProductTemplate.id
+        productTemplate: updatedProductTemplate?.id
           ? {
               connect: { id: updatedProductTemplate.id },
             }

@@ -20,12 +20,16 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import PlaceholderImage from "@/images/placeholder-image.jpg";
+import useQueryString from "@/hooks/use-query-string";
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
     images: true;
     brand: true;
     primaryCategory: true;
+    secondaryCategory: true;
+    tertiaryCategory: true;
+    quaternaryCategory: true;
   };
 }>;
 
@@ -37,6 +41,7 @@ export default function ProductTableRow({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const { createQueryString } = useQueryString();
 
   const handleDelete = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.stopPropagation(); // Stop the propagation to prevent routing
@@ -51,7 +56,6 @@ export default function ProductTableRow({
           variant: "success",
         });
       } else {
-        // Handle error (e.g., show an error message)
         toast({
           title: "Error Deleting Product",
           description:
@@ -65,7 +69,16 @@ export default function ProductTableRow({
   return (
     <TableRow
       key={product.id}
-      onClick={() => router.push(`/admin/products/${product.id}`)}
+      onClick={() =>
+        router.push(
+          `/admin/products/${product.id}?${createQueryString({
+            primary_category_id: product.primaryCategory?.id || "",
+            secondary_category_id: product.secondaryCategory?.id || "",
+            tertiary_category_id: product.tertiaryCategory?.id || "",
+            quaternary_category_id: product.quaternaryCategory?.id || "",
+          })}`
+        )
+      }
       className={`cursor-pointer ${isPending ? "opacity-30" : "opacity-100"}`}
     >
       <TableCell className="hidden sm:table-cell">

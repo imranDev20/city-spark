@@ -32,22 +32,11 @@ export default async function AdminProductDetailsPage({
   const productDetails = await getProductById(product_id);
   const brands = await getBrands();
   const templates = await getTemplates();
+
   const primaryCategories = await getCategories("PRIMARY");
-
-  const secondaryCategories = await getCategories(
-    "SECONDARY",
-    productDetails.primaryCategoryId || primary_category_id
-  );
-
-  const tertiaryCategories = await getCategories(
-    "TERTIARY",
-    productDetails.secondaryCategoryId || secondary_category_id
-  );
-
-  const quaternaryCategories = await getCategories(
-    "QUATERNARY",
-    productDetails.tertiaryCategoryId || tertiary_category_id
-  );
+  const secondaryCategories = await getCategories("SECONDARY");
+  const tertiaryCategories = await getCategories("TERTIARY");
+  const quaternaryCategories = await getCategories("QUATERNARY");
 
   const templateDetails = await getTemplateById(
     (template_id || productDetails.productTemplate?.templateId) as string
@@ -60,10 +49,10 @@ export default async function AdminProductDetailsPage({
         brands={brands}
         templates={templates}
         primaryCategories={primaryCategories || []}
-        secondaryCategories={secondaryCategories || []}
-        tertiaryCategories={tertiaryCategories || []}
-        quaternaryCategories={quaternaryCategories || []}
-        templateDetails={templateDetails}
+        // secondaryCategories={secondaryCategories || []}
+        // tertiaryCategories={tertiaryCategories || []}
+        // quaternaryCategories={quaternaryCategories || []}
+        // templateDetails={templateDetails}
       />
     </>
   );

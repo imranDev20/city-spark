@@ -57,7 +57,6 @@ import { createProduct } from "../../actions";
 import { Brand, Category, Prisma, Template } from "@prisma/client";
 import ManualsInstructionsUpload from "../../_components/manuals-instructions-upload";
 import useQueryString from "@/hooks/use-query-string";
-import { TemplateWithRelations } from "../../[product_id]/_components/edit-product-form";
 import { useEdgeStore } from "@/lib/edgestore";
 import {
   FileState,
@@ -78,6 +77,12 @@ export type ProductWithRelations = Prisma.ProductGetPayload<{
         };
       };
     };
+  };
+}>;
+
+export type TemplateWithRelations = Prisma.TemplateGetPayload<{
+  include: {
+    fields: true;
   };
 }>;
 
@@ -103,8 +108,6 @@ export default function CreateProductForm({
 
   const [openBrandComboBox, setOpenBrandComboBox] = useState<boolean>(false);
   const [openTemplateComboBox, setOpenTemplateComboBox] =
-    useState<boolean>(false);
-  const [openCategoriesComboBox, setOpenCategoriesComboBox] =
     useState<boolean>(false);
 
   const [openPrimaryCategoriesComboBox, setOpenPrimaryCategoriesComboBox] =
@@ -158,7 +161,12 @@ export default function CreateProductForm({
     },
   });
 
-  const { control, handleSubmit } = form;
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { isDirty },
+  } = form;
 
   const {
     fields: featureFields,
@@ -823,7 +831,7 @@ export default function CreateProductForm({
                               <FormControl>
                                 {templateField.fieldType === "TEXT" ? (
                                   <Input
-                                    placeholder="Enter features and benefits"
+                                    placeholder={`Enter ${templateField.fieldName}`}
                                     {...field}
                                   />
                                 ) : (
@@ -839,7 +847,9 @@ export default function CreateProductForm({
                                       id="secondary-category"
                                       aria-label="Select secondary category"
                                     >
-                                      <SelectValue placeholder="Select subcategory" />
+                                      <SelectValue
+                                        placeholder={`Enter ${templateField.fieldName}`}
+                                      />
                                     </SelectTrigger>
                                     <SelectContent>
                                       {templateField.fieldOptions
@@ -1461,8 +1471,9 @@ export default function CreateProductForm({
             </Card>
           </div>
         </div>
+
         <div className="flex items-center justify-center gap-2 md:hidden">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => reset()}>
             Discard
           </Button>
 
@@ -1474,6 +1485,27 @@ export default function CreateProductForm({
             className="text-xs font-semibold h-8"
           >
             Save Product
+          </LoadingButton>
+        </div>
+
+        <div className="w-[calc(100vw-288px)] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:shadow-secondary fixed bottom-0 left-0 ml-72 px-8 py-4 flex gap-2 z-10 justify-end border border-border">
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() => reset()}
+          >
+            Discard
+          </Button>
+
+          <LoadingButton
+            type="submit"
+            disabled={!isDirty || isPending}
+            size="sm"
+            loading={isPending}
+            className="text-xs font-semibold h-8"
+          >
+            Save Category
           </LoadingButton>
         </div>
       </form>
