@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenuContent,
@@ -21,7 +22,9 @@ import { deleteCategory } from "../actions";
 
 export type CategoryWithRelations = Prisma.CategoryGetPayload<{
   include: {
-    parentCategory: true;
+    parentPrimaryCategory: true;
+    parentSecondaryCategory: true;
+    parentTertiaryCategory: true;
   };
 }>;
 
@@ -57,6 +60,11 @@ export default function CategoriesTableRow({
     });
   };
 
+  const directParent =
+    category.parentTertiaryCategory ||
+    category.parentSecondaryCategory ||
+    category.parentPrimaryCategory;
+
   return (
     <TableRow
       key={category.id}
@@ -64,7 +72,9 @@ export default function CategoriesTableRow({
         router.push(
           `/admin/categories/${category.id}?${createQueryString({
             category_type: category.type,
-            parent_category_id: category.parentId || "",
+            parent_primary_id: category.parentPrimaryCategoryId || "",
+            parent_secondary_id: category.parentSecondaryCategoryId || "",
+            parent_tertiary_id: category.parentTertiaryCategoryId || "",
           })}`
         )
       }
@@ -84,10 +94,10 @@ export default function CategoriesTableRow({
       <TableCell className="font-medium flex-1">{category.name} </TableCell>
       <TableCell className="hidden md:table-cell">{category.type} </TableCell>
       <TableCell className="hidden md:table-cell">
-        {category?.parentCategory
-          ? `${category.parentCategory.name} (${
-              category.parentCategory.type.charAt(0).toUpperCase() +
-              category.parentCategory.type.slice(1).toLowerCase()
+        {directParent
+          ? `${directParent.name} (${
+              directParent.type.charAt(0).toUpperCase() +
+              directParent.type.slice(1).toLowerCase()
             })`
           : "N/A"}
       </TableCell>

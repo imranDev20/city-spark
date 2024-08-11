@@ -194,8 +194,7 @@ const SingleImageDropzone = React.forwardRef<HTMLInputElement, InputProps>(
                 {imageUrl && (
                   <Image
                     className="h-full w-full rounded-md object-contain"
-                    width={290}
-                    height={290}
+                    fill
                     style={{
                       objectFit: "contain",
                     }}

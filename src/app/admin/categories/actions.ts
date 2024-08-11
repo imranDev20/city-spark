@@ -7,32 +7,10 @@ import { CategoryFormInputType, CategoryType } from "./schema";
 
 // Fetch parent categories
 export const getParentCategories = cache(async (categoryType: CategoryType) => {
-  let parentCategoryType: CategoryType | null = null;
-
-  if (!categoryType) {
-    return null;
-  }
-
   try {
-    switch (categoryType) {
-      case "PRIMARY":
-        return null;
-      case "SECONDARY":
-        parentCategoryType = "PRIMARY";
-        break;
-      case "TERTIARY":
-        parentCategoryType = "SECONDARY";
-        break;
-      case "QUATERNARY":
-        parentCategoryType = "TERTIARY";
-        break;
-      default:
-        throw new Error(`Invalid category type: ${categoryType}`);
-    }
-
     const categories = await prisma.category.findMany({
       where: {
-        type: parentCategoryType,
+        type: categoryType,
       },
     });
 
@@ -52,7 +30,9 @@ export async function createCategory(data: CategoryFormInputType) {
       data: {
         name: data.name,
         type: data.type,
-        parentId: data.parentCategory || null,
+        parentPrimaryCategoryId: data.parentPrimaryCategory || null,
+        parentSecondaryCategoryId: data.parentSecondaryCategory || null,
+        parentTertiaryCategoryId: data.parentTertiaryCategory || null,
         image: data.image,
       },
     });
@@ -82,7 +62,12 @@ export const getCategories = cache(async () => {
   try {
     const categories = await prisma.category.findMany({
       include: {
-        parentCategory: true,
+        parentPrimaryCategory: true,
+        parentSecondaryCategory: true,
+        parentTertiaryCategory: true,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
@@ -101,7 +86,9 @@ export const getCategoryById = cache(async (categoryId: string) => {
         id: categoryId,
       },
       include: {
-        parentCategory: true,
+        parentPrimaryCategory: true,
+        parentSecondaryCategory: true,
+        parentTertiaryCategory: true,
       },
     });
 
@@ -125,7 +112,9 @@ export async function updateCategory(
       data: {
         name: data.name,
         type: data.type,
-        parentId: data.parentCategory || null,
+        parentPrimaryCategoryId: data.parentPrimaryCategory || null,
+        parentSecondaryCategoryId: data.parentSecondaryCategory || null,
+        parentTertiaryCategoryId: data.parentTertiaryCategory || null,
         image: data.image,
       },
     });
@@ -161,6 +150,12 @@ export async function deleteCategory(categoryId: string) {
         id: categoryId,
       },
     });
+
+    revalidatePath("/admin/categories");
+    revalidatePath("/admin/categories/new");
+    revalidatePath(`/admin/categories/${categoryId}`);
+    revalidatePath("/admin/categories/[category_id]", "page");
+    revalidatePath("/admin/products/[product_id]", "page");
 
     return {
       message: "Category deleted successfully!",

@@ -105,7 +105,6 @@ export const productSchema = z.object({
       })
     )
     .optional(),
-  category: z.string().trim().optional(),
   status: z
     .enum(["DRAFT", "ACTIVE", "ARCHIVED"], {
       invalid_type_error:

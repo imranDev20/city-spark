@@ -51,25 +51,42 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { Category } from "@prisma/client";
+import { Category, CategoryType } from "@prisma/client";
 import useQueryString from "@/hooks/use-query-string";
 import { useEdgeStore } from "@/lib/edgestore";
 import { FileState, SingleImageDropzone } from "./category-image-uploder";
 
 export default function CreateCategoryForm({
-  parentCategories,
+  parentPrimaryCategories,
+  parentSecondaryCategories,
+  parentTertiaryCategories,
 }: {
-  parentCategories: Category[] | null;
+  parentPrimaryCategories: Category[] | null;
+  parentSecondaryCategories: Category[] | null;
+  parentTertiaryCategories: Category[] | null;
 }) {
   const router = useRouter();
-  const { toast } = useToast();
-  const [isPending, startTransition] = useTransition();
-  const [openParentComboBox, setOpenParentComboBox] = useState<boolean>(false);
-  const searchParams = useSearchParams();
   const pathname = usePathname();
   const { createQueryString } = useQueryString();
+  const { toast } = useToast();
   const [fileState, setFileState] = useState<FileState | null>(null);
   const { edgestore } = useEdgeStore();
+  const [isPending, startTransition] = useTransition();
+
+  const searchParams = useSearchParams();
+  const selectedType = searchParams.get("category_type") as CategoryType;
+  const selectedPrimaryCategory = searchParams.get("parent_primary_id") ?? "";
+  const selectedSecondaryCategory =
+    searchParams.get("parent_secondary_id") ?? "";
+  const selectedTertiaryCategory = searchParams.get("parent_tertiary_id") ?? "";
+
+  const [openPrimaryCategoriesComboBox, setOpenPrimaryCategoriesComboBox] =
+    useState<boolean>(false);
+  const [openSecondaryCategoriesComboBox, setOpenSecondaryCategoriesComboBox] =
+    useState<boolean>(false);
+  const [openTertiaryCategoreisComboBox, setOpenTertiaryCategoriesComboBox] =
+    useState<boolean>(false);
+
   function updateFileProgress(key: string, progress: FileState["progress"]) {
     setFileState((fileState) => {
       const newFileState = structuredClone(fileState);
@@ -77,8 +94,6 @@ export default function CreateCategoryForm({
       if (newFileState) {
         newFileState.progress = progress;
       }
-
-      console.log(newFileState);
       return newFileState;
     });
   }
@@ -87,11 +102,14 @@ export default function CreateCategoryForm({
     resolver: zodResolver(categorySchema),
     defaultValues: {
       name: "",
-      parentCategory: "",
+      parentPrimaryCategory: "",
+      parentSecondaryCategory: "",
+      parentTertiaryCategory: "",
       type: "PRIMARY",
     },
   });
-  const { control, handleSubmit, watch,} = form;
+
+  const { control, handleSubmit, watch } = form;
 
   const onCreateCategorySubmit: SubmitHandler<CategoryFormInputType> = async (
     data
@@ -117,6 +135,11 @@ export default function CreateCategoryForm({
       }
     });
   };
+
+  const isPrimary = watch("type") === "PRIMARY";
+  const isSecondary = watch("type") === "SECONDARY";
+  const isTertiary = watch("type") === "TERTIARY";
+  const isQuaternary = watch("type") === "QUATERNARY";
 
   return (
     <Form {...form}>
@@ -190,7 +213,9 @@ export default function CreateCategoryForm({
                                 })}`
                               );
 
-                              form.setValue("parentCategory", "");
+                              form.setValue("parentPrimaryCategory", "");
+                              form.setValue("parentSecondaryCategory", "");
+                              form.setValue("parentTertiaryCategory", "");
                             }
                           }}
                           value={
@@ -221,83 +246,314 @@ export default function CreateCategoryForm({
               </CardContent>
             </Card>
 
-            {watch("type") !== "PRIMARY" && (
+            {!isPrimary && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Parent Category</CardTitle>
+                  <CardTitle>Parent Categories</CardTitle>
                   <CardDescription>
-                    Select the parent category if applicable.
+                    Specify the parent categories if applicable.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-3">
-                    <FormField
-                      control={control}
-                      name="parentCategory"
-                      render={({ field }) => (
-                        <FormItem className="w-full flex flex-col gap-1">
-                          <FormLabel>Parent Category</FormLabel>
-                          <FormControl>
-                            <Popover
-                              open={openParentComboBox}
-                              onOpenChange={setOpenParentComboBox}
-                            >
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  role="combobox"
-                                  className="justify-between"
-                                >
-                                  {field.value ? (
-                                    parentCategories?.find(
-                                      (category) => category.id === field.value
-                                    )?.name
-                                  ) : (
-                                    <p className="text-muted-foreground">
-                                      Select a parent category
-                                    </p>
-                                  )}
-                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-[200px] p-0 popover-content-width-same-as-its-trigger">
-                                <Command>
-                                  <CommandInput placeholder="Search parent category..." />
-                                  <CommandList>
-                                    <CommandEmpty>
-                                      No parent category found.
-                                    </CommandEmpty>
-                                    <CommandGroup>
-                                      {parentCategories?.map((category) => (
-                                        <CommandItem
-                                          key={category.id}
-                                          value={category.id}
-                                          onSelect={() => {
-                                            field.onChange(category.id);
-                                            setOpenParentComboBox(false);
-                                          }}
-                                        >
-                                          <Check
-                                            className={cn(
-                                              "mr-2 h-4 w-4",
-                                              field.value === category.id
-                                                ? "opacity-100"
-                                                : "opacity-0"
-                                            )}
-                                          />
-                                          {category.name}
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
-                                  </CommandList>
-                                </Command>
-                              </PopoverContent>
-                            </Popover>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    {(isSecondary || isTertiary || isQuaternary) && (
+                      <FormField
+                        control={control}
+                        name="parentPrimaryCategory"
+                        render={({ field }) => (
+                          <FormItem className="grid gap-1">
+                            <FormLabel>Parent Primary Category</FormLabel>
+                            <FormControl>
+                              <Popover
+                                open={openPrimaryCategoriesComboBox}
+                                onOpenChange={setOpenPrimaryCategoriesComboBox}
+                              >
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={
+                                      openPrimaryCategoriesComboBox
+                                    }
+                                    className="justify-between"
+                                  >
+                                    {field.value ? (
+                                      parentPrimaryCategories?.find(
+                                        (parentPrimary) =>
+                                          parentPrimary.id === field.value
+                                      )?.name
+                                    ) : (
+                                      <p className="text-muted-foreground">
+                                        Select a primary category
+                                      </p>
+                                    )}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="p-0 w-[320px]">
+                                  <Command>
+                                    <CommandInput placeholder="Search brands..." />
+                                    <CommandList>
+                                      <CommandEmpty>
+                                        No framework found.
+                                      </CommandEmpty>
+                                      <CommandGroup>
+                                        {parentPrimaryCategories?.map(
+                                          (primaryCategory) => (
+                                            <CommandItem
+                                              key={primaryCategory.id}
+                                              value={primaryCategory.name}
+                                              onSelect={() => {
+                                                field.onChange(
+                                                  primaryCategory.id
+                                                );
+
+                                                router.push(
+                                                  `${pathname}?${createQueryString(
+                                                    {
+                                                      parent_primary_id:
+                                                        primaryCategory.id,
+
+                                                      parent_secondary_id: "",
+                                                      parent_tertiary_id: "",
+                                                      parent_quaternary_id: "",
+                                                    }
+                                                  )}`,
+                                                  {
+                                                    scroll: false,
+                                                  }
+                                                );
+
+                                                setOpenPrimaryCategoriesComboBox(
+                                                  false
+                                                );
+                                              }}
+                                            >
+                                              <Check
+                                                className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  field.value ===
+                                                    primaryCategory.id
+                                                    ? "opacity-100"
+                                                    : "opacity-0"
+                                                )}
+                                              />
+                                              {primaryCategory.name}
+                                            </CommandItem>
+                                          )
+                                        )}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {(isTertiary || isQuaternary) && (
+                      <FormField
+                        control={control}
+                        name="parentSecondaryCategory"
+                        render={({ field }) => (
+                          <FormItem className="grid gap-1">
+                            <FormLabel>Parent Secondary Category</FormLabel>
+                            <FormControl>
+                              <Popover
+                                open={openSecondaryCategoriesComboBox}
+                                onOpenChange={
+                                  setOpenSecondaryCategoriesComboBox
+                                }
+                              >
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={
+                                      openSecondaryCategoriesComboBox
+                                    }
+                                    className="justify-between"
+                                  >
+                                    {field.value ? (
+                                      parentSecondaryCategories?.find(
+                                        (parentSecondary) =>
+                                          parentSecondary.id === field.value
+                                      )?.name
+                                    ) : (
+                                      <p className="text-muted-foreground">
+                                        Select a secondary category
+                                      </p>
+                                    )}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="p-0 w-[320px]">
+                                  <Command>
+                                    <CommandInput placeholder="Search categories..." />
+                                    <CommandList>
+                                      <CommandEmpty>
+                                        No framework found.
+                                      </CommandEmpty>
+                                      <CommandGroup>
+                                        {parentSecondaryCategories?.map(
+                                          (secondaryCategory) => (
+                                            <CommandItem
+                                              key={secondaryCategory.id}
+                                              value={secondaryCategory.name}
+                                              onSelect={() => {
+                                                field.onChange(
+                                                  secondaryCategory.id
+                                                );
+
+                                                router.push(
+                                                  `${pathname}?${createQueryString(
+                                                    {
+                                                      parent_primary_id:
+                                                        selectedPrimaryCategory,
+
+                                                      parent_secondary_id:
+                                                        secondaryCategory.id,
+                                                      parent_tertiary_id: "",
+                                                      quaternary_category_id:
+                                                        "",
+                                                    }
+                                                  )}`,
+                                                  {
+                                                    scroll: false,
+                                                  }
+                                                );
+
+                                                setOpenSecondaryCategoriesComboBox(
+                                                  false
+                                                );
+                                              }}
+                                            >
+                                              <Check
+                                                className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  field.value ===
+                                                    secondaryCategory.id
+                                                    ? "opacity-100"
+                                                    : "opacity-0"
+                                                )}
+                                              />
+                                              {secondaryCategory.name}
+                                            </CommandItem>
+                                          )
+                                        )}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {isQuaternary && (
+                      <FormField
+                        control={control}
+                        name="parentTertiaryCategory"
+                        render={({ field }) => (
+                          <FormItem className="grid gap-1">
+                            <FormLabel>Parent Tertiary Category</FormLabel>
+                            <FormControl>
+                              <Popover
+                                open={openTertiaryCategoreisComboBox}
+                                onOpenChange={setOpenTertiaryCategoriesComboBox}
+                              >
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={
+                                      openTertiaryCategoreisComboBox
+                                    }
+                                    className="justify-between"
+                                  >
+                                    {field.value ? (
+                                      parentTertiaryCategories?.find(
+                                        (parentTertiary) =>
+                                          parentTertiary.id === field.value
+                                      )?.name
+                                    ) : (
+                                      <p className="text-muted-foreground">
+                                        Select a tertiary category
+                                      </p>
+                                    )}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="p-0 w-[320px]">
+                                  <Command>
+                                    <CommandInput placeholder="Search brands..." />
+                                    <CommandList>
+                                      <CommandEmpty>
+                                        No framework found.
+                                      </CommandEmpty>
+                                      <CommandGroup>
+                                        {parentTertiaryCategories?.map(
+                                          (tertiaryCategory) => (
+                                            <CommandItem
+                                              key={tertiaryCategory.id}
+                                              value={tertiaryCategory.name}
+                                              onSelect={() => {
+                                                field.onChange(
+                                                  tertiaryCategory.id
+                                                );
+
+                                                router.push(
+                                                  `${pathname}?${createQueryString(
+                                                    {
+                                                      parent_primary_id:
+                                                        selectedPrimaryCategory,
+
+                                                      parent_secondary_id:
+                                                        selectedSecondaryCategory,
+                                                      parent_tertiary_id:
+                                                        tertiaryCategory.id,
+                                                    }
+                                                  )}`,
+                                                  {
+                                                    scroll: false,
+                                                  }
+                                                );
+
+                                                setOpenTertiaryCategoriesComboBox(
+                                                  false
+                                                );
+                                              }}
+                                            >
+                                              <Check
+                                                className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  field.value ===
+                                                    tertiaryCategory.id
+                                                    ? "opacity-100"
+                                                    : "opacity-0"
+                                                )}
+                                              />
+                                              {tertiaryCategory.name}
+                                            </CommandItem>
+                                          )
+                                        )}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -305,89 +561,84 @@ export default function CreateCategoryForm({
           </div>
 
           <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-          <Card x-chunk="dashboard-07-chunk-5">
-                <CardHeader>
-                  <CardTitle>Images</CardTitle>
-                  <CardDescription>
-                    Upload your category image here.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <FormField
-                    control={control}
-                    name="image"
-                    render={({ field }) => (
-                      <FormItem className="mx-auto">
-                        <FormLabel>
-                          <h2 className="text-xl font-semibold tracking-tight"></h2>
-                        </FormLabel>
+            <Card x-chunk="dashboard-07-chunk-5">
+              <CardHeader>
+                <CardTitle>Images</CardTitle>
+                <CardDescription>
+                  Upload your category image here.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={control}
+                  name="image"
+                  render={({ field }) => (
+                    <FormItem className="mx-auto">
+                      <FormLabel>
+                        <h2 className="text-xl font-semibold tracking-tight"></h2>
+                      </FormLabel>
 
-                        <FormControl>
-                          <SingleImageDropzone
-                            value={fileState}
-                            dropzoneOptions={{
-                              maxFiles: 1,
-                              maxSize: 1024 * 1024 * 1, // 1MB
-                            }}
-                            onChange={(file) => {
-                              setFileState(file);
-                            }}
-                            onFilesAdded={async (addedFile) => {
-                              if (!(addedFile.file instanceof File)) {
-                                console.error(
-                                  "Expected a File object, but received:",
-                                  addedFile.file
-                                );
-                                updateFileProgress(addedFile.key, "ERROR");
-                                return;
-                              }
+                      <FormControl>
+                        <SingleImageDropzone
+                          value={fileState}
+                          dropzoneOptions={{
+                            maxFiles: 1,
+                            maxSize: 1024 * 1024 * 1, // 1MB
+                          }}
+                          onChange={(file) => {
+                            setFileState(file);
+                          }}
+                          onFilesAdded={async (addedFile) => {
+                            if (!(addedFile.file instanceof File)) {
+                              console.error(
+                                "Expected a File object, but received:",
+                                addedFile.file
+                              );
+                              updateFileProgress(addedFile.key, "ERROR");
+                              return;
+                            }
 
-                              setFileState(addedFile);
+                            setFileState(addedFile);
 
-                              try {
-                                const res = await edgestore.publicImages.upload(
-                                  {
-                                    file: addedFile.file,
-                                    options: {
-                                      temporary: true,
-                                    },
+                            try {
+                              const res = await edgestore.publicImages.upload({
+                                file: addedFile.file,
+                                options: {
+                                  temporary: true,
+                                },
 
-                                    input: { type: "category" },
+                                input: { type: "category" },
 
-                                    onProgressChange: async (progress) => {
-                                      updateFileProgress(
-                                        addedFile.key,
-                                        progress
-                                      );
+                                onProgressChange: async (progress) => {
+                                  updateFileProgress(addedFile.key, progress);
 
-                                      if (progress === 100) {
-                                        // wait 1 second to set it to complete
-                                        // so that the user can see the progress bar at 100%
-                                        await new Promise((resolve) =>
-                                          setTimeout(resolve, 1000)
-                                        );
+                                  if (progress === 100) {
+                                    // wait 1 second to set it to complete
+                                    // so that the user can see the progress bar at 100%
+                                    await new Promise((resolve) =>
+                                      setTimeout(resolve, 1000)
+                                    );
 
-                                        updateFileProgress(
-                                          addedFile.key,
-                                          "COMPLETE"
-                                        );
-                                      }
-                                    },
+                                    updateFileProgress(
+                                      addedFile.key,
+                                      "COMPLETE"
+                                    );
                                   }
-                                );
+                                },
+                              });
 
-                                field.onChange(res.url);
-                              } catch (err) {
-                                updateFileProgress(addedFile.key, "ERROR");
-                              }
-                            }}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
+                              field.onChange(res.url);
+                            } catch (err) {
+                              updateFileProgress(addedFile.key, "ERROR");
+                            }
+                          }}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
           </div>
         </div>
         <div className="flex items-center justify-center gap-2 md:hidden">

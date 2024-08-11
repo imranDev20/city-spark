@@ -183,7 +183,10 @@ export default function EditProductForm({
       template: "",
       productTemplate: "",
       features: [{ feature: "" }],
-      category: "",
+      primaryCategory: "",
+      secondaryCategory: "",
+      tertiaryCategory: "",
+      quaternaryCategory: "",
       status: "DRAFT",
       images: [
         {
@@ -253,7 +256,6 @@ export default function EditProductForm({
         tradePrice,
         type,
         weight,
-        categoryId,
         productTemplateId,
         productTemplate,
         images,
@@ -287,7 +289,6 @@ export default function EditProductForm({
         width: width ?? 0,
         status: status ?? "DRAFT",
         warranty: warranty ?? "",
-        category: categoryId ?? "",
         template: selectedTemplate || productTemplate?.templateId || "",
 
         productTemplate: productTemplateId ?? "",
@@ -1104,7 +1105,7 @@ export default function EditProductForm({
                                 <Button
                                   variant="outline"
                                   role="combobox"
-                                  aria-expanded={openBrandComboBox}
+                                  aria-expanded={openPrimaryCategoriesComboBox}
                                   className="justify-between"
                                 >
                                   {field.value ? (

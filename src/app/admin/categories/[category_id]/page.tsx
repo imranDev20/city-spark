@@ -14,16 +14,17 @@ export default async function AdminEditProductPage({
   };
 }) {
   const { category_id } = params;
-  const { category_type } = searchParams;
   const categoryDetails = await getCategoryById(category_id as string);
 
-  const parentCategories = await getParentCategories(
-    category_type as CategoryType
-  );
+  const parentPrimaryCategories = await getParentCategories("PRIMARY");
+  const parentSecondaryCategories = await getParentCategories("SECONDARY");
+  const parentTertiaryCategories = await getParentCategories("TERTIARY");
 
   return (
     <EditCategoryForm
-      parentCategories={parentCategories}
+      parentPrimaryCategories={parentPrimaryCategories}
+      parentSecondaryCategories={parentSecondaryCategories}
+      parentTertiaryCategories={parentTertiaryCategories}
       categoryDetails={categoryDetails}
     />
   );

@@ -21,15 +21,18 @@ export default async function CreateCategoryPage({
     category_type: string;
   };
 }) {
-  const { category_type } = searchParams;
-  const parentCategories = await getParentCategories(
-    category_type as CategoryType
-  );
+  const parentPrimaryCategories = await getParentCategories("PRIMARY");
+  const parentSecondaryCategories = await getParentCategories("SECONDARY");
+  const parentTertiaryCategories = await getParentCategories("TERTIARY");
 
   return (
     <ContentLayout title="Create Category">
       <DynamicBreadcrumb items={breadcrumbItems} />
-      <CreateCategoryForm parentCategories={parentCategories} />
+      <CreateCategoryForm
+        parentPrimaryCategories={parentPrimaryCategories}
+        parentSecondaryCategories={parentSecondaryCategories}
+        parentTertiaryCategories={parentTertiaryCategories}
+      />
     </ContentLayout>
   );
 }
