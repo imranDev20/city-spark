@@ -10,12 +10,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Category } from "@prisma/client";
+import { Category, CategoryType } from "@prisma/client";
 import React, { useEffect, useState, useTransition } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { CategoryFormInputType } from "../../schema";
 import { updateCategory } from "../../actions";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,7 @@ import {
 } from "../../new/_components/category-image-uploder";
 import { useEdgeStore } from "@/lib/edgestore";
 import { CATEGORY_TYPE } from "@/constant/constants";
+import useQueryString from "@/hooks/use-query-string";
 
 const EditCategoryForm = ({
   parentCategories,
@@ -53,9 +54,14 @@ const EditCategoryForm = ({
 }) => {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const pathname = usePathname();
+  const { createQueryString } = useQueryString();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [fileState, setFileState] = useState<FileState | null>(null);
   const { edgestore } = useEdgeStore();
+
+  const selectedType = searchParams.get("category_type") as CategoryType;
 
   function updateFileProgress(key: string, progress: FileState["progress"]) {
     setFileState((fileState) => {
@@ -88,10 +94,20 @@ const EditCategoryForm = ({
       reset({
         name: categoryDetails?.name ?? "",
         parentCategory: categoryDetails.parentId ?? "",
-        type: categoryDetails.type ?? "PRIMARY",
+        type: selectedType || categoryDetails.type || "PRIMARY",
       });
     }
-  }, [categoryDetails, reset]);
+  }, [categoryDetails, reset, selectedType]);
+
+  useEffect(() => {
+    if (categoryDetails?.image) {
+      setFileState({
+        file: categoryDetails.image,
+        progress: "COMPLETE",
+        key: "",
+      });
+    }
+  }, [categoryDetails?.image]);
 
   const breadcrumbItems = [
     { label: "Dashboard", href: "/admin" },
@@ -128,6 +144,10 @@ const EditCategoryForm = ({
       });
     }
   };
+
+  console.log(form.watch("type"));
+
+  console.log(selectedType, "QUERY STRING");
 
   return (
     <ContentLayout title="Edit Category">
@@ -207,18 +227,27 @@ const EditCategoryForm = ({
                             <FormLabel>Type</FormLabel>
                             <FormControl>
                               <Select
+                                value={field.value}
                                 onValueChange={(currentValue) => {
                                   if (currentValue) {
                                     field.onChange(currentValue);
+
+                                    router.push(
+                                      `${pathname}?${createQueryString({
+                                        category_type: currentValue,
+                                        parent_category_id: "",
+                                      })}`,
+                                      {
+                                        scroll: false,
+                                      }
+                                    );
                                   }
                                 }}
-                                value={field.value}
                               >
                                 <SelectTrigger>
-                                  <SelectValue
-                                    placeholder={`Enter category type`}
-                                  />
+                                  <SelectValue placeholder="Enter category type" />
                                 </SelectTrigger>
+
                                 <SelectContent>
                                   {CATEGORY_TYPE.map((categoryType) => (
                                     <SelectItem
