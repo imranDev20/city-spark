@@ -69,7 +69,7 @@ export default function CategoriesNavigation() {
               <ul className="ml-5 mt-2 space-y-3">
                 {category.subcategories.map((subcategory) => (
                   <li key={subcategory.id}>
-                    <Link href={`/${subcategory.id}`}>
+                    <Link href={`/products/${category.name}/${subcategory.id}`}>
                       <p className="text-gray-700  cursor-pointer">
                         {subcategory.name}
                       </p>
