@@ -10,8 +10,7 @@ import NewProducts from "./_components/new-products";
 export default async function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
-      <main className="min-h-[calc(100vh-57px-97px)] flex-1">
-        <CategoriesIcons />
+      <main className="min-h-[calc(100vh-57px-97px)] flex-1">       
         <EmblaCarousel />
         <Features />
         <BestSellingProductsCard />
