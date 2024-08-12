@@ -1,6 +1,6 @@
+import { initEdgeStoreClient } from "@edgestore/server/core";
 import { initEdgeStore } from "@edgestore/server";
 import { createEdgeStoreNextHandler } from "@edgestore/server/adapters/next/app";
-import { initEdgeStoreClient } from "@edgestore/server/core";
 import { z } from "zod";
 
 const es = initEdgeStore.create();
@@ -24,15 +24,14 @@ const edgeStoreRouter = es.router({
       return true; // allow delete
     }),
 });
-const handler = createEdgeStoreNextHandler({
+
+export const handler = createEdgeStoreNextHandler({
   router: edgeStoreRouter,
 });
-
 export const backendClient = initEdgeStoreClient({
   router: edgeStoreRouter,
 });
 
-export { handler as GET, handler as POST };
 /**
  * This type is used to create the type-safe client for the frontend.
  */

@@ -100,10 +100,10 @@ export default function EditProductForm({
 }: {
   productDetails: ProductWithRelations;
   brands: Brand[];
-  primaryCategories: Category[];
-  secondaryCategories: Category[];
-  tertiaryCategories: Category[];
-  quaternaryCategories: Category[];
+  primaryCategories: Category[] | null;
+  secondaryCategories: Category[] | null;
+  tertiaryCategories: Category[] | null;
+  quaternaryCategories: Category[] | null;
   templates: Template[];
   templateDetails: TemplateWithRelations | null;
 }) {
@@ -163,33 +163,36 @@ export default function EditProductForm({
   const form = useForm<ProductFormInputType>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      name: "",
-      description: "",
-      brand: "",
-      model: "",
-      type: "",
-      warranty: "",
-      guarantee: "",
-      tradePrice: 0,
-      contractPrice: 0,
-      promotionalPrice: 0,
-      unit: "",
-      weight: 0,
-      color: "",
-      length: 0,
-      width: 0,
-      height: 0,
-      material: "",
-      template: "",
-      productTemplate: "",
-      features: [{ feature: "" }],
-      category: "",
-      status: "DRAFT",
-      images: [
-        {
-          image: "",
-        },
-      ],
+      name: productDetails.name,
+      description: productDetails.description || "",
+      brand: productDetails.brandId || "",
+      model: productDetails.model || "",
+      type: productDetails.type || "",
+      warranty: productDetails.warranty || "",
+      guarantee: productDetails.guarantee || "",
+      tradePrice: productDetails.tradePrice?.toString() || "",
+      contractPrice: productDetails.contractPrice?.toString() || "",
+      promotionalPrice: productDetails.promotionalPrice?.toString() || "",
+      unit: productDetails.unit || "",
+      weight: productDetails.weight?.toString() || "",
+      color: productDetails.color || "",
+      length: productDetails.length?.toString() || "",
+      width: productDetails.width?.toString() || "",
+      height: productDetails.height?.toString() || "",
+      material: productDetails.material?.toString() || "",
+      template: productDetails.productTemplate?.templateId || "",
+      productTemplate: productDetails.productTemplateId || "",
+      features: productDetails.features.map((item) => ({
+        feature: item,
+      })),
+      images: productDetails.images.map((item) => ({ image: item })),
+      primaryCategory: productDetails.primaryCategoryId || "",
+      secondaryCategory: productDetails.secondaryCategoryId || "",
+      tertiaryCategory: productDetails.tertiaryCategoryId || "",
+      quaternaryCategory: productDetails.quaternaryCategoryId || "",
+      status: productDetails.status || "DRAFT",
+      shape: productDetails.shape || "",
+      volume: productDetails.volume || "",
       manuals: [],
     },
   });
@@ -200,6 +203,7 @@ export default function EditProductForm({
     formState: { isDirty },
     handleSubmit,
     getValues,
+    watch,
   } = form;
 
   const {
@@ -232,94 +236,6 @@ export default function EditProductForm({
 
   useEffect(() => {
     if (productDetails) {
-      const {
-        name,
-        contractPrice,
-        brandId,
-        color,
-        features,
-        description,
-        guarantee,
-        height,
-        length,
-        model,
-        material,
-        status,
-        promotionalPrice,
-        unit,
-        warranty,
-        width,
-        manuals,
-        tradePrice,
-        type,
-        weight,
-        categoryId,
-        productTemplateId,
-        productTemplate,
-        images,
-        primaryCategoryId,
-        secondaryCategoryId,
-        tertiaryCategoryId,
-        quaternaryCategoryId,
-      } = productDetails;
-
-      reset({
-        name: name ?? "",
-        contractPrice: contractPrice ?? 0,
-        brand: brandId ?? "",
-        color: color ?? "",
-        features:
-          features?.map((feature) => ({
-            feature,
-          })) ?? [],
-        height: height ?? 0,
-        description: description ?? "",
-        length: length ?? 0,
-        manuals: manuals ?? [],
-        guarantee: guarantee ?? "",
-        type: type ?? "",
-        material: material ?? "",
-        model: model ?? "",
-        tradePrice: tradePrice ?? 0,
-        unit: unit ?? "",
-        promotionalPrice: promotionalPrice ?? 0,
-        weight: weight ?? 0,
-        width: width ?? 0,
-        status: status ?? "DRAFT",
-        warranty: warranty ?? "",
-        category: categoryId ?? "",
-        template: selectedTemplate || productTemplate?.templateId || "",
-
-        productTemplate: productTemplateId ?? "",
-
-        images: images.map((image) => ({
-          image,
-        })),
-
-        primaryCategory: selectedPrimaryCategory || primaryCategoryId || "",
-
-        secondaryCategory:
-          selectedSecondaryCategory || secondaryCategoryId || "",
-
-        tertiaryCategory: selectedTertiaryCategory || tertiaryCategoryId || "",
-
-        quaternaryCategory:
-          selectedQuaternaryCategory || quaternaryCategoryId || "",
-      });
-    }
-  }, [
-    productDetails,
-    reset,
-    selectedTemplate,
-    templateDetails,
-    selectedPrimaryCategory,
-    selectedSecondaryCategory,
-    selectedTertiaryCategory,
-    selectedQuaternaryCategory,
-  ]);
-
-  useEffect(() => {
-    if (productDetails) {
       setFileStates(
         productDetails.images.map((image) => ({
           file: image,
@@ -329,8 +245,6 @@ export default function EditProductForm({
       );
     }
   }, [productDetails]);
-
-  console.log(getValues());
 
   useEffect(() => {
     if (productDetails && selectedTemplate) {
@@ -365,8 +279,6 @@ export default function EditProductForm({
   const onEditProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
   ) => {
-    console.log(data);
-
     if (productDetails?.id) {
       startTransition(async () => {
         const result = await updateProduct(productDetails?.id, data);
@@ -387,6 +299,7 @@ export default function EditProductForm({
             })
           );
         }
+
         if (result.success) {
           router.push(`/admin/products/${result.data?.id}`);
           toast({
@@ -404,6 +317,10 @@ export default function EditProductForm({
       });
     }
   };
+
+  const isPrimaryCategory = !!watch("primaryCategory");
+  const isSecondaryCategory = !!watch("secondaryCategory");
+  const isTertiaryCategory = !!watch("tertiaryCategory");
 
   return (
     <ContentLayout title="Edit Product">
@@ -431,7 +348,7 @@ export default function EditProductForm({
 
               <LoadingButton
                 type="submit"
-                disabled={!isDirty || isPending}
+                disabled={isPending}
                 size="sm"
                 loading={isPending}
                 className="text-xs font-semibold h-8"
@@ -1107,7 +1024,7 @@ export default function EditProductForm({
                                 <Button
                                   variant="outline"
                                   role="combobox"
-                                  aria-expanded={openBrandComboBox}
+                                  aria-expanded={openPrimaryCategoriesComboBox}
                                   className="justify-between"
                                 >
                                   {field.value ? (
@@ -1153,6 +1070,30 @@ export default function EditProductForm({
                                                 )}`,
                                                 {
                                                   scroll: false,
+                                                }
+                                              );
+
+                                              form.setValue(
+                                                "secondaryCategory",
+                                                "",
+                                                {
+                                                  shouldDirty: true,
+                                                }
+                                              );
+
+                                              form.setValue(
+                                                "tertiaryCategory",
+                                                "",
+                                                {
+                                                  shouldDirty: true,
+                                                }
+                                              );
+
+                                              form.setValue(
+                                                "quaternaryCategory",
+                                                "",
+                                                {
+                                                  shouldDirty: true,
                                                 }
                                               );
 
@@ -1204,6 +1145,7 @@ export default function EditProductForm({
                                     openSecondaryCategoriesComboBox
                                   }
                                   className="justify-between"
+                                  disabled={!isPrimaryCategory}
                                 >
                                   {field.value ? (
                                     secondaryCategories?.find(
@@ -1252,6 +1194,23 @@ export default function EditProductForm({
                                                   scroll: false,
                                                 }
                                               );
+
+                                              form.setValue(
+                                                "tertiaryCategory",
+                                                "",
+                                                {
+                                                  shouldDirty: true,
+                                                }
+                                              );
+
+                                              form.setValue(
+                                                "quaternaryCategory",
+                                                "",
+                                                {
+                                                  shouldDirty: true,
+                                                }
+                                              );
+
                                               setOpenSecondaryCategoriesComboBox(
                                                 false
                                               );
@@ -1300,6 +1259,9 @@ export default function EditProductForm({
                                     openSecondaryCategoriesComboBox
                                   }
                                   className="justify-between"
+                                  disabled={
+                                    !isPrimaryCategory || !isSecondaryCategory
+                                  }
                                 >
                                   {field.value ? (
                                     tertiaryCategories?.find(
@@ -1353,6 +1315,14 @@ export default function EditProductForm({
                                                 }
                                               );
 
+                                              form.setValue(
+                                                "quaternaryCategory",
+                                                "",
+                                                {
+                                                  shouldDirty: true,
+                                                }
+                                              );
+
                                               setOpenTertiaryCategoriesComboBox(
                                                 false
                                               );
@@ -1398,6 +1368,11 @@ export default function EditProductForm({
                                   variant="outline"
                                   role="combobox"
                                   className="justify-between"
+                                  disabled={
+                                    !isPrimaryCategory ||
+                                    !isSecondaryCategory ||
+                                    !isTertiaryCategory
+                                  }
                                 >
                                   {field.value ? (
                                     quaternaryCategories?.find(
@@ -1484,6 +1459,7 @@ export default function EditProductForm({
                 </CardContent>
               </Card>
             </div>
+
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
               <Card x-chunk="dashboard-07-chunk-3">
                 <CardHeader>
@@ -1647,6 +1623,7 @@ export default function EditProductForm({
               </Card>
             </div>
           </div>
+
           <div className="flex items-center justify-center gap-2 md:hidden">
             <Button variant="outline" size="sm">
               Discard

@@ -19,6 +19,7 @@ export default async function AdminProductDetailsPage({
     primary_category_id: string;
     secondary_category_id: string;
     tertiary_category_id: string;
+    sort: string;
   };
 }) {
   const { product_id } = params;
@@ -32,28 +33,26 @@ export default async function AdminProductDetailsPage({
   const productDetails = await getProductById(product_id);
   const brands = await getBrands();
   const templates = await getTemplates();
+
   const primaryCategories = await getCategories("PRIMARY");
 
   const secondaryCategories = await getCategories(
     "SECONDARY",
-    productDetails.primaryCategoryId || primary_category_id
+    primary_category_id || productDetails.primaryCategoryId || ""
   );
 
   const tertiaryCategories = await getCategories(
     "TERTIARY",
-    productDetails.secondaryCategoryId || secondary_category_id
+    secondary_category_id || productDetails.secondaryCategoryId || ""
   );
-
   const quaternaryCategories = await getCategories(
     "QUATERNARY",
-    productDetails.tertiaryCategoryId || tertiary_category_id
+    tertiary_category_id || productDetails.tertiaryCategoryId || ""
   );
 
   const templateDetails = await getTemplateById(
     (template_id || productDetails.productTemplate?.templateId) as string
   );
-
-  console.log(secondaryCategories);
 
   return (
     <>
@@ -61,10 +60,10 @@ export default async function AdminProductDetailsPage({
         productDetails={productDetails}
         brands={brands}
         templates={templates}
-        primaryCategories={primaryCategories || []}
-        secondaryCategories={secondaryCategories || []}
-        tertiaryCategories={tertiaryCategories || []}
-        quaternaryCategories={quaternaryCategories || []}
+        primaryCategories={primaryCategories}
+        secondaryCategories={secondaryCategories}
+        tertiaryCategories={tertiaryCategories}
+        quaternaryCategories={quaternaryCategories}
         templateDetails={templateDetails}
       />
     </>

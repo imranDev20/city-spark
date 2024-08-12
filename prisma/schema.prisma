@@ -12,9 +12,6 @@ model Category {
     id                        String       @id @default(cuid())
     name                      String
     type                      CategoryType
-    parentCategory            Category?    @relation("ChildCategories", fields: [parentId], references: [id])
-    parentId                  String?
-    childCategories           Category[]   @relation("ChildCategories")
     parentPrimaryCategory     Category?    @relation("PrimaryChildCategories", fields: [parentPrimaryCategoryId], references: [id])
     parentPrimaryCategoryId   String?
     primaryChildCategories    Category[]   @relation("PrimaryChildCategories")
@@ -24,7 +21,6 @@ model Category {
     parentTertiaryCategory    Category?    @relation("TertiaryChildCategories", fields: [parentTertiaryCategoryId], references: [id])
     parentTertiaryCategoryId  String?
     tertiaryChildCategories   Category[]   @relation("TertiaryChildCategories")
-    products                  Product[]
     primaryProducts           Product[]    @relation("PrimaryProductCategory")
     secondaryProducts         Product[]    @relation("SecondaryProductCategory")
     tertiaryProducts          Product[]    @relation("TertiaryProductCategory")
@@ -60,11 +56,10 @@ model Product {
     height               Float?
     material             String?
     volume               String?
+    shape                String?
     productTemplate      ProductTemplate? @relation(fields: [productTemplateId], references: [id])
     productTemplateId    String?
     features             String[]
-    category             Category?        @relation(fields: [categoryId], references: [id])
-    categoryId           String?
     primaryCategory      Category?        @relation("PrimaryProductCategory", fields: [primaryCategoryId], references: [id])
     primaryCategoryId    String?
     secondaryCategory    Category?        @relation("SecondaryProductCategory", fields: [secondaryCategoryId], references: [id])

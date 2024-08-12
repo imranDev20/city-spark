@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenuContent,
@@ -18,10 +19,13 @@ import React, { useTransition } from "react";
 import Image from "next/image";
 import useQueryString from "@/hooks/use-query-string";
 import { deleteCategory } from "../actions";
+import PlaceholderImage from "@/images/placeholder-image.jpg";
 
 export type CategoryWithRelations = Prisma.CategoryGetPayload<{
   include: {
-    parentCategory: true;
+    parentPrimaryCategory: true;
+    parentSecondaryCategory: true;
+    parentTertiaryCategory: true;
   };
 }>;
 
@@ -57,6 +61,11 @@ export default function CategoriesTableRow({
     });
   };
 
+  const directParent =
+    category.parentTertiaryCategory ||
+    category.parentSecondaryCategory ||
+    category.parentPrimaryCategory;
+
   return (
     <TableRow
       key={category.id}
@@ -64,20 +73,30 @@ export default function CategoriesTableRow({
         router.push(
           `/admin/categories/${category.id}?${createQueryString({
             category_type: category.type,
-            parent_category_id: category.parentId || "",
+            parent_primary_id: category.parentPrimaryCategoryId || "",
+            parent_secondary_id: category.parentSecondaryCategoryId || "",
+            parent_tertiary_id: category.parentTertiaryCategoryId || "",
           })}`
         )
       }
       className={`cursor-pointer ${isPending ? "opacity-30" : "opacity-100"}`}
     >
       <TableCell className="hidden sm:table-cell">
-        {category?.image && (
+        {category?.image ? (
           <Image
             alt="Category Image"
             className="aspect-square rounded-md object-cover"
             height="64"
             src={category.image}
-            // src=''
+            width="64"
+          />
+        ) : (
+          <Image
+            alt="Category Image image"
+            className="aspect-square rounded-md object-cover border border-input"
+            height="64"
+            src={PlaceholderImage}
+            loading="lazy"
             width="64"
           />
         )}
@@ -85,10 +104,10 @@ export default function CategoriesTableRow({
       <TableCell className="font-medium flex-1">{category.name} </TableCell>
       <TableCell className="hidden md:table-cell">{category.type} </TableCell>
       <TableCell className="hidden md:table-cell">
-        {category?.parentCategory
-          ? `${category.parentCategory.name} (${
-              category.parentCategory.type.charAt(0).toUpperCase() +
-              category.parentCategory.type.slice(1).toLowerCase()
+        {directParent
+          ? `${directParent.name} (${
+              directParent.type.charAt(0).toUpperCase() +
+              directParent.type.slice(1).toLowerCase()
             })`
           : "N/A"}
       </TableCell>

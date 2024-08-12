@@ -58,6 +58,11 @@ import { Brand, Category, Prisma, Template } from "@prisma/client";
 import ManualsInstructionsUpload from "../../_components/manuals-instructions-upload";
 import useQueryString from "@/hooks/use-query-string";
 import { TemplateWithRelations } from "../../[product_id]/_components/edit-product-form";
+import { useEdgeStore } from "@/lib/edgestore";
+import {
+  FileState,
+  MultiImageDropzone,
+} from "../../_components/product-image-uploader";
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -95,15 +100,42 @@ export default function CreateProductForm({
 }) {
   const router = useRouter();
   const { toast } = useToast();
+
   const [openBrandComboBox, setOpenBrandComboBox] = useState<boolean>(false);
   const [openTemplateComboBox, setOpenTemplateComboBox] =
     useState<boolean>(false);
   const [openCategoriesComboBox, setOpenCategoriesComboBox] =
     useState<boolean>(false);
+
+  const [openPrimaryCategoriesComboBox, setOpenPrimaryCategoriesComboBox] =
+    useState<boolean>(false);
+
+  const [openSecondaryCategoriesComboBox, setOpenSecondaryCategoriesComboBox] =
+    useState<boolean>(false);
+
+  const [openTertiaryCategoreisComboBox, setOpenTertiaryCategoriesComboBox] =
+    useState<boolean>(false);
+
+  const [
+    openQuaternaryCategoriesComboBox,
+    setOpenQuaternaryCategoriesComboBox,
+  ] = useState<boolean>(false);
+
   const { createQueryString } = useQueryString();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
   const selectedTemplate = searchParams.get("template_id") || null;
+  const selectedPrimaryCategory = searchParams.get("primary_category_id") || "";
+  const selectedSecondaryCategory =
+    searchParams.get("secondary_category_id") || "";
+  const selectedTertiaryCategory =
+    searchParams.get("tertiary_category_id") || "";
+  const selectedQuaternaryCategory =
+    searchParams.get("quaternary_category_id") || "";
+
+  const { edgestore } = useEdgeStore();
+  const [fileStates, setFileStates] = useState<FileState[]>([]);
 
   const [isPending, startTransition] = useTransition();
 
@@ -118,12 +150,34 @@ export default function CreateProductForm({
           feature: "",
         },
       ],
-
-      category: "",
+      model: "",
+      brand: "",
+      images: [],
+      shape: "",
+      volume: "",
+      weight: "",
+      length: "",
+      width: "",
+      height: "",
+      material: "",
+      color: "",
+      template: "",
+      contractPrice: "",
+      tradePrice: "",
+      guarantee: "",
+      warranty: "",
+      promotionalPrice: "",
+      type: "",
+      unit: "",
+      productTemplate: "",
+      primaryCategory: "",
+      secondaryCategory: "",
+      tertiaryCategory: "",
+      quaternaryCategory: "",
     },
   });
 
-  const { control, handleSubmit } = form;
+  const { control, handleSubmit, watch, reset, getValues } = form;
 
   const {
     fields: featureFields,
@@ -139,10 +193,28 @@ export default function CreateProductForm({
     name: "productTemplateFields",
   });
 
+  const { append: appendImages } = useFieldArray({
+    control,
+    name: "images",
+  });
+
+  function updateFileProgress(key: string, progress: FileState["progress"]) {
+    setFileStates((fileStates) => {
+      const newFileStates = structuredClone(fileStates);
+      const fileState = newFileStates.find(
+        (fileState) => fileState.key === key
+      );
+      if (fileState) {
+        fileState.progress = progress;
+      }
+      return newFileStates;
+    });
+  }
+
   useEffect(() => {
     if (templateDetails) {
-      form.reset({
-        ...form.getValues(),
+      reset({
+        ...getValues(),
         template: selectedTemplate || "",
         productTemplateFields: templateDetails?.fields.map((item) => ({
           fieldId: item.id,
@@ -152,13 +224,31 @@ export default function CreateProductForm({
         })),
       });
     }
-  }, [form, templateDetails, selectedTemplate]);
+  }, [reset, getValues, templateDetails, selectedTemplate]);
 
   const onCreateProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
   ) => {
     startTransition(async () => {
       const result = await createProduct(data);
+
+      const images = form.watch("images");
+
+      if (images) {
+        await Promise.all(
+          images.map(async ({ image }) => {
+            try {
+              const res = await edgestore.publicImages.confirmUpload({
+                url: image,
+              });
+              return { url: image, success: true, result: res };
+            } catch (error) {
+              console.error(`Failed to confirm upload for ${image}:`, error);
+              return { url: image, success: false, error };
+            }
+          })
+        );
+      }
 
       if (result.success) {
         toast({
@@ -176,6 +266,10 @@ export default function CreateProductForm({
       }
     });
   };
+
+  const isPrimaryCategory = !!watch("primaryCategory");
+  const isSecondaryCategory = !!watch("secondaryCategory");
+  const isTertiaryCategory = !!watch("tertiaryCategory");
 
   return (
     <Form {...form}>
@@ -688,15 +782,6 @@ export default function CreateProductForm({
                                           onSelect={() => {
                                             field.onChange(template.id);
                                             setOpenTemplateComboBox(false);
-
-                                            router.push(
-                                              `${pathname}?${createQueryString({
-                                                template_id: template.id,
-                                              })}`,
-                                              {
-                                                scroll: false,
-                                              }
-                                            );
                                           }}
                                         >
                                           <Check
@@ -757,7 +842,7 @@ export default function CreateProductForm({
                                 ) : (
                                   <Select
                                     onValueChange={(currentValue) => {
-                                      if (currentValue !== "") {
+                                      if (currentValue) {
                                         field.onChange(currentValue);
                                       }
                                     }}
@@ -857,30 +942,29 @@ export default function CreateProductForm({
                 <div className="grid gap-6 sm:grid-cols-2">
                   <FormField
                     control={control}
-                    name="category"
+                    name="primaryCategory"
                     render={({ field }) => (
                       <FormItem className="grid gap-1">
-                        <FormLabel>Category</FormLabel>
+                        <FormLabel>Primary</FormLabel>
                         <FormControl>
                           <Popover
-                            open={openCategoriesComboBox}
-                            onOpenChange={setOpenCategoriesComboBox}
+                            open={openPrimaryCategoriesComboBox}
+                            onOpenChange={setOpenPrimaryCategoriesComboBox}
                           >
                             <PopoverTrigger asChild>
                               <Button
                                 variant="outline"
                                 role="combobox"
-                                aria-expanded={openBrandComboBox}
+                                aria-expanded={openPrimaryCategoriesComboBox}
                                 className="justify-between"
                               >
                                 {field.value ? (
                                   primaryCategories?.find(
-                                    (primaryCat) =>
-                                      primaryCat.id === field.value
+                                    (brand) => brand.id === field.value
                                   )?.name
                                 ) : (
                                   <p className="text-muted-foreground">
-                                    Select a category
+                                    Select a primary category
                                   </p>
                                 )}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -901,7 +985,34 @@ export default function CreateProductForm({
                                           value={primaryCategory.name}
                                           onSelect={() => {
                                             field.onChange(primaryCategory.id);
-                                            setOpenCategoriesComboBox(false);
+
+                                            form.setValue(
+                                              "secondaryCategory",
+                                              "",
+                                              {
+                                                shouldDirty: true,
+                                              }
+                                            );
+
+                                            form.setValue(
+                                              "tertiaryCategory",
+                                              "",
+                                              {
+                                                shouldDirty: true,
+                                              }
+                                            );
+
+                                            form.setValue(
+                                              "quaternaryCategory",
+                                              "",
+                                              {
+                                                shouldDirty: true,
+                                              }
+                                            );
+
+                                            setOpenPrimaryCategoriesComboBox(
+                                              false
+                                            );
                                           }}
                                         >
                                           <Check
@@ -927,60 +1038,295 @@ export default function CreateProductForm({
                     )}
                   />
 
-                  <div className="grid gap-3">
-                    <Label htmlFor="secondary-category">
-                      Secondary (optional)
-                    </Label>
-                    <Select>
-                      <SelectTrigger
-                        id="secondary-category"
-                        aria-label="Select secondary category"
-                      >
-                        <SelectValue placeholder="Select subcategory" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="t-shirts">T-Shirts</SelectItem>
-                        <SelectItem value="hoodies">Hoodies</SelectItem>
-                        <SelectItem value="sweatshirts">Sweatshirts</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="tertiary-category">
-                      Tertiary (optional)
-                    </Label>
-                    <Select>
-                      <SelectTrigger
-                        id="tertiary-category"
-                        aria-label="Select tertiary category"
-                      >
-                        <SelectValue placeholder="Select subcategory" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="t-shirts">T-Shirts</SelectItem>
-                        <SelectItem value="hoodies">Hoodies</SelectItem>
-                        <SelectItem value="sweatshirts">Sweatshirts</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="quaternary-category">
-                      Quaternary (optional)
-                    </Label>
-                    <Select>
-                      <SelectTrigger
-                        id="quaternary-category"
-                        aria-label="Select quaternary category"
-                      >
-                        <SelectValue placeholder="Select subcategory" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="t-shirts">T-Shirts</SelectItem>
-                        <SelectItem value="hoodies">Hoodies</SelectItem>
-                        <SelectItem value="sweatshirts">Sweatshirts</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <FormField
+                    control={control}
+                    name="secondaryCategory"
+                    render={({ field }) => (
+                      <FormItem className="grid gap-1">
+                        <FormLabel>Secondary</FormLabel>
+                        <FormControl>
+                          <Popover
+                            open={openSecondaryCategoriesComboBox}
+                            onOpenChange={setOpenSecondaryCategoriesComboBox}
+                          >
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={openSecondaryCategoriesComboBox}
+                                className="justify-between"
+                                disabled={!isPrimaryCategory}
+                              >
+                                {field.value ? (
+                                  secondaryCategories?.find(
+                                    (brand) => brand.id === field.value
+                                  )?.name
+                                ) : (
+                                  <p className="text-muted-foreground">
+                                    Select a secondary category
+                                  </p>
+                                )}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="p-0">
+                              <Command>
+                                <CommandInput placeholder="Search brands..." />
+                                <CommandList>
+                                  <CommandEmpty>
+                                    No framework found.
+                                  </CommandEmpty>
+                                  <CommandGroup>
+                                    {secondaryCategories?.map(
+                                      (secondaryCategory) => (
+                                        <CommandItem
+                                          key={secondaryCategory.id}
+                                          value={secondaryCategory.name}
+                                          onSelect={() => {
+                                            field.onChange(
+                                              secondaryCategory.id
+                                            );
+
+                                            router.push(
+                                              `${pathname}?${createQueryString({
+                                                primary_category_id:
+                                                  selectedPrimaryCategory || "",
+                                                secondary_category_id:
+                                                  secondaryCategory.id,
+
+                                                tertiary_category_id: "",
+                                                quaternary_category_id: "",
+                                              })}`,
+                                              {
+                                                scroll: false,
+                                              }
+                                            );
+                                            setOpenSecondaryCategoriesComboBox(
+                                              false
+                                            );
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              field.value ===
+                                                secondaryCategory.id
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            )}
+                                          />
+                                          {secondaryCategory.name}
+                                        </CommandItem>
+                                      )
+                                    )}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={control}
+                    name="tertiaryCategory"
+                    render={({ field }) => (
+                      <FormItem className="grid gap-1">
+                        <FormLabel>Tertiary</FormLabel>
+                        <FormControl>
+                          <Popover
+                            open={openTertiaryCategoreisComboBox}
+                            onOpenChange={setOpenTertiaryCategoriesComboBox}
+                          >
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={openSecondaryCategoriesComboBox}
+                                className="justify-between"
+                                disabled={
+                                  !isPrimaryCategory || !isSecondaryCategory
+                                }
+                              >
+                                {field.value ? (
+                                  tertiaryCategories?.find(
+                                    (tertCat) => tertCat.id === field.value
+                                  )?.name
+                                ) : (
+                                  <p className="text-muted-foreground">
+                                    Select a tertiary category
+                                  </p>
+                                )}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="p-0">
+                              <Command>
+                                <CommandInput placeholder="Search brands..." />
+                                <CommandList>
+                                  <CommandEmpty>
+                                    No framework found.
+                                  </CommandEmpty>
+                                  <CommandGroup>
+                                    {tertiaryCategories?.map(
+                                      (tertiaryCategory) => (
+                                        <CommandItem
+                                          key={tertiaryCategory.id}
+                                          value={tertiaryCategory.name}
+                                          onSelect={() => {
+                                            field.onChange(tertiaryCategory.id);
+
+                                            router.push(
+                                              `${pathname}?${createQueryString({
+                                                primary_category_id:
+                                                  selectedPrimaryCategory || "",
+
+                                                secondary_category_id:
+                                                  selectedSecondaryCategory ||
+                                                  "",
+
+                                                tertiary_category_id:
+                                                  tertiaryCategory.id,
+
+                                                quaternary_category_id: "",
+                                              })}`,
+                                              {
+                                                scroll: false,
+                                              }
+                                            );
+
+                                            setOpenTertiaryCategoriesComboBox(
+                                              false
+                                            );
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              field.value ===
+                                                tertiaryCategory.id
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            )}
+                                          />
+                                          {tertiaryCategory.name}
+                                        </CommandItem>
+                                      )
+                                    )}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={control}
+                    name="quaternaryCategory"
+                    render={({ field }) => (
+                      <FormItem className="grid gap-1">
+                        <FormLabel>Quaternary</FormLabel>
+                        <FormControl>
+                          <Popover
+                            open={openQuaternaryCategoriesComboBox}
+                            onOpenChange={setOpenQuaternaryCategoriesComboBox}
+                          >
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className="justify-between"
+                                disabled={
+                                  !isPrimaryCategory ||
+                                  !isSecondaryCategory ||
+                                  !isTertiaryCategory
+                                }
+                              >
+                                {field.value ? (
+                                  quaternaryCategories?.find(
+                                    (quatCat) => quatCat.id === field.value
+                                  )?.name
+                                ) : (
+                                  <p className="text-muted-foreground">
+                                    Select a quaternary category
+                                  </p>
+                                )}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="p-0">
+                              <Command>
+                                <CommandInput placeholder="Search quaternary category..." />
+                                <CommandList>
+                                  <CommandEmpty>
+                                    No categories found
+                                  </CommandEmpty>
+                                  <CommandGroup>
+                                    {quaternaryCategories?.map(
+                                      (quaternaryCategory) => (
+                                        <CommandItem
+                                          key={quaternaryCategory.id}
+                                          value={quaternaryCategory.name}
+                                          onSelect={() => {
+                                            field.onChange(
+                                              quaternaryCategory.id
+                                            );
+
+                                            router.push(
+                                              `${pathname}?${createQueryString({
+                                                primary_category_id:
+                                                  selectedPrimaryCategory || "",
+
+                                                secondary_category_id:
+                                                  selectedSecondaryCategory ||
+                                                  "",
+
+                                                tertiary_category_id:
+                                                  selectedTertiaryCategory ||
+                                                  "",
+
+                                                quaternary_category_id:
+                                                  quaternaryCategory.id,
+                                              })}`,
+                                              {
+                                                scroll: false,
+                                              }
+                                            );
+                                            setOpenQuaternaryCategoriesComboBox(
+                                              false
+                                            );
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              field.value ===
+                                                quaternaryCategory.id
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            )}
+                                          />
+                                          {quaternaryCategory.name}
+                                        </CommandItem>
+                                      )
+                                    )}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -1044,7 +1390,76 @@ export default function CreateProductForm({
                       <FormLabel>
                         <h2 className="text-xl font-semibold tracking-tight"></h2>
                       </FormLabel>
-                      <FormControl></FormControl>
+                      <FormControl>
+                        <MultiImageDropzone
+                          value={fileStates}
+                          dropzoneOptions={{
+                            maxFiles: 6,
+                            maxSize: 1024 * 1024 * 1, // 1MB
+                          }}
+                          onChange={(files) => {
+                            setFileStates(files);
+                          }}
+                          onFilesAdded={async (addedFiles) => {
+                            const allFiles = [...fileStates, ...addedFiles];
+                            setFileStates(allFiles);
+
+                            await Promise.all(
+                              addedFiles.map(async (addedFileState) => {
+                                if (!(addedFileState.file instanceof File)) {
+                                  console.error(
+                                    "Expected a File object, but received:",
+                                    addedFileState.file
+                                  );
+                                  updateFileProgress(
+                                    addedFileState.key,
+                                    "ERROR"
+                                  );
+                                  return;
+                                }
+
+                                try {
+                                  const res =
+                                    await edgestore.publicImages.upload({
+                                      file: addedFileState.file,
+                                      options: {
+                                        temporary: true,
+                                      },
+                                      input: { type: "product" },
+                                      onProgressChange: async (progress) => {
+                                        updateFileProgress(
+                                          addedFileState.key,
+                                          progress
+                                        );
+                                        if (progress === 100) {
+                                          // wait 1 second to set it to complete
+                                          // so that the user can see the progress bar at 100%
+                                          await new Promise((resolve) =>
+                                            setTimeout(resolve, 1000)
+                                          );
+
+                                          updateFileProgress(
+                                            addedFileState.key,
+                                            "COMPLETE"
+                                          );
+                                        }
+                                      },
+                                    });
+
+                                  appendImages({
+                                    image: res.url,
+                                  });
+                                } catch (err) {
+                                  updateFileProgress(
+                                    addedFileState.key,
+                                    "ERROR"
+                                  );
+                                }
+                              })
+                            );
+                          }}
+                        />
+                      </FormControl>
                     </FormItem>
                   )}
                 />

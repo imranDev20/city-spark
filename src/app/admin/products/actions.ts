@@ -74,50 +74,23 @@ export const getTemplateById = cache(async (templateId: string) => {
 export const getCategories = cache(
   async (categoryType: CategoryType, parentId?: string) => {
     try {
-      let categories: Category[];
+      const categories = await prisma.category.findMany({
+        where: {
+          type: categoryType,
 
-      switch (categoryType) {
-        case "PRIMARY":
-          categories = await prisma.category.findMany({
-            where: {
-              type: "PRIMARY",
-            },
-          });
-          break;
+          ...(categoryType === "SECONDARY" && {
+            parentPrimaryCategoryId: parentId,
+          }),
 
-        case "SECONDARY":
-          categories = await prisma.category.findMany({
-            where: {
-              type: "SECONDARY",
-              parentPrimaryCategoryId: parentId,
-            },
-          });
-          break;
+          ...(categoryType === "TERTIARY" && {
+            parentSecondaryCategoryId: parentId,
+          }),
 
-        case "TERTIARY":
-          categories = await prisma.category.findMany({
-            where: {
-              type: "TERTIARY",
-              parentSecondaryCategoryId: parentId,
-            },
-          });
-          break;
-
-        case "QUATERNARY":
-          categories = await prisma.category.findMany({
-            where: {
-              type: "QUATERNARY",
-              parentTertiaryCategoryId: parentId,
-            },
-          });
-
-          break;
-
-        default:
-          console.error("Error fetching categories:");
-          throw new Error("Failed to fetch categories");
-          break;
-      }
+          ...(categoryType === "QUATERNARY" && {
+            parentTertiaryCategoryId: parentId,
+          }),
+        },
+      });
 
       return categories;
     } catch (error) {
@@ -160,53 +133,59 @@ export const getProductById = cache(async (productId: string) => {
 
 export async function createProduct(data: ProductFormInputType) {
   try {
-    let createdProductTemplateId: string | undefined;
+    let createdProductTemplate;
 
-    if (data.productTemplateFields && data.productTemplateFields?.length > 0) {
-      const createdProductTemplate = await prisma.productTemplate.create({
+    if (data.template) {
+      createdProductTemplate = await prisma.productTemplate.create({
         data: {
-          templateId: data.template || "",
+          templateId: data.template,
           fields: {
-            create: data.productTemplateFields?.map((field) => ({
-              templateFieldId: field.fieldId,
-              fieldValue: field.fieldValue,
+            create: data.productTemplateFields?.map((productTemplateField) => ({
+              templateFieldId: productTemplateField.fieldId,
+              fieldValue: productTemplateField.fieldValue,
             })),
           },
         },
+        include: {
+          fields: {
+            include: {
+              productTemplate: true,
+            },
+          },
+        },
       });
-      createdProductTemplateId = createdProductTemplate.id;
     }
 
     const createdProduct = await prisma.product.create({
       data: {
         name: data.name,
         description: data.description,
-        model: data.model,
-        type: data.type,
-        warranty: data.warranty,
-        guarantee: data.guarantee,
-        tradePrice: data.tradePrice,
-        contractPrice: data.contractPrice,
-        promotionalPrice: data.promotionalPrice,
-        unit: data.unit,
-        weight: data.weight,
-        color: data.color,
-        length: data.length,
-        width: data.width,
-        height: data.height,
-        material: data.material,
-        volume: data.volume,
-        productTemplate: createdProductTemplateId
+        model: data.model ?? null,
+        type: data.type ?? null,
+        warranty: data.warranty ?? null,
+        guarantee: data.guarantee ?? null,
+        tradePrice: data.tradePrice ? parseFloat(data.tradePrice) : null,
+        contractPrice: data.contractPrice
+          ? parseFloat(data.contractPrice)
+          : null,
+        promotionalPrice: data.promotionalPrice
+          ? parseFloat(data.promotionalPrice)
+          : null,
+        unit: data.unit ?? null,
+        weight: data.weight ? parseFloat(data.weight) : null,
+        color: data.color ?? null,
+        length: data.length ? parseFloat(data.length) : null,
+        width: data.width ? parseFloat(data.width) : null,
+        height: data.height ? parseFloat(data.height) : null,
+        material: data.material ?? null,
+        volume: data.volume ?? null,
+        shape: data.shape ?? null,
+        productTemplate: createdProductTemplate?.id
           ? {
-              connect: { id: createdProductTemplateId },
+              connect: { id: createdProductTemplate.id },
             }
           : undefined,
         features: data.features?.map((item) => item.feature),
-        category: data.category
-          ? {
-              connect: { id: data.category },
-            }
-          : undefined,
         primaryCategory: data.primaryCategory
           ? {
               connect: { id: data.primaryCategory },
@@ -278,84 +257,104 @@ export async function updateProduct(
   data: ProductFormInputType
 ) {
   try {
-    const updatedProductTemplate = await prisma.productTemplate.update({
-      where: { id: data.productTemplate },
-      data: {
-        templateId: data.template,
-        fields: {
-          deleteMany: {},
-          create: data.productTemplateFields?.map((productTemplateField) => ({
-            templateFieldId: productTemplateField.fieldId,
-            fieldValue: productTemplateField.fieldValue,
-          })),
-        },
-      },
-      include: {
-        fields: {
-          include: {
-            productTemplate: true,
+    let updatedProductTemplate;
+
+    if (data.productTemplate) {
+      updatedProductTemplate = await prisma.productTemplate.update({
+        where: { id: data.productTemplate },
+        data: {
+          templateId: data.template,
+          fields: {
+            deleteMany: {},
+            create: data.productTemplateFields?.map((productTemplateField) => ({
+              templateFieldId: productTemplateField.fieldId,
+              fieldValue: productTemplateField.fieldValue,
+            })),
           },
         },
-      },
-    });
-
-    // productTemplateId = updatedProductTemplate.id;
+        include: {
+          fields: {
+            include: {
+              productTemplate: true,
+            },
+          },
+        },
+      });
+    }
 
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
       data: {
         name: data.name,
         description: data.description,
-        model: data.model,
-        type: data.type,
-        warranty: data.warranty,
-        guarantee: data.guarantee,
-        tradePrice: data.tradePrice,
-        contractPrice: data.contractPrice,
-        promotionalPrice: data.promotionalPrice,
-        unit: data.unit,
-        weight: data.weight,
-        color: data.color,
-        length: data.length,
-        width: data.width,
-        height: data.height,
+        model: data.model ?? null,
+        type: data.type ?? null,
+        warranty: data.warranty ?? null,
+        guarantee: data.guarantee ?? null,
+        tradePrice: data.tradePrice ? parseFloat(data.tradePrice) : null,
+        contractPrice: data.contractPrice
+          ? parseFloat(data.contractPrice)
+          : null,
+        promotionalPrice: data.promotionalPrice
+          ? parseFloat(data.promotionalPrice)
+          : null,
+        unit: data.unit ?? null,
+        weight: data.weight ? parseFloat(data.weight) : null,
+        color: data.color ?? null,
+        length: data.length ? parseFloat(data.length) : null,
+        width: data.width ? parseFloat(data.width) : null,
+        height: data.height ? parseFloat(data.height) : null,
         material: data.material,
-        volume: data.volume,
-        status: data.status,
-        productTemplate: updatedProductTemplate.id
+        volume: data.volume ?? null,
+        shape: data.shape ?? null,
+        status: data.status ?? "DRAFT",
+        productTemplate: updatedProductTemplate?.id
           ? {
               connect: { id: updatedProductTemplate.id },
             }
-          : undefined,
+          : {
+              disconnect: true,
+            },
         features: data.features?.map((item) => item.feature),
         brand: data.brand
           ? {
               connect: { id: data.brand },
             }
-          : undefined,
+          : {
+              disconnect: true,
+            },
         manuals: {
           set: data.manuals ?? [],
         },
+
         primaryCategory: data.primaryCategory
           ? {
               connect: { id: data.primaryCategory },
             }
-          : undefined,
+          : {
+              disconnect: true,
+            },
         secondaryCategory: data.secondaryCategory
           ? {
               connect: { id: data.secondaryCategory },
             }
-          : undefined,
-        tertiaryCategory: data.tertiaryCategory
+          : {
+              disconnect: true,
+            },
+        tertiaryCategory: data?.tertiaryCategory
           ? {
               connect: { id: data.tertiaryCategory },
             }
-          : undefined,
-        quaternaryCategory: data.quaternaryCategory
+          : {
+              disconnect: true,
+            },
+        quaternaryCategory: data?.quaternaryCategory
           ? {
               connect: { id: data.quaternaryCategory },
             }
-          : undefined,
+          : {
+              disconnect: true,
+            },
 
         // we can delete the current images from edgesotre
         // and at the same time delete it from db
