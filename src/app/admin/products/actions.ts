@@ -77,10 +77,20 @@ export const getCategories = cache(
       const categories = await prisma.category.findMany({
         where: {
           type: categoryType,
+
+          ...(categoryType === "SECONDARY" && {
+            parentPrimaryCategoryId: parentId,
+          }),
+
+          ...(categoryType === "TERTIARY" && {
+            parentSecondaryCategoryId: parentId,
+          }),
+
+          ...(categoryType === "QUATERNARY" && {
+            parentTertiaryCategoryId: parentId,
+          }),
         },
       });
-
-      console.log(categories, categoryType, parentId);
 
       return categories;
     } catch (error) {
@@ -124,10 +134,11 @@ export const getProductById = cache(async (productId: string) => {
 export async function createProduct(data: ProductFormInputType) {
   try {
     let createdProductTemplate;
+
     if (data.template) {
       createdProductTemplate = await prisma.productTemplate.create({
         data: {
-          templateId: data.template || "",
+          templateId: data.template,
           fields: {
             create: data.productTemplateFields?.map((productTemplateField) => ({
               templateFieldId: productTemplateField.fieldId,
@@ -246,26 +257,30 @@ export async function updateProduct(
   data: ProductFormInputType
 ) {
   try {
-    const updatedProductTemplate = await prisma.productTemplate.update({
-      where: { id: data.productTemplate },
-      data: {
-        templateId: data.template,
-        fields: {
-          deleteMany: {},
-          create: data.productTemplateFields?.map((productTemplateField) => ({
-            templateFieldId: productTemplateField.fieldId,
-            fieldValue: productTemplateField.fieldValue,
-          })),
-        },
-      },
-      include: {
-        fields: {
-          include: {
-            productTemplate: true,
+    let updatedProductTemplate;
+
+    if (data.productTemplate) {
+      updatedProductTemplate = await prisma.productTemplate.update({
+        where: { id: data.productTemplate },
+        data: {
+          templateId: data.template,
+          fields: {
+            deleteMany: {},
+            create: data.productTemplateFields?.map((productTemplateField) => ({
+              templateFieldId: productTemplateField.fieldId,
+              fieldValue: productTemplateField.fieldValue,
+            })),
           },
         },
-      },
-    });
+        include: {
+          fields: {
+            include: {
+              productTemplate: true,
+            },
+          },
+        },
+      });
+    }
 
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
@@ -293,40 +308,53 @@ export async function updateProduct(
         volume: data.volume ?? null,
         shape: data.shape ?? null,
         status: data.status ?? "DRAFT",
-        productTemplate: updatedProductTemplate.id
+        productTemplate: updatedProductTemplate?.id
           ? {
               connect: { id: updatedProductTemplate.id },
             }
-          : undefined,
+          : {
+              disconnect: true,
+            },
         features: data.features?.map((item) => item.feature),
         brand: data.brand
           ? {
               connect: { id: data.brand },
             }
-          : undefined,
+          : {
+              disconnect: true,
+            },
         manuals: {
           set: data.manuals ?? [],
         },
+
         primaryCategory: data.primaryCategory
           ? {
               connect: { id: data.primaryCategory },
             }
-          : undefined,
+          : {
+              disconnect: true,
+            },
         secondaryCategory: data.secondaryCategory
           ? {
               connect: { id: data.secondaryCategory },
             }
-          : undefined,
-        tertiaryCategory: data.tertiaryCategory
+          : {
+              disconnect: true,
+            },
+        tertiaryCategory: data?.tertiaryCategory
           ? {
               connect: { id: data.tertiaryCategory },
             }
-          : undefined,
-        quaternaryCategory: data.quaternaryCategory
+          : {
+              disconnect: true,
+            },
+        quaternaryCategory: data?.quaternaryCategory
           ? {
               connect: { id: data.quaternaryCategory },
             }
-          : undefined,
+          : {
+              disconnect: true,
+            },
 
         // we can delete the current images from edgesotre
         // and at the same time delete it from db
