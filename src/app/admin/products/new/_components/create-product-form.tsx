@@ -150,7 +150,26 @@ export default function CreateProductForm({
           feature: "",
         },
       ],
-
+      model: "",
+      brand: "",
+      images: [],
+      shape: "",
+      volume: "",
+      weight: "",
+      length: "",
+      width: "",
+      height: "",
+      material: "",
+      color: "",
+      template: "",
+      contractPrice: "",
+      tradePrice: "",
+      guarantee: "",
+      warranty: "",
+      promotionalPrice: "",
+      type: "",
+      unit: "",
+      productTemplate: "",
       primaryCategory: "",
       secondaryCategory: "",
       tertiaryCategory: "",
@@ -158,7 +177,7 @@ export default function CreateProductForm({
     },
   });
 
-  const { control, handleSubmit } = form;
+  const { control, handleSubmit, watch, reset, getValues } = form;
 
   const {
     fields: featureFields,
@@ -194,8 +213,8 @@ export default function CreateProductForm({
 
   useEffect(() => {
     if (templateDetails) {
-      form.reset({
-        ...form.getValues(),
+      reset({
+        ...getValues(),
         template: selectedTemplate || "",
         productTemplateFields: templateDetails?.fields.map((item) => ({
           fieldId: item.id,
@@ -205,7 +224,7 @@ export default function CreateProductForm({
         })),
       });
     }
-  }, [form, templateDetails, selectedTemplate]);
+  }, [reset, getValues, templateDetails, selectedTemplate]);
 
   const onCreateProductSubmit: SubmitHandler<ProductFormInputType> = async (
     data
@@ -214,7 +233,6 @@ export default function CreateProductForm({
       const result = await createProduct(data);
 
       const images = form.watch("images");
-      console.log(images);
 
       if (images) {
         await Promise.all(
@@ -248,6 +266,10 @@ export default function CreateProductForm({
       }
     });
   };
+
+  const isPrimaryCategory = !!watch("primaryCategory");
+  const isSecondaryCategory = !!watch("secondaryCategory");
+  const isTertiaryCategory = !!watch("tertiaryCategory");
 
   return (
     <Form {...form}>
@@ -760,15 +782,6 @@ export default function CreateProductForm({
                                           onSelect={() => {
                                             field.onChange(template.id);
                                             setOpenTemplateComboBox(false);
-
-                                            router.push(
-                                              `${pathname}?${createQueryString({
-                                                template_id: template.id,
-                                              })}`,
-                                              {
-                                                scroll: false,
-                                              }
-                                            );
                                           }}
                                         >
                                           <Check
@@ -829,7 +842,7 @@ export default function CreateProductForm({
                                 ) : (
                                   <Select
                                     onValueChange={(currentValue) => {
-                                      if (currentValue !== "") {
+                                      if (currentValue) {
                                         field.onChange(currentValue);
                                       }
                                     }}
@@ -973,17 +986,27 @@ export default function CreateProductForm({
                                           onSelect={() => {
                                             field.onChange(primaryCategory.id);
 
-                                            router.push(
-                                              `${pathname}?${createQueryString({
-                                                primary_category_id:
-                                                  primaryCategory.id,
-
-                                                secondary_category_id: "",
-                                                tertiary_category_id: "",
-                                                quaternary_category_id: "",
-                                              })}`,
+                                            form.setValue(
+                                              "secondaryCategory",
+                                              "",
                                               {
-                                                scroll: false,
+                                                shouldDirty: true,
+                                              }
+                                            );
+
+                                            form.setValue(
+                                              "tertiaryCategory",
+                                              "",
+                                              {
+                                                shouldDirty: true,
+                                              }
+                                            );
+
+                                            form.setValue(
+                                              "quaternaryCategory",
+                                              "",
+                                              {
+                                                shouldDirty: true,
                                               }
                                             );
 
@@ -1032,6 +1055,7 @@ export default function CreateProductForm({
                                 role="combobox"
                                 aria-expanded={openSecondaryCategoriesComboBox}
                                 className="justify-between"
+                                disabled={!isPrimaryCategory}
                               >
                                 {field.value ? (
                                   secondaryCategories?.find(
@@ -1123,6 +1147,9 @@ export default function CreateProductForm({
                                 role="combobox"
                                 aria-expanded={openSecondaryCategoriesComboBox}
                                 className="justify-between"
+                                disabled={
+                                  !isPrimaryCategory || !isSecondaryCategory
+                                }
                               >
                                 {field.value ? (
                                   tertiaryCategories?.find(
@@ -1216,6 +1243,11 @@ export default function CreateProductForm({
                                 variant="outline"
                                 role="combobox"
                                 className="justify-between"
+                                disabled={
+                                  !isPrimaryCategory ||
+                                  !isSecondaryCategory ||
+                                  !isTertiaryCategory
+                                }
                               >
                                 {field.value ? (
                                   quaternaryCategories?.find(
