@@ -177,7 +177,14 @@ export default function CreateProductForm({
     },
   });
 
-  const { control, handleSubmit, watch, reset, getValues } = form;
+  const {
+    control,
+    handleSubmit,
+    watch,
+    reset,
+    getValues,
+    formState: { isDirty },
+  } = form;
 
   const {
     fields: featureFields,
@@ -293,7 +300,7 @@ export default function CreateProductForm({
 
             <LoadingButton
               type="submit"
-              disabled={isPending}
+              disabled={!isDirty || isPending}
               size="sm"
               loading={isPending}
               className="text-xs font-semibold h-8"
@@ -781,6 +788,16 @@ export default function CreateProductForm({
                                           value={template.name}
                                           onSelect={() => {
                                             field.onChange(template.id);
+
+                                            router.push(
+                                              `${pathname}?${createQueryString({
+                                                template_id: template.id,
+                                              })}`,
+                                              {
+                                                scroll: false,
+                                              }
+                                            );
+
                                             setOpenTemplateComboBox(false);
                                           }}
                                         >
@@ -986,6 +1003,20 @@ export default function CreateProductForm({
                                           onSelect={() => {
                                             field.onChange(primaryCategory.id);
 
+                                            router.push(
+                                              `${pathname}?$${createQueryString(
+                                                {
+                                                  primary_category_id:
+                                                    primaryCategory.id,
+
+                                                  secondary_category_id: "",
+                                                  tertiary_category_id: "",
+                                                  quaternary_category_id: "",
+                                                }
+                                              )}`,
+                                              { scroll: false }
+                                            );
+
                                             form.setValue(
                                               "secondaryCategory",
                                               "",
@@ -1101,6 +1132,23 @@ export default function CreateProductForm({
                                                 scroll: false,
                                               }
                                             );
+
+                                            form.setValue(
+                                              "tertiaryCategory",
+                                              "",
+                                              {
+                                                shouldDirty: true,
+                                              }
+                                            );
+
+                                            form.setValue(
+                                              "quaternaryCategory",
+                                              "",
+                                              {
+                                                shouldDirty: true,
+                                              }
+                                            );
+
                                             setOpenSecondaryCategoriesComboBox(
                                               false
                                             );
@@ -1195,6 +1243,14 @@ export default function CreateProductForm({
                                               })}`,
                                               {
                                                 scroll: false,
+                                              }
+                                            );
+
+                                            form.setValue(
+                                              "quaternaryCategory",
+                                              "",
+                                              {
+                                                shouldDirty: true,
                                               }
                                             );
 
@@ -1500,7 +1556,7 @@ export default function CreateProductForm({
 
           <LoadingButton
             type="submit"
-            disabled={isPending}
+            disabled={!isDirty || isPending}
             size="sm"
             loading={isPending}
             className="text-xs font-semibold h-8"
