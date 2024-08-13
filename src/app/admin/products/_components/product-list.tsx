@@ -11,14 +11,14 @@ import {
 
 import { getProducts } from "../actions";
 import ProductTableRow from "./product-table-row";
-import TableEmpty from "./table-empty";
+import TableEmpty from "@/components/custom/table-empty";
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+// const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default async function ProductList() {
   const products = await getProducts();
 
-  await sleep(2000);
+  // await sleep(2000);
 
   return (
     <>
@@ -51,7 +51,7 @@ export default async function ProductList() {
                 ))}
               </TableBody>
             ) : (
-              <TableEmpty />
+              <TableEmpty colSpan={7} />
             )}
           </Table>
         </CardContent>
