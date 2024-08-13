@@ -3,6 +3,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
   Table,
   TableBody,
+  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -10,6 +11,7 @@ import {
 
 import { getProducts } from "../actions";
 import ProductTableRow from "./product-table-row";
+import TableEmpty from "@/components/custom/table-empty";
 
 // const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -41,18 +43,26 @@ export default async function ProductList() {
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {products.map((product) => (
-                <ProductTableRow key={product.id} product={product} />
-              ))}
-            </TableBody>
+
+            {products.length > 0 ? (
+              <TableBody>
+                {products.map((product) => (
+                  <ProductTableRow key={product.id} product={product} />
+                ))}
+              </TableBody>
+            ) : (
+              <TableEmpty colSpan={7} />
+            )}
           </Table>
         </CardContent>
-        <CardFooter>
-          <div className="text-xs text-muted-foreground">
-            Showing <strong>1-10</strong> of <strong>32</strong> products
-          </div>
-        </CardFooter>
+
+        {products.length > 0 && (
+          <CardFooter>
+            <div className="text-xs text-muted-foreground">
+              Showing <strong>1-10</strong> of <strong>32</strong> products
+            </div>
+          </CardFooter>
+        )}
       </Card>
     </>
   );

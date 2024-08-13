@@ -60,7 +60,6 @@ export default async function AdminCreateProductPage({
   return (
     <ContentLayout title="Add New Product">
       <DynamicBreadcrumb items={breadcrumbItems} />
-
       <CreateProductForm
         brands={brands}
         templates={templates}

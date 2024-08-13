@@ -14,8 +14,6 @@ export default async function BrandsList() {
   console.log(brands);
   return (
     <>
-      <div className="flex flex-col mb-4 mt-2 sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0"></div>
-
       <Card>
         <CardContent>
           <Table>

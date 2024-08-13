@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { unstable_cache as cache } from "next/cache";
 import { ProductFormInputType } from "./schema";
 import { CategoryType, Category } from "@prisma/client";
+import { backendClient } from "@/lib/edgestore-server";
 
 // Cached products for ssr in the list
 export const getProducts = cache(async () => {
@@ -13,6 +14,9 @@ export const getProducts = cache(async () => {
       include: {
         primaryCategory: true,
         brand: true,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
@@ -25,7 +29,12 @@ export const getProducts = cache(async () => {
 
 export const getBrands = cache(async () => {
   try {
-    const brands = await prisma.brand.findMany({});
+    const brands = await prisma.brand.findMany({
+      orderBy: {
+        name: "asc", // or 'asc' for ascending order
+      },
+    });
+
     return brands;
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -392,11 +401,35 @@ export async function deleteProduct(productId: string) {
     }
 
     // Delete the product
-    await prisma.product.delete({
+    const deletedProduct = await prisma.product.delete({
       where: {
         id: productId,
       },
     });
+
+    if (deletedProduct.images && deletedProduct.images.length > 0) {
+      await Promise.all(
+        deletedProduct.images.map(async (image) => {
+          try {
+            const res = await backendClient.publicImages.deleteFile({
+              url: image,
+            });
+            return { url: image, success: true, result: res };
+          } catch (error) {
+            console.error(`Failed to confirm upload for ${image}:`, error);
+            return { url: image, success: false, error };
+          }
+        })
+      );
+    }
+
+    if (deletedProduct.productTemplateId) {
+      await prisma.productTemplate.delete({
+        where: {
+          id: deletedProduct.productTemplateId,
+        },
+      });
+    }
 
     revalidatePath("/admin/products");
     revalidatePath("/admin/products");
