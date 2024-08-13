@@ -1,7 +1,7 @@
+"use client";
 import { CaretRightIcon, ChevronDownIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronUpIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export default function CategoriesNavigation() {
@@ -30,6 +30,14 @@ export default function CategoriesNavigation() {
         { id: "waste-pipes", name: "Waste Pipes" },
       ],
     },
+    {
+      id: "five",
+      name: "Soil & Waste",
+      subcategories: [
+        { id: "soil-pipes", name: "Soil Pipes" },
+        { id: "waste-pipes", name: "Waste Pipes" },
+      ],
+    },
   ];
 
   const [openCategory, setOpenCategory] = useState<string | null>(null);
@@ -39,16 +47,16 @@ export default function CategoriesNavigation() {
   };
 
   return (
-    <div className="md:w-1/4 lg:h-5/6 p-5 m-11  bg-white rounded-lg border ">
-      <h2 className="font-semibold text-2xl mb-2 flex justify-between">Categories </h2>    
+    <div className="lg:w-[332px] lg:h-5/6 p-5 mt-6 ms-7  bg-white rounded-lg border ">
+      <h2 className="font-semibold text-[18px] ps-4 py-[18px]">Categories </h2>    
       <Separator />
 
-      <ul className="space-y-5">
+      <ul className="">
         {categories.map((category, index) => (
-          <li key={category.id} className="px-2">
-            <div className="mb-2 flex justify-between items-center">
+          <li key={category.id} className="">
+            <div className="flex justify-between items-center">
               <Link href={`/products/${category.id}`}>
-                <p className="font-semibold  cursor-pointer">
+              <p className={`${openCategory == category.id ? 'font-semibold' : 'font-normal'} text-[16px] py-3 ps-6 cursor-pointer`}>
                   {category.name}
                 </p>
               </Link>
@@ -58,9 +66,9 @@ export default function CategoriesNavigation() {
                   className="cursor-pointer"
                 >
                   {openCategory === category.id ? (
-                    <ChevronDownIcon className="w-8 h-8 text-gray-500" />
+                    <ChevronDownIcon className="w-4 h-4 text-gray-700" />
                   ) : (
-                    <CaretRightIcon className="w-8 h-8 text-gray-500" />
+                    <CaretRightIcon className="w-4 h-4  text-gray-700" />
                   )}
                 </div>
               )}
@@ -69,8 +77,8 @@ export default function CategoriesNavigation() {
               <ul className="ml-5 mt-2 space-y-3">
                 {category.subcategories.map((subcategory) => (
                   <li key={subcategory.id}>
-                    <Link href={`/products/${category.name}/${subcategory.id}`}>
-                      <p className="text-gray-700  cursor-pointer">
+                    <Link href={`/products/${category.id}/${subcategory.id}`}>
+                      <p className={ `font-normal text-[16px] ps-8 py-3  cursor-pointer`}>
                         {subcategory.name}
                       </p>
                     </Link>
@@ -78,7 +86,7 @@ export default function CategoriesNavigation() {
                 ))}
               </ul>
             )}
-            {index < categories.length - 1 && <Separator className="my-4" />}
+            {index < categories.length - 1 && <Separator />}
           </li>
           
         ))}
