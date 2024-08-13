@@ -14,6 +14,9 @@ export const getProducts = cache(async () => {
         primaryCategory: true,
         brand: true,
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     return products;
@@ -25,7 +28,12 @@ export const getProducts = cache(async () => {
 
 export const getBrands = cache(async () => {
   try {
-    const brands = await prisma.brand.findMany({});
+    const brands = await prisma.brand.findMany({
+      orderBy: {
+        name: "asc", // or 'asc' for ascending order
+      },
+    });
+
     return brands;
   } catch (error) {
     console.error("Error fetching products:", error);
