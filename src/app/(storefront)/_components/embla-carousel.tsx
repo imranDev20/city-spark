@@ -11,9 +11,7 @@ export default function EmblaCarousel() {
     {
       image: bannerImage1,
     },
-    {
-      image: bannerImage1,
-    },
+
     // implement here more image as need
   ];
 

@@ -1,3 +1,4 @@
+import { CartProvider } from "@/contexts/cart-context";
 import Header from "./_components/header";
 import StorefrontFooter from "./_components/storefront-footer";
 
@@ -8,9 +9,11 @@ export default function StorefrontLayout({
 }) {
   return (
     <>
-      <Header />
-      {children}
-      <StorefrontFooter />
+      <CartProvider>
+        <Header />
+        {children}
+        <StorefrontFooter />
+      </CartProvider>
     </>
   );
 }
