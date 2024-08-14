@@ -57,7 +57,7 @@ model Product {
     material             String?
     volume               String?
     shape                String?
-    productTemplate      ProductTemplate? @relation(fields: [productTemplateId], references: [id])
+    productTemplate      ProductTemplate? @relation(fields: [productTemplateId], references: [id], onDelete: SetNull)
     productTemplateId    String?
     features             String[]
     primaryCategory      Category?        @relation("PrimaryProductCategory", fields: [primaryCategoryId], references: [id])

@@ -200,7 +200,7 @@ export default function EditProductForm({
   const {
     reset,
     control,
-    formState: { isDirty },
+    formState: { isDirty, errors },
     handleSubmit,
     getValues,
     watch,
@@ -247,7 +247,33 @@ export default function EditProductForm({
   }, [productDetails]);
 
   useEffect(() => {
-    if (productDetails && selectedTemplate) {
+    if (!selectedTemplate) {
+      localStorage.setItem("productTemplateFields", JSON.stringify([]));
+    }
+  }, [selectedTemplate]);
+
+  useEffect(() => {
+    const productTemplateFields = JSON.parse(
+      localStorage.getItem("productTemplateFields") as string
+    ) as ProductFormInputType["productTemplateFields"];
+
+    if (
+      selectedTemplate &&
+      productTemplateFields &&
+      productTemplateFields?.length > 0
+    ) {
+      reset({
+        ...getValues(),
+        productTemplateFields: productTemplateFields.map((field) => ({
+          id: field.id,
+          fieldId: field.id,
+          fieldName: field.fieldName,
+          fieldType: field.fieldType ?? "TEXT",
+          fieldOptions: field.fieldOptions ?? "",
+          fieldValue: field.fieldValue,
+        })),
+      });
+    } else if (productDetails && selectedTemplate) {
       reset({
         ...getValues(),
         productTemplateFields: templateDetails?.fields.map((field) => ({
@@ -282,7 +308,6 @@ export default function EditProductForm({
     if (productDetails?.id) {
       startTransition(async () => {
         const result = await updateProduct(productDetails?.id, data);
-
         const images = form.watch("images");
         if (images) {
           await Promise.all(
@@ -299,7 +324,6 @@ export default function EditProductForm({
             })
           );
         }
-
         if (result.success) {
           router.push(`/admin/products/${result.data?.id}`);
           toast({
@@ -316,11 +340,42 @@ export default function EditProductForm({
         }
       });
     }
+
+    localStorage.setItem("productTemplateFields", JSON.stringify([]));
   };
 
   const isPrimaryCategory = !!watch("primaryCategory");
   const isSecondaryCategory = !!watch("secondaryCategory");
   const isTertiaryCategory = !!watch("tertiaryCategory");
+
+  useEffect(() => {
+    const unloadCallback = (event: BeforeUnloadEvent): string => {
+      event.preventDefault();
+      event.returnValue = "";
+      return "";
+    };
+
+    const removeQueryStrings = (): void => {
+      if (window.performance && window.performance.navigation.type === 1) {
+        const url = new URL(window.location.href);
+        if (url.search) {
+          url.search = "";
+          window.history.replaceState({}, document.title, url.toString());
+          localStorage.setItem("productTemplateFields", JSON.stringify([]));
+        }
+      }
+    };
+
+    window.addEventListener("beforeunload", unloadCallback);
+    window.addEventListener("load", removeQueryStrings);
+
+    removeQueryStrings(); // Execute on initial mount as well
+
+    return () => {
+      window.removeEventListener("beforeunload", unloadCallback);
+      window.removeEventListener("load", removeQueryStrings);
+    };
+  }, []);
 
   return (
     <ContentLayout title="Edit Product">
@@ -852,6 +907,11 @@ export default function EditProductForm({
                                                   scroll: false,
                                                 }
                                               );
+
+                                              localStorage.setItem(
+                                                "productTemplateFields",
+                                                JSON.stringify([])
+                                              );
                                             }}
                                           >
                                             <Check
@@ -914,6 +974,13 @@ export default function EditProductForm({
                                       onValueChange={(currentValue) => {
                                         if (currentValue) {
                                           field.onChange(currentValue);
+
+                                          localStorage.setItem(
+                                            "productTemplateFields",
+                                            JSON.stringify(
+                                              watch("productTemplateFields")
+                                            )
+                                          );
                                         }
                                       }}
                                       value={field.value}

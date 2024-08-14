@@ -67,6 +67,8 @@ export async function deleteTemplate(templateId: string) {
       },
     });
 
+    console.log(templateId);
+
     revalidatePath("/admin/templates");
 
     return {

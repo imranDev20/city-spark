@@ -25,14 +25,16 @@ export const metadata: Metadata = {
   },
   openGraph: {
     url: "/",
-    title: "shadcn/ui sidebar",
+    title:
+      "City Spark | Plumbing Supplies, Heating Merchants & Bathroom Stores UK",
     description:
       "A stunning and functional retractable sidebar for Next.js built on top of shadcn/ui complete with desktop and mobile responsiveness.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "shadcn/ui sidebar",
+    title:
+      "City Spark | Plumbing Supplies, Heating Merchants & Bathroom Stores UK",
     description:
       "A stunning and functional retractable sidebar for Next.js built on top of shadcn/ui complete with desktop and mobile responsiveness.",
   },

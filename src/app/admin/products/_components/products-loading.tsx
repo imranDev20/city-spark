@@ -27,7 +27,7 @@ export default function ProductsLoading() {
               <TableHead className="hidden md:table-cell w-[16%]">
                 Created at
               </TableHead>
-              <TableHead className="w-10">
+              <TableHead className="w-[68px]">
                 <span className="sr-only">Actions</span>
               </TableHead>
             </TableRow>

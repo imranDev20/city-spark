@@ -383,7 +383,7 @@ const EditCategoryForm = ({
                                       <CommandInput placeholder="Search brands..." />
                                       <CommandList>
                                         <CommandEmpty>
-                                          No framework found.
+                                          No category found
                                         </CommandEmpty>
                                         <CommandGroup>
                                           {parentPrimaryCategories?.map(
