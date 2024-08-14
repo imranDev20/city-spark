@@ -10,13 +10,14 @@ import {
 
 import { getCategories } from "../actions";
 import CategoriesTableRow from "./category-table-row";
+import TableEmpty from "@/components/custom/table-empty";
 
 export default async function CategoryList() {
   const categories = await getCategories();
 
   return (
     <>
-      <Card>
+      <Card className="min-h-[calc(100vh-320px)] h-full flex flex-col justify-between">
         <CardContent>
           <Table>
             <TableHeader>
@@ -35,11 +36,16 @@ export default async function CategoryList() {
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {categories?.map((category) => (
-                <CategoriesTableRow key={category.id} category={category} />
-              ))}
-            </TableBody>
+
+            {categories.length > 0 ? (
+              <TableBody>
+                {categories.map((category) => (
+                  <CategoriesTableRow key={category.id} category={category} />
+                ))}
+              </TableBody>
+            ) : (
+              <TableEmpty colSpan={6} />
+            )}
           </Table>
         </CardContent>
         <CardFooter>

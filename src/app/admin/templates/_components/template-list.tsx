@@ -8,13 +8,14 @@ import {
 } from "@/components/ui/table";
 import { getTemplates } from "../actions";
 import TemplateTableRow from "./template-table-row";
+import TableEmpty from "@/components/custom/table-empty";
 
 export default async function TemplateList() {
   const templates = await getTemplates();
 
   return (
     <>
-      <Card>
+      <Card className="min-h-[calc(100vh-320px)] h-full flex flex-col justify-between">
         <CardContent>
           <Table>
             <TableHeader>
@@ -29,18 +30,26 @@ export default async function TemplateList() {
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {templates?.map((template) => (
-                <TemplateTableRow key={template.id} template={template} />
-              ))}
-            </TableBody>
+
+            {templates.length > 0 ? (
+              <TableBody>
+                {templates.map((template) => (
+                  <TemplateTableRow key={template.id} template={template} />
+                ))}
+              </TableBody>
+            ) : (
+              <TableEmpty colSpan={4} />
+            )}
           </Table>
         </CardContent>
-        <CardFooter>
-          <div className="text-xs text-muted-foreground">
-            Showing <strong>1-10</strong> of <strong>32</strong> products
-          </div>
-        </CardFooter>
+
+        {templates.length > 0 && (
+          <CardFooter>
+            <div className="text-xs text-muted-foreground">
+              Showing <strong>1-10</strong> of <strong>32</strong> templates
+            </div>
+          </CardFooter>
+        )}
       </Card>
     </>
   );

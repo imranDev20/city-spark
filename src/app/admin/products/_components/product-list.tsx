@@ -22,7 +22,7 @@ export default async function ProductList() {
 
   return (
     <>
-      <Card>
+      <Card className="min-h-[calc(100vh-320px)] h-full flex flex-col justify-between">
         <CardContent>
           <Table>
             <TableHeader>
@@ -57,7 +57,7 @@ export default async function ProductList() {
         </CardContent>
 
         {products.length > 0 && (
-          <CardFooter>
+          <CardFooter className="mt-auto">
             <div className="text-xs text-muted-foreground">
               Showing <strong>1-10</strong> of <strong>32</strong> products
             </div>
