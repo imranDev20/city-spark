@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { unstable_cache as cache } from "next/cache";
 import { CategoryFormInputType, CategoryType } from "./schema";
 import { backendClient } from "@/lib/edgestore-server";
+import { CategoryType as CategoryEnumType, } from "@prisma/client";
 
 // Fetch parent categories
 export const getParentCategories = cache(async (categoryType: CategoryType) => {
@@ -42,7 +43,7 @@ export async function createCategory(data: CategoryFormInputType) {
     revalidatePath("/admin/categories/new");
     revalidatePath(`/admin/categories/${createdCategory.id}`);
     revalidatePath("/admin/categories/[category_id]", "page");
-    revalidatePath("/products","page");
+    revalidatePath("/[product_url]","page");
 
     return {
       message: "Category created successfully!",
@@ -83,44 +84,133 @@ export const getCategories = cache(async () => {
 
 
 
-
-export const getNavigationCategories = cache(async () => {
+export const getNavigationCategories = cache(async (name: string, product_url?: string[]) => {
   try {
-    const categories = await prisma.category.findMany({
-      where: {
-        parentPrimaryCategoryId: null, // Fetch only the root categories (no parent)
-      },
-      include: {
-        primaryChildCategories: {
-          include: {
-            secondaryChildCategories: {
-              include: {
-                tertiaryChildCategories: {
-                  include: {
-                    quaternaryProducts: true,
-                  },
-                },
-                secondaryProducts: true,
-              },
-            },
-            primaryProducts: true,
+    // Case 1: product_url is undefined, fetch primary categories
+    if (!product_url) {
+      const categories = await prisma.category.findMany({
+        where: {
+          type: CategoryEnumType.PRIMARY, // Use Prisma's CategoryType enum
+        },
+        include: {
+          primaryChildCategories: true,
+          primaryProducts: true,
+
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+      return categories;
+    }
+
+    // Case 2: product_url length == 1, fetch secondary categories based on primary name
+    if (product_url.length === 1) {
+      const primaryName = name;
+      const categories = await prisma.category.findMany({
+        where: {
+          type: CategoryEnumType.SECONDARY, // Use Prisma's CategoryType enum
+          parentPrimaryCategory: {
+            name: primaryName,
           },
         },
-        primaryProducts: true,
-      },
-      orderBy: {
-        createdAt: 'asc',
-      },
-    });
+        include: {
+          secondaryChildCategories: {
+            select: {
+              id: true,
+              name: true,
+              type: true,
+              image: true,
+            },
+          },
+          secondaryProducts: true,
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      });
+      return categories.map(category => ({
+        id: category.id,
+        name: category.name,
+        type: category.type,
+        image: category.image,
+        childCategories: category.secondaryChildCategories,
+        products: category.secondaryProducts,
+      }));
+    }
 
+    // Case 3: product_url length == 2, fetch tertiary categories based on secondary name
+    if (product_url.length === 2) {
+      const secondaryName = name;
+      const categories = await prisma.category.findMany({
+        where: {
+          type: CategoryEnumType.TERTIARY, // Use Prisma's CategoryType enum
+          parentSecondaryCategory: {
+            name: secondaryName,
+          },
+        },
+        include: {
+          tertiaryChildCategories: {
+            select: {
+              id: true,
+              name: true,
+              type: true,
+              image: true,
+            },
+          },
+          tertiaryProducts: true,
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      });
+      return categories.map(category => ({
+        id: category.id,
+        name: category.name,
+        type: category.type,
+        image: category.image,
+        childCategories: category.tertiaryChildCategories,
+        products: category.tertiaryProducts,
+      }));
+    }
 
+    // Case 4: product_url length == 3, fetch quaternary categories based on tertiary name
+    if (product_url.length === 3) {
+      const tertiaryName = name;
+      const categories = await prisma.category.findMany({
+        where: {
+          type: CategoryEnumType.QUATERNARY, // Use Prisma's CategoryType enum
+          parentTertiaryCategory: {
+            name: tertiaryName,
+          },
+        },
+        include: {
+          quaternaryProducts: true,
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      });
+      return categories.map(category => ({
+        id: category.id,
+        name: category.name,
+        type: category.type,
+        image: category.image,
+        products: category.quaternaryProducts,
+      }));
+    }
 
-    return categories;
+    throw new Error('Invalid product_url length');
   } catch (error) {
-    console.error('Error fetching categories:', error);
-    throw new Error('Failed to fetch categories. Please try again later.');
+    console.error('Error fetching category data:', error);
+    throw new Error('Failed to fetch category data. Please try again later.');
   }
 });
+
+
+
+
+
 
 
 
