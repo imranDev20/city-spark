@@ -294,23 +294,17 @@ export async function deleteCategory(categoryId: string) {
   }
 
   try {
-    const existingCategory = await prisma.category.findUnique({
+    const deletedCategory = await prisma.category.delete({
       where: {
         id: categoryId,
       },
     });
 
-    if (existingCategory?.image) {
+    if (deletedCategory?.image) {
       await backendClient.publicImages.deleteFile({
-        url: existingCategory?.image,
+        url: deletedCategory?.image,
       });
     }
-
-    await prisma.category.delete({
-      where: {
-        id: categoryId,
-      },
-    });
 
     revalidatePath("/admin/categories");
     revalidatePath("/admin/categories/new");
