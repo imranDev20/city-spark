@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { unstable_cache as cache } from "next/cache";
 import { ProductFormInputType } from "./schema";
-import { CategoryType, Category } from "@prisma/client";
+import { CategoryType } from "@prisma/client";
 import { backendClient } from "@/lib/edgestore-server";
 
 // Cached products for ssr in the list
