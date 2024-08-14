@@ -42,6 +42,7 @@ export async function createCategory(data: CategoryFormInputType) {
     revalidatePath("/admin/categories/new");
     revalidatePath(`/admin/categories/${createdCategory.id}`);
     revalidatePath("/admin/categories/[category_id]", "page");
+    revalidatePath("/products","page");
 
     return {
       message: "Category created successfully!",
@@ -78,6 +79,50 @@ export const getCategories = cache(async () => {
     throw new Error("Failed to fetch categories. Please try again later.");
   }
 });
+
+
+
+
+
+export const getNavigationCategories = cache(async () => {
+  try {
+    const categories = await prisma.category.findMany({
+      where: {
+        parentPrimaryCategoryId: null, // Fetch only the root categories (no parent)
+      },
+      include: {
+        primaryChildCategories: {
+          include: {
+            secondaryChildCategories: {
+              include: {
+                tertiaryChildCategories: {
+                  include: {
+                    quaternaryProducts: true,
+                  },
+                },
+                secondaryProducts: true,
+              },
+            },
+            primaryProducts: true,
+          },
+        },
+        primaryProducts: true,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+
+
+    return categories;
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    throw new Error('Failed to fetch categories. Please try again later.');
+  }
+});
+
+
 
 // Fetch a category by ID
 export const getCategoryById = cache(async (categoryId: string) => {
