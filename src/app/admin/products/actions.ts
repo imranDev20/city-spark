@@ -266,120 +266,131 @@ export async function updateProduct(
   data: ProductFormInputType
 ) {
   try {
-    let updatedProductTemplate;
-
-    if (data.productTemplate) {
-      updatedProductTemplate = await prisma.productTemplate.update({
-        where: { id: data.productTemplate },
-        data: {
-          templateId: data.template,
-          fields: {
-            deleteMany: {},
-            create: data.productTemplateFields?.map((productTemplateField) => ({
-              templateFieldId: productTemplateField.fieldId,
-              fieldValue: productTemplateField.fieldValue,
-            })),
-          },
-        },
-        include: {
-          fields: {
-            include: {
-              productTemplate: true,
-            },
-          },
-        },
-      });
-    }
-
-    const updatedProduct = await prisma.product.update({
-      where: { id: productId },
-      data: {
-        name: data.name,
-        description: data.description,
-        model: data.model ?? null,
-        type: data.type ?? null,
-        warranty: data.warranty ?? null,
-        guarantee: data.guarantee ?? null,
-        tradePrice: data.tradePrice ? parseFloat(data.tradePrice) : null,
-        contractPrice: data.contractPrice
-          ? parseFloat(data.contractPrice)
-          : null,
-        promotionalPrice: data.promotionalPrice
-          ? parseFloat(data.promotionalPrice)
-          : null,
-        unit: data.unit ?? null,
-        weight: data.weight ? parseFloat(data.weight) : null,
-        color: data.color ?? null,
-        length: data.length ? parseFloat(data.length) : null,
-        width: data.width ? parseFloat(data.width) : null,
-        height: data.height ? parseFloat(data.height) : null,
-        material: data.material,
-        volume: data.volume ?? null,
-        shape: data.shape ?? null,
-        status: data.status ?? "DRAFT",
-        productTemplate: updatedProductTemplate?.id
-          ? {
-              connect: { id: updatedProductTemplate.id },
-            }
-          : {
-              disconnect: true,
-            },
-        features: data.features?.map((item) => item.feature),
-        brand: data.brand
-          ? {
-              connect: { id: data.brand },
-            }
-          : {
-              disconnect: true,
-            },
-        manuals: {
-          set: data.manuals ?? [],
-        },
-
-        primaryCategory: data.primaryCategory
-          ? {
-              connect: { id: data.primaryCategory },
-            }
-          : {
-              disconnect: true,
-            },
-        secondaryCategory: data.secondaryCategory
-          ? {
-              connect: { id: data.secondaryCategory },
-            }
-          : {
-              disconnect: true,
-            },
-        tertiaryCategory: data?.tertiaryCategory
-          ? {
-              connect: { id: data.tertiaryCategory },
-            }
-          : {
-              disconnect: true,
-            },
-        quaternaryCategory: data?.quaternaryCategory
-          ? {
-              connect: { id: data.quaternaryCategory },
-            }
-          : {
-              disconnect: true,
-            },
-
-        // we can delete the current images from edgesotre
-        // and at the same time delete it from db
-        // then create new image urls
-
-        images: data.images?.map((item) => item.image),
-        updatedAt: new Date(), // Ensures updatedAt is set to the current date and time
+    const existingProduct = await prisma.product.findUnique({
+      where: {
+        id: productId,
       },
     });
+
+    const unmatchedImages = existingProduct?.images.filter(
+      (image) => !data.images?.map((img) => img.image).includes(image)
+    );
+
+    console.log(unmatchedImages);
+
+    // let updatedProductTemplate;
+    // if (data.productTemplate) {
+    //   updatedProductTemplate = await prisma.productTemplate.update({
+    //     where: { id: data.productTemplate },
+    //     data: {
+    //       templateId: data.template,
+    //       fields: {
+    //         deleteMany: {},
+    //         create: data.productTemplateFields?.map((productTemplateField) => ({
+    //           templateFieldId: productTemplateField.fieldId,
+    //           fieldValue: productTemplateField.fieldValue,
+    //         })),
+    //       },
+    //     },
+    //     include: {
+    //       fields: {
+    //         include: {
+    //           productTemplate: true,
+    //         },
+    //       },
+    //     },
+    //   });
+    // }
+
+    // const updatedProduct = await prisma.product.update({
+    //   where: { id: productId },
+    //   data: {
+    //     name: data.name,
+    //     description: data.description,
+    //     model: data.model ?? null,
+    //     type: data.type ?? null,
+    //     warranty: data.warranty ?? null,
+    //     guarantee: data.guarantee ?? null,
+    //     tradePrice: data.tradePrice ? parseFloat(data.tradePrice) : null,
+    //     contractPrice: data.contractPrice
+    //       ? parseFloat(data.contractPrice)
+    //       : null,
+    //     promotionalPrice: data.promotionalPrice
+    //       ? parseFloat(data.promotionalPrice)
+    //       : null,
+    //     unit: data.unit ?? null,
+    //     weight: data.weight ? parseFloat(data.weight) : null,
+    //     color: data.color ?? null,
+    //     length: data.length ? parseFloat(data.length) : null,
+    //     width: data.width ? parseFloat(data.width) : null,
+    //     height: data.height ? parseFloat(data.height) : null,
+    //     material: data.material,
+    //     volume: data.volume ?? null,
+    //     shape: data.shape ?? null,
+    //     status: data.status ?? "DRAFT",
+    //     productTemplate: updatedProductTemplate?.id
+    //       ? {
+    //           connect: { id: updatedProductTemplate.id },
+    //         }
+    //       : {
+    //           disconnect: true,
+    //         },
+    //     features: data.features?.map((item) => item.feature),
+    //     brand: data.brand
+    //       ? {
+    //           connect: { id: data.brand },
+    //         }
+    //       : {
+    //           disconnect: true,
+    //         },
+    //     manuals: {
+    //       set: data.manuals ?? [],
+    //     },
+
+    //     primaryCategory: data.primaryCategory
+    //       ? {
+    //           connect: { id: data.primaryCategory },
+    //         }
+    //       : {
+    //           disconnect: true,
+    //         },
+    //     secondaryCategory: data.secondaryCategory
+    //       ? {
+    //           connect: { id: data.secondaryCategory },
+    //         }
+    //       : {
+    //           disconnect: true,
+    //         },
+    //     tertiaryCategory: data?.tertiaryCategory
+    //       ? {
+    //           connect: { id: data.tertiaryCategory },
+    //         }
+    //       : {
+    //           disconnect: true,
+    //         },
+    //     quaternaryCategory: data?.quaternaryCategory
+    //       ? {
+    //           connect: { id: data.quaternaryCategory },
+    //         }
+    //       : {
+    //           disconnect: true,
+    //         },
+
+    //     // we can delete the current images from edgesotre
+    //     // and at the same time delete it from db
+    //     // then create new image urls
+
+    //     images: data.images?.map((item) => item.image),
+    //     updatedAt: new Date(), // Ensures updatedAt is set to the current date and time
+    //   },
+    // });
 
     revalidatePath("/admin/products");
     revalidatePath(`/admin/products/${productId}`);
 
     return {
       message: "Product updated successfully!",
-      data: updatedProduct,
+      // data: updatedProduct,
       success: true,
     };
   } catch (error) {
