@@ -8,13 +8,14 @@ import {
 } from "@/components/ui/table";
 import { getBrands } from "../actions";
 import BrandTableRow from "./brand-table-row";
+import TableEmpty from "@/components/custom/table-empty";
 
 export default async function BrandsList() {
   const brands = await getBrands();
-  console.log(brands);
+
   return (
     <>
-      <Card>
+      <Card className="min-h-[calc(100vh-320px)] h-full flex flex-col justify-between">
         <CardContent>
           <Table>
             <TableHeader>
@@ -32,18 +33,26 @@ export default async function BrandsList() {
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {brands.map((brand) => (
-                <BrandTableRow key={brand.id} brand={brand} />
-              ))}
-            </TableBody>
+
+            {brands.length > 0 ? (
+              <TableBody>
+                {brands.map((brand) => (
+                  <BrandTableRow key={brand.id} brand={brand} />
+                ))}
+              </TableBody>
+            ) : (
+              <TableEmpty colSpan={5} />
+            )}
           </Table>
         </CardContent>
-        <CardFooter>
-          <div className="text-xs text-muted-foreground">
-            Showing <strong>1-10</strong> of <strong>32</strong> products
-          </div>
-        </CardFooter>
+
+        {brands.length > 0 && (
+          <CardFooter>
+            <div className="text-xs text-muted-foreground">
+              Showing <strong>1-10</strong> of <strong>32</strong> brands
+            </div>
+          </CardFooter>
+        )}
       </Card>
     </>
   );
