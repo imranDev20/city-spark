@@ -20,6 +20,8 @@ export async function createBrand(data: BrandFormInputType) {
     });
 
     revalidatePath("/admin/brands");
+    revalidatePath("/admin/products/[product_id]", "page");
+
     return {
       message: "Brands created successfully!",
       data: createBrand,
@@ -70,6 +72,7 @@ export async function deleteBrand(brandId: string) {
     }
 
     revalidatePath("/admin/brands");
+    revalidatePath("/admin/products/[product_id]", "page");
 
     return {
       message: "Brand deleted successfully!",
