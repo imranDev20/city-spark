@@ -1,6 +1,6 @@
 "use client";
 
-import { type EdgeStoreRouter } from "../app/api/edgestore/[...edgestore]/route";
+import { type EdgeStoreRouter } from "@/lib/edgestore-server";
 import { createEdgeStoreProvider } from "@edgestore/react";
 import { type InferClientResponse } from "@edgestore/server/core";
 

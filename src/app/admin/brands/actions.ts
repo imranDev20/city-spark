@@ -3,6 +3,8 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { BrandFormInputType } from "./schema";
+import { unstable_cache as cache } from "next/cache";
+import { backendClient } from "@/lib/edgestore-server";
 
 export async function createBrand(data: BrandFormInputType) {
   try {
@@ -32,15 +34,19 @@ export async function createBrand(data: BrandFormInputType) {
   }
 }
 
-export async function getBrands() {
+export const getBrands = cache(async () => {
   try {
-    const brands = await prisma.brand.findMany({});
+    const brands = await prisma.brand.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
     return brands;
   } catch (error) {
-    console.error("Error fetching brand:", error);
-    throw new Error("Failed to fetch brand");
+    console.error("Error fetching brands:", error);
+    throw new Error("Failed to fetch brands");
   }
-}
+});
 
 export async function deleteBrand(brandId: string) {
   try {
@@ -51,11 +57,17 @@ export async function deleteBrand(brandId: string) {
       };
     }
 
-    await prisma.brand.delete({
+    const deletedBrand = await prisma.brand.delete({
       where: {
         id: brandId,
       },
     });
+
+    if (deletedBrand.image) {
+      await backendClient.publicImages.deleteFile({
+        url: deletedBrand.image,
+      });
+    }
 
     revalidatePath("/admin/brands");
 
@@ -72,7 +84,7 @@ export async function deleteBrand(brandId: string) {
   }
 }
 
-export async function getBrandById(brandId: string) {
+export const getBrandById = cache(async (brandId: string) => {
   try {
     const brand = await prisma.brand.findUnique({
       where: {
@@ -89,11 +101,21 @@ export async function getBrandById(brandId: string) {
     console.error("Error fetching brand:", error);
     throw new Error("Failed to fetch brand");
   }
-}
+});
 
 export async function updateBrand(brandId: string, data: BrandFormInputType) {
   try {
-    console.log(data);
+    const existingBrand = await prisma.brand.findUnique({
+      where: {
+        id: brandId,
+      },
+    });
+
+    if (existingBrand?.image && existingBrand.image !== data.image) {
+      await backendClient.publicImages.deleteFile({
+        url: existingBrand.image,
+      });
+    }
 
     const updatedbrand = await prisma.brand.update({
       where: {

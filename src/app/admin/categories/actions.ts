@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { unstable_cache as cache } from "next/cache";
 import { CategoryFormInputType, CategoryType } from "./schema";
-import { backendClient } from "@/app/api/edgestore/[...edgestore]/route";
+import { backendClient } from "@/lib/edgestore-server";
 
 // Fetch parent categories
 export const getParentCategories = cache(async (categoryType: CategoryType) => {
