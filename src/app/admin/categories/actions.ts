@@ -107,6 +107,7 @@ export const getNavigationCategories = cache(async (name: string, product_url?: 
     // Case 2: product_url length == 1, fetch secondary categories based on primary name
     if (product_url.length === 1) {
       const primaryName = name;
+      console.log(`primaryName`, primaryName);
       const categories = await prisma.category.findMany({
         where: {
           type: CategoryEnumType.SECONDARY, // Use Prisma's CategoryType enum
@@ -126,7 +127,7 @@ export const getNavigationCategories = cache(async (name: string, product_url?: 
           secondaryProducts: true,
         },
         orderBy: {
-          createdAt: 'asc',
+          createdAt: 'desc',
         },
       });
       return categories.map(category => ({
@@ -134,8 +135,8 @@ export const getNavigationCategories = cache(async (name: string, product_url?: 
         name: category.name,
         type: category.type,
         image: category.image,
-        childCategories: category.secondaryChildCategories,
-        products: category.secondaryProducts,
+        secondaryChildCategories: category.secondaryChildCategories,
+        secondaryProducts: category.secondaryProducts,
       }));
     }
 
@@ -161,7 +162,7 @@ export const getNavigationCategories = cache(async (name: string, product_url?: 
           tertiaryProducts: true,
         },
         orderBy: {
-          createdAt: 'asc',
+          createdAt: 'desc',
         },
       });
       return categories.map(category => ({
@@ -188,7 +189,7 @@ export const getNavigationCategories = cache(async (name: string, product_url?: 
           quaternaryProducts: true,
         },
         orderBy: {
-          createdAt: 'asc',
+          createdAt: 'desc',
         },
       });
       return categories.map(category => ({

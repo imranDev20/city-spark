@@ -3,34 +3,13 @@ import { CaretRightIcon, ChevronDownIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
+import { CategoryWithRelation } from "../../[[...product_url]]/page";
+export function convertToKebabCase(input: string): string {
+  return input.trim().toLowerCase().replace(/\s+/g, '-');
+}
 
-export default function CategoriesNavigation() {
-  const categories = [
-    {
-      id: "copper-brassware",
-      name: "Copper & Brassware",
-      subcategories: [
-        { id: "copper-pipes", name: "Copper Pipes" },
-        { id: "brass-fittings", name: "Brass Fittings" },
-      ],
-    },
-    {
-      id: "plastic-pipe-fittings",
-      name: "Plastic Pipe & Fittings",
-      subcategories: [
-        { id: "pvc-pipes", name: "PVC Pipes" },
-        { id: "ppr-fittings", name: "PPR Fittings" },
-      ],
-    },
-    {
-      id: "soil-waste",
-      name: "Soil & Waste",
-      subcategories: [
-        { id: "soil-pipes", name: "Soil Pipes" },
-        { id: "waste-pipes", name: "Waste Pipes" },
-      ],
-    },
-  ];
+export default function CategoriesNavigation({data}:{data:CategoryWithRelation[]}) {
+  
 
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const handleToggle = (categoryId:string | null) => {
@@ -43,20 +22,21 @@ export default function CategoriesNavigation() {
       <Separator />
 
       <ul>
-        {categories.map((category, index) => (
-          <li key={category.id}>
+        {data?.map((values:any, index:any) => (
+         
+          <li key={values.id}>
             <div className="flex justify-between items-center px-6 py-3">
-              <Link href={`/products/${category.id}`}>
-                <p className={`${openCategory === category.id ? 'font-semibold' : 'font-normal'} text-[16px] py-3 ps-6 cursor-pointer`}>
-                  {category.name}
+              <Link href={`/products/${convertToKebabCase(values.name)}`}>
+                <p className={`${openCategory === values.id ? 'font-semibold' : 'font-normal'} text-[16px] py-3 ps-6 cursor-pointer`}>
+                  {values.name}
                 </p>
               </Link>
-              {category.subcategories.length > 0 && (
+              {values.primaryChildCategories.length > 0 && (
                 <div
-                  onClick={() => handleToggle(category.id)}
+                  onClick={() => handleToggle(values.id)}
                   className="cursor-pointer"
                 >
-                  {openCategory === category.id ? (
+                  {openCategory === values.id ? (
                     <ChevronDownIcon className="w-4 h-4 text-gray-500" />
                   ) : (
                     <CaretRightIcon className="w-4 h-4 text-gray-500" />
@@ -64,11 +44,11 @@ export default function CategoriesNavigation() {
                 </div>
               )}
             </div>
-            {openCategory === category.id && (
+            {openCategory === values.id && (
               <ul className="ml-4 -mt-5">
-                {category.subcategories.map((subcategory) => (
+                {values.primaryChildCategories.map((subcategory : any) => (
                   <li key={subcategory.id} className="">
-                    <Link href={`/products/${category.name}/${subcategory.id}`}>
+                    <Link href={`/products/${convertToKebabCase(values.name)}/${convertToKebabCase(subcategory.name)}`}>
                       <p className="text-[16px] font-normal ps-12 py-3  cursor-pointer">
                         {subcategory.name}
                       </p>
@@ -77,7 +57,7 @@ export default function CategoriesNavigation() {
                 ))}
               </ul>
             )}
-            {index < categories.length - 1 && <Separator  />}
+            {index < data?.length - 1 && <Separator  />}
           </li>
 
         ))}
