@@ -1,4 +1,5 @@
 "use server";
+
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { unstable_cache as cache } from "next/cache";
@@ -14,9 +15,9 @@ export async function createUser(data: FromInputType) {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
-        phone: data.phone, 
-        password: data.password, 
-        avatar: data.avatar,          
+        phone: data.phone,
+        password: data.password,
+        avatar: data.avatar,
         addresses: {
           create: data.address.map((item) => ({
             city: item.city,
@@ -40,7 +41,6 @@ export async function createUser(data: FromInputType) {
       success: true,
     };
   } catch (error) {
-    console.log(error);
     return {
       message: "An error occurred while creating the user.",
       success: false,
@@ -48,12 +48,11 @@ export async function createUser(data: FromInputType) {
   }
 }
 export const getUsers = cache(async () => {
- 
-  try {    
+  try {
     const users = await prisma.user.findMany({
-      include:{
+      include: {
         addresses: true,
-      }
+      },
     });
     return users;
   } catch (error) {
@@ -80,7 +79,7 @@ export async function deleteUser(userId: string) {
       },
     });
 
-    revalidatePath("/admin/users");    
+    revalidatePath("/admin/users");
     return {
       message: "User deleted successfully!",
       success: true,
@@ -101,9 +100,8 @@ export async function getUserById(userId: string) {
       },
       include: {
         addresses: true,
-      }
+      },
     });
-    
 
     if (!user) {
       throw new Error("Brand not found");
@@ -171,7 +169,7 @@ export async function updateUser(userId: string, data: FromInputType) {
               city: address.city,
               state: address.state,
               postalCode: address.postalCode,
-              country: address.country,           
+              country: address.country,
             },
           })),
           create: addressesToCreate,
