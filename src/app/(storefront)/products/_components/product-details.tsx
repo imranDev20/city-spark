@@ -38,7 +38,7 @@ type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
         productTemplate: {
           include: {
             fields: true;
-            template:true,
+            template: true;
           };
         };
       };
@@ -113,7 +113,6 @@ export default function ProductDetails({
   const handleQuantityChange = (newValue: number) => {
     setQuantity(newValue);
   };
- 
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-screen-xl">
@@ -178,7 +177,265 @@ export default function ProductDetails({
               <h4 className="font-semibold text-xl mb-4">
                 Technical Specification
               </h4>
-            
+              <Table className="border-collapse border border-[#B0B0B0] w-full">
+                <TableBody>
+                  <TableRow className="border-b border-[#B0B0B0]">
+                    <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                      Brand Name
+                    </TableCell>
+                    <TableCell
+                      className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                      colSpan={inventoryItem?.product?.model ? undefined : 3}
+                    >
+                      {inventoryItem?.product?.brand?.name}
+                    </TableCell>
+
+                    {inventoryItem?.product?.model && (
+                      <>
+                        <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                          Model
+                        </TableCell>
+                        <TableCell className="bg-white border-r border-[#B0B0B0] p-2 text-center">
+                          {inventoryItem.product.model}
+                        </TableCell>
+                      </>
+                    )}
+                  </TableRow>
+
+                  {inventoryItem?.product?.productTemplate?.fields && (
+                    <TableRow className="border-b border-[#B0B0B0]">
+                      {inventoryItem.product.productTemplate.fields.map(
+                        (field) => (
+                          <React.Fragment key={field.id}>
+                            <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                             Field Name
+                            </TableCell>
+                            <TableCell
+                              className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                              colSpan={3}
+                            >
+                              {field.fieldValue}
+                            </TableCell>
+                          </React.Fragment>
+                        )
+                      )}
+                    </TableRow>
+                  )}
+
+                  {(inventoryItem?.product?.warranty ||
+                    inventoryItem?.product?.guarantee) && (
+                    <TableRow className="border-b border-[#B0B0B0]">
+                      {inventoryItem?.product?.guarantee && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Guarantee
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.warranty ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.guarantee}
+                          </TableCell>
+                        </>
+                      )}
+                      {inventoryItem?.product?.warranty && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Warranty
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.guarantee ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.warranty}
+                          </TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  )}
+
+                  {(inventoryItem?.product?.unit ||
+                    inventoryItem?.product?.weight) && (
+                    <TableRow className="border-b border-[#B0B0B0]">
+                      {inventoryItem?.product?.unit && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Unit
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.weight ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.unit}
+                          </TableCell>
+                        </>
+                      )}
+                      {inventoryItem?.product?.weight && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Weight
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.unit ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.weight}
+                          </TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  )}
+                  {(inventoryItem?.product?.color ||
+                    inventoryItem?.product?.length) && (
+                    <TableRow className="border-b border-[#B0B0B0]">
+                      {inventoryItem?.product?.color && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Color
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.length ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.color}
+                          </TableCell>
+                        </>
+                      )}
+                      {inventoryItem?.product?.length && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Length
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.color ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.length}
+                          </TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  )}
+                  {(inventoryItem?.product?.width ||
+                    inventoryItem?.product?.height) && (
+                    <TableRow className="border-b border-[#B0B0B0]">
+                      {inventoryItem?.product?.width && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Width
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.height ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.width}
+                          </TableCell>
+                        </>
+                      )}
+                      {inventoryItem?.product?.height && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                          Height
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.width ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.height}
+                          </TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  )}
+                  {(inventoryItem?.product?.material ||
+                    inventoryItem?.product?.volume) && (
+                    <TableRow className="border-b border-[#B0B0B0]">
+                      {inventoryItem?.product?.material && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                          Material
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.volume ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.material}
+                          </TableCell>
+                        </>
+                      )}
+                      {inventoryItem?.product?.volume && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                          Volume
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.material ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.volume}
+                          </TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  )}
+                  {(inventoryItem?.product?.type ||
+                    inventoryItem?.product?.shape) && (
+                    <TableRow className="border-b border-[#B0B0B0]">
+                      {inventoryItem?.product?.type && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                          Type
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.shape ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.type}
+                          </TableCell>
+                        </>
+                      )}
+                      {inventoryItem?.product?.shape && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                          Shape
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.type ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.shape}
+                          </TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  )}
+                  
+                </TableBody>
+              </Table>
             </div>
           </div>
         </div>
