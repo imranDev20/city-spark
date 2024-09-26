@@ -13,11 +13,21 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import AddDeliveryAddress from "./_components/add-delivery-address";
+import AddPromoCode from "./_components/add-promo-code";
+import PaypalIcon from "@/components/icons/paypal";
+import CreditOrDebitIcon from "@/components/icons/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 export default function CheckoutPage() {
   const [isOpenDeliveryDetails, setIsOpenDeliveryDetails] =
     React.useState(false);
   const [hideDeliveryButton, setHideDeliveryButton] = React.useState(false);
+  const [isOpenPaymentDetails, setIsOpenPaymentDetails] = React.useState(false);
+  const [hidePaymentButton, setHidePaymentButton] = React.useState(false);
+  const [selectedPayment, setSelectedPayment] = React.useState("paypal");
+  const [termsAccepted, setTermsAccepted] = React.useState(false);
   return (
     <div className="container mx-auto mt-6 mb-4">
       <div className="flex items-center gap-4 mb-5 mt-7">
@@ -182,8 +192,8 @@ export default function CheckoutPage() {
                     <div className="space-y-6">
                       <Button
                         onClick={() => {
-                          setIsOpenDeliveryDetails(true);
-                          setHideDeliveryButton(true);
+                          setIsOpenPaymentDetails(true);
+                          setHidePaymentButton(true);
                         }}
                       >
                         Continue
@@ -196,10 +206,114 @@ export default function CheckoutPage() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl text-gray-500">
-                3. Payment
+              <CardTitle className="text-[30px] font-semibold">
+                Payment details
               </CardTitle>
             </CardHeader>
+            <CardContent>
+              <Collapsible
+                open={isOpenPaymentDetails}
+                onOpenChange={setIsOpenPaymentDetails}
+                className="w-full space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  {!hidePaymentButton && (
+                    <CollapsibleTrigger asChild>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className=" rounded-[8px] py-2 px-4 bg-[#5F5E5E] text-xs font-bold hover:bg-[#5F5E5E] "
+                        onClick={() => setHidePaymentButton(true)}
+                      >
+                        Add Details
+                      </Button>
+                    </CollapsibleTrigger>
+                  )}
+                </div>
+
+                <CollapsibleContent className="space-y-2">
+                  <div className="mb-6">
+                    <AddPromoCode />
+                  </div>
+
+                  <RadioGroup
+                    value={selectedPayment}
+                    onValueChange={setSelectedPayment}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="paypal" id="paypal" />
+                      <Card className="w-[80%] bg-white border-[#BFBFBF] shadow-sm">
+                        <CardContent className="p-4 flex items-center space-x-4">
+                          <div className="p-2 rounded-full">
+                            <PaypalIcon />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900">
+                              PayPal
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Pay in 3 interest-free payments on purchases
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <div className="flex items-center space-x-2 mt-4">
+                      <RadioGroupItem value="credit-debit" id="credit-debit" />
+                      <Card className="w-[80%] bg-white border-[#BFBFBF] shadow-sm">
+                        <CardContent className="p-4 flex items-center space-x-4">
+                          <div className="p-2 rounded-full">
+                            <CreditOrDebitIcon />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900">
+                              Credit Card/Debit Card
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              We accept visa, master cards
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    <div className="mt-4 pl-[27px]">
+                      <div className="flex items-center space-x-2 mb-4">
+                        <Checkbox
+                          id="terms"
+                          checked={termsAccepted}
+                          onCheckedChange={(checked) =>
+                            setTermsAccepted(checked as boolean)
+                          }
+                        />
+                        <Label htmlFor="terms" className="text-sm">
+                          I have read and accept the{" "}
+                          <a href="#" className="text-blue-600 underline">
+                            Terms and Conditions
+                          </a>
+                        </Label>
+                      </div>
+                      <Button
+                        className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded"
+                        onClick={() => {
+                          if (termsAccepted) {
+                            // Handle continue action
+                            console.log("Continuing...");
+                          } else {
+                            console.log(
+                              "Please accept the Terms and Conditions"
+                            );
+                          }
+                        }}
+                        disabled={!termsAccepted}
+                      >
+                        Continue
+                      </Button>
+                    </div>
+                  </RadioGroup>
+                </CollapsibleContent>
+              </Collapsible>
+            </CardContent>
           </Card>
         </div>
         <div>
