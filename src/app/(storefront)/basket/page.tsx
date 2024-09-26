@@ -30,7 +30,7 @@ export default async function StorefrontBasketPage() {
   if (!cart || cart.cartItems.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-screen-xl">
-        <h1 className="text-4xl font-bold mb-8">My Basket</h1>
+        <h1 className="text-5xl font-extrabold mb-8">My Basket</h1>
         <Card className="p-8 shadow-none border-gray-350 text-center">
           <ShoppingCart className="mx-auto mb-4 h-16 w-16 text-gray-400" />
           <h2 className="text-2xl font-semibold mb-4">Your basket is empty</h2>
@@ -49,7 +49,7 @@ export default async function StorefrontBasketPage() {
     <div className="container mx-auto px-4 py-8 max-w-screen-xl">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <h1 className="text-4xl font-bold mb-8">My Basket</h1>
+          <h1 className="text-5xl font-extrabold mb-8">My Basket</h1>
 
           <div className="bg-blue-50 p-4 rounded-lg mb-8">
             <div className="flex items-center">
