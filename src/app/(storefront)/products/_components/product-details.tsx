@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
@@ -38,6 +38,7 @@ type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
         productTemplate: {
           include: {
             fields: true;
+            template:true,
           };
         };
       };
@@ -94,6 +95,8 @@ export default function ProductDetails({
 
   const imageRef = useRef<HTMLImageElement | null>(null);
 
+  console.log(inventoryItem);
+
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>): void => {
     if (imageRef.current) {
       const { left, top, width, height } =
@@ -105,9 +108,12 @@ export default function ProductDetails({
   };
 
   const handleMouseLeave = () => setTransform({ scale: 1, x: 50, y: 50 });
-
-  const increment = () => setCount((prev) => prev + 1);
-  const decrement = () => setCount((prev) => (prev > 1 ? prev - 1 : 1));
+  const [isPending, startTransition] = useTransition();
+  const [quantity, setQuantity] = useState(1);
+  const handleQuantityChange = (newValue: number) => {
+    setQuantity(newValue);
+  };
+ 
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-screen-xl">
@@ -131,6 +137,7 @@ export default function ProductDetails({
               }}
             />
           </div>
+
           <div className="grid grid-cols-6 gap-2 mt-8">
             {inventoryItem.product.images.map(
               (image: string, index: number) => (
@@ -152,6 +159,27 @@ export default function ProductDetails({
                 </div>
               )
             )}
+          </div>
+          <div className="mt-8">
+            <h4 className="font-semibold text-xl">Product Description</h4>
+            <p className="mt-4 font-normal text-[16px] leading-7">
+              {inventoryItem?.product?.description}
+            </p>
+            <ul className="list-none space-y-2 mt-4">
+              {inventoryItem?.product?.features.map((feature, index) => (
+                <li key={index} className="flex items-start leading-7">
+                  <span className="inline-block w-2 h-2 bg-red-500 rounded-full mt-2.5 mr-4 flex-shrink-0"></span>
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-6">
+              <h4 className="font-semibold text-xl mb-4">
+                Technical Specification
+              </h4>
+            
+            </div>
           </div>
         </div>
 
@@ -184,21 +212,38 @@ export default function ProductDetails({
 
               <div className="space-y-8 mt-6">
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between bg-gray-100 rounded-md w-full h-10">
+                  <div className="flex justify-between bg-gray-200 my-2 rounded-md text-lg relative overflow-hidden">
                     <button
-                      onClick={decrement}
-                      className="w-10 h-full text-gray-500 hover:text-gray-700 focus:outline-none"
+                      onClick={() =>
+                        handleQuantityChange(Math.max(1, quantity - 1))
+                      }
+                      disabled={isPending || quantity <= 1}
+                      className="absolute top-0 left-0 h-full px-4 flex items-center justify-center transition-colors duration-200 ease-in-out hover:bg-gray-300 active:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-200"
                     >
-                      -
+                      <span className="text-gray-600 font-medium select-none">
+                        -
+                      </span>
                     </button>
-                    <div className="flex-grow text-center font-medium text-gray-700">
-                      {count}
-                    </div>
+                    <input
+                      className="appearance-none border-none text-center bg-transparent focus:outline-none py-1 spinner-none flex-1 font-medium"
+                      type="number"
+                      min={1}
+                      value={quantity}
+                      onChange={(e) =>
+                        handleQuantityChange(parseInt(e.target.value))
+                      }
+                      style={{
+                        appearance: "textfield",
+                      }}
+                    />
                     <button
-                      onClick={increment}
-                      className="w-10 h-full text-gray-500 hover:text-gray-700 focus:outline-none"
+                      onClick={() => handleQuantityChange(quantity + 1)}
+                      disabled={isPending}
+                      className="absolute top-0 right-0 h-full px-4 flex items-center justify-center transition-colors duration-200 ease-in-out hover:bg-gray-300 active:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-200"
                     >
-                      +
+                      <span className="text-gray-600 font-medium select-none">
+                        +
+                      </span>
                     </button>
                   </div>
                   <div className="flex gap-3">

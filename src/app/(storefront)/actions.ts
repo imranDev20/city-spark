@@ -128,9 +128,10 @@ export async function getInventoryItem(inventoryItemId: string) {
             secondaryCategory: true,
             tertiaryCategory: true,
             quaternaryCategory: true,
-            productTemplate: {
+            productTemplate: {             
               include: {
                 fields: true,
+                template:true,
               },
             },
           },
