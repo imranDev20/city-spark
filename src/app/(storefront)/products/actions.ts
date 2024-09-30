@@ -15,7 +15,6 @@ export async function getCategoriesByType(
 ) {
   try {
     let categories;
-
     switch (type) {
       case CategoryType.PRIMARY:
         categories = await prisma.category.findMany({
@@ -25,6 +24,19 @@ export async function getCategoriesByType(
             primaryChildCategories: {
               where: { type: CategoryType.SECONDARY },
               orderBy: { name: "asc" },
+              include: {
+                secondaryChildCategories: {
+                  where: { type: CategoryType.TERTIARY },
+                  orderBy: { name: "asc" },
+
+                  include: {
+                    tertiaryChildCategories: {
+                      where: { type: CategoryType.QUATERNARY },
+                      orderBy: { name: "asc" },
+                    },
+                  },
+                },
+              },
             },
             primaryProducts: {
               orderBy: {
