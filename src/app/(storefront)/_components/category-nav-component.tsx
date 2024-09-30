@@ -100,19 +100,21 @@ export default function CategoryNavComponent({
         if (category.name.toLowerCase() === "heating") {
           const result: MergedCategory[] = [];
 
-          const boiler = category.primaryChildCategories.find(
-            (subcat) => subcat.name.toLowerCase() === "boiler"
+          const boilers = category.primaryChildCategories.find(
+            (subcat) => subcat.name.toLowerCase() === "boilers"
           );
-          const radiator = category.primaryChildCategories.find(
-            (subcat) => subcat.name.toLowerCase() === "radiator"
+          const radiators = category.primaryChildCategories.find(
+            (subcat) => subcat.name.toLowerCase() === "radiators"
           );
 
-          if (boiler) {
-            result.push(createMergedCategory(boiler, BoilerIcon, category));
+          if (boilers) {
+            result.push(createMergedCategory(boilers, BoilerIcon, category));
           }
 
-          if (radiator) {
-            result.push(createMergedCategory(radiator, RadiatorIcon, category));
+          if (radiators) {
+            result.push(
+              createMergedCategory(radiators, RadiatorIcon, category)
+            );
           }
 
           result.push(createMergedCategory(category, item.Icon));
