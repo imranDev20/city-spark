@@ -40,8 +40,8 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
   onMouseLeave,
 }) => {
   const isSecondaryCategory =
-    category.name.toLowerCase() === "radiator" ||
-    category.name.toLowerCase() === "boiler";
+    category.name.toLowerCase() === "radiators" ||
+    category.name.toLowerCase() === "boilers";
 
   return (
     <div
