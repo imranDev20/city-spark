@@ -95,8 +95,6 @@ export default function ProductDetails({
 
   const imageRef = useRef<HTMLImageElement | null>(null);
 
-  console.log(inventoryItem);
-
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>): void => {
     if (imageRef.current) {
       const { left, top, width, height } =
@@ -208,7 +206,7 @@ export default function ProductDetails({
                         (field) => (
                           <React.Fragment key={field.id}>
                             <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
-                             Field Name
+                              Field Name
                             </TableCell>
                             <TableCell
                               className="bg-white border-r border-[#B0B0B0] p-2 text-center"
@@ -349,7 +347,7 @@ export default function ProductDetails({
                       {inventoryItem?.product?.height && (
                         <>
                           <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
-                          Height
+                            Height
                           </TableCell>
                           <TableCell
                             className="bg-white border-r border-[#B0B0B0] p-2 text-center"
@@ -369,7 +367,7 @@ export default function ProductDetails({
                       {inventoryItem?.product?.material && (
                         <>
                           <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
-                          Material
+                            Material
                           </TableCell>
                           <TableCell
                             className="bg-white border-r border-[#B0B0B0] p-2 text-center"
@@ -384,7 +382,7 @@ export default function ProductDetails({
                       {inventoryItem?.product?.volume && (
                         <>
                           <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
-                          Volume
+                            Volume
                           </TableCell>
                           <TableCell
                             className="bg-white border-r border-[#B0B0B0] p-2 text-center"
@@ -404,7 +402,7 @@ export default function ProductDetails({
                       {inventoryItem?.product?.type && (
                         <>
                           <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
-                          Type
+                            Type
                           </TableCell>
                           <TableCell
                             className="bg-white border-r border-[#B0B0B0] p-2 text-center"
@@ -419,7 +417,7 @@ export default function ProductDetails({
                       {inventoryItem?.product?.shape && (
                         <>
                           <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
-                          Shape
+                            Shape
                           </TableCell>
                           <TableCell
                             className="bg-white border-r border-[#B0B0B0] p-2 text-center"
@@ -433,7 +431,6 @@ export default function ProductDetails({
                       )}
                     </TableRow>
                   )}
-                  
                 </TableBody>
               </Table>
             </div>
