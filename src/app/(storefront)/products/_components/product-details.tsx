@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
@@ -38,6 +38,7 @@ type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
         productTemplate: {
           include: {
             fields: true;
+            template: true;
           };
         };
       };
@@ -105,9 +106,11 @@ export default function ProductDetails({
   };
 
   const handleMouseLeave = () => setTransform({ scale: 1, x: 50, y: 50 });
-
-  const increment = () => setCount((prev) => prev + 1);
-  const decrement = () => setCount((prev) => (prev > 1 ? prev - 1 : 1));
+  const [isPending, startTransition] = useTransition();
+  const [quantity, setQuantity] = useState(1);
+  const handleQuantityChange = (newValue: number) => {
+    setQuantity(newValue);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-screen-xl">
@@ -131,6 +134,7 @@ export default function ProductDetails({
               }}
             />
           </div>
+
           <div className="grid grid-cols-6 gap-2 mt-8">
             {inventoryItem.product.images.map(
               (image: string, index: number) => (
@@ -152,6 +156,284 @@ export default function ProductDetails({
                 </div>
               )
             )}
+          </div>
+          <div className="mt-8">
+            <h4 className="font-semibold text-xl">Product Description</h4>
+            <p className="mt-4 font-normal text-[16px] leading-7">
+              {inventoryItem?.product?.description}
+            </p>
+            <ul className="list-none space-y-2 mt-4">
+              {inventoryItem?.product?.features.map((feature, index) => (
+                <li key={index} className="flex items-start leading-7">
+                  <span className="inline-block w-2 h-2 bg-red-500 rounded-full mt-2.5 mr-4 flex-shrink-0"></span>
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-6">
+              <h4 className="font-semibold text-xl mb-4">
+                Technical Specification
+              </h4>
+              <Table className="border-collapse border border-[#B0B0B0] w-full">
+                <TableBody>
+                  <TableRow className="border-b border-[#B0B0B0]">
+                    <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                      Brand Name
+                    </TableCell>
+                    <TableCell
+                      className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                      colSpan={inventoryItem?.product?.model ? undefined : 3}
+                    >
+                      {inventoryItem?.product?.brand?.name}
+                    </TableCell>
+
+                    {inventoryItem?.product?.model && (
+                      <>
+                        <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                          Model
+                        </TableCell>
+                        <TableCell className="bg-white border-r border-[#B0B0B0] p-2 text-center">
+                          {inventoryItem.product.model}
+                        </TableCell>
+                      </>
+                    )}
+                  </TableRow>
+
+                  {inventoryItem?.product?.productTemplate?.fields && (
+                    <TableRow className="border-b border-[#B0B0B0]">
+                      {inventoryItem.product.productTemplate.fields.map(
+                        (field) => (
+                          <React.Fragment key={field.id}>
+                            <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                              Field Name
+                            </TableCell>
+                            <TableCell
+                              className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                              colSpan={3}
+                            >
+                              {field.fieldValue}
+                            </TableCell>
+                          </React.Fragment>
+                        )
+                      )}
+                    </TableRow>
+                  )}
+
+                  {(inventoryItem?.product?.warranty ||
+                    inventoryItem?.product?.guarantee) && (
+                    <TableRow className="border-b border-[#B0B0B0]">
+                      {inventoryItem?.product?.guarantee && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Guarantee
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.warranty ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.guarantee}
+                          </TableCell>
+                        </>
+                      )}
+                      {inventoryItem?.product?.warranty && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Warranty
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.guarantee ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.warranty}
+                          </TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  )}
+
+                  {(inventoryItem?.product?.unit ||
+                    inventoryItem?.product?.weight) && (
+                    <TableRow className="border-b border-[#B0B0B0]">
+                      {inventoryItem?.product?.unit && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Unit
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.weight ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.unit}
+                          </TableCell>
+                        </>
+                      )}
+                      {inventoryItem?.product?.weight && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Weight
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.unit ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.weight}
+                          </TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  )}
+                  {(inventoryItem?.product?.color ||
+                    inventoryItem?.product?.length) && (
+                    <TableRow className="border-b border-[#B0B0B0]">
+                      {inventoryItem?.product?.color && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Color
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.length ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.color}
+                          </TableCell>
+                        </>
+                      )}
+                      {inventoryItem?.product?.length && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Length
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.color ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.length}
+                          </TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  )}
+                  {(inventoryItem?.product?.width ||
+                    inventoryItem?.product?.height) && (
+                    <TableRow className="border-b border-[#B0B0B0]">
+                      {inventoryItem?.product?.width && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Width
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.height ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.width}
+                          </TableCell>
+                        </>
+                      )}
+                      {inventoryItem?.product?.height && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Height
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.width ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.height}
+                          </TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  )}
+                  {(inventoryItem?.product?.material ||
+                    inventoryItem?.product?.volume) && (
+                    <TableRow className="border-b border-[#B0B0B0]">
+                      {inventoryItem?.product?.material && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Material
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.volume ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.material}
+                          </TableCell>
+                        </>
+                      )}
+                      {inventoryItem?.product?.volume && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Volume
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.material ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.volume}
+                          </TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  )}
+                  {(inventoryItem?.product?.type ||
+                    inventoryItem?.product?.shape) && (
+                    <TableRow className="border-b border-[#B0B0B0]">
+                      {inventoryItem?.product?.type && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Type
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.shape ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.type}
+                          </TableCell>
+                        </>
+                      )}
+                      {inventoryItem?.product?.shape && (
+                        <>
+                          <TableCell className="font-medium bg-gray-200 border-r border-[#B0B0B0] p-2">
+                            Shape
+                          </TableCell>
+                          <TableCell
+                            className="bg-white border-r border-[#B0B0B0] p-2 text-center"
+                            colSpan={
+                              inventoryItem?.product?.type ? undefined : 3
+                            }
+                          >
+                            {inventoryItem?.product?.shape}
+                          </TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </div>
 
@@ -184,21 +466,38 @@ export default function ProductDetails({
 
               <div className="space-y-8 mt-6">
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between bg-gray-100 rounded-md w-full h-10">
+                  <div className="flex justify-between bg-gray-200 my-2 rounded-md text-lg relative overflow-hidden">
                     <button
-                      onClick={decrement}
-                      className="w-10 h-full text-gray-500 hover:text-gray-700 focus:outline-none"
+                      onClick={() =>
+                        handleQuantityChange(Math.max(1, quantity - 1))
+                      }
+                      disabled={isPending || quantity <= 1}
+                      className="absolute top-0 left-0 h-full px-4 flex items-center justify-center transition-colors duration-200 ease-in-out hover:bg-gray-300 active:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-200"
                     >
-                      -
+                      <span className="text-gray-600 font-medium select-none">
+                        -
+                      </span>
                     </button>
-                    <div className="flex-grow text-center font-medium text-gray-700">
-                      {count}
-                    </div>
+                    <input
+                      className="appearance-none border-none text-center bg-transparent focus:outline-none py-1 spinner-none flex-1 font-medium"
+                      type="number"
+                      min={1}
+                      value={quantity}
+                      onChange={(e) =>
+                        handleQuantityChange(parseInt(e.target.value))
+                      }
+                      style={{
+                        appearance: "textfield",
+                      }}
+                    />
                     <button
-                      onClick={increment}
-                      className="w-10 h-full text-gray-500 hover:text-gray-700 focus:outline-none"
+                      onClick={() => handleQuantityChange(quantity + 1)}
+                      disabled={isPending}
+                      className="absolute top-0 right-0 h-full px-4 flex items-center justify-center transition-colors duration-200 ease-in-out hover:bg-gray-300 active:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-200"
                     >
-                      +
+                      <span className="text-gray-600 font-medium select-none">
+                        +
+                      </span>
                     </button>
                   </div>
                   <div className="flex gap-3">
