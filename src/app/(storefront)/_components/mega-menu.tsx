@@ -60,7 +60,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
                     )}/${customSlugify(tertiaryCategory.name)}/c?s_id=${
                       category.id
                     }&t_id=${tertiaryCategory.id}`}
-                    className="text-sm hover:text-primary transition-colors font-medium block mb-2"
+                    className="text-sm hover:text-primary transition-colors font-semibold block mb-2"
                   >
                     {tertiaryCategory.name}
                   </Link>
@@ -96,7 +96,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
                     )}/${customSlugify(secondaryCategory.name)}/c?p_id=${
                       category.id
                     }&s_id=${secondaryCategory.id}`}
-                    className="text-sm hover:text-primary transition-colors font-medium block mb-2"
+                    className="text-sm hover:text-primary transition-colors font-semibold block mb-2"
                   >
                     {secondaryCategory.name}
                   </Link>
