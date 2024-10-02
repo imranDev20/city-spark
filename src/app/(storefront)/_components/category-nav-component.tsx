@@ -3,7 +3,6 @@
 import { usePathname } from "next/navigation";
 import { useState, useRef } from "react";
 import Link from "next/link";
-import { Prisma } from "@prisma/client";
 import { customSlugify } from "@/lib/functions";
 import { cn } from "@/lib/utils";
 import MegaMenu from "./mega-menu";
@@ -17,19 +16,8 @@ import SparesIcon from "@/components/icons/spares";
 import RenewablesIcon from "@/components/icons/renewables";
 import ToolsIcon from "@/components/icons/tools";
 import ElectricalIcon from "@/components/icons/electrical";
-
-const categoryData = [
-  { label: "Boilers", Icon: BoilerIcon },
-  { label: "Radiators", Icon: RadiatorIcon },
-  { label: "Heating", Icon: HeatingIcon },
-  { label: "Plumbing", Icon: PlumbingIcon },
-  { label: "Bathrooms, Kitchens & Tiles", Icon: BathroomIcon },
-  { label: "Kitchen & Tiles", Icon: KitchenTilesIcon },
-  { label: "Spares", Icon: SparesIcon },
-  { label: "Renewables", Icon: RenewablesIcon },
-  { label: "Tools", Icon: ToolsIcon },
-  { label: "Electrical", Icon: ElectricalIcon },
-];
+import { CategoryWithChildParent } from "@/types/storefront-products";
+import { CategoryType } from "@prisma/client";
 
 type IconProps = {
   className?: string;
@@ -37,49 +25,52 @@ type IconProps = {
   width?: number | string;
 };
 
-type PrimaryCategoryWithChilds = Prisma.CategoryGetPayload<{
-  include: {
-    primaryChildCategories: {
-      include: {
-        secondaryChildCategories: {
-          include: {
-            tertiaryChildCategories: true;
-          };
-        };
-      };
-    };
-  };
-}>;
+type PrimaryCategory = CategoryWithChildParent;
+export type SecondaryCategory =
+  CategoryWithChildParent["primaryChildCategories"][number];
 
-type MergedCategory = Partial<PrimaryCategoryWithChilds> & {
+type CategoryWithParent<T extends PrimaryCategory | SecondaryCategory> = T & {
   Icon: React.ComponentType<IconProps>;
   route: string;
-  id: string;
-  name: string;
 };
 
-function createMergedCategory(
-  category: Partial<PrimaryCategoryWithChilds>,
-  icon: React.ComponentType<IconProps>,
-  parentCategory?: PrimaryCategoryWithChilds
-): MergedCategory {
+const categoryData: { label: string; Icon: React.ComponentType<IconProps> }[] =
+  [
+    { label: "Boilers", Icon: BoilerIcon },
+    { label: "Radiators", Icon: RadiatorIcon },
+    { label: "Heating", Icon: HeatingIcon },
+    { label: "Plumbing", Icon: PlumbingIcon },
+    { label: "Bathrooms, Kitchens & Tiles", Icon: BathroomIcon },
+    { label: "Kitchen & Tiles", Icon: KitchenTilesIcon },
+    { label: "Spares", Icon: SparesIcon },
+    { label: "Renewables", Icon: RenewablesIcon },
+    { label: "Tools", Icon: ToolsIcon },
+    { label: "Electrical", Icon: ElectricalIcon },
+  ];
+
+function createMergedCategory<T extends PrimaryCategory | SecondaryCategory>(
+  category: T,
+  icon: React.ComponentType<IconProps>
+): CategoryWithParent<T> {
   return {
-    ...parentCategory,
     ...category,
     Icon: icon,
-    route: `/products/c/${customSlugify(category.name || "")}/c?p_id=${
-      category.id
+    route: `/products/c/${customSlugify(category?.name)}/c?p_id=${
+      category?.id
+    }${
+      category &&
+      category?.type === CategoryType.SECONDARY &&
+      category?.parentPrimaryCategory
+        ? `&s_id=${category.id}`
+        : ""
     }`,
-    primaryChildCategories: category.primaryChildCategories || [],
-    id: category.id!,
-    name: category.name!,
-  } as MergedCategory;
+  };
 }
 
 export default function CategoryNavComponent({
   categories,
 }: {
-  categories: PrimaryCategoryWithChilds[];
+  categories: CategoryWithChildParent[];
 }) {
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -90,39 +81,54 @@ export default function CategoryNavComponent({
     return null;
   }
 
-  const mergedCategories: MergedCategory[] = categoryData.flatMap(
-    (item): MergedCategory[] => {
+  const mergedCategories: CategoryWithParent<
+    PrimaryCategory | SecondaryCategory
+  >[] = categoryData.flatMap(
+    (item): CategoryWithParent<PrimaryCategory | SecondaryCategory>[] => {
       const category = categories.find(
         (cat) => cat.name.toLowerCase() === item.label.toLowerCase()
       );
 
       if (category) {
         if (category.name.toLowerCase() === "heating") {
-          const result: MergedCategory[] = [];
+          const result: CategoryWithParent<
+            PrimaryCategory | SecondaryCategory
+          >[] = [];
 
-          const boilers = category.primaryChildCategories.find(
+          const boilers = category.primaryChildCategories?.find(
             (subcat) => subcat.name.toLowerCase() === "boilers"
           );
-          const radiators = category.primaryChildCategories.find(
+          const radiators = category.primaryChildCategories?.find(
             (subcat) => subcat.name.toLowerCase() === "radiators"
           );
 
           if (boilers) {
-            result.push(createMergedCategory(boilers, BoilerIcon, category));
+            result.push(
+              createMergedCategory(boilers as SecondaryCategory, BoilerIcon)
+            );
           }
 
           if (radiators) {
             result.push(
-              createMergedCategory(radiators, RadiatorIcon, category)
+              createMergedCategory(radiators as SecondaryCategory, RadiatorIcon)
             );
           }
 
-          result.push(createMergedCategory(category, item.Icon));
+          result.push(
+            createMergedCategory(category as PrimaryCategory, item.Icon)
+          );
 
           return result;
         }
 
-        return [createMergedCategory(category, item.Icon)];
+        return [
+          createMergedCategory(
+            category.type === CategoryType.PRIMARY
+              ? (category as PrimaryCategory)
+              : (category as SecondaryCategory),
+            item.Icon
+          ),
+        ];
       }
 
       return [];
@@ -156,8 +162,7 @@ export default function CategoryNavComponent({
               href={item.route}
               className={cn(
                 "flex flex-col justify-center items-center py-4 h-24 cursor-pointer group transition-all w-full",
-                (hoveredCategory === item.id || hoveredCategory === item.id) &&
-                  "bg-gray-150"
+                hoveredCategory === item.id && "bg-gray-150"
               )}
             >
               <item.Icon
@@ -174,7 +179,10 @@ export default function CategoryNavComponent({
       </div>
       {hoveredCategory && (
         <MegaMenu
-          category={mergedCategories.find((c) => c.id === hoveredCategory)!}
+          category={
+            mergedCategories.find((c) => c.id === hoveredCategory) ||
+            mergedCategories[0]
+          }
           onMouseEnter={() => handleMouseEnter(hoveredCategory)}
           onMouseLeave={handleMouseLeave}
         />

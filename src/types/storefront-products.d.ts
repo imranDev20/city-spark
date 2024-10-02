@@ -14,3 +14,57 @@ export type CategoryWithRelations = Prisma.CategoryGetPayload<{
     quaternaryProducts?: true;
   };
 }>;
+
+export type CategoryWithChildParent = Prisma.CategoryGetPayload<{
+  include: {
+    primaryChildCategories: {
+      include: {
+        parentPrimaryCategory: true;
+        secondaryChildCategories: {
+          include: {
+            parentPrimaryCategory: true;
+            parentSecondaryCategory: true;
+            tertiaryChildCategories: true;
+          };
+        };
+      };
+    };
+    secondaryChildCategories: {
+      include: {
+        parentPrimaryCategory: true;
+        parentSecondaryCategory: true;
+        tertiaryChildCategories: true;
+      };
+    };
+
+    tertiaryChildCategories: true;
+    parentPrimaryCategory: true;
+    parentSecondaryCategory: {
+      include: {
+        parentPrimaryCategory: true;
+      };
+    };
+    parentTertiaryCategory: true;
+
+    primaryProducts: {
+      orderBy: {
+        createdAt: "desc";
+      };
+    };
+    secondaryProducts: {
+      orderBy: {
+        createdAt: "desc";
+      };
+    };
+    tertiaryProducts: {
+      orderBy: {
+        createdAt: "desc";
+      };
+    };
+    quaternaryProducts: {
+      orderBy: {
+        createdAt: "desc";
+      };
+    };
+  };
+}>;

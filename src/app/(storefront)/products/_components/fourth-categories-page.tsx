@@ -121,7 +121,7 @@ export default async function FourthCategoriesPage({
           </div>
         </div>
 
-        <div className="col-span-9 grid grid-cols-3">
+        <div className="col-span-9 grid grid-cols-3 gap-4">
           {quaternaryCategories.map((category) => (
             <div key={category.id}>
               <Link

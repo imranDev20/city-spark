@@ -4,7 +4,7 @@ import SecondCategoriesPage from "../_components/second-categories-page";
 import ThirdCategoriesPage from "../_components/third-categories-page";
 import FourthCategoriesPage from "../_components/fourth-categories-page";
 import StorefrontProductList from "../_components/storefront-product-list";
-import ProductDetails from "../_components/product-details";
+import StorefrontProductDetails from "../_components/storefront-product-details";
 import { getInventoryItem } from "../../actions";
 
 const getCategoryFromUrl = (product_url: string[] | undefined): string[] => {
@@ -49,7 +49,7 @@ export default async function StorefrontProductsPage({
     const inventoryItemId = product_url[3];
     const inventoryItem = await getInventoryItem(inventoryItemId);
 
-    return <ProductDetails inventoryItem={inventoryItem} />;
+    return <StorefrontProductDetails inventoryItem={inventoryItem} />;
   }
 
   if (result?.length === 4) {
@@ -69,7 +69,6 @@ export default async function StorefrontProductsPage({
   }
 
   if (result?.length === 3) {
-    console.log("lengh - 3");
     return (
       <FourthCategoriesPage
         primaryId={p_id}

@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 export type Pagination = {
   currentPage: number;
   pageSize: number;

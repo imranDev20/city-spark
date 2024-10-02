@@ -25,11 +25,13 @@ export async function getCategoriesByType(
               where: { type: CategoryType.SECONDARY },
               orderBy: { name: "asc" },
               include: {
+                parentPrimaryCategory: true,
                 secondaryChildCategories: {
                   where: { type: CategoryType.TERTIARY },
                   orderBy: { name: "asc" },
-
                   include: {
+                    parentPrimaryCategory: true,
+                    parentSecondaryCategory: true,
                     tertiaryChildCategories: {
                       where: { type: CategoryType.QUATERNARY },
                       orderBy: { name: "asc" },
