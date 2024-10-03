@@ -96,7 +96,7 @@ export default function FilterSidebar({
     initialPageParam: brandSearch !== "" ? 1 : 2,
     getNextPageParam: (lastPage) =>
       lastPage.pagination.hasMore ? lastPage.pagination.page + 1 : undefined,
-    enabled: isClientBrands,
+    enabled: isClientBrands || !!debouncedBrandSearch,
   });
 
   const toggleSection = (section: keyof typeof expandedSections) => {
@@ -123,11 +123,7 @@ export default function FilterSidebar({
     }
   };
 
-  const allBrands = debouncedBrandSearch
-    ? data?.pages.flatMap((page) => page.data) || []
-    : data?.pages.flatMap((page) => page.data) || initialBrands;
-
-  console.log(hasNextPage);
+  const allBrands = data?.pages.flatMap((page) => page.data) || initialBrands;
 
   return (
     <aside className="w-full max-w-xs">
