@@ -157,6 +157,33 @@ export async function getCategoryById(categoryId: string) {
   }
 }
 
+export async function getBrands() {
+  try {
+    const brands = await prisma.brand.findMany({
+      take: 5,
+      orderBy: {
+        name: "asc",
+      },
+      select: {
+        id: true,
+        name: true,
+        _count: {
+          select: { products: true },
+        },
+      },
+    });
+
+    return brands.map((brand) => ({
+      id: brand.id,
+      name: brand.name,
+      count: brand._count.products,
+    }));
+  } catch (error) {
+    console.error("Error fetching brands:", error);
+    return [];
+  }
+}
+
 export async function addToCart(
   inventoryId: string,
   quantity: number,

@@ -25,7 +25,7 @@ const getCategoryFromUrl = (product_url: string[] | undefined): string[] => {
 
 export default async function StorefrontProductsPage({
   params: { product_url },
-  searchParams: { p_id, s_id, t_id, q_id },
+  searchParams: { p_id, s_id, t_id, q_id, search },
 }: {
   params: {
     product_url?: string[];
@@ -35,6 +35,7 @@ export default async function StorefrontProductsPage({
     s_id?: string;
     t_id?: string;
     q_id?: string;
+    search?: string;
   };
 }) {
   const result = getCategoryFromUrl(product_url);
@@ -52,8 +53,12 @@ export default async function StorefrontProductsPage({
     return <StorefrontProductDetails inventoryItem={inventoryItem} />;
   }
 
+  // Check if there's a search query
+  if (search) {
+    return <StorefrontProductList isSearch search={search} />;
+  }
+
   if (result?.length === 4) {
-    console.log("lengh -4 ");
     return (
       <StorefrontProductList
         isPrimaryRequired
@@ -79,19 +84,14 @@ export default async function StorefrontProductsPage({
   }
 
   if (result?.length === 2) {
-    console.log("lengh - 2");
-
     return <ThirdCategoriesPage primaryId={p_id} secondaryId={s_id} />;
   }
 
   if (result?.length === 1) {
-    console.log("lengh - 1");
     return <SecondCategoriesPage primaryId={p_id} />;
   }
 
   if (!product_url || product_url.length === 0) {
-    console.log("lengh -0");
-
     return <FirstCategoriesPage />;
   }
 

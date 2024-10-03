@@ -215,8 +215,8 @@ export default function StorefrontProductDetails({
 
   return (
     <>
-      <div className="bg-primary py-7">
-        <div className="container mx-auth px-4 max-w-screen-xl">
+      <div className="bg-primary py-8">
+        <div className="container mx-auto max-w-screen-xl">
           <DynamicBreadcrumb items={breadcrumbItems} />
         </div>
       </div>

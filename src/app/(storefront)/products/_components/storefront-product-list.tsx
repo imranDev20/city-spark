@@ -17,7 +17,7 @@ import {
 import { BreadcrumbItem } from "@/types/misc";
 import { customSlugify } from "@/lib/functions";
 import { CategoryType } from "@prisma/client";
-import { getCategoryById } from "../actions";
+import { getBrands, getCategoryById } from "../actions";
 
 export default async function StorefrontProductList({
   primaryCategoryId,
@@ -28,6 +28,8 @@ export default async function StorefrontProductList({
   isSecondaryRequired,
   isTertiaryRequired,
   isQuaternaryRequired,
+  isSearch,
+  search,
 }: {
   primaryCategoryId?: string;
   secondaryCategoryId?: string;
@@ -37,6 +39,8 @@ export default async function StorefrontProductList({
   isSecondaryRequired?: boolean;
   isTertiaryRequired?: boolean;
   isQuaternaryRequired?: boolean;
+  isSearch?: boolean;
+  search?: string;
 }) {
   let currentCategory;
 
@@ -59,88 +63,109 @@ export default async function StorefrontProductList({
     isSecondaryRequired,
     isTertiaryRequired,
     isQuaternaryRequired,
+    search: isSearch ? search : undefined,
   });
 
   const breadcrumbItems: BreadcrumbItem[] = [
     { label: "Products", href: "/products" },
   ];
 
-  if (currentCategory) {
-    if (currentCategory.type === CategoryType.QUATERNARY) {
-      breadcrumbItems.push(
-        {
-          label: currentCategory.parentPrimaryCategory!.name,
-          href: `/products/c/${customSlugify(
-            currentCategory.parentPrimaryCategory!.name
-          )}/c?p_id=${currentCategory.parentPrimaryCategory!.id}`,
-        },
-        {
-          label: currentCategory.parentSecondaryCategory!.name,
-          href: `/products/c/${customSlugify(
-            currentCategory.parentPrimaryCategory!.name
-          )}/${customSlugify(
-            currentCategory.parentSecondaryCategory!.name
-          )}/c?p_id=${currentCategory.parentPrimaryCategory!.id}&s_id=${
-            currentCategory.parentSecondaryCategory!.id
-          }`,
-        },
-        {
-          label: currentCategory.parentTertiaryCategory!.name,
-          href: `/products/c/${customSlugify(
-            currentCategory.parentPrimaryCategory!.name
-          )}/${customSlugify(
-            currentCategory.parentSecondaryCategory!.name
-          )}/${customSlugify(
-            currentCategory.parentTertiaryCategory!.name
-          )}/c?p_id=${currentCategory.parentPrimaryCategory!.id}&s_id=${
-            currentCategory.parentSecondaryCategory!.id
-          }&t_id=${currentCategory.parentTertiaryCategory!.id}`,
-        }
-      );
-    } else if (currentCategory.type === CategoryType.TERTIARY) {
-      breadcrumbItems.push(
-        {
-          label: currentCategory.parentPrimaryCategory!.name,
-          href: `/products/c/${customSlugify(
-            currentCategory.parentPrimaryCategory!.name
-          )}/c?p_id=${currentCategory.parentPrimaryCategory!.id}`,
-        },
-        {
-          label: currentCategory.parentSecondaryCategory!.name,
-          href: `/products/c/${customSlugify(
-            currentCategory.parentPrimaryCategory!.name
-          )}/${customSlugify(
-            currentCategory.parentSecondaryCategory!.name
-          )}/c?p_id=${currentCategory.parentPrimaryCategory!.id}&s_id=${
-            currentCategory.parentSecondaryCategory!.id
-          }`,
-        }
-      );
-    } else if (currentCategory.type === CategoryType.SECONDARY) {
-      breadcrumbItems.push({
-        label: currentCategory.parentPrimaryCategory!.name,
-        href: `/products/c/${customSlugify(
-          currentCategory.parentPrimaryCategory!.name
-        )}/c?p_id=${currentCategory.parentPrimaryCategory!.id}`,
-      });
+  const brands = await getBrands();
+
+  if (isSearch) {
+    breadcrumbItems.push({ label: "Search", isCurrentPage: true });
+  } else {
+    if (isQuaternaryRequired && quaternaryCategoryId) {
+      currentCategory = await getCategoryById(quaternaryCategoryId);
+    } else if (isTertiaryRequired && tertiaryCategoryId) {
+      currentCategory = await getCategoryById(tertiaryCategoryId);
+    } else if (isSecondaryRequired && secondaryCategoryId) {
+      currentCategory = await getCategoryById(secondaryCategoryId);
+    } else if (isPrimaryRequired && primaryCategoryId) {
+      currentCategory = await getCategoryById(primaryCategoryId);
     }
 
-    breadcrumbItems.push({
-      label: currentCategory.name,
-      isCurrentPage: true,
-    });
+    if (currentCategory) {
+      if (currentCategory.type === CategoryType.QUATERNARY) {
+        breadcrumbItems.push(
+          {
+            label: currentCategory.parentPrimaryCategory!.name,
+            href: `/products/c/${customSlugify(
+              currentCategory.parentPrimaryCategory!.name
+            )}/c?p_id=${currentCategory.parentPrimaryCategory!.id}`,
+          },
+          {
+            label: currentCategory.parentSecondaryCategory!.name,
+            href: `/products/c/${customSlugify(
+              currentCategory.parentPrimaryCategory!.name
+            )}/${customSlugify(
+              currentCategory.parentSecondaryCategory!.name
+            )}/c?p_id=${currentCategory.parentPrimaryCategory!.id}&s_id=${
+              currentCategory.parentSecondaryCategory!.id
+            }`,
+          },
+          {
+            label: currentCategory.parentTertiaryCategory!.name,
+            href: `/products/c/${customSlugify(
+              currentCategory.parentPrimaryCategory!.name
+            )}/${customSlugify(
+              currentCategory.parentSecondaryCategory!.name
+            )}/${customSlugify(
+              currentCategory.parentTertiaryCategory!.name
+            )}/c?p_id=${currentCategory.parentPrimaryCategory!.id}&s_id=${
+              currentCategory.parentSecondaryCategory!.id
+            }&t_id=${currentCategory.parentTertiaryCategory!.id}`,
+          }
+        );
+      } else if (currentCategory.type === CategoryType.TERTIARY) {
+        breadcrumbItems.push(
+          {
+            label: currentCategory.parentPrimaryCategory!.name,
+            href: `/products/c/${customSlugify(
+              currentCategory.parentPrimaryCategory!.name
+            )}/c?p_id=${currentCategory.parentPrimaryCategory!.id}`,
+          },
+          {
+            label: currentCategory.parentSecondaryCategory!.name,
+            href: `/products/c/${customSlugify(
+              currentCategory.parentPrimaryCategory!.name
+            )}/${customSlugify(
+              currentCategory.parentSecondaryCategory!.name
+            )}/c?p_id=${currentCategory.parentPrimaryCategory!.id}&s_id=${
+              currentCategory.parentSecondaryCategory!.id
+            }`,
+          }
+        );
+      } else if (currentCategory.type === CategoryType.SECONDARY) {
+        breadcrumbItems.push({
+          label: currentCategory.parentPrimaryCategory!.name,
+          href: `/products/c/${customSlugify(
+            currentCategory.parentPrimaryCategory!.name
+          )}/c?p_id=${currentCategory.parentPrimaryCategory!.id}`,
+        });
+      }
+
+      breadcrumbItems.push({
+        label: currentCategory.name,
+        isCurrentPage: true,
+      });
+    }
   }
 
   return (
     <main>
       <PageHeader
         breadcrumbItems={breadcrumbItems}
-        title={currentCategory?.name || "Products"}
+        title={
+          isSearch
+            ? `Search Results for "${search}"`
+            : currentCategory?.name || "Products"
+        }
       />
 
       <section className="container max-w-screen-xl mx-auto grid grid-cols-12 gap-8 mt-10">
         <div className="col-span-3">
-          <FilterSidebar />
+          <FilterSidebar initialBrands={brands} />
         </div>
         <div className="col-span-9">
           <Image

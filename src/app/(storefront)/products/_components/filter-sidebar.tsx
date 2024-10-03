@@ -4,35 +4,130 @@ import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import { Search, ChevronDown } from "lucide-react";
+import { Search, ChevronDown, Loader2 } from "lucide-react";
 import { DualRangeSlider } from "@/components/ui/dual-range-slider";
 import { Separator } from "@/components/ui/separator";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
-const brands = [
-  { name: "Alpha", count: 64 },
-  { name: "Baxi", count: 64 },
-  { name: "Firebird", count: 40 },
-  { name: "Glow-worm", count: 50 },
-  { name: "Ideal", count: 65 },
-];
+type FilterBrand = {
+  id: string;
+  name: string;
+  count: number;
+};
 
-const FilterSidebar: React.FC = () => {
+type BrandsResponse = {
+  data: FilterBrand[];
+  pagination: {
+    page: number;
+    limit: number;
+    totalCount: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
+};
+
+interface SeeMoreButtonProps {
+  onClick: () => void;
+  isLoading: boolean;
+  disabled: boolean;
+}
+
+const SeeMoreButton: React.FC<SeeMoreButtonProps> = ({
+  onClick,
+  isLoading,
+  disabled,
+}) => (
+  <div className="flex items-center mt-5">
+    <button
+      className="text-sm text-gray-600 hover:underline"
+      onClick={onClick}
+      disabled={disabled}
+    >
+      See More
+    </button>
+    {isLoading && (
+      <div className="ml-2">
+        <Loader2 className="animate-spin text-gray-400" size={18} />
+      </div>
+    )}
+  </div>
+);
+
+async function fetchBrands({
+  pageParam = 1,
+  queryKey,
+}: any): Promise<BrandsResponse> {
+  const [_, search] = queryKey;
+  const response = await axios.get("/api/brands", {
+    params: { search, limit: 5, page: pageParam },
+  });
+  return response.data;
+}
+
+export default function FilterSidebar({
+  initialBrands,
+}: {
+  initialBrands: FilterBrand[];
+}) {
   const [brandSearch, setBrandSearch] = useState("");
   const [expandedSections, setExpandedSections] = useState({
     brands: true,
     width: false,
     price: true,
   });
+  const [isClientBrands, setIsClientBrands] = useState(false);
   const [priceRange, setPriceRange] = useState([99, 546]);
+  const debouncedBrandSearch = useDebounce(brandSearch, 300);
+  const queryClient = useQueryClient();
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ["brands", debouncedBrandSearch],
+    queryFn: fetchBrands,
+    initialPageParam: brandSearch !== "" ? 1 : 2,
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.hasMore ? lastPage.pagination.page + 1 : undefined,
+    enabled: isClientBrands,
+  });
 
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const filteredBrands = brands.filter((brand) =>
-    brand.name.toLowerCase().includes(brandSearch.toLowerCase())
-  );
+  const handleSeeMore = async () => {
+    if (!isClientBrands) {
+      setIsClientBrands(true);
+      // Fetch first two pages
+      await queryClient.prefetchInfiniteQuery({
+        queryKey: ["brands", debouncedBrandSearch],
+        queryFn: fetchBrands,
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) =>
+          lastPage.pagination.hasMore
+            ? lastPage.pagination.page + 1
+            : undefined,
+        pages: 2,
+      });
+      refetch();
+    } else {
+      fetchNextPage();
+    }
+  };
+
+  const allBrands = debouncedBrandSearch
+    ? data?.pages.flatMap((page) => page.data) || []
+    : data?.pages.flatMap((page) => page.data) || initialBrands;
+
+  console.log(hasNextPage);
 
   return (
     <aside className="w-full max-w-xs">
@@ -64,7 +159,7 @@ const FilterSidebar: React.FC = () => {
               }`}
             >
               <div className="overflow-hidden">
-                <div className="pt-3 space-y-3 px-0.5">
+                <div className="pt-3 px-0.5">
                   <div className="relative">
                     <Search
                       className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -76,16 +171,24 @@ const FilterSidebar: React.FC = () => {
                       onChange={(e) => setBrandSearch(e.target.value)}
                       className="pl-10 bg-gray-100 border-gray-300"
                     />
+                    {isFetching && !isFetchingNextPage && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <Loader2
+                          className="animate-spin  text-gray-400"
+                          size={18}
+                        />
+                      </div>
+                    )}
                   </div>
-                  <div className="space-y-4 ml-1">
-                    {filteredBrands.map((brand) => (
-                      <div key={brand.name} className="flex items-center">
+                  <div className="space-y-4 mt-5 ml-1">
+                    {allBrands.map((brand) => (
+                      <div key={brand.id} className="flex items-center">
                         <Checkbox
-                          id={brand.name}
+                          id={brand.id}
                           className="mr-3 border-gray-700 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                         />
                         <label
-                          htmlFor={brand.name}
+                          htmlFor={brand.id}
                           className="text-sm cursor-pointer"
                         >
                           {brand.name}{" "}
@@ -94,9 +197,22 @@ const FilterSidebar: React.FC = () => {
                       </div>
                     ))}
                   </div>
-                  <button className="text-sm text-gray-600 hover:underline mt-1">
-                    View all
-                  </button>
+
+                  {!isFetching &&
+                    !isFetchingNextPage &&
+                    allBrands.length === 0 && (
+                      <div className="text-sm text-gray-500">
+                        No brands found.
+                      </div>
+                    )}
+
+                  {(!isClientBrands || isFetching || hasNextPage) && (
+                    <SeeMoreButton
+                      onClick={handleSeeMore}
+                      isLoading={isFetching}
+                      disabled={isFetchingNextPage}
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -104,6 +220,7 @@ const FilterSidebar: React.FC = () => {
 
           <Separator className="bg-gray-200" />
 
+          {/* Width section */}
           <div>
             <button
               className="w-full flex justify-between items-center pb-2"
@@ -132,6 +249,7 @@ const FilterSidebar: React.FC = () => {
 
           <Separator className="bg-gray-200" />
 
+          {/* Price section */}
           <div>
             <button
               className="w-full flex justify-between items-center pb-2"
@@ -180,9 +298,9 @@ const FilterSidebar: React.FC = () => {
                       className="w-full"
                     />
                   </div>
-                  <Button className="w-full bg-red-600 hover:bg-red-700 text-white">
+                  <button className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded">
                     OK
-                  </Button>
+                  </button>
                 </div>
               </div>
             </div>
@@ -191,6 +309,4 @@ const FilterSidebar: React.FC = () => {
       </Card>
     </aside>
   );
-};
-
-export default FilterSidebar;
+}
