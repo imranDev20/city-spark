@@ -157,6 +157,87 @@ export async function getCategoryById(categoryId: string) {
   }
 }
 
+type FilterOption = {
+  id: string;
+  name: string;
+  options: string[];
+};
+
+export async function getProductFilterOptions(): Promise<FilterOption[]> {
+  const products = await prisma.product.findMany({
+    include: {
+      productTemplate: {
+        include: {
+          fields: {
+            include: {
+              templateField: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const filterOptions: Record<string, Set<string>> = {};
+
+  // Process standard fields
+  const standardFields = [
+    "material",
+    "color",
+    "shape",
+    "unit",
+    "warranty",
+    "guarantee",
+  ];
+
+  products.forEach((product) => {
+    standardFields.forEach((field) => {
+      const value = product[field as keyof typeof product];
+      if (typeof value === "string" && value.trim() !== "") {
+        if (!filterOptions[field]) {
+          filterOptions[field] = new Set();
+        }
+        filterOptions[field].add(value);
+      }
+    });
+
+    // Process numeric fields
+    ["width", "height", "length", "weight", "volume"].forEach((field) => {
+      const value = product[field as keyof typeof product];
+      if (typeof value === "number") {
+        const roundedValue = Math.round(value * 100) / 100; // Round to 2 decimal places
+        if (!filterOptions[field]) {
+          filterOptions[field] = new Set();
+        }
+        filterOptions[field].add(roundedValue.toString());
+      }
+    });
+
+    // Process product template fields
+    product.productTemplate?.fields.forEach((field) => {
+      const fieldName = field.templateField.fieldName;
+      const fieldValue = field.fieldValue;
+      if (fieldValue && fieldValue.trim() !== "") {
+        if (!filterOptions[fieldName]) {
+          filterOptions[fieldName] = new Set();
+        }
+        filterOptions[fieldName].add(fieldValue);
+      }
+    });
+  });
+
+  // Convert to array format
+  const result: FilterOption[] = Object.entries(filterOptions).map(
+    ([name, options]) => ({
+      id: name.toLowerCase().replace(/\s+/g, "-"),
+      name,
+      options: Array.from(options).sort(),
+    })
+  );
+
+  return result;
+}
+
 export async function getBrands() {
   try {
     const brands = await prisma.brand.findMany({

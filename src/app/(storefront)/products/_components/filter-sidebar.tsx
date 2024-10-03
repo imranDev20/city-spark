@@ -28,6 +28,12 @@ type BrandsResponse = {
   };
 };
 
+type FilterOption = {
+  id: string;
+  name: string;
+  options: string[];
+};
+
 interface SeeMoreButtonProps {
   onClick: () => void;
   isLoading: boolean;
@@ -58,7 +64,10 @@ const SeeMoreButton: React.FC<SeeMoreButtonProps> = ({
 async function fetchBrands({
   pageParam = 1,
   queryKey,
-}: any): Promise<BrandsResponse> {
+}: {
+  pageParam?: number;
+  queryKey: [string, string];
+}): Promise<BrandsResponse> {
   const [_, search] = queryKey;
   const response = await axios.get("/api/brands", {
     params: { search, limit: 5, page: pageParam },
@@ -68,15 +77,17 @@ async function fetchBrands({
 
 export default function FilterSidebar({
   initialBrands,
+  filterOptions,
 }: {
   initialBrands: FilterBrand[];
+  filterOptions: FilterOption[];
 }) {
   const [brandSearch, setBrandSearch] = useState("");
-  const [expandedSections, setExpandedSections] = useState({
-    brands: true,
-    width: false,
-    price: true,
-  });
+  const [isBrandsExpanded, setIsBrandsExpanded] = useState(true);
+  const [isPriceExpanded, setIsPriceExpanded] = useState(true);
+  const [expandedFilters, setExpandedFilters] = useState<
+    Record<string, boolean>
+  >({});
   const [isClientBrands, setIsClientBrands] = useState(false);
   const [priceRange, setPriceRange] = useState([99, 546]);
   const debouncedBrandSearch = useDebounce(brandSearch, 300);
@@ -91,25 +102,29 @@ export default function FilterSidebar({
     isFetching,
     refetch,
   } = useInfiniteQuery({
-    queryKey: ["brands", debouncedBrandSearch],
-    queryFn: fetchBrands,
-    initialPageParam: brandSearch !== "" ? 1 : 2,
+    queryKey: ["brands", debouncedBrandSearch] as const,
+    queryFn: ({ pageParam = 1 }) =>
+      fetchBrands({ pageParam, queryKey: ["brands", debouncedBrandSearch] }),
+    initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.pagination.hasMore ? lastPage.pagination.page + 1 : undefined,
     enabled: isClientBrands || !!debouncedBrandSearch,
   });
 
-  const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  const toggleFilter = (filterId: string) => {
+    setExpandedFilters((prev) => ({ ...prev, [filterId]: !prev[filterId] }));
   };
 
   const handleSeeMore = async () => {
     if (!isClientBrands) {
       setIsClientBrands(true);
-      // Fetch first two pages
       await queryClient.prefetchInfiniteQuery({
-        queryKey: ["brands", debouncedBrandSearch],
-        queryFn: fetchBrands,
+        queryKey: ["brands", debouncedBrandSearch] as const,
+        queryFn: ({ pageParam = 1 }) =>
+          fetchBrands({
+            pageParam,
+            queryKey: ["brands", debouncedBrandSearch],
+          }),
         initialPageParam: 1,
         getNextPageParam: (lastPage) =>
           lastPage.pagination.hasMore
@@ -135,23 +150,23 @@ export default function FilterSidebar({
       </div>
 
       <Card className="shadow-sm border-gray-350">
-        <div className="p-5 space-y-6">
+        <div className="p-5 space-y-4">
           <div>
             <button
-              className="w-full flex justify-between items-center pb-2"
-              onClick={() => toggleSection("brands")}
+              className="w-full flex justify-between items-center"
+              onClick={() => setIsBrandsExpanded(!isBrandsExpanded)}
             >
-              <span className="font-semibold text-lg">Brands</span>
+              <span className="font-semibold text-base">Brands</span>
               <ChevronDown
                 className={`transform transition-transform duration-200 ease-in-out ${
-                  expandedSections.brands ? "rotate-180" : ""
+                  isBrandsExpanded ? "rotate-180" : ""
                 }`}
                 size={20}
               />
             </button>
             <div
               className={`grid transition-[grid-template-rows] duration-200 ease-in-out ${
-                expandedSections.brands ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                isBrandsExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
               }`}
             >
               <div className="overflow-hidden">
@@ -164,13 +179,16 @@ export default function FilterSidebar({
                     <Input
                       placeholder="Search in brand"
                       value={brandSearch}
-                      onChange={(e) => setBrandSearch(e.target.value)}
+                      onChange={(e) => {
+                        setBrandSearch(e.target.value);
+                        setIsClientBrands(true);
+                      }}
                       className="pl-10 bg-gray-100 border-gray-300"
                     />
                     {isFetching && !isFetchingNextPage && (
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                         <Loader2
-                          className="animate-spin  text-gray-400"
+                          className="animate-spin text-gray-400"
                           size={18}
                         />
                       </div>
@@ -216,52 +234,70 @@ export default function FilterSidebar({
 
           <Separator className="bg-gray-200" />
 
-          {/* Width section */}
-          <div>
-            <button
-              className="w-full flex justify-between items-center pb-2"
-              onClick={() => toggleSection("width")}
-            >
-              <span className="font-semibold text-lg">Width</span>
-              <ChevronDown
-                className={`transform transition-transform duration-200 ease-in-out ${
-                  expandedSections.width ? "rotate-180" : ""
-                }`}
-                size={20}
-              />
-            </button>
-            <div
-              className={`grid transition-[grid-template-rows] duration-200 ease-in-out ${
-                expandedSections.width ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-              }`}
-            >
-              <div className="overflow-hidden">
-                <div className="pt-3">
-                  {/* Add width filter content here */}
+          {filterOptions.map((option) => (
+            <React.Fragment key={option.id}>
+              <div>
+                <button
+                  className="w-full flex justify-between items-center"
+                  onClick={() => toggleFilter(option.id)}
+                >
+                  <span className="font-semibold text-base capitalize">
+                    {option.name.toLowerCase()}
+                  </span>
+                  <ChevronDown
+                    className={`transform transition-transform duration-200 ease-in-out ${
+                      expandedFilters[option.id] ? "rotate-180" : ""
+                    }`}
+                    size={20}
+                  />
+                </button>
+                <div
+                  className={`grid transition-[grid-template-rows] duration-200 ease-in-out ${
+                    expandedFilters[option.id]
+                      ? "grid-rows-[1fr]"
+                      : "grid-rows-[0fr]"
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <div className="pt-3 space-y-4 ml-1">
+                      {option.options.map((value) => (
+                        <div key={value} className="flex items-center">
+                          <Checkbox
+                            id={`${option.id}-${value}`}
+                            className="mr-3 border-gray-700 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                          />
+                          <label
+                            htmlFor={`${option.id}-${value}`}
+                            className="text-sm cursor-pointer"
+                          >
+                            {value}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+              <Separator className="bg-gray-200" />
+            </React.Fragment>
+          ))}
 
-          <Separator className="bg-gray-200" />
-
-          {/* Price section */}
           <div>
             <button
-              className="w-full flex justify-between items-center pb-2"
-              onClick={() => toggleSection("price")}
+              className="w-full flex justify-between items-center"
+              onClick={() => setIsPriceExpanded(!isPriceExpanded)}
             >
-              <span className="font-semibold text-lg">Price</span>
+              <span className="font-semibold text-base">Price</span>
               <ChevronDown
                 className={`transform transition-transform duration-200 ease-in-out ${
-                  expandedSections.price ? "rotate-180" : ""
+                  isPriceExpanded ? "rotate-180" : ""
                 }`}
                 size={20}
               />
             </button>
             <div
               className={`grid transition-[grid-template-rows] duration-200 ease-in-out ${
-                expandedSections.price ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                isPriceExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
               }`}
             >
               <div className="overflow-hidden">

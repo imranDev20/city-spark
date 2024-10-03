@@ -17,7 +17,11 @@ import {
 import { BreadcrumbItem } from "@/types/misc";
 import { customSlugify } from "@/lib/functions";
 import { CategoryType } from "@prisma/client";
-import { getBrands, getCategoryById } from "../actions";
+import {
+  getBrands,
+  getCategoryById,
+  getProductFilterOptions,
+} from "../actions";
 
 export default async function StorefrontProductList({
   primaryCategoryId,
@@ -65,6 +69,8 @@ export default async function StorefrontProductList({
     isQuaternaryRequired,
     search: isSearch ? search : undefined,
   });
+
+  const filterOptions = await getProductFilterOptions();
 
   const breadcrumbItems: BreadcrumbItem[] = [
     { label: "Products", href: "/products" },
@@ -165,7 +171,7 @@ export default async function StorefrontProductList({
 
       <section className="container max-w-screen-xl mx-auto grid grid-cols-12 gap-8 mt-10">
         <div className="col-span-3">
-          <FilterSidebar initialBrands={brands} />
+          <FilterSidebar initialBrands={brands} filterOptions={filterOptions} />
         </div>
         <div className="col-span-9">
           <Image
