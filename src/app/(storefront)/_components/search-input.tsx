@@ -5,9 +5,34 @@ import { Input } from "@/components/ui/input";
 import { SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSearchSuggestions } from "../products/actions";
 import SearchSuggestions from "./search-suggestions";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { Prisma } from "@prisma/client";
+import { useForm, Controller } from "react-hook-form";
+
+type InventoryWithProduct = Prisma.InventoryGetPayload<{
+  select: {
+    id: true;
+    product: {
+      select: {
+        name: true;
+        images: true;
+        tradePrice: true;
+        features: true;
+        primaryCategory: { select: { name: true } };
+        secondaryCategory: { select: { name: true } };
+        tertiaryCategory: { select: { name: true } };
+        quaternaryCategory: { select: { name: true } };
+      };
+    };
+  };
+}>;
+
+type FormData = {
+  searchTerm: string;
+};
 
 const messages = [
   "boilers",
@@ -18,14 +43,15 @@ const messages = [
   "renewables",
   "electrical & lighting items",
   "clearance",
-  // Add more messages as needed
 ];
 
-type Suggestion = {
-  id: string;
-  name: string;
-  tradePrice: number | null;
-  images: string[];
+const fetchSuggestions = async (
+  term: string
+): Promise<InventoryWithProduct[]> => {
+  const { data } = await axios.get(
+    `/api/search-suggestions?term=${encodeURIComponent(term)}`
+  );
+  return data.suggestions;
 };
 
 export default function SearchInput() {
@@ -33,12 +59,29 @@ export default function SearchInput() {
   const [index, setIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [messageIndex, setMessageIndex] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const router = useRouter();
 
+  const { control, handleSubmit, watch, setValue } = useForm<FormData>({
+    defaultValues: {
+      searchTerm: "",
+    },
+  });
+
+  const searchTerm = watch("searchTerm");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  const {
+    data: suggestions,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["searchSuggestions", debouncedSearchTerm],
+    queryFn: () => fetchSuggestions(debouncedSearchTerm),
+    enabled: debouncedSearchTerm.trim().length > 0,
+    refetchOnWindowFocus: false,
+  });
 
   useEffect(() => {
     const currentMessage = messages[messageIndex];
@@ -69,56 +112,58 @@ export default function SearchInput() {
   }, [index, isDeleting, messageIndex]);
 
   useEffect(() => {
-    const fetchSuggestions = async () => {
-      if (debouncedSearchTerm.trim()) {
-        try {
-          const fetchedSuggestions = await getSearchSuggestions(
-            debouncedSearchTerm
-          );
-          setSuggestions(fetchedSuggestions);
-          setShowSuggestions(true);
-        } catch (error) {
-          console.error("Error fetching suggestions:", error);
-          setSuggestions([]);
-          setShowSuggestions(false);
-        }
-      } else {
-        setSuggestions([]);
-        setShowSuggestions(false);
-      }
-    };
+    setShowSuggestions(
+      isFocused &&
+        !!debouncedSearchTerm.trim() &&
+        !isLoading &&
+        !isError &&
+        !!suggestions?.length
+    );
+  }, [debouncedSearchTerm, isLoading, isError, isFocused, suggestions]);
 
-    fetchSuggestions();
-  }, [debouncedSearchTerm]);
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      router.push(`/products?search=${encodeURIComponent(searchTerm.trim())}`);
+  const onSubmit = (data: FormData) => {
+    if (data.searchTerm.trim()) {
+      router.push(
+        `/products?search=${encodeURIComponent(data.searchTerm.trim())}`
+      );
       setShowSuggestions(false);
     }
   };
 
-  const handleSuggestionSelect = (suggestion: Suggestion) => {
-    setSearchTerm(suggestion.name);
+  const handleSuggestionSelect = (suggestion: InventoryWithProduct) => {
+    setValue("searchTerm", suggestion.product.name);
     setShowSuggestions(false);
-    router.push(`/products/${suggestion.id}`);
+    router.push(`/products/p/${suggestion.product.name}/p/${suggestion.id}`);
+  };
+
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
+
+  const handleBlur = () => {
+    setTimeout(() => {
+      setIsFocused(false);
+    }, 200);
   };
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
       className="flex-1 relative bg-transparent bg-white rounded-full max-w-lg"
     >
       <div className="flex-1 h-11 flex items-center bg-gray-500/10 shadow-sm">
-        <Input
-          className="w-full border-0 h-full py-5 ring-0 typing-placeholder px-7 rounded-l-full focus-visible:ring-0 focus-visible:ring-offset-0"
-          placeholder={placeholder}
-          value={searchTerm}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setSearchTerm(e.target.value)
-          }
-          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+        <Controller
+          name="searchTerm"
+          control={control}
+          render={({ field }) => (
+            <Input
+              {...field}
+              className="w-full border-0 h-full py-5 ring-0 typing-placeholder px-7 rounded-l-full focus-visible:ring-0 focus-visible:ring-offset-0"
+              placeholder={placeholder}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+            />
+          )}
         />
 
         <Button
@@ -128,7 +173,7 @@ export default function SearchInput() {
           <SearchIcon />
         </Button>
       </div>
-      {showSuggestions && (
+      {showSuggestions && suggestions && (
         <SearchSuggestions
           suggestions={suggestions}
           onSelect={handleSuggestionSelect}

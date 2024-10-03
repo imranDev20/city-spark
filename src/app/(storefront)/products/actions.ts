@@ -135,6 +135,28 @@ export async function getCategoriesByType(
   }
 }
 
+export async function getCategoryById(categoryId: string) {
+  try {
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+      include: {
+        parentPrimaryCategory: true,
+        parentSecondaryCategory: true,
+        parentTertiaryCategory: true,
+      },
+    });
+
+    if (!category) {
+      throw new Error("Category not found");
+    }
+
+    return category;
+  } catch (error) {
+    console.error("Error fetching category:", error);
+    throw error;
+  }
+}
+
 export async function addToCart(
   inventoryId: string,
   quantity: number,
@@ -465,31 +487,6 @@ export async function searchProducts(searchTerm: string) {
     return products;
   } catch (error) {
     console.error("Error searching products:", error);
-    throw error;
-  }
-}
-
-export async function getSearchSuggestions(searchTerm: string) {
-  try {
-    const suggestions = await prisma.product.findMany({
-      where: {
-        OR: [
-          { name: { contains: searchTerm, mode: "insensitive" } },
-          { description: { contains: searchTerm, mode: "insensitive" } },
-        ],
-      },
-      select: {
-        id: true,
-        name: true,
-        images: true,
-        tradePrice: true,
-      },
-      take: 5, // Limit to 5 suggestions
-    });
-
-    return suggestions;
-  } catch (error) {
-    console.error("Error fetching search suggestions:", error);
     throw error;
   }
 }

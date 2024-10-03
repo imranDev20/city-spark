@@ -13,6 +13,10 @@ export default function PaymentMethod() {
   const [selectedPayment, setSelectedPayment] = useState("paypal");
   const [termsAccepted, setTermsAccepted] = useState(false);
 
+  const handlePaymentSelection = (value: string) => {
+    setSelectedPayment(value);
+  };
+
   return (
     <Card className="shadow-none border-gray-350">
       <CardHeader>
@@ -26,9 +30,16 @@ export default function PaymentMethod() {
           onValueChange={setSelectedPayment}
           className="space-y-4"
         >
-          <div className="flex items-center space-x-2">
+          <div
+            className="flex items-center space-x-2 cursor-pointer"
+            onClick={() => handlePaymentSelection("paypal")}
+          >
             <RadioGroupItem value="paypal" id="paypal" />
-            <Card className="w-full bg-white border-[#BFBFBF] shadow-sm">
+            <Card
+              className={`w-full bg-white border-[#BFBFBF] shadow-sm ${
+                selectedPayment === "paypal" ? "border-blue-500" : ""
+              }`}
+            >
               <CardContent className="p-4 flex items-center space-x-4">
                 <div className="p-2 rounded-full">
                   <PaypalIcon />
@@ -43,9 +54,16 @@ export default function PaymentMethod() {
             </Card>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div
+            className="flex items-center space-x-2 cursor-pointer"
+            onClick={() => handlePaymentSelection("credit-debit")}
+          >
             <RadioGroupItem value="credit-debit" id="credit-debit" />
-            <Card className="w-full bg-white border-[#BFBFBF] shadow-sm">
+            <Card
+              className={`w-full bg-white border-[#BFBFBF] shadow-sm ${
+                selectedPayment === "credit-debit" ? "border-blue-500" : ""
+              }`}
+            >
               <CardContent className="p-4 flex items-center space-x-4">
                 <div className="p-2 rounded-full">
                   <CreditOrDebitIcon />
