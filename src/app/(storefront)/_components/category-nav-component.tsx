@@ -136,16 +136,11 @@ export default function CategoryNavComponent({
   );
 
   const handleMouseEnter = (categoryId: string) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
     setHoveredCategory(categoryId);
   };
 
   const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => {
-      setHoveredCategory(null);
-    }, 300);
+    setHoveredCategory(null);
   };
 
   return (

@@ -8,6 +8,8 @@ import {
   Blocks,
   PackagePlus,
   Settings,
+  Bell,
+  LifeBuoy,
 } from "lucide-react";
 
 type Submenu = {
@@ -39,6 +41,13 @@ export function getMenuList(pathname: string): Group[] {
           label: "Dashboard",
           active: pathname === "/admin" || pathname.includes("/dashboard"),
           icon: LayoutGrid,
+          submenus: [],
+        },
+        {
+          href: "/notifications",
+          label: "Notifications",
+          active: pathname.includes("/notifications"),
+          icon: Bell,
           submenus: [],
         },
       ],
@@ -98,6 +107,13 @@ export function getMenuList(pathname: string): Group[] {
           label: "Users",
           active: pathname.includes("/users"),
           icon: Users,
+          submenus: [],
+        },
+        {
+          href: "/support-tickets",
+          label: "Support Tickets",
+          active: pathname.includes("/support-tickets"),
+          icon: LifeBuoy,
           submenus: [],
         },
       ],

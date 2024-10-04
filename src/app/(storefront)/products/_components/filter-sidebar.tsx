@@ -10,6 +10,8 @@ import { Separator } from "@/components/ui/separator";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import useQueryString from "@/hooks/use-query-string";
+import { usePathname, useRouter } from "next/navigation";
 
 type FilterBrand = {
   id: string;
@@ -200,6 +202,7 @@ export default function FilterSidebar({
                         <Checkbox
                           id={brand.id}
                           className="mr-3 border-gray-700 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                          onCheckedChange={() => {}}
                         />
                         <label
                           htmlFor={brand.id}

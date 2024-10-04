@@ -11,8 +11,7 @@ export const getInventoryItemsForStorefront = async ({
   isSecondaryRequired = false,
   isTertiaryRequired = false,
   isQuaternaryRequired = false,
-  page = 1,
-  limit = 10,
+  limit = 15,
   search,
 }: {
   primaryCategoryId?: string;
@@ -23,13 +22,10 @@ export const getInventoryItemsForStorefront = async ({
   isSecondaryRequired?: boolean;
   isTertiaryRequired?: boolean;
   isQuaternaryRequired?: boolean;
-  page?: number;
   limit?: number;
   search?: string;
 }) => {
   try {
-    const skip = (page - 1) * limit;
-
     // Check if any required category is missing (only if not searching)
     if (
       !search &&
@@ -38,7 +34,7 @@ export const getInventoryItemsForStorefront = async ({
         (isTertiaryRequired && !tertiaryCategoryId) ||
         (isQuaternaryRequired && !quaternaryCategoryId))
     ) {
-      return { inventoryItems: [], hasMore: false, totalCount: 0 };
+      return { inventoryItems: [], totalCount: 0 };
     }
 
     const whereClause: {
@@ -107,7 +103,7 @@ export const getInventoryItemsForStorefront = async ({
       });
 
       if (!categoryExists) {
-        return { inventoryItems: [], hasMore: false, totalCount: 0 };
+        return { inventoryItems: [], totalCount: 0 };
       }
     }
 
@@ -128,17 +124,13 @@ export const getInventoryItemsForStorefront = async ({
         orderBy: {
           createdAt: "desc",
         },
-        skip,
         take: limit,
       }),
       prisma.inventory.count({ where: whereClause }),
     ]);
 
-    const hasMore = totalCount > skip + inventoryItems.length;
-
     return {
       inventoryItems,
-      hasMore,
       totalCount,
     };
   } catch (error) {
