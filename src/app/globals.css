@@ -4,39 +4,44 @@
 
 @layer base {
   :root {
+    /* Modern deep blue - professional but distinct */
+    --primary: 216 76% 28%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Warm, energetic orange - more amber than pure orange */
+    --secondary: 30 98% 44%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Clean background */
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --foreground: 216 45% 23%;
 
+    /* Card & Surface Colors */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-
+    --card-foreground: 216 45% 23%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
+    --popover-foreground: 216 45% 23%;
 
-    --primary: 0 100% 44%;
-    --primary-foreground: 0 0% 98%;
+    /* Supporting Colors */
+    --muted: 216 20% 95%;
+    --muted-foreground: 216 20% 45%;
+    --accent: 30 98% 95%;
+    --accent-foreground: 30 98% 35%;
 
-    --secondary: 0 0% 10%;
-    --secondary-foreground: 0 0% 98%;
+    /* Warning/Destructive - keeping orange theme */
+    --destructive: 0 90% 45%;
+    --destructive-foreground: 0 0% 100%;
 
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
+    /* Subtle borders and inputs */
+    --border: 216 20% 90%;
+    --input: 216 20% 90%;
+    --ring: 216 76% 28%;
 
     --radius: 0.5rem;
   }
 
   [data-radix-popover-trigger] {
-    --radix-popover-trigger-width: 100%; /* Adjust this to fit your layout */
+    --radix-popover-trigger-width: 100%;
   }
 }
 

@@ -40,8 +40,8 @@ const categoryData: { label: string; Icon: React.ComponentType<IconProps> }[] =
     { label: "Radiators", Icon: RadiatorIcon },
     { label: "Heating", Icon: HeatingIcon },
     { label: "Plumbing", Icon: PlumbingIcon },
-    { label: "Bathrooms, Kitchens & Tiles", Icon: BathroomIcon },
-    { label: "Kitchen & Tiles", Icon: KitchenTilesIcon },
+    { label: "Bathrooms", Icon: BathroomIcon },
+    { label: "Kitchen", Icon: KitchenTilesIcon },
     { label: "Spares", Icon: SparesIcon },
     { label: "Renewables", Icon: RenewablesIcon },
     { label: "Tools", Icon: ToolsIcon },
@@ -136,41 +136,70 @@ export default function CategoryNavComponent({
   );
 
   const handleMouseEnter = (categoryId: string) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
     setHoveredCategory(categoryId);
   };
 
   const handleMouseLeave = () => {
-    setHoveredCategory(null);
+    timeoutRef.current = setTimeout(() => {
+      setHoveredCategory(null);
+    }, 100);
   };
 
   return (
-    <div className="relative">
-      <div className="container mx-auto max-w-screen-xl flex justify-between items-stretch py-0 w-full">
-        {mergedCategories.map((item) => (
-          <div
-            key={item.id}
-            className={cn("flex-1 relative px-1")}
-            onMouseEnter={() => handleMouseEnter(item.id)}
-            onMouseLeave={handleMouseLeave}
-          >
-            <Link
-              href={item.route}
+    <div className="relative bg-white shadow-sm border-b">
+      <div className="container mx-auto max-w-screen-xl px-0">
+        <div className="flex w-full">
+          {mergedCategories.map((item, index) => (
+            <div
+              key={item.id}
               className={cn(
-                "flex flex-col justify-center items-center py-4 h-24 cursor-pointer group transition-all w-full",
-                hoveredCategory === item.id && "bg-gray-150"
+                "flex-1 relative group border-r last:border-r-0 border-gray-100",
+                hoveredCategory === item.id && "bg-primary/5"
               )}
+              onMouseEnter={() => handleMouseEnter(item.id)}
+              onMouseLeave={handleMouseLeave}
             >
-              <item.Icon
-                className="group-hover:fill-primary transition-all flex-shrink-0"
-                height={28}
-                width={28}
-              />
-              <h5 className="text-sm mt-1 text-center line-clamp-2 flex-grow flex items-center">
-                {item.name}
-              </h5>
-            </Link>
-          </div>
-        ))}
+              <Link
+                href={item.route}
+                className={cn(
+                  "flex flex-col items-center p-4 h-24 w-full transition-all duration-200 hover:bg-primary/5",
+                  "relative overflow-hidden"
+                )}
+              >
+                <div className="relative z-10 flex flex-col items-center w-full">
+                  <item.Icon
+                    className={cn(
+                      "transition-all duration-200 text-gray-600",
+                      "group-hover:text-primary group-hover:scale-110",
+                      hoveredCategory === item.id && "text-primary scale-110"
+                    )}
+                    height={28}
+                    width={28}
+                  />
+                  <h5
+                    className={cn(
+                      "text-sm mt-2 text-center font-medium px-1",
+                      "group-hover:text-primary transition-colors duration-200",
+                      hoveredCategory === item.id && "text-primary"
+                    )}
+                  >
+                    {item.name}
+                  </h5>
+                </div>
+                <div
+                  className={cn(
+                    "absolute bottom-0 left-0 w-full h-0.5 bg-primary transform scale-x-0 transition-transform duration-200",
+                    "group-hover:scale-x-100",
+                    hoveredCategory === item.id && "scale-x-100"
+                  )}
+                />
+              </Link>
+            </div>
+          ))}
+        </div>
       </div>
       {hoveredCategory && (
         <MegaMenu
