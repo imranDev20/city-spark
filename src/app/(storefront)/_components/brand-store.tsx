@@ -1,29 +1,51 @@
-import { Button } from "@/components/ui/button";
+"use client";
 
-import img from "@/images/baneer-bg1.jpeg";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import img from "@/images/baneer-bg1.jpeg";
+import { cn } from "@/lib/utils";
 
 export default function BrandStore() {
   return (
-    <div className="relative bg-[#DF0023]  text-white my-12 rounded-xl w-[85%] mx-auto">
-      <Image
-        src={img}
-        alt="Brand Store Background"
-        layout="fill"
-        objectFit="cover"
-        className="opacity-30 rounded-xl"
-      />
+    <div
+      className={cn(
+        "container max-w-screen-xl mx-auto my-12",
+        "px-4 md:px-6 lg:px-8"
+      )}
+    >
+      <div className="relative bg-primary text-primary-foreground rounded-xl">
+        <Image
+          src={img}
+          alt="Brand Store Background"
+          layout="fill"
+          objectFit="cover"
+          className="opacity-30 rounded-xl"
+        />
 
-      <div className="relative z-10 flex flex-col items-center justify-center p-10 text-center space-y-4">
-        <h1 className="text-4xl font-bold">Explore Brand Store</h1>
-        <p className="text-gray-100 text-sm">
-          Lorem Ipsum is simply dummy text of the printing and <br />{" "}
-          typesetting industry.
-        </p>
-        {/* <button className="px-6 py-2 bg-black rounded hover:bg-gray-700 uppercase">
-          Visit Brand Shop
-        </button> */}
-        <Button className="bg-black hover:bg-black">Visit Brand Shop</Button>
+        <div
+          className={cn(
+            "relative z-10 flex flex-col items-center justify-center text-center",
+            "p-6 md:p-10 space-y-4"
+          )}
+        >
+          <h1 className="text-3xl md:text-4xl font-bold">
+            Explore Brand Store
+          </h1>
+          <p
+            className={cn("text-primary-foreground/90 text-sm", "px-4 md:px-0")}
+          >
+            Lorem Ipsum is simply dummy text of the printing and
+            <span className="hidden md:inline">
+              {" "}
+              <br />
+            </span>{" "}
+            typesetting industry.
+          </p>
+
+          <Button variant="secondary" className="hover:bg-secondary/90">
+            Visit Brand Shop
+          </Button>
+        </div>
       </div>
     </div>
   );

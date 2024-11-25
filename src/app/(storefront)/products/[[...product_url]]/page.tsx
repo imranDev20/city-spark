@@ -6,6 +6,8 @@ import FourthCategoriesPage from "../_components/fourth-categories-page";
 import StorefrontProductList from "../_components/storefront-product-list";
 import StorefrontProductDetails from "../_components/storefront-product-details";
 import { getInventoryItem } from "../../actions";
+import ProductActionBar from "../_components/product-action-bar";
+import MobileBottomBar from "../../_components/mobile-bottom-bar";
 
 const getCategoryFromUrl = (product_url: string[] | undefined): string[] => {
   if (!product_url || !Array.isArray(product_url)) {
@@ -60,16 +62,18 @@ export default async function StorefrontProductsPage({
 
   if (result?.length === 4) {
     return (
-      <StorefrontProductList
-        isPrimaryRequired
-        isSecondaryRequired
-        isTertiaryRequired
-        isQuaternaryRequired
-        primaryCategoryId={p_id}
-        secondaryCategoryId={s_id}
-        tertiaryCategoryId={t_id}
-        quaternaryCategoryId={q_id}
-      />
+      <>
+        <StorefrontProductList
+          isPrimaryRequired
+          isSecondaryRequired
+          isTertiaryRequired
+          isQuaternaryRequired
+          primaryCategoryId={p_id}
+          secondaryCategoryId={s_id}
+          tertiaryCategoryId={t_id}
+          quaternaryCategoryId={q_id}
+        />
+      </>
     );
   }
 

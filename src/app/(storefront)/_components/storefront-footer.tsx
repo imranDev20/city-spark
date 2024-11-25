@@ -4,6 +4,7 @@ import img from "@/images/payment-options.png";
 import Image from "next/image";
 import Link from "next/link";
 import { FiFacebook, FiInstagram, FiTwitter, FiYoutube } from "react-icons/fi";
+import { cn } from "@/lib/utils";
 
 const StorefrontFooter = () => {
   return (
@@ -12,72 +13,76 @@ const StorefrontFooter = () => {
 
       {/* Upper Footer Section */}
       <div className="bg-muted">
-        <div className="mx-auto w-[90%] md:w-[85%] flex flex-col md:flex-row gap-8 md:gap-0 md:justify-between py-8 md:py-10">
-          {/* Newsletter Section */}
-          <div className="w-full md:w-auto">
-            <h2 className="text-sm font-bold mb-3 md:mb-4 text-foreground">
-              Sign up for news and offers
-            </h2>
-            <form className="flex flex-col sm:flex-row gap-2">
-              <Input
-                type="email"
-                placeholder="Email"
-                className="w-full sm:w-60 border-input focus-visible:ring-primary"
-                name="email"
-                required
-              />
-              <Button
-                type="submit"
-                variant="secondary"
-                size="lg"
-                className="w-full sm:w-auto font-semibold"
-              >
-                SIGN UP
-              </Button>
-            </form>
-          </div>
-
-          {/* Payment Options Section */}
-          <div className="w-full md:w-auto">
-            <h2 className="text-sm font-bold mb-3 md:mb-4 text-foreground">
-              Easy Payment
-            </h2>
-            <Image
-              src={img}
-              alt="payment"
-              height={48}
-              width={350}
-              className="w-auto h-auto"
-              priority
-            />
-          </div>
-
-          {/* Social Media Section */}
-          <div className="w-full md:w-auto">
-            <h2 className="text-sm font-bold mb-3 md:mb-4 text-foreground">
-              Connect with us
-            </h2>
-            <div className="grid gap-5 grid-cols-4 sm:flex sm:gap-2">
-              {[
-                { Icon: FiYoutube, href: "#", label: "YouTube" },
-                { Icon: FiFacebook, href: "#", label: "Facebook" },
-                { Icon: FiInstagram, href: "#", label: "Instagram" },
-                { Icon: FiTwitter, href: "#", label: "Twitter" },
-              ].map(({ Icon, href, label }) => (
-                <Link
-                  href={href}
-                  key={label}
-                  className="block"
-                  aria-label={label}
+        <div
+          className={cn(
+            "container max-w-screen-xl mx-auto py-8 md:py-10",
+            "px-4 md:px-6 lg:px-8"
+          )}
+        >
+          <div className="flex flex-col md:flex-row gap-8 md:gap-0 md:justify-between">
+            {/* Newsletter Section */}
+            <div className="w-full md:w-auto">
+              <h2 className="text-sm font-bold mb-3 md:mb-4 text-foreground">
+                Sign up for news and offers
+              </h2>
+              <form className="flex flex-col sm:flex-row gap-2">
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  className="w-full sm:w-60 border-input focus-visible:ring-primary"
+                  name="email"
+                  required
+                />
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  size="lg"
+                  className="w-full sm:w-auto font-semibold"
                 >
-                  <Icon
-                    className="w-full h-auto border border-primary/20 p-2.5 md:p-1.5 rounded-md 
-                             text-primary hover:bg-primary hover:text-primary-foreground 
-                             transition-colors duration-200"
-                    size={32}
-                  />
-                </Link>
-              ))}
+                  SIGN UP
+                </Button>
+              </form>
+            </div>
+
+            {/* Payment Options Section */}
+            <div className="w-full md:w-auto">
+              <h2 className="text-sm font-bold mb-3 md:mb-4 text-foreground">
+                Easy Payment
+              </h2>
+              <Image
+                src={img}
+                alt="payment"
+                height={48}
+                width={350}
+                className="w-auto h-auto"
+                priority
+              />
+            </div>
+
+            {/* Social Media Section */}
+            <div className="w-full md:w-auto">
+              <h2 className="text-sm font-bold mb-3 md:mb-4 text-foreground">
+                Connect with us
+              </h2>
+              <div className="grid gap-5 grid-cols-4 sm:flex sm:gap-2">
+                {[
+                  { Icon: FiYoutube, href: "#", label: "YouTube" },
+                  { Icon: FiFacebook, href: "#", label: "Facebook" },
+                  { Icon: FiInstagram, href: "#", label: "Instagram" },
+                  { Icon: FiTwitter, href: "#", label: "Twitter" },
+                ].map(({ Icon, href, label }) => (
+                  <Link
+                    href={href}
+                    key={label}
+                    className="border border-primary/20 rounded-lg flex justify-center items-center p-3 lg:p-2 
+                    transition-all duration-200 hover:border-secondary hover:bg-secondary/10 hover:shadow-md 
+                    hover:-translate-y-0.5 group"
+                    aria-label={label}
+                  >
+                    <Icon className="w-8 lg:w-6 h-8 lg:h-6 text-primary transition-colors duration-200 group-hover:text-secondary" />
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -85,7 +90,12 @@ const StorefrontFooter = () => {
 
       {/* Main Footer Section */}
       <div className="bg-primary pt-8 md:pt-12 pb-6 text-primary-foreground">
-        <div className="container mx-auto w-[90%] md:w-[85%]">
+        <div
+          className={cn(
+            "container max-w-screen-xl mx-auto",
+            "px-4 md:px-6 lg:px-8"
+          )}
+        >
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-12">
             {/* Products Column */}
             <div className="space-y-2">
@@ -191,7 +201,7 @@ const StorefrontFooter = () => {
           {/* Copyright Section */}
           <div className="text-primary-foreground/60">
             <hr className="my-8 md:my-10 border-primary-foreground/20" />
-            <p className="text-center md:text-left md:ml-14 text-xs">
+            <p className="text-xs text-center md:text-left">
               Copyright © City Spark 2024
             </p>
           </div>

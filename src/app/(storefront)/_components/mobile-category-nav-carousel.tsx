@@ -1,11 +1,12 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
-import { customSlugify } from "@/lib/functions";
+import React from "react";
+import useEmblaCarousel from "embla-carousel-react";
 import { cn } from "@/lib/utils";
-import MegaMenu from "./mega-menu";
+import Link from "next/link";
+import { CategoryType } from "@prisma/client";
+import { customSlugify } from "@/lib/functions";
+import { CategoryWithChildParent } from "@/types/storefront-products";
 import BoilerIcon from "@/components/icons/boiler";
 import RadiatorIcon from "@/components/icons/radiator";
 import HeatingIcon from "@/components/icons/heating";
@@ -16,8 +17,6 @@ import SparesIcon from "@/components/icons/spares";
 import RenewablesIcon from "@/components/icons/renewables";
 import ToolsIcon from "@/components/icons/tools";
 import ElectricalIcon from "@/components/icons/electrical";
-import { CategoryWithChildParent } from "@/types/storefront-products";
-import { CategoryType } from "@prisma/client";
 
 type IconProps = {
   className?: string;
@@ -26,7 +25,7 @@ type IconProps = {
 };
 
 type PrimaryCategory = CategoryWithChildParent;
-export type SecondaryCategory =
+type SecondaryCategory =
   CategoryWithChildParent["primaryChildCategories"][number];
 
 type CategoryWithParent<T extends PrimaryCategory | SecondaryCategory> = T & {
@@ -71,24 +70,17 @@ function createMergedCategory<T extends PrimaryCategory | SecondaryCategory>(
   };
 }
 
-export default function CategoryNavComponent({
+export default function MobileCategoryNavCarousel({
   categories,
 }: {
   categories: CategoryWithChildParent[];
 }) {
-  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const pathname = usePathname();
-  const excludedRoutes = ["/login", "/register", "/cart", "/checkout"];
-
-  useEffect(() => {
-    // Close megamenu when route changes
-    setHoveredCategory(null);
-  }, [pathname]);
-
-  if (excludedRoutes.includes(pathname)) {
-    return null;
-  }
+  const [emblaRef] = useEmblaCarousel({
+    align: "start",
+    skipSnaps: false,
+    dragFree: true,
+    containScroll: "trimSnaps",
+  });
 
   const mergedCategories: CategoryWithParent<
     PrimaryCategory | SecondaryCategory
@@ -116,13 +108,11 @@ export default function CategoryNavComponent({
               createMergedCategory(boilers as SecondaryCategory, BoilerIcon)
             );
           }
-
           if (radiators) {
             result.push(
               createMergedCategory(radiators as SecondaryCategory, RadiatorIcon)
             );
           }
-
           result.push(
             createMergedCategory(category as PrimaryCategory, item.Icon)
           );
@@ -144,89 +134,42 @@ export default function CategoryNavComponent({
     }
   );
 
-  const handleMouseEnter = (categoryId: string) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    timeoutRef.current = setTimeout(() => {
-      setHoveredCategory(categoryId);
-    }, 150);
-  };
-
-  const handleMouseLeave = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    timeoutRef.current = setTimeout(() => {
-      setHoveredCategory(null);
-    }, 300);
-  };
-
   return (
-    <div className="relative bg-white shadow-sm border-b hidden lg:block">
-      <div className="container mx-auto max-w-screen-xl px-0">
-        <div className="flex w-full">
+    <div className="pl-4">
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex">
           {mergedCategories.map((item) => (
-            <div
-              key={item.id}
-              className={cn(
-                "flex-1 relative group border-r last:border-r-0 border-gray-100",
-                hoveredCategory === item.id && "bg-primary/5"
-              )}
-              onMouseEnter={() => handleMouseEnter(item.id)}
-              onMouseLeave={handleMouseLeave}
-            >
+            <div key={item.id} className="flex-none w-[31%] min-w-[110px] pr-3">
               <Link
                 href={item.route}
-                onClick={() => setHoveredCategory(null)}
                 className={cn(
-                  "flex flex-col items-center p-3 w-full transition-all duration-200 hover:bg-primary/5",
-                  "relative overflow-hidden"
+                  "flex flex-col items-center p-4 w-full transition-all duration-200",
+                  "hover:bg-primary/5 group rounded-xl",
+                  "border border-border hover:border-primary/20",
+                  "bg-white"
                 )}
               >
-                <div className="relative flex flex-col items-center w-full">
-                  <item.Icon
-                    className={cn(
-                      "transition-all duration-200 text-gray-600",
-                      "group-hover:text-primary group-hover:scale-110",
-                      hoveredCategory === item.id && "text-primary scale-110"
-                    )}
-                    height={26}
-                    width={26}
-                  />
-                  <h5
-                    className={cn(
-                      "text-xs mt-2 text-center font-medium px-1",
-                      "group-hover:text-primary transition-colors duration-200",
-                      hoveredCategory === item.id && "text-primary"
-                    )}
-                  >
-                    {item.name}
-                  </h5>
-                </div>
-                <div
+                <item.Icon
                   className={cn(
-                    "absolute bottom-0 left-0 w-full h-0.5 bg-primary transform scale-x-0 transition-transform duration-200",
-                    "group-hover:scale-x-100",
-                    hoveredCategory === item.id && "scale-x-100"
+                    "transition-all duration-200 text-gray-600",
+                    "group-hover:text-primary group-hover:scale-110"
                   )}
+                  height={32}
+                  width={32}
                 />
+                <h5
+                  className={cn(
+                    "text-xs mt-3 text-center font-medium",
+                    "group-hover:text-primary transition-colors duration-200"
+                  )}
+                >
+                  {item.name}
+                </h5>
               </Link>
             </div>
           ))}
         </div>
       </div>
-      {hoveredCategory && (
-        <MegaMenu
-          category={
-            mergedCategories.find((c) => c.id === hoveredCategory) ||
-            mergedCategories[0]
-          }
-          onMouseEnter={() => handleMouseEnter(hoveredCategory)}
-          onMouseLeave={handleMouseLeave}
-          onCloseMenu={() => setHoveredCategory(null)}
-        />
-      )}
     </div>
   );
 }

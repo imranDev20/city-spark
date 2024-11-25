@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import ProductCard from "./product-card";
 import { Prisma } from "@prisma/client";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type InventoryWithRelations = Prisma.InventoryGetPayload<{
   include: {
@@ -29,14 +30,10 @@ interface ProductCarouselProps {
 
 const OPTIONS: EmblaOptionsType = {
   loop: false,
-  slidesToScroll: 1,
   align: "start",
   containScroll: "trimSnaps",
-  breakpoints: {
-    "(max-width: 640px)": { slidesToScroll: 1 },
-    "(min-width: 641px)": { slidesToScroll: 2 },
-    "(min-width: 1024px)": { slidesToScroll: 4 },
-  },
+  dragFree: true,
+  slidesToScroll: "auto",
 };
 
 export default function ProductCarousel({
@@ -79,10 +76,14 @@ export default function ProductCarousel({
   }, [emblaApi, onSelect]);
 
   return (
-    <div className="container max-w-screen-xl mx-auto my-10">
-      <div className="flex justify-between mb-6 items-center">
+    <div
+      className={cn(
+        "container max-w-screen-xl mx-auto my-10",
+        "px-4 md:px-6 lg:px-8"
+      )}
+    >
+      <div className="flex justify-between items-center">
         <h2 className="font-semibold text-xl sm:text-2xl">{title}</h2>
-
         <div className="flex gap-2">
           <Button
             onClick={scrollPrev}
@@ -106,12 +107,22 @@ export default function ProductCarousel({
       </div>
 
       <div className="relative">
-        <div className="overflow-hidden rounded-xl" ref={emblaRef}>
-          <div className="flex -mx-2">
+        <div
+          className="overflow-hidden rounded-xl -mx-4 md:-mx-6 lg:-mx-8"
+          ref={emblaRef}
+        >
+          <div className="flex pl-4 md:pl-6 lg:pl-8">
             {inventoryItems.map((inventoryItem) => (
               <div
                 key={inventoryItem.id}
-                className="flex-[0_0_100%] sm:flex-[0_0_50%] md:flex-[0_0_33.333333%] lg:flex-[0_0_25%] px-2 py-5"
+                className={cn(
+                  "min-w-0 flex-[0_0_100%]", // Force 100% width on smallest screens
+                  "sm:flex-[0_0_50%]", // 50% width on small screens
+                  "md:flex-[0_0_33.333333%]", // 33.333% width on medium screens
+                  "lg:flex-[0_0_25%]", // 25% width on large screens
+                  "pr-4 md:pr-6 lg:pr-8 py-5"
+                )}
+                style={{ maxWidth: "100%" }} // Ensure no overflow
               >
                 <ProductCard inventoryItem={inventoryItem} />
               </div>
@@ -119,8 +130,8 @@ export default function ProductCarousel({
           </div>
         </div>
 
-        {/* Optional: Progress dots for mobile */}
-        <div className="flex justify-center gap-1 mt-4 md:hidden">
+        {/* Progress dots for mobile and tablet */}
+        <div className="flex justify-center gap-1 mt-4 lg:hidden">
           {scrollSnaps.map((_, index) => (
             <div
               key={index}

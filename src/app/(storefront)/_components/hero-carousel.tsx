@@ -129,7 +129,7 @@ export default function HeroCarousel() {
         className="hidden lg:block"
         showNavButtons={true}
       />
-      <CarouselContent content={mobileContent} className="lg:hidden" />
+      <CarouselContent content={mobileContent} className="lg:hidden mt-5" />
     </>
   );
 }

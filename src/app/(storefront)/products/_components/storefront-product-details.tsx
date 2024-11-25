@@ -249,7 +249,7 @@ export default function StorefrontProductDetails({
                     key={index}
                     onClick={() => setMainImage(image)}
                     className={`border border-gray-350 rounded-md relative h-24 ${
-                      mainImage === image ? "border-red-500" : "border-gray-200"
+                      mainImage === image ? "border-red-500" : "border-gray-300"
                     } flex justify-center items-center cursor-pointer`}
                   >
                     <Image

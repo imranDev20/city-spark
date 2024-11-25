@@ -5,6 +5,7 @@ import Header from "./_components/header";
 import StoreTopLoader from "./_components/store-top-loader";
 import StorefrontFooter from "./_components/storefront-footer";
 import TopBar from "./_components/topbar";
+import MobileBottomBar from "./_components/mobile-bottom-bar";
 
 // Create a simple loading component for the Header
 function HeaderSkeleton() {
@@ -21,8 +22,9 @@ export default function StorefrontLayout({
       <StoreTopLoader />
       <TopBar />
       <Header />
-      <CategoryNav />
       {children}
+
+      <MobileBottomBar />
       <StorefrontFooter />
     </>
   );

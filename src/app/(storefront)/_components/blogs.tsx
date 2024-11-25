@@ -1,28 +1,51 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import img from "@/images/banner-bg2.png";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 export default function Blogs() {
   return (
-    <div className="relative bg-[#DF0023] text-white mt-6 mb-12 rounded-xl w-[85%] mx-auto">
-      <Image
-        src={img}
-        alt="Brand Store Background"
-        layout="fill"
-        objectFit="cover"
-        className="opacity-20 rounded-xl"
-      />
+    <div
+      className={cn(
+        "container max-w-screen-xl mx-auto my-12",
+        "px-4 md:px-6 lg:px-8"
+      )}
+    >
+      <div className="relative bg-primary text-primary-foreground rounded-xl">
+        <Image
+          src={img}
+          alt="Blog Background"
+          layout="fill"
+          objectFit="cover"
+          className="opacity-20 rounded-xl"
+        />
 
-      <div className="relative z-10 flex flex-col items-center justify-center p-10 text-center space-y-4">
-        <h1 className="text-4xl font-bold text-yellow-400">Explore Our Blog</h1>
-        <p className="text-gray-100 text-sm">
-          Lorem Ipsum is simply dummy text of the printing <br /> and
-          typesetting industry.
-        </p>
+        <div
+          className={cn(
+            "relative z-10 flex flex-col items-center justify-center text-center",
+            "p-6 md:p-10 space-y-4"
+          )}
+        >
+          <h1 className="text-3xl md:text-4xl font-bold text-secondary">
+            Explore Our Blog
+          </h1>
+          <p
+            className={cn("text-primary-foreground/90 text-sm", "px-4 md:px-0")}
+          >
+            Lorem Ipsum is simply dummy text of the printing
+            <span className="hidden md:inline">
+              {" "}
+              <br />
+            </span>{" "}
+            and typesetting industry.
+          </p>
 
-        <Button className="bg-white text-black hover:bg-white">
-          READ BLOG
-        </Button>
+          <Button variant="secondary" className="font-medium">
+            READ BLOG
+          </Button>
+        </div>
       </div>
     </div>
   );

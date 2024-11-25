@@ -150,7 +150,7 @@ export default function FilterSidebar({
         </button>
       </div>
 
-      <Card className="border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md">
+      <Card className="border-gray-300 overflow-hidden transition-all duration-300 hover:shadow-md">
         <div className="divide-y divide-gray-200">
           {/* Brands Section */}
           <div className="p-5">
@@ -187,7 +187,7 @@ export default function FilterSidebar({
                         setBrandSearch(e.target.value);
                         setIsClientBrands(true);
                       }}
-                      className={`pl-9 h-10 bg-white border-gray-200 hover:border-secondary transition-colors
+                      className={`pl-9 h-10 bg-white border-gray-300 hover:border-secondary transition-colors
                   focus-visible:ring-1 focus-visible:ring-secondary/20 focus-visible:border-secondary
                   ${isFetching ? "pr-9" : ""}`}
                     />
@@ -345,7 +345,7 @@ export default function FilterSidebar({
                       onChange={(e) =>
                         setPriceRange([Number(e.target.value), priceRange[1]])
                       }
-                      className="h-10 bg-white border-gray-200 hover:border-secondary transition-colors
+                      className="h-10 bg-white border-gray-300 hover:border-secondary transition-colors
                   focus-visible:ring-1 focus-visible:ring-secondary/20 focus-visible:border-secondary"
                       placeholder="£ Min"
                     />
@@ -356,7 +356,7 @@ export default function FilterSidebar({
                       onChange={(e) =>
                         setPriceRange([priceRange[0], Number(e.target.value)])
                       }
-                      className="h-10 bg-white border-gray-200 hover:border-secondary transition-colors
+                      className="h-10 bg-white border-gray-300 hover:border-secondary transition-colors
                   focus-visible:ring-1 focus-visible:ring-secondary/20 focus-visible:border-secondary"
                       placeholder="£ Max"
                     />
