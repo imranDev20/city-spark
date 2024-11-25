@@ -5,6 +5,7 @@ import Features from "./_components/features";
 import GiftCard from "./_components/gift-card";
 import { getLatestInventoryItems } from "./actions";
 import ProductCarousel from "./_components/product-carousel";
+import MobileCategoryNav from "./_components/mobile-category-nav";
 
 export default async function HomePage() {
   const inventoryItems = await getLatestInventoryItems(20);
@@ -12,6 +13,7 @@ export default async function HomePage() {
   return (
     <main className="">
       <HeroCarousel />
+      <MobileCategoryNav />
       <Features />
       <ProductCarousel
         title="Best Selling Products"

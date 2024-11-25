@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { HomeIcon } from "lucide-react";
@@ -38,8 +40,8 @@ const DynamicBreadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
             <BreadcrumbItem
               className={
                 item.isCurrentPage
-                  ? "text-yellow-300"
-                  : "text-white hover:text-yellow-300 transition-colors"
+                  ? "text-secondary"
+                  : "text-white hover:text-secondary transition-colors"
               }
             >
               {item.icon && (
@@ -48,14 +50,14 @@ const DynamicBreadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
                 </span>
               )}
               {item.isCurrentPage ? (
-                <BreadcrumbPage className="text-yellow-300">
+                <BreadcrumbPage className="text-secondary">
                   {item.label}
                 </BreadcrumbPage>
               ) : (
                 <BreadcrumbLink asChild>
                   <Link
                     href={item.href ?? ""}
-                    className="hover:text-yellow-300 transition-colors"
+                    className="hover:text-secondary transition-colors"
                   >
                     {item.label}
                   </Link>

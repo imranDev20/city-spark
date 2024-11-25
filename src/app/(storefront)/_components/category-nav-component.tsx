@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { customSlugify } from "@/lib/functions";
 import { cn } from "@/lib/utils";
@@ -52,18 +52,22 @@ function createMergedCategory<T extends PrimaryCategory | SecondaryCategory>(
   category: T,
   icon: React.ComponentType<IconProps>
 ): CategoryWithParent<T> {
+  const isSecondary = category.type === CategoryType.SECONDARY;
+  const primaryCategoryName =
+    isSecondary && category.parentPrimaryCategory
+      ? customSlugify(category.parentPrimaryCategory.name)
+      : "";
+
+  const route = isSecondary
+    ? `/products/c/${primaryCategoryName}/${customSlugify(
+        category.name
+      )}/c?p_id=${category.parentPrimaryCategory?.id}&s_id=${category.id}`
+    : `/products/c/${customSlugify(category.name)}/c?p_id=${category.id}`;
+
   return {
     ...category,
     Icon: icon,
-    route: `/products/c/${customSlugify(category?.name)}/c?p_id=${
-      category?.id
-    }${
-      category &&
-      category?.type === CategoryType.SECONDARY &&
-      category?.parentPrimaryCategory
-        ? `&s_id=${category.id}`
-        : ""
-    }`,
+    route,
   };
 }
 
@@ -76,6 +80,11 @@ export default function CategoryNavComponent({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
   const excludedRoutes = ["/login", "/register", "/cart", "/checkout"];
+
+  useEffect(() => {
+    // Close megamenu when route changes
+    setHoveredCategory(null);
+  }, [pathname]);
 
   if (excludedRoutes.includes(pathname)) {
     return null;
@@ -139,20 +148,25 @@ export default function CategoryNavComponent({
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    setHoveredCategory(categoryId);
+    timeoutRef.current = setTimeout(() => {
+      setHoveredCategory(categoryId);
+    }, 150);
   };
 
   const handleMouseLeave = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
     timeoutRef.current = setTimeout(() => {
       setHoveredCategory(null);
-    }, 100);
+    }, 300);
   };
 
   return (
-    <div className="relative bg-white shadow-sm border-b">
+    <div className="relative bg-white shadow-sm border-b hidden lg:block">
       <div className="container mx-auto max-w-screen-xl px-0">
         <div className="flex w-full">
-          {mergedCategories.map((item, index) => (
+          {mergedCategories.map((item) => (
             <div
               key={item.id}
               className={cn(
@@ -164,24 +178,25 @@ export default function CategoryNavComponent({
             >
               <Link
                 href={item.route}
+                onClick={() => setHoveredCategory(null)}
                 className={cn(
-                  "flex flex-col items-center p-4 h-24 w-full transition-all duration-200 hover:bg-primary/5",
+                  "flex flex-col items-center p-3 w-full transition-all duration-200 hover:bg-primary/5",
                   "relative overflow-hidden"
                 )}
               >
-                <div className="relative z-10 flex flex-col items-center w-full">
+                <div className="relative flex flex-col items-center w-full">
                   <item.Icon
                     className={cn(
                       "transition-all duration-200 text-gray-600",
                       "group-hover:text-primary group-hover:scale-110",
                       hoveredCategory === item.id && "text-primary scale-110"
                     )}
-                    height={28}
-                    width={28}
+                    height={26}
+                    width={26}
                   />
                   <h5
                     className={cn(
-                      "text-sm mt-2 text-center font-medium px-1",
+                      "text-xs mt-2 text-center font-medium px-1",
                       "group-hover:text-primary transition-colors duration-200",
                       hoveredCategory === item.id && "text-primary"
                     )}
@@ -209,6 +224,7 @@ export default function CategoryNavComponent({
           }
           onMouseEnter={() => handleMouseEnter(hoveredCategory)}
           onMouseLeave={handleMouseLeave}
+          onCloseMenu={() => setHoveredCategory(null)}
         />
       )}
     </div>

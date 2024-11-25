@@ -111,8 +111,6 @@ const DeliveryInfo = ({
   const availableStock = stockCount - heldCount;
   const exceedsStock = quantity > availableStock;
 
-  console.log(maxDeliveryTimeExceedingStock);
-
   return (
     <div className="flex items-center text-xs text-gray-600 min-h-[16px]">
       {(maxDeliveryTime || maxDeliveryTimeExceedingStock) && (
@@ -262,7 +260,7 @@ export default function ProductCard({
   const productUrl = `/products/p/${customSlugify(product.name)}/p/${id}`;
 
   return (
-    <Card className="group h-full flex flex-col bg-white border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
+    <Card className="group h-full flex flex-col bg-white border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 relative">
       <Link href={productUrl} className="contents">
         <ImageCarousel images={product.images || []} />
         {product.promotionalPrice &&

@@ -42,55 +42,24 @@ export interface TimelineElement {
   description: string;
 }
 
-export const categoryData = [
-  {
-    label: "Boilers",
-    Icon: BoilerIcon,
-    route: "/boilers",
-  },
-  {
-    label: "Radiators",
-    Icon: RadiatorIcon,
-    route: "/categories/radiators",
-  },
-  {
-    label: "Heating",
-    Icon: HeatingIcon,
-    route: "/categories/heating",
-  },
-  {
-    label: "Plumbing",
-    Icon: PlumbingIcon,
-    route: "/categories/plumbing",
-  },
-  {
-    label: "Bathrooms",
-    Icon: BathroomIcon,
-    route: "/categories/bathrooms",
-  },
-  {
-    label: "Kitchen & Tiles",
-    Icon: KitchenTilesIcon,
-    route: "/categories/kitchen-tiles",
-  },
-  {
-    label: "Spares",
-    Icon: SparesIcon,
-    route: "/categories/spares",
-  },
-  {
-    label: "Renewables",
-    Icon: RenewablesIcon,
-    route: "/categories/renewables",
-  },
-  {
-    label: "Tools",
-    Icon: ToolsIcon,
-    route: "/categories/tools",
-  },
-  {
-    label: "Electrical",
-    Icon: ElectricalIcon,
-    route: "/categories/electrical",
-  },
+type IconProps = {
+  className?: string;
+  height?: number | string;
+  width?: number | string;
+};
+
+export const categoryData: {
+  label: string;
+  Icon: React.ComponentType<IconProps>;
+}[] = [
+  { label: "Boilers", Icon: BoilerIcon },
+  { label: "Radiators", Icon: RadiatorIcon },
+  { label: "Heating", Icon: HeatingIcon },
+  { label: "Plumbing", Icon: PlumbingIcon },
+  { label: "Bathrooms", Icon: BathroomIcon },
+  { label: "Kitchen", Icon: KitchenTilesIcon },
+  { label: "Spares", Icon: SparesIcon },
+  { label: "Renewables", Icon: RenewablesIcon },
+  { label: "Tools", Icon: ToolsIcon },
+  { label: "Electrical", Icon: ElectricalIcon },
 ];

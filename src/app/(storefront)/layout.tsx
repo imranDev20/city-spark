@@ -22,7 +22,6 @@ export default function StorefrontLayout({
       <TopBar />
       <Header />
       <CategoryNav />
-      <Separator />
       {children}
       <StorefrontFooter />
     </>

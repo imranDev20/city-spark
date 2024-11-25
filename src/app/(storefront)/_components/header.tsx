@@ -1,25 +1,24 @@
-import { Flame, ShoppingCart } from "lucide-react";
+"use client";
+
+import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import AccountDropdown from "./account-dropdown";
 import SearchInput from "./search-input";
 import { cn } from "@/lib/utils";
+import CitySparkLogo from "./city-spark-logo";
 
-export default async function Header() {
-  // const cart = await getCart();
+function DesktopHeader() {
   const cartItemCount = 0;
 
   return (
-    <header className="w-full bg-primary py-2">
+    <header className="w-full bg-primary py-2 hidden lg:block">
       <div className="container h-16 flex items-center justify-between mx-auto max-w-screen-xl">
         <Link
           href="/"
-          className="flex items-center transition-opacity duration-300"
+          className="flex items-center transition-colors duration-200 group"
         >
-          <Flame className="w-9 h-9 mr-1 text-primary text-yellow-300" />
-          <span className="font-extrabold text-nowrap text-yellow-300 text-2xl">
-            City Spark
-          </span>
+          <CitySparkLogo />
           <span className="sr-only">City Spark</span>
         </Link>
 
@@ -33,11 +32,11 @@ export default async function Header() {
             className="flex items-center group cursor-pointer"
           >
             <div className="relative">
-              <ShoppingCart className="w-5 h-5 group-hover:text-yellow-300 transition-colors duration-200" />
+              <ShoppingCart className="w-5 h-5 group-hover:text-secondary transition-colors duration-200" />
               {cartItemCount > 0 && (
                 <span
                   className={cn(
-                    "absolute -top-2 -right-2 bg-yellow-300 text-secondary text-xs font-bold rounded-full flex items-center justify-center",
+                    "absolute -top-2 -right-2 bg-secondary text-white text-xs font-bold rounded-full flex items-center justify-center",
                     cartItemCount > 9 ? "w-5 h-5 text-[10px]" : "w-4 h-4"
                   )}
                 >
@@ -45,7 +44,7 @@ export default async function Header() {
                 </span>
               )}
             </div>
-            <span className="ml-2 text-base group-hover:text-yellow-300 transition-colors duration-200">
+            <span className="ml-2 text-base group-hover:text-secondary transition-colors duration-200">
               Basket
             </span>
           </Link>
@@ -53,4 +52,8 @@ export default async function Header() {
       </div>
     </header>
   );
+}
+
+export default function Header() {
+  return <DesktopHeader />;
 }
