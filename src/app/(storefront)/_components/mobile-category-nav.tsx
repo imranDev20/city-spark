@@ -16,7 +16,7 @@ export default function MobileCategoryNav({
       <div className="px-4 mb-4 flex items-center justify-between">
         <h2 className="font-semibold text-lg">Categories</h2>
         <Link
-          href="/categories"
+          href="/products"
           className="flex items-center text-sm text-primary"
         >
           Explore All

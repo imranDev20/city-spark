@@ -33,7 +33,7 @@ const StarRating = ({ rating }: { rating: number }) => (
       <Star
         key={star}
         className={`w-3 sm:w-4 h-3 sm:h-4 ${
-          rating >= star ? "text-primary fill-primary" : "text-gray-200"
+          rating >= star ? "text-secondary fill-secondary" : "text-gray-200"
         }`}
       />
     ))}
@@ -269,14 +269,15 @@ export default function ProductCard({
                 product.primaryCategory?.name ||
                 "Category"}
             </div>
+            <StarRating rating={rating} />
+
             <h3 className="font-medium text-gray-900 text-sm sm:text-base line-clamp-3 min-h-[2.5rem]">
               {product.name}
             </h3>
-            <StarRating rating={rating} />
           </div>
 
           <div className="flex items-baseline">
-            <span className="text-lg sm:text-2xl font-bold text-gray-900">
+            <span className=" sm:text-2xl font-bold text-gray-900">
               £{product.promotionalPrice?.toFixed(2)}
             </span>
             {product.tradePrice &&
@@ -301,9 +302,9 @@ export default function ProductCard({
             />
             <div className="grid grid-cols-2 gap-1 sm:gap-2">
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
-                className="w-full bg-white hover:bg-gray-50 px-2 h-7 sm:h-8 text-xs sm:text-sm"
+                className="w-full px-2 h-7 sm:h-8 text-xs sm:text-sm"
                 onClick={(e) => handleAddToCart(e, "FOR_COLLECTION")}
                 disabled={isPending || !inventoryItem.collectionEligibility}
               >

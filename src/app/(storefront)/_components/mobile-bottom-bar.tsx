@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Home, Store, ShoppingCart, UserCircle2, Search } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 type MobileBottomBarProps = {
@@ -13,7 +14,6 @@ const MobileBottomBar = ({
   isShowInProductPage = false,
 }: MobileBottomBarProps) => {
   const pathname = usePathname();
-  const router = useRouter();
 
   const navigation = [
     { name: "Home", href: "/", icon: Home },
@@ -30,22 +30,18 @@ const MobileBottomBar = ({
     return pathname.startsWith(path);
   };
 
-  // Check if the current route should exclude the bottom bar
   const shouldHideBottomBar = () => {
     const excludedPaths = ["/login", "/register"];
     const productPaths = ["/products", "/products/c/", "/products/p/"];
 
-    // Check for exact matches first
     if (excludedPaths.some((path) => pathname === path)) {
       return true;
     }
 
-    // If isShowInProductPage is true, don't hide on product pages
     if (isShowInProductPage) {
       return excludedPaths.some((path) => pathname === path);
     }
 
-    // Check if the current path starts with any of the product paths
     if (productPaths.some((path) => pathname.startsWith(path))) {
       return true;
     }
@@ -64,8 +60,8 @@ const MobileBottomBar = ({
           <ul className="h-full flex items-center justify-around px-4">
             {navigation.map((item) => (
               <li key={item.name} className="flex-1">
-                <button
-                  onClick={() => router.push(item.href)}
+                <Link
+                  href={item.href}
                   className={cn(
                     "flex flex-col items-center justify-center w-full h-full space-y-1",
                     "transition-colors duration-200",
@@ -76,7 +72,7 @@ const MobileBottomBar = ({
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="text-xs font-medium">{item.name}</span>
-                </button>
+                </Link>
               </li>
             ))}
           </ul>
