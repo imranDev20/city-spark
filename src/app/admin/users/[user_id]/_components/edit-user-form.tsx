@@ -113,8 +113,7 @@ export default function EditUserFrom({
           addressLine1: address.addressLine1 ?? "",
           addressLine2: address.addressLine2 ?? "",
           city: address.city ?? "",
-          postalCode: address.postalCode ?? "",
-          state: address.state ?? "",
+
           country: address.country ?? "",
         })),
       });

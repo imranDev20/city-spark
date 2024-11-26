@@ -19,20 +19,23 @@ export async function createUser(data: FromInputType) {
         avatar: data.avatar,
         addresses: {
           create: data.address.map((item) => ({
-            city: item.city,
-            postalCode: item.postalCode,
-            state: item.state,
             addressLine1: item.addressLine1,
             addressLine2: item.addressLine2,
+            city: item.city,
+            county: item.state,
+            postcode: item.postalCode,
             country: item.country,
+            isBilling: false,
+            isShipping: false,
+            isDefaultBilling: false,
+            isDefaultShipping: false,
           })),
         },
       },
     });
 
-    revalidatePath("/admin/users");
-    revalidatePath("/admin/users/[user_id]", "page");
-    revalidatePath("/admin/users/new");
+    // Revalidate the entire site
+    revalidatePath("/", "layout");
 
     return {
       message: "User created successfully!",
@@ -46,11 +49,15 @@ export async function createUser(data: FromInputType) {
     };
   }
 }
+
 export const getUsers = async () => {
   try {
     const users = await prisma.user.findMany({
       include: {
         addresses: true,
+        orders: true,
+        carts: true,
+        wishlist: true,
       },
     });
     return users;
@@ -71,14 +78,15 @@ export async function deleteUser(userId: string) {
       };
     }
 
-    // Delete the user
     await prisma.user.delete({
       where: {
         id: userId,
       },
     });
 
-    revalidatePath("/admin/users");
+    // Revalidate the entire site
+    revalidatePath("/", "layout");
+
     return {
       message: "User deleted successfully!",
       success: true,
@@ -91,6 +99,7 @@ export async function deleteUser(userId: string) {
     };
   }
 }
+
 export async function getUserById(userId: string) {
   try {
     const user = await prisma.user.findUnique({
@@ -99,11 +108,16 @@ export async function getUserById(userId: string) {
       },
       include: {
         addresses: true,
+        orders: true,
+        carts: true,
+        wishlist: true,
+        accounts: true,
+        sessions: true,
       },
     });
 
     if (!user) {
-      throw new Error("Brand not found");
+      throw new Error("User not found");
     }
 
     return user;
@@ -112,9 +126,9 @@ export async function getUserById(userId: string) {
     throw new Error("Failed to fetch user");
   }
 }
+
 export async function updateUser(userId: string, data: FromInputType) {
   try {
-    // First, fetch the existing user and their addresses to ensure they exist
     const existingUser = await prisma.user.findUnique({
       where: { id: userId },
       include: { addresses: true },
@@ -124,7 +138,6 @@ export async function updateUser(userId: string, data: FromInputType) {
       throw new Error("User not found");
     }
 
-    // Prepare the data for updating the user
     const updateData = {
       firstName: data.firstName,
       lastName: data.lastName,
@@ -134,27 +147,46 @@ export async function updateUser(userId: string, data: FromInputType) {
       avatar: data.avatar,
     };
 
-    // Prepare arrays for update, create, and delete operations for addresses
     const addressesToUpdate = [];
     const addressesToCreate = [];
     const addressIdsToKeep = new Set();
 
-    // Categorize addresses
     for (const address of data.address) {
       if (address.addressId) {
-        addressesToUpdate.push(address);
+        addressesToUpdate.push({
+          addressId: address.addressId,
+          addressLine1: address.addressLine1,
+          addressLine2: address.addressLine2,
+          city: address.city,
+          county: address.state,
+          postcode: address.postalCode,
+          country: address.country,
+          isBilling: false,
+          isShipping: false,
+          isDefaultBilling: false,
+          isDefaultShipping: false,
+        });
         addressIdsToKeep.add(address.addressId);
       } else {
-        addressesToCreate.push(address);
+        addressesToCreate.push({
+          addressLine1: address.addressLine1,
+          addressLine2: address.addressLine2,
+          city: address.city,
+          county: address.state,
+          postcode: address.postalCode,
+          country: address.country,
+          isBilling: false,
+          isShipping: false,
+          isDefaultBilling: false,
+          isDefaultShipping: false,
+        });
       }
     }
 
-    // Identify addresses to delete
     const addressIdsToDelete = existingUser.addresses
       .filter((address) => !addressIdsToKeep.has(address.id))
       .map((address) => address.id);
 
-    // Perform the update
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
@@ -166,22 +198,26 @@ export async function updateUser(userId: string, data: FromInputType) {
               addressLine1: address.addressLine1,
               addressLine2: address.addressLine2,
               city: address.city,
-              state: address.state,
-              postalCode: address.postalCode,
+              county: address.county,
+              postcode: address.postcode,
               country: address.country,
+              isBilling: address.isBilling,
+              isShipping: address.isShipping,
+              isDefaultBilling: address.isDefaultBilling,
+              isDefaultShipping: address.isDefaultShipping,
             },
           })),
           create: addressesToCreate,
           deleteMany: { id: { in: addressIdsToDelete } },
         },
       },
+      include: {
+        addresses: true,
+      },
     });
 
-    // Revalidate the necessary paths
-    revalidatePath("/admin/users");
-    revalidatePath(`/admin/users/${updatedUser.id}`);
-    revalidatePath("/admin/users/[user_id]", "page");
-    revalidatePath("/admin/users/new");
+    // Revalidate the entire site
+    revalidatePath("/", "layout");
 
     return {
       message: "User updated successfully!",
