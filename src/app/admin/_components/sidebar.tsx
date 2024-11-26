@@ -88,7 +88,7 @@ export function Sidebar() {
         <div className="flex-1 overflow-y-auto">
           <Menu isOpen={sidebar?.isOpen} />
         </div>
-        <div className="mt-auto border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-auto border-t border-gray-300 dark:border-gray-700">
           <div className="px-3 py-4 flex items-center justify-between">
             {sidebar?.isOpen && (
               <div

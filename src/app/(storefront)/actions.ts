@@ -11,8 +11,8 @@ export const getInventoryItemsForStorefront = async ({
   isSecondaryRequired = false,
   isTertiaryRequired = false,
   isQuaternaryRequired = false,
-  page = 1,
-  limit = 10,
+  limit = 15,
+  search,
 }: {
   primaryCategoryId?: string;
   secondaryCategoryId?: string;
@@ -22,24 +22,24 @@ export const getInventoryItemsForStorefront = async ({
   isSecondaryRequired?: boolean;
   isTertiaryRequired?: boolean;
   isQuaternaryRequired?: boolean;
-  page?: number;
   limit?: number;
+  search?: string;
 }) => {
   try {
-    const skip = (page - 1) * limit;
-
-    // Check if any required category is missing
+    // Check if any required category is missing (only if not searching)
     if (
-      (isPrimaryRequired && !primaryCategoryId) ||
-      (isSecondaryRequired && !secondaryCategoryId) ||
-      (isTertiaryRequired && !tertiaryCategoryId) ||
-      (isQuaternaryRequired && !quaternaryCategoryId)
+      !search &&
+      ((isPrimaryRequired && !primaryCategoryId) ||
+        (isSecondaryRequired && !secondaryCategoryId) ||
+        (isTertiaryRequired && !tertiaryCategoryId) ||
+        (isQuaternaryRequired && !quaternaryCategoryId))
     ) {
-      return { inventoryItems: [], hasMore: false, totalCount: 0 };
+      return { inventoryItems: [], totalCount: 0 };
     }
 
     const whereClause: {
       product?: {
+        AND?: any[];
         primaryCategoryId?: string;
         secondaryCategoryId?: string;
         tertiaryCategoryId?: string;
@@ -47,12 +47,13 @@ export const getInventoryItemsForStorefront = async ({
       };
     } = {};
 
-    // Build the where clause only if at least one category is provided
+    // Build the where clause for categories
     if (
-      primaryCategoryId ||
-      secondaryCategoryId ||
-      tertiaryCategoryId ||
-      quaternaryCategoryId
+      !search &&
+      (primaryCategoryId ||
+        secondaryCategoryId ||
+        tertiaryCategoryId ||
+        quaternaryCategoryId)
     ) {
       whereClause.product = {};
       if (primaryCategoryId)
@@ -65,20 +66,45 @@ export const getInventoryItemsForStorefront = async ({
         whereClause.product.quaternaryCategoryId = quaternaryCategoryId;
     }
 
-    // Check if any of the provided category IDs exist
-    const categoryExists = await prisma.category.findFirst({
-      where: {
-        OR: [
-          { id: primaryCategoryId },
-          { id: secondaryCategoryId },
-          { id: tertiaryCategoryId },
-          { id: quaternaryCategoryId },
-        ].filter(Boolean),
-      },
-    });
+    // Add search condition
+    if (search) {
+      whereClause.product = {
+        ...whereClause.product,
+        AND: [
+          {
+            OR: [
+              { name: { contains: search, mode: "insensitive" } },
+              { description: { contains: search, mode: "insensitive" } },
+              { model: { contains: search, mode: "insensitive" } },
+              { brand: { name: { contains: search, mode: "insensitive" } } },
+            ],
+          },
+        ],
+      };
+    }
 
-    if (!categoryExists) {
-      return { inventoryItems: [], hasMore: false, totalCount: 0 };
+    // Check if any of the provided category IDs exist (only if not searching)
+    if (
+      !search &&
+      (primaryCategoryId ||
+        secondaryCategoryId ||
+        tertiaryCategoryId ||
+        quaternaryCategoryId)
+    ) {
+      const categoryExists = await prisma.category.findFirst({
+        where: {
+          OR: [
+            { id: primaryCategoryId },
+            { id: secondaryCategoryId },
+            { id: tertiaryCategoryId },
+            { id: quaternaryCategoryId },
+          ].filter(Boolean),
+        },
+      });
+
+      if (!categoryExists) {
+        return { inventoryItems: [], totalCount: 0 };
+      }
     }
 
     const [inventoryItems, totalCount] = await Promise.all([
@@ -91,23 +117,20 @@ export const getInventoryItemsForStorefront = async ({
               secondaryCategory: true,
               tertiaryCategory: true,
               quaternaryCategory: true,
+              brand: true,
             },
           },
         },
         orderBy: {
           createdAt: "desc",
         },
-        skip,
         take: limit,
       }),
       prisma.inventory.count({ where: whereClause }),
     ]);
 
-    const hasMore = totalCount > skip + inventoryItems.length;
-
     return {
       inventoryItems,
-      hasMore,
       totalCount,
     };
   } catch (error) {
@@ -128,10 +151,14 @@ export async function getInventoryItem(inventoryItemId: string) {
             secondaryCategory: true,
             tertiaryCategory: true,
             quaternaryCategory: true,
-            productTemplate: {             
+            productTemplate: {
               include: {
-                fields: true,
-                template:true,
+                fields: {
+                  include: {
+                    templateField: true,
+                  },
+                },
+                template: true,
               },
             },
           },

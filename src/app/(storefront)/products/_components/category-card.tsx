@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Card,
   CardContent,
@@ -32,38 +34,24 @@ export default function CategoryCard({
   const productCount = getProductCount(category);
 
   return (
-    <Card className="shadow-none hover:shadow-md transition-all h-full border-gray-350">
-      <CardHeader className="text-center">
-        <CardTitle className="font-semibold text-2xl 2xl:text-3xl ">
+    <Card className="group h-full bg-white border-gray-300 rounded-xl overflow-hidden lg:hover:shadow-lg transition-all duration-300 shadow-none lg:shadow-md">
+      <CardHeader className="text-center p-3 pb-1 lg:p-6 lg:pb-2">
+        <CardTitle className="font-semibold text-lg lg:text-2xl 2xl:text-3xl text-gray-900">
           {category.name}
         </CardTitle>
-        <CardDescription className="text-base font-normal text-primary">
+        <CardDescription className="text-sm lg:text-base font-medium text-secondary">
           {productCount} Product{productCount !== 1 ? "s" : ""}
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="relative h-28">
-          {category.image ? (
-            <Image
-              src={category.image}
-              alt={category.name}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              style={{
-                objectFit: "contain",
-              }}
-            />
-          ) : (
-            <Image
-              src={PlaceholderImage}
-              alt={category.name}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              style={{
-                objectFit: "contain",
-              }}
-            />
-          )}
+      <CardContent className="p-2 lg:p-6">
+        <div className="relative h-20 lg:h-28 bg-white">
+          <Image
+            src={category.image || PlaceholderImage}
+            alt={category.name}
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-contain transition-all duration-300 group-hover:scale-105"
+          />
         </div>
       </CardContent>
     </Card>

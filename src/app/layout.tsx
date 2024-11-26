@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 
 import "./globals.css";
 import NextAuthSessionProvider from "@/providers/session-provider";
+import QueryProvider from "@/providers/query-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -49,15 +50,16 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={GeistSans.className}>
         {/* <ThemeProvider attribute="class" defaultTheme="light" enableSystem> */}
-
-        <NextAuthSessionProvider>
-          <EdgeStoreProvider>
-            <ThemeProvider attribute="class" defaultTheme="light">
-              {children}
-              <Toaster />
-            </ThemeProvider>
-          </EdgeStoreProvider>
-        </NextAuthSessionProvider>
+        <QueryProvider>
+          <NextAuthSessionProvider>
+            <EdgeStoreProvider>
+              <ThemeProvider attribute="class" defaultTheme="light">
+                {children}
+                <Toaster />
+              </ThemeProvider>
+            </EdgeStoreProvider>
+          </NextAuthSessionProvider>
+        </QueryProvider>
       </body>
     </html>
   );

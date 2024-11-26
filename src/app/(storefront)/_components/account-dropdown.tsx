@@ -32,7 +32,7 @@ const MenuItem = ({ icon: Icon, label, href, onClick }: MenuItemProps) => {
   );
 
   const className =
-    "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors rounded-md hover:text-primary";
+    "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-secondary/5 transition-colors rounded-md hover:text-secondary";
 
   return href ? (
     <Link href={href} className={className}>
@@ -81,7 +81,7 @@ export default function AccountDropdown() {
     return (
       <Link
         href="/login"
-        className="flex items-center text-white hover:text-yellow-300 transition-colors"
+        className="flex items-center text-white hover:text-secondary transition-colors duration-200"
       >
         <LogIn className="mr-2 h-5 w-5" />
         Sign In
@@ -99,7 +99,7 @@ export default function AccountDropdown() {
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        className="flex items-center text-white hover:text-yellow-300 transition-colors"
+        className="flex items-center text-white hover:text-secondary transition-colors duration-200"
         onMouseEnter={handleOpen}
         onMouseLeave={handleClose}
         onClick={() => setIsOpen(!isOpen)}

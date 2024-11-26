@@ -147,13 +147,17 @@ export async function updateInventoryItem(
         deliveryEligibility: data.deliveryEligibility,
         collectionEligibility: data.collectionEligibility,
         maxDeliveryTime: data.maxDeliveryTime,
+        maxDeliveryTimeExceedingStock: data.maxDeliveryTimeExceedingStock,
+
         collectionAvailabilityTime: data.collectionAvailabilityTime,
+        maxCollectionTimeExceedingStock: data.maxCollectionTimeExceedingStock,
         deliveryAreas: data.deliveryAreas?.map((area) =>
           area.deliveryArea.toUpperCase()
         ),
         collectionPoints: data.collectionPoints?.map((point) =>
           point.collectionPoint.toUpperCase()
         ),
+
         minDeliveryCount: Number(data.minDeliveryCount),
         minCollectionCount: Number(data.minCollectionCount),
         maxDeliveryCount: Number(data.maxDeliveryCount),
@@ -163,12 +167,7 @@ export async function updateInventoryItem(
       },
     });
 
-    revalidatePath("/admin/inventory");
-    revalidatePath(`/admin/inventory/${inventoryId}`);
-    revalidatePath("/");
-    revalidatePath("/products");
-    revalidatePath("/basket");
-    revalidatePath("/checkout");
+    revalidatePath("/", "layout");
 
     return {
       message: "Inventory updated successfully!",

@@ -3,168 +3,208 @@ import { Input } from "@/components/ui/input";
 import img from "@/images/payment-options.png";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
 import { FiFacebook, FiInstagram, FiTwitter, FiYoutube } from "react-icons/fi";
+import { cn } from "@/lib/utils";
 
-const StorefrontFooter: React.FC = () => {
+const StorefrontFooter = () => {
   return (
     <footer>
-      <hr className="border-gray-300   mt-14" />
-      <div className="mx-auto w-[85%] flex justify-between mb-10 mt-8">
-        <div>
-          <h2 className="text-sm font-bold mb-4">
-            Sign up for news and offers
-          </h2>
-          <div className="flex gap-2">
-            <Input type="email" placeholder="Email" className="w-60" />
-            <Button className="bg-black hover:bg-black text-white font-semibold py-1 px-4 rounded-md">
-              SIGN UP
-            </Button>
-          </div>
-        </div>
-        <div>
-          <h2 className="text-sm font-bold mb-4">Easy Payment</h2>
-          <Image src={img} alt="payment" height={48} width={350} />
-        </div>
-        <div>
-          <h2 className="text-sm font-bold mb-4">Connect with us</h2>
-          <div className="flex space-x-2   ">
-            <Link href={"#"}>
-              <FiYoutube
-                className="border border-black p-2 rounded-md"
-                size={40}
+      <hr className="border-border mt-8 md:mt-14" />
+
+      {/* Upper Footer Section */}
+      <div className="bg-muted">
+        <div
+          className={cn(
+            "container max-w-screen-xl mx-auto py-8 md:py-10",
+            "px-4 md:px-6 lg:px-8"
+          )}
+        >
+          <div className="flex flex-col md:flex-row gap-8 md:gap-0 md:justify-between">
+            {/* Newsletter Section */}
+            <div className="w-full md:w-auto">
+              <h2 className="text-sm font-bold mb-3 md:mb-4 text-foreground">
+                Sign up for news and offers
+              </h2>
+              <form className="flex flex-col sm:flex-row gap-2">
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  className="w-full sm:w-60 border-input focus-visible:ring-primary"
+                  name="email"
+                  required
+                />
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  size="lg"
+                  className="w-full sm:w-auto font-semibold"
+                >
+                  SIGN UP
+                </Button>
+              </form>
+            </div>
+
+            {/* Payment Options Section */}
+            <div className="w-full md:w-auto">
+              <h2 className="text-sm font-bold mb-3 md:mb-4 text-foreground">
+                Easy Payment
+              </h2>
+              <Image
+                src={img}
+                alt="payment"
+                height={48}
+                width={350}
+                className="w-auto h-auto"
+                priority
               />
-            </Link>
-            <Link href={"#"}>
-              <FiFacebook
-                className="border border-black p-2 rounded-md"
-                size={40}
-              />
-            </Link>
-            <Link href={"#"}>
-              <FiInstagram
-                className="border border-black p-2 rounded-md"
-                size={40}
-              />
-            </Link>
-            <Link href={"#"}>
-              <FiTwitter
-                className="border border-black p-2 rounded-md"
-                size={40}
-              />
-            </Link>
+            </div>
+
+            {/* Social Media Section */}
+            <div className="w-full md:w-auto">
+              <h2 className="text-sm font-bold mb-3 md:mb-4 text-foreground">
+                Connect with us
+              </h2>
+              <div className="grid gap-5 grid-cols-4 sm:flex sm:gap-2">
+                {[
+                  { Icon: FiYoutube, href: "#", label: "YouTube" },
+                  { Icon: FiFacebook, href: "#", label: "Facebook" },
+                  { Icon: FiInstagram, href: "#", label: "Instagram" },
+                  { Icon: FiTwitter, href: "#", label: "Twitter" },
+                ].map(({ Icon, href, label }) => (
+                  <Link
+                    href={href}
+                    key={label}
+                    className="border border-primary/20 rounded-lg flex justify-center items-center p-3 lg:p-2 
+                    transition-all duration-200 hover:border-secondary hover:bg-secondary/10 hover:shadow-md 
+                    hover:-translate-y-0.5 group"
+                    aria-label={label}
+                  >
+                    <Icon className="w-8 lg:w-6 h-8 lg:h-6 text-primary transition-colors duration-200 group-hover:text-secondary" />
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div className="bg-black pt-12 pb-6 text-white ">
-        <div className="container grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4 lg:gap-12 w-[85%] mx-auto">
-          <div className="grid gap-2 text-xs">
-            <h4 className=" text-base  font-semibold">Products</h4>
-            <Link href="#" className="  hover:text-gray-400  ">
-              Boilers
-            </Link>
-            <Link href="#" className=" hover:text-gray-400">
-              Boilers Spares
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Heating & Plumbing
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Electricals
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Bathroom & Kitchen
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Offers
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Gift Cards
-            </Link>
-          </div>
-          <div className="grid gap-2 text-xs">
-            <h4 className=" text-base  font-semibold">Overview</h4>
-            <Link href="#" className="  hover:text-gray-400  ">
-              About us
-            </Link>
-            <Link href="#" className=" hover:text-gray-400">
-              Frequently Asked Questions
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Careers at TradeTools
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Tool Repairs
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Franchising
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              TradeTools Member Program
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Renegade Project Bike
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Spare Parts Request
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Tradio
-            </Link>
+
+      {/* Main Footer Section */}
+      <div className="bg-primary pt-8 md:pt-12 pb-6 text-primary-foreground">
+        <div
+          className={cn(
+            "container max-w-screen-xl mx-auto",
+            "px-4 md:px-6 lg:px-8"
+          )}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-12">
+            {/* Products Column */}
+            <div className="space-y-2">
+              <h4 className="text-base font-semibold mb-3">Products</h4>
+              <nav className="grid gap-2 text-xs">
+                {[
+                  "Boilers",
+                  "Boilers Spares",
+                  "Heating & Plumbing",
+                  "Electricals",
+                  "Bathroom & Kitchen",
+                  "Offers",
+                  "Gift Cards",
+                ].map((item) => (
+                  <Link
+                    key={item}
+                    href="#"
+                    className="hover:text-secondary transition-colors duration-200"
+                  >
+                    {item}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+
+            {/* Overview Column */}
+            <div className="space-y-2">
+              <h4 className="text-base font-semibold mb-3">Overview</h4>
+              <nav className="grid gap-2 text-xs">
+                {[
+                  "About us",
+                  "Frequently Asked Questions",
+                  "Careers at TradeTools",
+                  "Tool Repairs",
+                  "Franchising",
+                  "TradeTools Member Program",
+                  "Renegade Project Bike",
+                  "Spare Parts Request",
+                  "Tradio",
+                ].map((item) => (
+                  <Link
+                    key={item}
+                    href="#"
+                    className="hover:text-secondary transition-colors duration-200"
+                  >
+                    {item}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+
+            {/* Store Information Column */}
+            <div className="space-y-2">
+              <h4 className="text-base font-semibold mb-3">
+                Store Information
+              </h4>
+              <nav className="grid gap-2 text-xs">
+                {[
+                  "Store Listing",
+                  "Store Locator",
+                  "Contact Us",
+                  "Payment Options",
+                  "2 Hour Tool Delivery",
+                  "Information and Recalls",
+                ].map((item) => (
+                  <Link
+                    key={item}
+                    href="#"
+                    className="hover:text-secondary transition-colors duration-200"
+                  >
+                    {item}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+
+            {/* Policies Column */}
+            <div className="space-y-2">
+              <h4 className="text-base font-semibold mb-3">Policies</h4>
+              <nav className="grid gap-2 text-xs">
+                {[
+                  "Privacy Policy",
+                  "Copyright Statement",
+                  "Notice and Disclaimers",
+                  "Member Terms and Conditions",
+                  "Social Terms and Conditions",
+                  "Returns Policy",
+                  "Shipping and Freight",
+                  "Warranty Overview and Policy",
+                ].map((item) => (
+                  <Link
+                    key={item}
+                    href="#"
+                    className="hover:text-secondary transition-colors duration-200"
+                  >
+                    {item}
+                  </Link>
+                ))}
+              </nav>
+            </div>
           </div>
 
-          <div className="grid gap-2 text-xs">
-            <h4 className=" text-base  font-semibold">Store Information</h4>
-            <Link href="#" className="  hover:text-gray-400  ">
-              Store Listing
-            </Link>
-            <Link href="#" className=" hover:text-gray-400">
-              Store Locator
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Contact Us
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Payment Options
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              2 Hour Tool Delivery
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Information and Recalls
-            </Link>
+          {/* Copyright Section */}
+          <div className="text-primary-foreground/60">
+            <hr className="my-8 md:my-10 border-primary-foreground/20" />
+            <p className="text-xs text-center md:text-left">
+              Copyright © City Spark 2024
+            </p>
           </div>
-          <div className="grid gap-2 text-xs">
-            <h4 className=" text-base  font-semibold">Policies</h4>
-            <Link href="#" className="  hover:text-gray-400  ">
-              Privacy Policy
-            </Link>
-            <Link href="#" className=" hover:text-gray-400">
-              Copyright Statement
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Notice and Disclaimers
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Member Terms and Conditions
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Social Terms and Conditions
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Returns Policy
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Shipping and Freight
-            </Link>
-            <Link href="#" className="hover:text-gray-400">
-              Warranty Overview and Policy
-            </Link>
-          </div>
-        </div>
-        <div className="text-gray-600">
-          <hr className="my-10 border-gray-600" />
-          <p className="ml-14">Copyright © City Spark 2024</p>
         </div>
       </div>
     </footer>

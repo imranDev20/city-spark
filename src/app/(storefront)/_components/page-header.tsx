@@ -9,7 +9,7 @@ interface PageHeaderProps {
 
 const PageHeader: React.FC<PageHeaderProps> = ({ title, breadcrumbItems }) => {
   return (
-    <section className="bg-primary py-8">
+    <section className="hidden lg:block bg-primary py-8">
       <div className="container mx-auto max-w-screen-xl">
         <DynamicBreadcrumb items={breadcrumbItems} />
         <h1 className="text-white text-4xl font-bold mt-4">{title}</h1>

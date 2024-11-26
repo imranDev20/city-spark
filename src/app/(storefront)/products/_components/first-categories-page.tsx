@@ -12,10 +12,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import CategoryLink from "./category-link";
+import { cn } from "@/lib/utils";
+import MobileBottomBar from "../../_components/mobile-bottom-bar";
 
 type PrimaryCagoryWithChilds = Prisma.CategoryGetPayload<{
   include: {
@@ -40,12 +41,19 @@ export default async function FirstCategoriesPage() {
     <main className="min-h-screen flex flex-col">
       <PageHeader breadcrumbItems={bredcrumbItems} title="Products" />
 
-      <section className="flex-grow mt-10 container max-w-screen-xl">
-        <div className="grid grid-cols-12 gap-4 h-full">
-          <aside className="col-span-3">
+      <section
+        className={cn(
+          "flex-grow mx-auto my-5 lg:my-10",
+          "container max-w-screen-xl",
+          "px-4 md:px-6 lg:px-8"
+        )}
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-full">
+          {/* Sidebar - hidden on mobile */}
+          <aside className="hidden lg:block lg:col-span-3">
             <div className="sticky top-20">
-              <Card className="shadow-none border-gray-350">
-                <CardHeader>
+              <Card className="border-gray-300 rounded-xl overflow-hidden hover:shadow-sm transition-all duration-300">
+                <CardHeader className="pb-3">
                   <CardTitle>Categories</CardTitle>
                 </CardHeader>
                 <Separator />
@@ -60,7 +68,7 @@ export default async function FirstCategoriesPage() {
                           key={category.id}
                         >
                           <AccordionItem value={`category-${category.id}`}>
-                            <AccordionTrigger className="font-normal hover:no-underline">
+                            <AccordionTrigger className="font-normal hover:no-underline text-sm lg:text-base">
                               {category.name}
                             </AccordionTrigger>
                             <AccordionContent className="py-0">
@@ -106,8 +114,12 @@ export default async function FirstCategoriesPage() {
             </div>
           </aside>
 
-          <div className="col-span-9">
-            <div className="grid grid-cols-3 gap-4 auto-rows-fr">
+          {/* Main content - full width on mobile, adjusted columns */}
+          <div className="col-span-1 lg:col-span-9">
+            <h2 className="text-xl font-semibold mb-4 lg:hidden">
+              All Categories
+            </h2>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 auto-rows-fr">
               {categories.map((category) => (
                 <div key={category.id} className="h-full">
                   <Link
@@ -128,6 +140,8 @@ export default async function FirstCategoriesPage() {
           </div>
         </div>
       </section>
+
+      <MobileBottomBar isShowInProductPage />
     </main>
   );
 }

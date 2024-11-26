@@ -47,16 +47,7 @@ export async function createCategory(data: CategoryFormInputType) {
       }
     );
 
-    revalidatePath("/admin/categories");
-    revalidatePath("/admin/categories/new");
-    revalidatePath(`/admin/categories/${result.id}`);
-    revalidatePath("/admin/categories/[category_id]", "page");
-    revalidatePath("/admin/products/[product_id]", "page");
-    revalidatePath("/admin/products");
-
-    revalidatePath("/products/[[...product_id]]", "page");
-    revalidatePath("/");
-    revalidatePath("/products");
+    revalidatePath("/", "layout");
 
     return {
       message: "Category created successfully!",
@@ -243,16 +234,7 @@ export async function updateCategory(
       }
     );
 
-    revalidatePath("/admin/categories");
-    revalidatePath("/admin/categories/new");
-    revalidatePath(`/admin/categories/${result.id}`);
-    revalidatePath("/admin/categories/[category_id]", "page");
-    revalidatePath("/admin/products/[product_id]", "page");
-    revalidatePath("/admin/products");
-
-    revalidatePath("/products/[[...product_id]]", "page");
-    revalidatePath("/");
-    revalidatePath("/products");
+    revalidatePath("/", "layout");
 
     return {
       message: "Category updated successfully!",
@@ -319,16 +301,7 @@ export async function deleteCategory(categoryId: string) {
       }
     );
 
-    // Revalidate paths
-    revalidatePath("/admin/categories");
-    revalidatePath("/admin/categories/new");
-    revalidatePath(`/admin/categories/${result.id}`);
-    revalidatePath("/admin/categories/[category_id]", "page");
-    revalidatePath("/admin/products/[product_id]", "page");
-    revalidatePath("/admin/products");
-    revalidatePath("/products/[[...product_id]]", "page");
-    revalidatePath("/");
-    revalidatePath("/products");
+    revalidatePath("/", "layout");
 
     return {
       message: "Category deleted successfully!",

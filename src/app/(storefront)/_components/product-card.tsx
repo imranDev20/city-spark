@@ -5,18 +5,19 @@ import Image from "next/image";
 import PlaceholderImage from "@/images/placeholder-image.jpg";
 import { Button } from "@/components/ui/button";
 import { Prisma } from "@prisma/client";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { addToCart } from "../products/actions";
 import { useToast } from "@/components/ui/use-toast";
-import { useTransition } from "react";
-import { useState } from "react";
+import { useTransition, useState, useEffect } from "react";
 import Link from "next/link";
 import { customSlugify } from "@/lib/functions";
 
+// Types remain the same...
 type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
   include: {
     product: {
       include: {
+        brand: true;
         primaryCategory: true;
         secondaryCategory: true;
         tertiaryCategory: true;
@@ -26,25 +27,181 @@ type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
   };
 }>;
 
-const StarRating = ({ rating }: { rating: number }) => {
+const StarRating = ({ rating }: { rating: number }) => (
+  <div className="flex items-center">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <Star
+        key={star}
+        className={`w-3 sm:w-4 h-3 sm:h-4 ${
+          rating >= star ? "text-secondary fill-secondary" : "text-gray-200"
+        }`}
+      />
+    ))}
+    <span className="ml-1 sm:ml-2 text-xs sm:text-sm font-medium">
+      {rating.toFixed(1)}/5
+    </span>
+  </div>
+);
+
+const ProductImage = ({ images }: { images: string[] }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const validImages = images.filter(Boolean);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isHovered && validImages.length > 1) {
+      interval = setInterval(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % validImages.length);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isHovered, validImages.length]);
+
   return (
-    <div className="flex items-center">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Star
-          key={star}
-          className={`w-4 h-4 ${
-            rating >= star
-              ? "text-green-450 fill-green-450"
-              : rating > star - 1
-              ? "text-green-450 fill-green-450 half-filled"
-              : "text-green-450"
-          }`}
+    <div className="relative bg-white">
+      {/* Mobile: Static image */}
+      <div className="sm:hidden relative h-32 p-4">
+        <Image
+          src={validImages[0] || PlaceholderImage}
+          fill
+          alt="Product Image"
+          className="object-contain"
+          sizes="100vw"
+          priority={true}
         />
-      ))}
-      <span className="text-sm text-gray-600 ml-1">{rating.toFixed(1)}</span>
+      </div>
+
+      {/* Desktop: Interactive carousel */}
+      <div
+        className="hidden sm:block relative h-48 md:h-56 lg:h-64 p-6"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          setCurrentImageIndex(0);
+        }}
+      >
+        <Image
+          src={validImages[currentImageIndex] || PlaceholderImage}
+          fill
+          alt="Product Image"
+          className="object-contain transition-all duration-300 group-hover:scale-105"
+          sizes="(min-width: 1024px) 33vw, 50vw"
+        />
+        {validImages.length > 1 && (
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+            {validImages.map((_, index) => (
+              <div
+                key={index}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  index === currentImageIndex
+                    ? "w-4 bg-primary"
+                    : "w-1.5 bg-gray-300"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
+
+// Interactive carousel for desktop
+const DesktopImageCarousel = ({ images }: { images: string[] }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const validImages = images.filter(Boolean);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isHovered && validImages.length > 1) {
+      interval = setInterval(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % validImages.length);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isHovered, validImages.length]);
+
+  return (
+    <div
+      className="relative h-48 md:h-56 lg:h-64 bg-white p-6"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        setCurrentImageIndex(0);
+      }}
+    >
+      <Image
+        src={validImages[currentImageIndex] || PlaceholderImage}
+        fill
+        alt="Product Image"
+        className="object-contain transition-all duration-300 group-hover:scale-105"
+        sizes="(min-width: 641px) 50vw, 33vw"
+      />
+      {validImages.length > 1 && (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+          {validImages.map((_, index) => (
+            <div
+              key={index}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                index === currentImageIndex
+                  ? "w-4 bg-primary"
+                  : "w-1.5 bg-gray-300"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const QuantitySelector = ({
+  quantity,
+  onQuantityChange,
+  disabled,
+}: {
+  quantity: number;
+  onQuantityChange: (quantity: number) => void;
+  disabled: boolean;
+}) => (
+  <div className="flex w-full mb-2">
+    <div className="flex w-full bg-gray-100 rounded-lg overflow-hidden">
+      <button
+        onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
+        disabled={disabled || quantity <= 1}
+        className="w-10 md:w-12 h-8 md:h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        aria-label="Decrease quantity"
+      >
+        <span className="text-lg font-medium text-gray-600">−</span>
+      </button>
+
+      <div className="flex-1 relative">
+        <input
+          type="number"
+          value={quantity}
+          onChange={(e) =>
+            onQuantityChange(Math.max(1, parseInt(e.target.value) || 1))
+          }
+          className="w-full h-full text-center bg-transparent border-none spinner-none focus:outline-none text-sm md:text-base font-medium"
+          min="1"
+          disabled={disabled}
+          aria-label="Quantity"
+        />
+      </div>
+
+      <button
+        onClick={() => onQuantityChange(quantity + 1)}
+        disabled={disabled}
+        className="w-10 md:w-12 h-8 md:h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        aria-label="Increase quantity"
+      >
+        <span className="text-lg font-medium text-gray-600">+</span>
+      </button>
+    </div>
+  </div>
+);
 
 export default function ProductCard({
   inventoryItem,
@@ -55,8 +212,8 @@ export default function ProductCard({
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [quantity, setQuantity] = useState(1);
-
   const rating = 4.5;
+  const availableStock = inventoryItem.stockCount - inventoryItem.heldCount;
 
   const handleAddToCart = async (
     e: React.MouseEvent,
@@ -66,141 +223,123 @@ export default function ProductCard({
     e.stopPropagation();
     startTransition(async () => {
       const result = await addToCart(id, quantity, type);
-
       if (result?.success) {
         toast({
-          title: "Cart Updated",
+          title: "Added to Cart",
           description: result.message,
           variant: "success",
         });
       } else {
         toast({
-          title: "Cart Update failed",
+          title: "Error",
           description: result?.message,
           variant: "destructive",
         });
       }
     });
-
     setQuantity(1);
-  };
-
-  const handleQuantityChange = (newValue: number) => {
-    setQuantity(newValue);
-  };
-
-  const getCollectionAvailabilityMessage = () => {
-    if (!inventoryItem.collectionEligibility) {
-      return "Not available for collection";
-    } else if (
-      inventoryItem.collectionAvailabilityTime?.toLowerCase() === "today"
-    ) {
-      return "Available for collection today";
-    } else if (
-      inventoryItem.collectionAvailabilityTime?.toLowerCase() === "tomorrow"
-    ) {
-      return "Available for collection tomorrow";
-    } else {
-      return `Available for collection in ${inventoryItem.collectionAvailabilityTime}`;
-    }
-  };
-
-  const getDeliveryAvailabilityMessage = () => {
-    if (!inventoryItem.deliveryEligibility) {
-      return "Not available for delivery";
-    } else {
-      return `${inventoryItem.stockCount} available for delivery in ${inventoryItem.maxDeliveryTime}`;
-    }
   };
 
   const productUrl = `/products/p/${customSlugify(product.name)}/p/${id}`;
 
   return (
-    <Card className="border-gray-350 transition-shadow duration-300 h-full flex flex-col shadow-none">
-      <Link href={productUrl} className="flex-grow cursor-pointer">
-        <CardHeader className="pb-0">
-          <div className="relative h-48 mb-2">
-            <Image
-              src={product.images?.[0] || PlaceholderImage}
-              fill
-              alt={product.name}
-              style={{ objectFit: "contain" }}
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="rounded-t-lg"
-            />
-          </div>
-        </CardHeader>
-        <CardContent className="px-5 pb-5 flex-1 flex flex-col justify-between">
-          <div className="flex-1">
+    <Card className="shadow-none lg:shadow-md group h-full flex flex-col bg-white border-gray-300 rounded-xl overflow-hidden lg:hover:shadow-lg transition-all duration-300 relative">
+      <Link href={productUrl} className="contents">
+        <ProductImage images={product.images || []} />
+
+        {product.promotionalPrice &&
+          product.tradePrice &&
+          product.promotionalPrice < product.tradePrice && (
+            <div className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-primary text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium">
+              Save{" "}
+              {Math.round(
+                ((product.tradePrice - product.promotionalPrice) /
+                  product.tradePrice) *
+                  100
+              )}
+              %
+            </div>
+          )}
+
+        {/* Rest of the component remains the same */}
+        <div className="flex flex-col p-2 sm:p-4">
+          <div className="space-y-1 sm:space-y-2 mb-2 sm:mb-4">
+            <div className="text-xs sm:text-sm font-medium text-primary hidden sm:block">
+              {product.brand?.name ||
+                product.primaryCategory?.name ||
+                "Category"}
+            </div>
             <StarRating rating={rating} />
-            <h3 className="font-medium leading-snug mt-2 mb-1 text-gray-800 h-20">
+
+            <h3 className="font-medium text-gray-900 text-sm sm:text-base line-clamp-3 min-h-[2.5rem]">
               {product.name}
             </h3>
           </div>
 
-          <div className="text-2xl text-primary font-bold my-3">
-            £{product.promotionalPrice?.toFixed(2) || "0.00"}
-            <span className="text-sm text-gray-500 font-normal ml-1">
-              inc. VAT
+          <div className="flex items-baseline">
+            <span className=" sm:text-2xl font-bold text-gray-900">
+              £{product.promotionalPrice?.toFixed(2)}
             </span>
+            {product.tradePrice &&
+              product.tradePrice > product.promotionalPrice! && (
+                <span className="ml-1 sm:ml-2 text-xs sm:text-sm text-gray-500 line-through">
+                  £{product.tradePrice.toFixed(2)}
+                </span>
+              )}
           </div>
-        </CardContent>
+        </div>
       </Link>
 
-      <div className="px-5 pb-5" onClick={(e) => e.stopPropagation()}>
-        <div className="flex justify-between bg-gray-200 my-2 rounded-md text-lg relative overflow-hidden">
-          <button
-            onClick={() => handleQuantityChange(Math.max(1, quantity - 1))}
-            disabled={isPending || quantity <= 1}
-            className="absolute top-0 left-0 h-full px-4 flex items-center justify-center transition-colors duration-200 ease-in-out hover:bg-gray-300 active:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-200"
-          >
-            <span className="text-gray-600 font-medium select-none">-</span>
-          </button>
-          <input
-            className="appearance-none border-none text-center bg-transparent focus:outline-none py-1 spinner-none flex-1 font-medium"
-            type="number"
-            min={1}
-            value={quantity}
-            onChange={(e) => handleQuantityChange(parseInt(e.target.value))}
-            style={{
-              appearance: "textfield",
-            }}
-          />
-          <button
-            onClick={() => handleQuantityChange(quantity + 1)}
-            disabled={isPending}
-            className="absolute top-0 right-0 h-full px-4 flex items-center justify-center transition-colors duration-200 ease-in-out hover:bg-gray-300 active:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-200"
-          >
-            <span className="text-gray-600 font-medium select-none">+</span>
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 mt-4">
-          <div className="flex flex-col">
-            <Button
-              variant="secondary"
-              className="flex items-center justify-center"
-              onClick={(e) => handleAddToCart(e, "FOR_COLLECTION")}
-              disabled={isPending || !inventoryItem.collectionEligibility}
-            >
-              <Store className="mr-2 h-4 w-4" /> Collection
-            </Button>
-            <p className="text-xs mt-1 text-gray-600 text-center">
-              {getCollectionAvailabilityMessage()}
-            </p>
+      <div className="px-2 sm:px-4 pb-2 sm:pb-4 mt-auto">
+        <div className="space-y-2 sm:space-y-4">
+          <div className="space-y-2">
+            <QuantitySelector
+              quantity={quantity}
+              onQuantityChange={(newQuantity) => {
+                setQuantity(Math.min(newQuantity, availableStock * 2));
+              }}
+              disabled={isPending}
+            />
+            <div className="grid grid-cols-2 gap-1 sm:gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="w-full px-2 h-7 sm:h-8 text-xs sm:text-sm"
+                onClick={(e) => handleAddToCart(e, "FOR_COLLECTION")}
+                disabled={isPending || !inventoryItem.collectionEligibility}
+              >
+                <Store className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4 hidden sm:inline-block" />
+                Collect
+              </Button>
+              <Button
+                size="sm"
+                className="w-full px-2 h-7 sm:h-8 text-xs sm:text-sm"
+                onClick={(e) => handleAddToCart(e, "FOR_DELIVERY")}
+                disabled={isPending || !inventoryItem.deliveryEligibility}
+              >
+                <Truck className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4 hidden sm:inline-block" />
+                Deliver
+              </Button>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <Button
-              variant="default"
-              className="flex items-center justify-center"
-              onClick={(e) => handleAddToCart(e, "FOR_DELIVERY")}
-              disabled={isPending || !inventoryItem.deliveryEligibility}
-            >
-              <Truck className="mr-2 h-4 w-4" /> Delivery
-            </Button>
-            <p className="text-xs mt-1 text-gray-600 text-center">
-              {getDeliveryAvailabilityMessage()}
-            </p>
+
+          <div className="flex items-center justify-between text-xs sm:text-sm">
+            <div className="hidden sm:flex items-center text-emerald-600">
+              {availableStock > 0 ? (
+                <>
+                  <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-emerald-600 mr-1 sm:mr-2" />
+                  In Stock
+                </>
+              ) : (
+                <>
+                  <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-gray-300 mr-1 sm:mr-2" />
+                  Out of Stock
+                </>
+              )}
+            </div>
+            <div className="text-gray-600 text-xs hidden lg:block">
+              {availableStock} available
+            </div>
           </div>
         </div>
       </div>

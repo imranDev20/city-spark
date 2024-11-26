@@ -1,31 +1,135 @@
 "use client";
 
 import bannerImage1 from "@/images/banners.jpg";
+import mobileNavImage1 from "@/images/mobile-nav-image.jpg";
+import { cn } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
 
-export default function HeroCarousel() {
-  const [emblaRef] = useEmblaCarousel({ loop: true }, [Autoplay()]);
-  const content = [
-    {
-      image: bannerImage1,
-    },
-    {
-      image: bannerImage1,
-    },
-    // implement here more image as need
-  ];
+const CarouselContent = ({
+  content,
+  className,
+  showNavButtons = false,
+}: {
+  content: { image: any }[];
+  className?: string;
+  showNavButtons?: boolean;
+}) => {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
+    Autoplay({ delay: 5000 }),
+  ]);
+
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+
+    onSelect();
+    emblaApi.on("select", onSelect);
+
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
+  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
+  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   return (
-    <div ref={emblaRef} className="overflow-hidden">
-      <div className="flex">
-        {content.map((item, index) => (
-          <div key={index} className="flex-[0_0_100%] min-w-0">
-            <Image src={item.image} alt="bannerImage" />
-          </div>
+    <div className={cn("relative group", className)}>
+      <div ref={emblaRef} className="overflow-hidden">
+        <div className="flex">
+          {content.map((item, index) => (
+            <div key={index} className="flex-[0_0_100%] min-w-0 relative">
+              <Image
+                src={item.image}
+                alt={`Banner ${index + 1}`}
+                style={{
+                  objectFit: "contain",
+                }}
+                priority={index === 0}
+                sizes="100vw"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Navigation Buttons - Only show on desktop */}
+      {showNavButtons && (
+        <>
+          <button
+            onClick={scrollPrev}
+            className={cn(
+              "absolute left-4 top-1/2 -translate-y-1/2",
+              "bg-white/80 hover:bg-white rounded-full p-2",
+              "transition-all duration-200",
+              "opacity-0 group-hover:opacity-100",
+              "shadow-lg hover:shadow-xl"
+            )}
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="h-6 w-6 text-gray-800" />
+          </button>
+          <button
+            onClick={scrollNext}
+            className={cn(
+              "absolute right-4 top-1/2 -translate-y-1/2",
+              "bg-white/80 hover:bg-white rounded-full p-2",
+              "transition-all duration-200",
+              "opacity-0 group-hover:opacity-100",
+              "shadow-lg hover:shadow-xl"
+            )}
+            aria-label="Next slide"
+          >
+            <ChevronRight className="h-6 w-6 text-gray-800" />
+          </button>
+        </>
+      )}
+
+      {/* Circular Dot Navigation */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+        {content.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => emblaApi?.scrollTo(index)}
+            className={cn(
+              "w-2.5 h-2.5 rounded-full transition-all duration-300",
+              "hover:bg-white/80",
+              selectedIndex === index ? "bg-white scale-110" : "bg-white/50"
+            )}
+            aria-label={`Go to slide ${index + 1}`}
+          />
         ))}
       </div>
     </div>
+  );
+};
+
+export default function HeroCarousel() {
+  const desktopContent = [{ image: bannerImage1 }, { image: bannerImage1 }];
+
+  const mobileContent = [
+    { image: mobileNavImage1 },
+    { image: mobileNavImage1 },
+  ];
+
+  return (
+    <>
+      <CarouselContent
+        content={desktopContent}
+        className="hidden lg:block"
+        showNavButtons={true}
+      />
+      <CarouselContent content={mobileContent} className="lg:hidden mt-5" />
+    </>
   );
 }

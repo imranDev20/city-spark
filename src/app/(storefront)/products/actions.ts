@@ -25,11 +25,13 @@ export async function getCategoriesByType(
               where: { type: CategoryType.SECONDARY },
               orderBy: { name: "asc" },
               include: {
+                parentPrimaryCategory: true,
                 secondaryChildCategories: {
                   where: { type: CategoryType.TERTIARY },
                   orderBy: { name: "asc" },
-
                   include: {
+                    parentPrimaryCategory: true,
+                    parentSecondaryCategory: true,
                     tertiaryChildCategories: {
                       where: { type: CategoryType.QUATERNARY },
                       orderBy: { name: "asc" },
@@ -130,6 +132,136 @@ export async function getCategoriesByType(
       success: false,
       error: `Failed to fetch ${type} categories`,
     };
+  }
+}
+
+export async function getCategoryById(categoryId: string) {
+  try {
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+      include: {
+        parentPrimaryCategory: true,
+        parentSecondaryCategory: true,
+        parentTertiaryCategory: true,
+      },
+    });
+
+    if (!category) {
+      throw new Error("Category not found");
+    }
+
+    return category;
+  } catch (error) {
+    console.error("Error fetching category:", error);
+    throw error;
+  }
+}
+
+type FilterOption = {
+  id: string;
+  name: string;
+  options: string[];
+};
+
+export async function getProductFilterOptions(): Promise<FilterOption[]> {
+  const products = await prisma.product.findMany({
+    include: {
+      productTemplate: {
+        include: {
+          fields: {
+            include: {
+              templateField: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const filterOptions: Record<string, Set<string>> = {};
+
+  // Process standard fields
+  const standardFields = [
+    "material",
+    "color",
+    "shape",
+    "unit",
+    "warranty",
+    "guarantee",
+  ];
+
+  products.forEach((product) => {
+    standardFields.forEach((field) => {
+      const value = product[field as keyof typeof product];
+      if (typeof value === "string" && value.trim() !== "") {
+        if (!filterOptions[field]) {
+          filterOptions[field] = new Set();
+        }
+        filterOptions[field].add(value);
+      }
+    });
+
+    // Process numeric fields
+    ["width", "height", "length", "weight", "volume"].forEach((field) => {
+      const value = product[field as keyof typeof product];
+      if (typeof value === "number") {
+        const roundedValue = Math.round(value * 100) / 100; // Round to 2 decimal places
+        if (!filterOptions[field]) {
+          filterOptions[field] = new Set();
+        }
+        filterOptions[field].add(roundedValue.toString());
+      }
+    });
+
+    // Process product template fields
+    product.productTemplate?.fields.forEach((field) => {
+      const fieldName = field.templateField.fieldName;
+      const fieldValue = field.fieldValue;
+      if (fieldValue && fieldValue.trim() !== "") {
+        if (!filterOptions[fieldName]) {
+          filterOptions[fieldName] = new Set();
+        }
+        filterOptions[fieldName].add(fieldValue);
+      }
+    });
+  });
+
+  // Convert to array format
+  const result: FilterOption[] = Object.entries(filterOptions).map(
+    ([name, options]) => ({
+      id: name.toLowerCase().replace(/\s+/g, "-"),
+      name,
+      options: Array.from(options).sort(),
+    })
+  );
+
+  return result;
+}
+
+export async function getBrands() {
+  try {
+    const brands = await prisma.brand.findMany({
+      take: 5,
+      orderBy: {
+        name: "asc",
+      },
+      select: {
+        id: true,
+        name: true,
+        _count: {
+          select: { products: true },
+        },
+      },
+    });
+
+    return brands.map((brand) => ({
+      id: brand.id,
+      name: brand.name,
+      count: brand._count.products,
+    }));
+  } catch (error) {
+    console.error("Error fetching brands:", error);
+    return [];
   }
 }
 
@@ -463,31 +595,6 @@ export async function searchProducts(searchTerm: string) {
     return products;
   } catch (error) {
     console.error("Error searching products:", error);
-    throw error;
-  }
-}
-
-export async function getSearchSuggestions(searchTerm: string) {
-  try {
-    const suggestions = await prisma.product.findMany({
-      where: {
-        OR: [
-          { name: { contains: searchTerm, mode: "insensitive" } },
-          { description: { contains: searchTerm, mode: "insensitive" } },
-        ],
-      },
-      select: {
-        id: true,
-        name: true,
-        images: true,
-        tradePrice: true,
-      },
-      take: 5, // Limit to 5 suggestions
-    });
-
-    return suggestions;
-  } catch (error) {
-    console.error("Error fetching search suggestions:", error);
     throw error;
   }
 }

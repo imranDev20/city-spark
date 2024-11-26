@@ -4,9 +4,9 @@ generator client {
 }
 
 datasource db {
-    provider  = "postgresql"
-    url       = env("DATABASE_URL")
-    directUrl = env("DIRECT_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+    // directUrl = env("DIRECT_URL")
 }
 
 enum CategoryType {
@@ -350,14 +350,14 @@ model Address {
     user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     addressLine1      String
     addressLine2      String?
-    city              String
-    state             String
-    postalCode        String
-    country           String
+    city              String // Often referred to as 'town' in the UK
+    county            String? // Optional in the UK
+    postcode          String // UK equivalent of 'postal code'
+    country           String   @default("United Kingdom")
     isBilling         Boolean  @default(false)
     isShipping        Boolean  @default(false)
-    isDefaultBilling  Boolean  @default(false)
-    isDefaultShipping Boolean  @default(false)
+    isDefaultBilling  Boolean? @default(false)
+    isDefaultShipping Boolean? @default(false)
     createdAt         DateTime @default(now())
     updatedAt         DateTime @updatedAt
 }

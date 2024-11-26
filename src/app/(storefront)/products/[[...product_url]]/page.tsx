@@ -4,8 +4,10 @@ import SecondCategoriesPage from "../_components/second-categories-page";
 import ThirdCategoriesPage from "../_components/third-categories-page";
 import FourthCategoriesPage from "../_components/fourth-categories-page";
 import StorefrontProductList from "../_components/storefront-product-list";
-import ProductDetails from "../_components/product-details";
+import StorefrontProductDetails from "../_components/storefront-product-details";
 import { getInventoryItem } from "../../actions";
+import ProductActionBar from "../_components/product-action-bar";
+import MobileBottomBar from "../../_components/mobile-bottom-bar";
 
 const getCategoryFromUrl = (product_url: string[] | undefined): string[] => {
   if (!product_url || !Array.isArray(product_url)) {
@@ -25,7 +27,7 @@ const getCategoryFromUrl = (product_url: string[] | undefined): string[] => {
 
 export default async function StorefrontProductsPage({
   params: { product_url },
-  searchParams: { p_id, s_id, t_id, q_id },
+  searchParams: { p_id, s_id, t_id, q_id, search },
 }: {
   params: {
     product_url?: string[];
@@ -35,6 +37,7 @@ export default async function StorefrontProductsPage({
     s_id?: string;
     t_id?: string;
     q_id?: string;
+    search?: string;
   };
 }) {
   const result = getCategoryFromUrl(product_url);
@@ -49,27 +52,32 @@ export default async function StorefrontProductsPage({
     const inventoryItemId = product_url[3];
     const inventoryItem = await getInventoryItem(inventoryItemId);
 
-    return <ProductDetails inventoryItem={inventoryItem} />;
+    return <StorefrontProductDetails inventoryItem={inventoryItem} />;
+  }
+
+  // Check if there's a search query
+  if (search) {
+    return <StorefrontProductList isSearch search={search} />;
   }
 
   if (result?.length === 4) {
-    console.log("lengh -4 ");
     return (
-      <StorefrontProductList
-        isPrimaryRequired
-        isSecondaryRequired
-        isTertiaryRequired
-        isQuaternaryRequired
-        primaryCategoryId={p_id}
-        secondaryCategoryId={s_id}
-        tertiaryCategoryId={t_id}
-        quaternaryCategoryId={q_id}
-      />
+      <>
+        <StorefrontProductList
+          isPrimaryRequired
+          isSecondaryRequired
+          isTertiaryRequired
+          isQuaternaryRequired
+          primaryCategoryId={p_id}
+          secondaryCategoryId={s_id}
+          tertiaryCategoryId={t_id}
+          quaternaryCategoryId={q_id}
+        />
+      </>
     );
   }
 
   if (result?.length === 3) {
-    console.log("lengh - 3");
     return (
       <FourthCategoriesPage
         primaryId={p_id}
@@ -80,19 +88,14 @@ export default async function StorefrontProductsPage({
   }
 
   if (result?.length === 2) {
-    console.log("lengh - 2");
-
     return <ThirdCategoriesPage primaryId={p_id} secondaryId={s_id} />;
   }
 
   if (result?.length === 1) {
-    console.log("lengh - 1");
     return <SecondCategoriesPage primaryId={p_id} />;
   }
 
   if (!product_url || product_url.length === 0) {
-    console.log("lengh -0");
-
     return <FirstCategoriesPage />;
   }
 
