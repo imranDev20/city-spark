@@ -1,21 +1,22 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Package2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { fetchProducts, FetchProductsParams } from "@/services/admin-products";
 import SwipeableProductCard from "./swipeable-product-card";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
 
 export default function MobileProductList() {
   const router = useRouter();
   const { toast } = useToast();
   const searchParams = useSearchParams();
+  const observerTarget = useRef<HTMLDivElement>(null);
 
-  const currentParams: FetchProductsParams = {
-    page: searchParams.get("page") || "1",
+  const currentParams: Omit<FetchProductsParams, "page"> = {
     pageSize: "10",
     search: searchParams.get("search") || "",
     sort_by: searchParams.get("sort_by") || "updatedAt",
@@ -25,14 +26,56 @@ export default function MobileProductList() {
     filter_status: searchParams.get("filter_status") || "",
   };
 
-  const { data, isLoading, isError } = useQuery({
+  const {
+    data,
+    isLoading,
+    isError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useInfiniteQuery({
     queryKey: ["products", currentParams],
-    queryFn: () => fetchProducts(currentParams),
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await fetchProducts({
+        ...currentParams,
+        page: pageParam.toString(),
+      });
+      return response;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.pagination.currentPage < lastPage.pagination.totalPages) {
+        return lastPage.pagination.currentPage + 1;
+      }
+      return undefined;
+    },
   });
 
-  const handleEdit = (productId: string) => {
-    router.push(`/admin/products/${productId}/edit`);
-  };
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    },
+    [fetchNextPage, hasNextPage, isFetchingNextPage]
+  );
+
+  useEffect(() => {
+    const element = observerTarget.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(handleObserver, {
+      threshold: 0.5,
+    });
+
+    observer.observe(element);
+
+    return () => {
+      if (element) observer.unobserve(element);
+    };
+  }, [handleObserver]);
 
   const handleDelete = (productId: string) => {
     toast({
@@ -52,13 +95,16 @@ export default function MobileProductList() {
 
   if (isError) {
     return (
-      <div className="flex items-center justify-center min-h-[400px] text-red-500">
-        Error loading products. Please try again later.
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-gray-500">
+        <p className="text-red-500 mb-4">Error loading products</p>
+        <Button onClick={() => refetch()} variant="outline">
+          Try Again
+        </Button>
       </div>
     );
   }
 
-  if (!data || !data.products.length) {
+  if (!data || !data.pages[0].products.length) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-gray-500">
         <Package2 className="h-12 w-12 mb-4" />
@@ -68,15 +114,33 @@ export default function MobileProductList() {
   }
 
   return (
-    <div className="grid gap-2">
-      {data.products.map((product) => (
-        <SwipeableProductCard
-          key={product.id}
-          product={product}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+    <div className="grid lg:hidden gap-2 pb-[72px]">
+      {" "}
+      {/* Added padding bottom to account for fixed bar */}
+      {data.pages.map((page, i) => (
+        <React.Fragment key={i}>
+          {page.products.map((product) => (
+            <SwipeableProductCard
+              key={product.id}
+              product={product}
+              onDelete={handleDelete}
+            />
+          ))}
+        </React.Fragment>
       ))}
+      <div ref={observerTarget} className="flex justify-center py-6 mb-6">
+        {" "}
+        {/* Increased padding and margin */}
+        {isFetchingNextPage ? (
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        ) : hasNextPage ? (
+          <span className="text-sm text-muted-foreground">Loading more...</span>
+        ) : (
+          <span className="text-sm text-muted-foreground">
+            No more products
+          </span>
+        )}
+      </div>
     </div>
   );
 }

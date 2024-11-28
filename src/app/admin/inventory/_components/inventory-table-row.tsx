@@ -18,7 +18,7 @@ import { Edit, MoreHorizontal, Link as LinkIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { updateInventoryStock } from "../actions";
-import PlaceholderImage from "@/images/placeholder-image.jpg";
+import PlaceholderImage from "@/images/placeholder-image.png";
 
 export type InventoryWithRelations = Prisma.InventoryGetPayload<{
   include: {

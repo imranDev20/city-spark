@@ -59,7 +59,7 @@ import { useEdgeStore } from "@/lib/edgestore";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
@@ -108,6 +108,7 @@ export default function ProductForm({
   const [openQuaternary, setOpenQuaternary] = useState(false);
   const [openTemplates, setOpenTemplates] = useState(false);
   const [openBrands, setOpenBrands] = useState(false);
+  const queryClient = useQueryClient();
 
   const { toast } = useToast();
 
@@ -341,6 +342,8 @@ export default function ProductForm({
         }
 
         if (result.success) {
+          await queryClient.invalidateQueries({ queryKey: ["products"] });
+
           toast({
             title: "Success",
             description: result.message,
@@ -364,6 +367,7 @@ export default function ProductForm({
       }
     });
   };
+
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)}>

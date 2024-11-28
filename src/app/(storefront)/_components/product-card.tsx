@@ -2,7 +2,7 @@
 
 import { Star, Truck, Store } from "lucide-react";
 import Image from "next/image";
-import PlaceholderImage from "@/images/placeholder-image.jpg";
+import PlaceholderImage from "@/images/placeholder-image.png";
 import { Button } from "@/components/ui/button";
 import { Prisma } from "@prisma/client";
 import { Card } from "@/components/ui/card";

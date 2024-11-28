@@ -18,20 +18,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import PlaceholderImage from "@/images/placeholder-image.jpg";
+import PlaceholderImage from "@/images/placeholder-image.png";
 import { deleteUser } from "../actions";
 
 export type UserWithRelations = Prisma.UserGetPayload<{
   include: {
-  addresses:true
+    addresses: true;
   };
 }>;
 
-export default function UserTableRow({
-  user,
-}: {
-  user: UserWithRelations;
-}) {
+export default function UserTableRow({ user }: { user: UserWithRelations }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -88,7 +84,7 @@ export default function UserTableRow({
       </TableCell>
       <TableCell className="font-medium flex-1">{user.firstName}</TableCell>
       <TableCell className="font-medium flex-1">{user.lastName}</TableCell>
-      
+
       <TableCell className="hidden md:table-cell">
         {user.email || "N/A"}
       </TableCell>
@@ -109,7 +105,11 @@ export default function UserTableRow({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem   onClick={() => router.push(`/admin/users/${user.id}`)}>Edit</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => router.push(`/admin/users/${user.id}`)}
+            >
+              Edit
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => {
                 handleDelete(e);
