@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useTransition, useState, useEffect } from "react";
 import Link from "next/link";
 import { customSlugify } from "@/lib/functions";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Types remain the same...
 type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
@@ -214,6 +215,7 @@ export default function ProductCard({
   const [quantity, setQuantity] = useState(1);
   const rating = 4.5;
   const availableStock = inventoryItem.stockCount - inventoryItem.heldCount;
+  const queryClient = useQueryClient();
 
   const handleAddToCart = async (
     e: React.MouseEvent,
@@ -221,9 +223,24 @@ export default function ProductCard({
   ) => {
     e.preventDefault();
     e.stopPropagation();
+
     startTransition(async () => {
       const result = await addToCart(id, quantity, type);
+
       if (result?.success) {
+        await queryClient.invalidateQueries({ queryKey: ["cart"] });
+
+        console.log(
+          "After invalidation - Cart Query State:",
+          queryClient.getQueryData(["cart"])
+        );
+
+        // Wait for the next refetch to complete
+        await queryClient.refetchQueries({
+          queryKey: ["cart"],
+          exact: true,
+        });
+
         toast({
           title: "Added to Cart",
           description: result.message,
