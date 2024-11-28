@@ -9,7 +9,23 @@ import bcrypt from "bcrypt";
 import { getOrCreateSessionId } from "@/lib/session-id";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter: {
+    ...PrismaAdapter(prisma),
+    // Override createUser to match your schema
+    createUser: async (data) => {
+      const user = await prisma.user.create({
+        data: {
+          email: data.email,
+          firstName: data.name?.split(" ")[0] || null, // Split full name into first name
+          lastName: data.name?.split(" ").slice(1).join(" ") || null, // Rest of the name becomes last name
+          avatar: data.image,
+          emailVerified: data.emailVerified,
+          role: "USER", // Set default role
+        },
+      });
+      return user;
+    },
+  },
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -41,14 +57,18 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile, email, credentials }) {
+    async signIn({ user, account, profile }) {
       if (user.id) {
         const sessionId = getOrCreateSessionId();
-        await mergeCartsOnLogin(user.id, sessionId);
+        try {
+          await mergeCartsOnLogin(user.id, sessionId);
+        } catch (error) {
+          console.error("Error merging carts:", error);
+          // Don't block sign in if cart merging fails
+        }
       }
       return true;
     },
-
     async jwt({ token, user, account }) {
       if (user) {
         token.userId = user.id;
@@ -103,51 +123,94 @@ export async function getServerAuthSession() {
   return null;
 }
 
-async function mergeCartsOnLogin(userId: string, sessionId: string) {
-  const [userCart, sessionCart] = await Promise.all([
-    prisma.cart.findFirst({ where: { userId }, include: { cartItems: true } }),
-    prisma.cart.findFirst({
-      where: { sessionId },
-      include: { cartItems: true },
-    }),
-  ]);
+export async function mergeCartsOnLogin(userId: string, sessionId: string) {
+  try {
+    // First check if user exists to prevent foreign key constraint error
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
 
-  if (sessionCart) {
-    if (userCart) {
-      // Merge session cart items into user cart
-      for (const item of sessionCart.cartItems) {
-        const existingItem = userCart.cartItems.find(
-          (i) => i.inventoryId === item.inventoryId && i.type === item.type
-        );
-        if (existingItem) {
-          await prisma.cartItem.update({
-            where: { id: existingItem.id },
-            data: {
-              quantity: (existingItem.quantity ?? 0) + (item.quantity ?? 0),
-            },
-          });
-        } else {
-          await prisma.cartItem.create({
-            data: {
-              ...item,
-              cartId: userCart.id,
-            },
-          });
-        }
-      }
-      // Delete the session cart
-      await prisma.cart.delete({ where: { id: sessionCart.id } });
-    } else {
-      // If no user cart exists, simply update the session cart to be associated with the user
-      await prisma.cart.update({
-        where: { id: sessionCart.id },
-        data: { userId, sessionId: null },
-      });
+    if (!user) {
+      console.error("User not found during cart merge");
+      return;
     }
-  }
 
-  // Recalculate total price for the user's cart
-  await recalculateCartTotal(userId);
+    const [userCart, sessionCart] = await Promise.all([
+      prisma.cart.findFirst({
+        where: { userId },
+        include: { cartItems: true },
+      }),
+      prisma.cart.findFirst({
+        where: { sessionId },
+        include: { cartItems: true },
+      }),
+    ]);
+
+    if (sessionCart) {
+      if (userCart) {
+        // Merge session cart items into user cart
+        for (const item of sessionCart.cartItems) {
+          const existingItem = userCart.cartItems.find(
+            (i) => i.inventoryId === item.inventoryId && i.type === item.type
+          );
+
+          if (existingItem) {
+            // Update existing item
+            await prisma.cartItem.update({
+              where: { id: existingItem.id },
+              data: {
+                quantity: (existingItem.quantity ?? 0) + (item.quantity ?? 0),
+              },
+            });
+          } else {
+            // Create new item in user's cart
+            await prisma.cartItem.create({
+              data: {
+                cartId: userCart.id,
+                inventoryId: item.inventoryId,
+                quantity: item.quantity,
+                type: item.type,
+              },
+            });
+          }
+        }
+        // Delete the session cart after merging
+        await prisma.cart.delete({
+          where: { id: sessionCart.id },
+        });
+      } else {
+        // If no user cart exists, create one and move all items
+        const newUserCart = await prisma.cart.create({
+          data: {
+            userId,
+            totalPrice: sessionCart.totalPrice,
+          },
+        });
+
+        // Move all items to the new cart
+        await Promise.all(
+          sessionCart.cartItems.map((item) =>
+            prisma.cartItem.update({
+              where: { id: item.id },
+              data: { cartId: newUserCart.id },
+            })
+          )
+        );
+
+        // Delete the session cart
+        await prisma.cart.delete({
+          where: { id: sessionCart.id },
+        });
+      }
+    }
+
+    // Recalculate total price
+    await recalculateCartTotal(userId);
+  } catch (error) {
+    console.error("Error during cart merge:", error);
+    // Don't throw the error to prevent login failure
+    // but log it for debugging
+  }
 }
 
 async function recalculateCartTotal(userId: string) {
