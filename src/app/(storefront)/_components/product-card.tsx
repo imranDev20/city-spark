@@ -230,17 +230,6 @@ export default function ProductCard({
       if (result?.success) {
         await queryClient.invalidateQueries({ queryKey: ["cart"] });
 
-        console.log(
-          "After invalidation - Cart Query State:",
-          queryClient.getQueryData(["cart"])
-        );
-
-        // Wait for the next refetch to complete
-        await queryClient.refetchQueries({
-          queryKey: ["cart"],
-          exact: true,
-        });
-
         toast({
           title: "Added to Cart",
           description: result.message,

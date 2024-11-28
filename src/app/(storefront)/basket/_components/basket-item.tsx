@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  useTransition,
-} from "react";
+import React, { useState, useEffect, useRef, useTransition } from "react";
 import Image from "next/image";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";

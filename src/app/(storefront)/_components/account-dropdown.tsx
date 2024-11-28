@@ -151,10 +151,9 @@ export default function AccountDropdown() {
     <div className="relative" ref={dropdownRef}>
       <button
         className={cn(
-          "flex items-center gap-2 text-white h-[48px]",
-          "hover:text-secondary transition-colors duration-200",
-          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-primary",
-          "rounded-md px-3 whitespace-nowrap"
+          "flex items-center gap-2 px-3 py-2 text-white rounded-md transition-colors duration-200",
+          "hover:bg-white/10",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
         )}
         onMouseEnter={handleOpen}
         onMouseLeave={handleClose}

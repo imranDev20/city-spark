@@ -63,3 +63,21 @@ export const categoryData: {
   { label: "Tools", Icon: ToolsIcon },
   { label: "Electrical", Icon: ElectricalIcon },
 ];
+
+export const statusMap = {
+  ACTIVE: {
+    label: "Active",
+    indicator: "bg-emerald-500",
+    className: "bg-emerald-50 text-emerald-700",
+  },
+  DRAFT: {
+    label: "Draft",
+    indicator: "bg-amber-500",
+    className: "bg-amber-50 text-amber-700",
+  },
+  ARCHIVED: {
+    label: "Archived",
+    indicator: "bg-gray-500",
+    className: "bg-gray-50 text-gray-700",
+  },
+};

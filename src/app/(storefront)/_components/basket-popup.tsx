@@ -1,16 +1,9 @@
 import React, { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  ShoppingCart,
-  Loader2,
-  AlertCircle,
-  Package,
-  Store,
-} from "lucide-react";
+import { ShoppingCart, Loader2, AlertCircle, Store, Truck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import Image from "next/image";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Prisma } from "@prisma/client";
@@ -50,7 +43,7 @@ const GroupHeader = ({
 }) => (
   <div className="flex items-center gap-2 py-2 px-1 border-b">
     {type === "FOR_DELIVERY" ? (
-      <Package className="w-4 h-4 text-primary" />
+      <Truck className="w-4 h-4 text-primary" />
     ) : (
       <Store className="w-4 h-4 text-primary" />
     )}
