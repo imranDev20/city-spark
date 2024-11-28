@@ -3,10 +3,42 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ProductFormInputType } from "./schema";
-import { Prisma, Status } from "@prisma/client";
 import { backendClient } from "@/lib/edgestore-server";
 import exceljs from "exceljs";
 import dayjs from "dayjs";
+
+// Delete this later
+export const getProductById = async (productId: string) => {
+  try {
+    const product = await prisma.product.findUnique({
+      where: {
+        id: productId,
+      },
+      include: {
+        brand: true,
+        productTemplate: {
+          include: {
+            fields: {
+              include: {
+                templateField: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
+    return product;
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    throw new Error("Failed to fetch product");
+  }
+};
+// above
 
 export async function createProduct(data: ProductFormInputType) {
   try {

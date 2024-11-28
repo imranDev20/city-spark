@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useTransition } from "react";
 import { Card } from "@/components/ui/card";
-import { Trash2, ChevronRight } from "lucide-react";
+import { Trash2, ChevronRight, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatDistance } from "date-fns";
@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import PlaceholderImage from "@/images/placeholder-image.png";
+import { deleteProduct } from "../actions";
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   select: {
@@ -51,16 +52,15 @@ export type ProductWithRelations = Prisma.ProductGetPayload<{
 
 interface SwipeableProductCardProps {
   product: ProductWithRelations;
-  onDelete?: (productId: string) => void;
 }
 
 export default function SwipeableProductCard({
   product,
-  onDelete,
 }: SwipeableProductCardProps) {
   const isOpen = useRef(false);
   const [showDeleteAlert, setShowDeleteAlert] = React.useState(false);
   const SWIPE_DISTANCE = -100;
+  const [isPending, startTransition] = useTransition();
 
   const [{ x }, api] = useSpring(() => ({
     x: 0,
@@ -116,17 +116,23 @@ export default function SwipeableProductCard({
   };
 
   const handleConfirmDelete = () => {
-    api.start({ x: 0 });
-    isOpen.current = false;
+    startTransition(async () => {
+      await deleteProduct(product.id);
+      api.start({ x: 0 });
+      isOpen.current = false;
+      setShowDeleteAlert(false);
+    });
+  };
+
+  const handleCancelDelete = () => {
     setShowDeleteAlert(false);
-    onDelete?.(product.id);
   };
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-xl mb-2">
-        {/* Delete button container */}
-        <div className="absolute inset-y-0 right-0 w-[85px] bg-destructive/10 rounded-xl">
+      <div className="mb-2 relative">
+        {/* Delete Button - Behind the card */}
+        <div className="absolute inset-y-0 right-0 rounded-xl flex items-stretch">
           <animated.div
             style={{
               opacity: x.to([SWIPE_DISTANCE, -40, 0], [1, 0.5, 0]),
@@ -135,15 +141,15 @@ export default function SwipeableProductCard({
           >
             <button
               onClick={handleDeleteClick}
-              className="h-full w-full flex flex-col items-center justify-center bg-destructive text-white transition-colors hover:bg-destructive/90 active:bg-destructive/80 rounded-xl"
+              className="h-full w-[85px] flex flex-col items-center justify-center bg-destructive text-white transition-colors hover:bg-destructive/90 active:bg-destructive/80 rounded-xl"
             >
-              <Trash2 className="w-5 h-5 mb-1" />
-              <span className="text-xs font-medium">Delete</span>
+              <Trash2 className="w-6 h-6 mb-1" />
+              <span className="text-sm font-medium">Delete</span>
             </button>
           </animated.div>
         </div>
 
-        {/* Main card content */}
+        {/* Swipeable Card */}
         <animated.div
           {...bind()}
           style={{
@@ -153,40 +159,36 @@ export default function SwipeableProductCard({
           className="relative z-10"
         >
           <Link href={`/admin/products/${product.id}/edit`}>
-            <Card className="shadow-none duration-200 bg-white rounded-xl border-gray-200">
-              <div className="p-4 flex items-center gap-4">
-                {/* Product image */}
-                <div className="relative h-16 w-16 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
+            <Card className="shadow-none bg-white">
+              <div className="p-4 flex items-center gap-3">
+                <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-gray-50 flex-shrink-0">
                   <Image
                     src={product.images[0] || PlaceholderImage}
                     alt={product.name}
                     fill
-                    className="object-cover transition-transform duration-200 group-hover:scale-105"
+                    className="object-cover"
                     sizes="64px"
                   />
                 </div>
 
-                {/* Product details */}
                 <div className="flex-1 min-w-0">
-                  {/* Header section */}
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="font-medium text-sm text-gray-900 leading-5 line-clamp-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-medium text-sm text-gray-900 line-clamp-2">
                       {product.name}
                     </h3>
                     <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 mt-1" />
                   </div>
 
-                  {/* Status and timestamp */}
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-1 flex items-center gap-2 flex-wrap">
                     <div
                       className={cn(
-                        "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
+                        "inline-flex items-center px-2 py-0.5 rounded-full text-xs",
                         statusMap[product.status || "DRAFT"].className
                       )}
                     >
                       <div
                         className={cn(
-                          "h-1.5 w-1.5 rounded-full mr-1.5",
+                          "h-1.5 w-1.5 rounded-full mr-1",
                           statusMap[product.status || "DRAFT"].indicator
                         )}
                       />
@@ -199,17 +201,16 @@ export default function SwipeableProductCard({
                     </span>
                   </div>
 
-                  {/* Footer section */}
-                  <div className="mt-2 flex items-center justify-between">
-                    <p className="text-xs text-gray-600">
+                  <div className="mt-1.5 flex items-center justify-between">
+                    <p className="text-xs text-gray-500">
                       {[product.brand?.name, product.primaryCategory?.name]
                         .filter(Boolean)
                         .join(" • ")}
                     </p>
-                    <div className="text-right">
+                    <div className="text-right flex flex-col">
                       {product.promotionalPrice &&
                       product.promotionalPrice < (product.tradePrice || 0) ? (
-                        <div className="flex flex-col items-end">
+                        <>
                           <span className="text-xs text-gray-500 line-through">
                             <NumericFormat
                               value={product.tradePrice}
@@ -230,9 +231,9 @@ export default function SwipeableProductCard({
                               thousandSeparator
                             />
                           </span>
-                        </div>
+                        </>
                       ) : (
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-sm font-medium">
                           <NumericFormat
                             value={product.tradePrice}
                             displayType="text"
@@ -252,23 +253,31 @@ export default function SwipeableProductCard({
         </animated.div>
       </div>
 
-      {/* Delete confirmation dialog */}
       <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
-        <AlertDialogContent className="sm:max-w-[425px]">
+        <AlertDialogContent className="max-w-[calc(100%-2rem)] sm:max-w-[425px] rounded-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Product</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-lg">
+              Delete Product
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
               Are you sure you want to delete &quot;{product.name}&quot;? This
               action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel className="rounded-md mt-0">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
-              className="bg-destructive hover:bg-destructive/90"
+              className="rounded-md bg-destructive hover:bg-destructive/90"
+              disabled={isPending}
             >
-              Delete
+              {isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Delete"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

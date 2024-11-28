@@ -30,6 +30,7 @@ import { useSearchParams } from "next/navigation";
 import { fetchProducts, FetchProductsParams } from "@/services/admin-products";
 import { NumericFormat } from "react-number-format";
 import { statusMap } from "@/app/data";
+import PlaceholderImage from "@/images/placeholder-image.png";
 
 export default function DesktopProductList() {
   const searchParams = useSearchParams();
@@ -45,12 +46,13 @@ export default function DesktopProductList() {
     filter_status: searchParams.get("filter_status") || "",
   };
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["products", currentParams],
-    queryFn: () => fetchProducts(currentParams),
-  });
+  const { data, isLoading, isError, isFetching, isFetchedAfterMount } =
+    useQuery({
+      queryKey: ["products", currentParams],
+      queryFn: () => fetchProducts(currentParams),
+    });
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <div className="hidden lg:flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -77,11 +79,11 @@ export default function DesktopProductList() {
 
   return (
     <div className="space-y-4 hidden lg:block">
-      <Card className="shadow-sm border-gray-200">
+      <Card className="shadow-sm border-gray-200 overflow-hidden">
         <CardContent className="p-0">
-          <div className="roverflow-auto h-[calc(100vh-325px)] relative">
+          <div className="overflow-auto h-[calc(100vh-325px)] relative">
             <Table>
-              <TableHeader className="bg-gray-50/80 sticky top-0">
+              <TableHeader className="bg-gray-50 sticky top-0 z-10">
                 <TableRow>
                   <TableHead className="w-14 pl-6">
                     <Checkbox />
@@ -116,9 +118,7 @@ export default function DesktopProductList() {
                       <div className="relative">
                         <div className="h-14 w-14 rounded-lg overflow-hidden bg-gray-50">
                           <Image
-                            src={
-                              product.images[0] || "/api/placeholder/100/100"
-                            }
+                            src={product.images[0] || PlaceholderImage}
                             alt={product.name}
                             fill
                             className="object-cover"

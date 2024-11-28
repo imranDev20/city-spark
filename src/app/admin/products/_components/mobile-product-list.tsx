@@ -77,14 +77,6 @@ export default function MobileProductList() {
     };
   }, [handleObserver]);
 
-  const handleDelete = (productId: string) => {
-    toast({
-      title: "Are you sure?",
-      description: "This action cannot be undone.",
-      variant: "destructive",
-    });
-  };
-
   if (isLoading) {
     return (
       <div className="flex lg:hidden items-center justify-center min-h-[400px]">
@@ -115,21 +107,15 @@ export default function MobileProductList() {
 
   return (
     <div className="grid lg:hidden gap-2 pb-[72px]">
-      {" "}
       {/* Added padding bottom to account for fixed bar */}
       {data.pages.map((page, i) => (
         <React.Fragment key={i}>
           {page.products.map((product) => (
-            <SwipeableProductCard
-              key={product.id}
-              product={product}
-              onDelete={handleDelete}
-            />
+            <SwipeableProductCard key={product.id} product={product} />
           ))}
         </React.Fragment>
       ))}
       <div ref={observerTarget} className="flex justify-center py-6 mb-6">
-        {" "}
         {/* Increased padding and margin */}
         {isFetchingNextPage ? (
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
