@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+type RouteParams = Promise<{
+  template_id: string;
+}>;
+
 export async function GET(
   req: NextRequest,
-  { params }: { params: { template_id: string } }
+  { params }: { params: RouteParams }
 ) {
-  const { template_id } = params;
+  const routeParams = await params;
+  const { template_id } = routeParams;
 
   if (!template_id) {
     return NextResponse.json(
@@ -20,12 +25,8 @@ export async function GET(
 
   try {
     const template = await prisma.template.findUnique({
-      where: {
-        id: template_id,
-      },
-      include: {
-        fields: true,
-      },
+      where: { id: template_id },
+      include: { fields: true },
     });
 
     if (!template) {

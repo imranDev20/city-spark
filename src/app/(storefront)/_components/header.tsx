@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Filter,
-  Search,
-  ShoppingCart,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
+import { Search, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -23,10 +17,9 @@ import CitySparkLogo from "./city-spark-logo";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import MobileMenu from "./mobile-menu";
 import FilterDrawer from "./filter-drawer";
+import BasketPopup from "./basket-popup";
 
 const BasketDrawer = () => {
   return (
@@ -52,7 +45,6 @@ const BasketDrawer = () => {
 const MobileHeader = () => {
   const cartItemCount = 0;
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -125,8 +117,6 @@ const MobileHeader = () => {
 };
 
 function DesktopHeader() {
-  const cartItemCount = 0;
-
   return (
     <header className="w-full bg-primary py-2 hidden lg:block">
       <div className="container h-16 flex items-center justify-between mx-auto max-w-screen-xl">
@@ -143,32 +133,7 @@ function DesktopHeader() {
         <div className="flex items-center space-x-5 text-white">
           <AccountDropdown />
           <Separator orientation="vertical" className="h-6 w-px bg-white" />
-          <Drawer>
-            <DrawerTrigger asChild>
-              <Button
-                variant="ghost"
-                className="flex items-center group text-white hover:text-secondary"
-              >
-                <div className="relative">
-                  <ShoppingCart className="w-5 h-5 group-hover:text-secondary transition-colors duration-200" />
-                  {cartItemCount > 0 && (
-                    <span
-                      className={cn(
-                        "absolute -top-2 -right-2 bg-secondary text-white text-xs font-bold rounded-full flex items-center justify-center",
-                        cartItemCount > 9 ? "w-5 h-5 text-[10px]" : "w-4 h-4"
-                      )}
-                    >
-                      {cartItemCount}
-                    </span>
-                  )}
-                </div>
-                <span className="ml-2 text-base">Basket</span>
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent>
-              <BasketDrawer />
-            </DrawerContent>
-          </Drawer>
+          <BasketPopup />
         </div>
       </div>
     </header>

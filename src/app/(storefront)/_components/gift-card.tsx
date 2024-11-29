@@ -19,13 +19,13 @@ export default function GiftCard() {
               </Button>
             </div>
             <div className="w-full sm:w-2/5 relative min-h-[200px] sm:min-h-0">
-              <Image
+              {/* <Image
                 src="/api/placeholder/400/320"
                 alt="Promotional offer"
                 fill
                 className="object-cover"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              />
+              /> */}
             </div>
           </div>
         </div>
@@ -42,13 +42,13 @@ export default function GiftCard() {
               </Button>
             </div>
             <div className="w-full sm:w-2/5 relative min-h-[200px] sm:min-h-0">
-              <Image
+              {/* <Image
                 src="/api/placeholder/400/320"
                 alt="Gift card"
                 fill
                 className="object-cover"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              />
+              /> */}
             </div>
           </div>
         </div>

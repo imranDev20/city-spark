@@ -181,7 +181,7 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
                 <div className="flex-shrink-0 w-16 h-16 relative">
                   <Image
                     src={
-                      suggestion.product.images[0] || "/placeholder-image.jpg"
+                      suggestion.product.images[0] || "/placeholder-image.png"
                     }
                     alt={suggestion.product.name}
                     layout="fill"

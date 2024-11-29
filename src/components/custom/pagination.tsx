@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import {
   Pagination,
   PaginationContent,
@@ -11,7 +10,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import useQueryString from "@/hooks/use-query-string";
 import { cn } from "@/lib/utils";
 
@@ -30,25 +29,29 @@ export function ReusablePagination({
   itemsPerPage,
   siblings = 2,
 }: PaginationProps) {
+  const router = useRouter();
   const pathname = usePathname();
   const { createQueryString } = useQueryString();
 
-  const getPageHref = (page: number) =>
-    `${pathname}?${createQueryString({ page: page.toString() })}`;
+  const navigateToPage = (page: number) => {
+    router.push(`${pathname}?${createQueryString({ page: page.toString() })}`);
+  };
 
   const renderPageLinks = () => {
     const pageLinks = [];
 
-    // Always show first page
     pageLinks.push(
       <PaginationItem key={1}>
-        <Link href={getPageHref(1)} passHref legacyBehavior>
-          <PaginationLink isActive={currentPage === 1}>1</PaginationLink>
-        </Link>
+        <PaginationLink
+          isActive={currentPage === 1}
+          onClick={() => navigateToPage(1)}
+          className="cursor-pointer hover:bg-accent"
+        >
+          1
+        </PaginationLink>
       </PaginationItem>
     );
 
-    // Show ellipsis if there are more than 7 pages and we're not in the first 3 pages
     if (totalPages > 7 && currentPage > 3) {
       pageLinks.push(
         <PaginationItem key="ellipsis1">
@@ -57,7 +60,6 @@ export function ReusablePagination({
       );
     }
 
-    // Show sibling pages around the current page
     for (
       let i = Math.max(2, currentPage - siblings);
       i <= Math.min(totalPages - 1, currentPage + siblings);
@@ -65,14 +67,17 @@ export function ReusablePagination({
     ) {
       pageLinks.push(
         <PaginationItem key={i}>
-          <Link href={getPageHref(i)} passHref legacyBehavior>
-            <PaginationLink isActive={currentPage === i}>{i}</PaginationLink>
-          </Link>
+          <PaginationLink
+            isActive={currentPage === i}
+            onClick={() => navigateToPage(i)}
+            className="cursor-pointer hover:bg-accent"
+          >
+            {i}
+          </PaginationLink>
         </PaginationItem>
       );
     }
 
-    // Show ellipsis if there are more than 7 pages and we're not in the last 3 pages
     if (totalPages > 7 && currentPage < totalPages - 2) {
       pageLinks.push(
         <PaginationItem key="ellipsis2">
@@ -81,15 +86,16 @@ export function ReusablePagination({
       );
     }
 
-    // Always show last page
     if (totalPages > 1) {
       pageLinks.push(
         <PaginationItem key={totalPages}>
-          <Link href={getPageHref(totalPages)} passHref legacyBehavior>
-            <PaginationLink isActive={currentPage === totalPages}>
-              {totalPages}
-            </PaginationLink>
-          </Link>
+          <PaginationLink
+            isActive={currentPage === totalPages}
+            onClick={() => navigateToPage(totalPages)}
+            className="cursor-pointer hover:bg-accent"
+          >
+            {totalPages}
+          </PaginationLink>
         </PaginationItem>
       );
     }
@@ -112,33 +118,27 @@ export function ReusablePagination({
       <Pagination className="mt-5">
         <PaginationContent>
           <PaginationItem>
-            <Link
-              href={getPageHref(Math.max(1, currentPage - 1))}
-              passHref
-              legacyBehavior
-            >
-              <PaginationPrevious
-                className={cn({
-                  "pointer-events-none opacity-50": currentPage === 1,
-                })}
-              />
-            </Link>
+            <PaginationPrevious
+              onClick={() => navigateToPage(Math.max(1, currentPage - 1))}
+              className={cn(
+                "cursor-pointer hover:bg-accent",
+                currentPage === 1 && "pointer-events-none opacity-50"
+              )}
+            />
           </PaginationItem>
 
           {renderPageLinks()}
 
           <PaginationItem>
-            <Link
-              href={getPageHref(Math.min(totalPages, currentPage + 1))}
-              passHref
-              legacyBehavior
-            >
-              <PaginationNext
-                className={cn({
-                  "pointer-events-none opacity-50": currentPage === totalPages,
-                })}
-              />
-            </Link>
+            <PaginationNext
+              onClick={() =>
+                navigateToPage(Math.min(totalPages, currentPage + 1))
+              }
+              className={cn(
+                "cursor-pointer hover:bg-accent",
+                currentPage === totalPages && "pointer-events-none opacity-50"
+              )}
+            />
           </PaginationItem>
         </PaginationContent>
       </Pagination>

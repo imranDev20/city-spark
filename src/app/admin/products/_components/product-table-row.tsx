@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import PlaceholderImage from "@/images/placeholder-image.jpg";
+import PlaceholderImage from "@/images/placeholder-image.png";
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {

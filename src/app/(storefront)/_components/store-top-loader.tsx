@@ -7,7 +7,7 @@ export default function StoreTopLoader() {
       color="#DE7802"
       initialPosition={0.08}
       crawlSpeed={300}
-      height={3}
+      height={2}
       crawl
       showAtBottom={false}
       showSpinner={true}

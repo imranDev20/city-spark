@@ -2,7 +2,7 @@
 
 import { Star, Truck, Store } from "lucide-react";
 import Image from "next/image";
-import PlaceholderImage from "@/images/placeholder-image.jpg";
+import PlaceholderImage from "@/images/placeholder-image.png";
 import { Button } from "@/components/ui/button";
 import { Prisma } from "@prisma/client";
 import { Card } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useTransition, useState, useEffect } from "react";
 import Link from "next/link";
 import { customSlugify } from "@/lib/functions";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Types remain the same...
 type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
@@ -214,6 +215,7 @@ export default function ProductCard({
   const [quantity, setQuantity] = useState(1);
   const rating = 4.5;
   const availableStock = inventoryItem.stockCount - inventoryItem.heldCount;
+  const queryClient = useQueryClient();
 
   const handleAddToCart = async (
     e: React.MouseEvent,
@@ -221,9 +223,13 @@ export default function ProductCard({
   ) => {
     e.preventDefault();
     e.stopPropagation();
+
     startTransition(async () => {
       const result = await addToCart(id, quantity, type);
+
       if (result?.success) {
+        await queryClient.invalidateQueries({ queryKey: ["cart"] });
+
         toast({
           title: "Added to Cart",
           description: result.message,

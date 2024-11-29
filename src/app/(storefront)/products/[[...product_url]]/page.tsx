@@ -1,4 +1,5 @@
 import React from "react";
+import { Metadata } from "next";
 import FirstCategoriesPage from "../_components/first-categories-page";
 import SecondCategoriesPage from "../_components/second-categories-page";
 import ThirdCategoriesPage from "../_components/third-categories-page";
@@ -6,18 +7,46 @@ import FourthCategoriesPage from "../_components/fourth-categories-page";
 import StorefrontProductList from "../_components/storefront-product-list";
 import StorefrontProductDetails from "../_components/storefront-product-details";
 import { getInventoryItem } from "../../actions";
-import ProductActionBar from "../_components/product-action-bar";
-import MobileBottomBar from "../../_components/mobile-bottom-bar";
 
-const getCategoryFromUrl = (product_url: string[] | undefined): string[] => {
-  if (!product_url || !Array.isArray(product_url)) {
-    return [];
+type PageParams = Promise<{
+  product_url?: string[];
+}>;
+
+type SearchParams = Promise<{
+  p_id?: string;
+  s_id?: string;
+  t_id?: string;
+  q_id?: string;
+  search?: string;
+}>;
+
+export async function generateMetadata(props: {
+  params: PageParams;
+  searchParams: SearchParams;
+}): Promise<Metadata> {
+  const params = await props.params;
+
+  if (params.product_url?.[0] === "p" && params.product_url?.[2] === "p") {
+    const inventoryItem = await getInventoryItem(params.product_url[3]);
+    return {
+      title: inventoryItem.product.name,
+      description: inventoryItem.product.description || "Product details",
+    };
   }
+
+  return {
+    title: "Products",
+    description: "Browse our products",
+  };
+}
+
+const getCategoryFromUrl = async (
+  product_url: string[] | undefined
+): Promise<string[]> => {
+  if (!product_url?.length) return [];
 
   const startIndex = product_url.indexOf("c");
-  if (startIndex === -1) {
-    return [];
-  }
+  if (startIndex === -1) return [];
 
   const endIndex = product_url.indexOf("c", startIndex + 1);
   return endIndex === -1
@@ -25,77 +54,62 @@ const getCategoryFromUrl = (product_url: string[] | undefined): string[] => {
     : product_url.slice(startIndex + 1, endIndex);
 };
 
-export default async function StorefrontProductsPage({
-  params: { product_url },
-  searchParams: { p_id, s_id, t_id, q_id, search },
-}: {
-  params: {
-    product_url?: string[];
-  };
-  searchParams: {
-    p_id?: string;
-    s_id?: string;
-    t_id?: string;
-    q_id?: string;
-    search?: string;
-  };
+export default async function StorefrontProductsPage(props: {
+  params: PageParams;
+  searchParams: SearchParams;
 }) {
-  const result = getCategoryFromUrl(product_url);
+  const params = await props.params;
+  const searchParams = await props.searchParams;
+  const categories = await getCategoryFromUrl(params.product_url);
 
-  // Check for product details page
-  if (
-    product_url &&
-    product_url.length === 4 &&
-    product_url[0] === "p" &&
-    product_url[2] === "p"
-  ) {
-    const inventoryItemId = product_url[3];
-    const inventoryItem = await getInventoryItem(inventoryItemId);
-
+  if (params.product_url?.[0] === "p" && params.product_url?.[2] === "p") {
+    const inventoryItem = await getInventoryItem(params.product_url[3]);
     return <StorefrontProductDetails inventoryItem={inventoryItem} />;
   }
 
-  // Check if there's a search query
-  if (search) {
-    return <StorefrontProductList isSearch search={search} />;
+  if (searchParams.search) {
+    return <StorefrontProductList isSearch search={searchParams.search} />;
   }
 
-  if (result?.length === 4) {
+  if (categories.length === 4) {
     return (
-      <>
-        <StorefrontProductList
-          isPrimaryRequired
-          isSecondaryRequired
-          isTertiaryRequired
-          isQuaternaryRequired
-          primaryCategoryId={p_id}
-          secondaryCategoryId={s_id}
-          tertiaryCategoryId={t_id}
-          quaternaryCategoryId={q_id}
-        />
-      </>
-    );
-  }
-
-  if (result?.length === 3) {
-    return (
-      <FourthCategoriesPage
-        primaryId={p_id}
-        secondaryId={s_id}
-        tertiaryId={t_id}
+      <StorefrontProductList
+        isPrimaryRequired
+        isSecondaryRequired
+        isTertiaryRequired
+        isQuaternaryRequired
+        primaryCategoryId={searchParams.p_id}
+        secondaryCategoryId={searchParams.s_id}
+        tertiaryCategoryId={searchParams.t_id}
+        quaternaryCategoryId={searchParams.q_id}
       />
     );
   }
 
-  if (result?.length === 2) {
-    return <ThirdCategoriesPage primaryId={p_id} secondaryId={s_id} />;
+  if (categories.length === 3) {
+    return (
+      <FourthCategoriesPage
+        primaryId={searchParams.p_id}
+        secondaryId={searchParams.s_id}
+        tertiaryId={searchParams.t_id}
+      />
+    );
   }
 
-  if (result?.length === 1) {
-    return <SecondCategoriesPage primaryId={p_id} />;
+  if (categories.length === 2) {
+    return (
+      <ThirdCategoriesPage
+        primaryId={searchParams.p_id}
+        secondaryId={searchParams.s_id}
+      />
+    );
   }
 
-  if (!product_url || product_url.length === 0) {
+  if (categories.length === 1) {
+    return <SecondCategoriesPage primaryId={searchParams.p_id} />;
+  }
+
+  if (!params.product_url?.length) {
     return <FirstCategoriesPage />;
   }
 

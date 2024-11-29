@@ -10,18 +10,19 @@ const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
   { label: "Inventory", href: "/admin/inventory", isCurrentPage: true },
 ];
+type SearchParams = Promise<{
+  search?: string;
+  page?: string;
+  sort_by?: string;
+  sort_order?: "asc" | "desc";
+  filter_status?: string;
+}>;
 
-export default async function InventoryPage({
-  searchParams,
-}: {
-  searchParams: {
-    search?: string;
-    page?: string;
-    sort_by?: string;
-    sort_order?: "asc" | "desc";
-    filter_status?: string;
-  };
+export default async function InventoryPage(props: {
+  searchParams: SearchParams;
 }) {
+  const searchParams = await props.searchParams;
+
   const { inventories, pagination } = await getInventoryItems({
     page: searchParams.page ? parseInt(searchParams.page) : 1,
     pageSize: 10,

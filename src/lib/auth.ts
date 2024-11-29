@@ -6,10 +6,32 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { User } from "@prisma/client";
 import bcrypt from "bcrypt";
-import { getOrCreateSessionId } from "@/lib/session-id";
+import { cookies } from "next/headers";
+
+interface AdapterUser {
+  email: string;
+  name?: string | null;
+  image?: string | null;
+  emailVerified?: Date | null;
+}
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter: {
+    ...PrismaAdapter(prisma),
+    createUser: async (data: AdapterUser) => {
+      const user = await prisma.user.create({
+        data: {
+          email: data.email,
+          firstName: data.name?.split(" ")[0] || null,
+          lastName: data.name?.split(" ").slice(1).join(" ") || null,
+          avatar: data.image,
+          emailVerified: data.emailVerified,
+          role: "USER",
+        },
+      });
+      return user;
+    },
+  },
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -40,15 +62,23 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  callbacks: {
-    async signIn({ user, account, profile, email, credentials }) {
+  events: {
+    signIn: async ({ user }) => {
       if (user.id) {
-        const sessionId = getOrCreateSessionId();
-        await mergeCartsOnLogin(user.id, sessionId);
-      }
-      return true;
-    },
+        try {
+          const cookieStore = await cookies();
+          const sessionId = cookieStore.get("sessionId")?.value;
 
+          if (sessionId) {
+            await mergeCartsOnLogin(user.id, sessionId);
+          }
+        } catch (error) {
+          console.error("Error merging carts:", error);
+        }
+      }
+    },
+  },
+  callbacks: {
     async jwt({ token, user, account }) {
       if (user) {
         token.userId = user.id;
@@ -84,7 +114,7 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 30 * 24 * 60 * 60,
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
@@ -104,50 +134,67 @@ export async function getServerAuthSession() {
 }
 
 async function mergeCartsOnLogin(userId: string, sessionId: string) {
-  const [userCart, sessionCart] = await Promise.all([
-    prisma.cart.findFirst({ where: { userId }, include: { cartItems: true } }),
-    prisma.cart.findFirst({
-      where: { sessionId },
-      include: { cartItems: true },
-    }),
-  ]);
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      console.error("User not found during cart merge");
+      return;
+    }
 
-  if (sessionCart) {
+    const [userCart, sessionCart] = await Promise.all([
+      prisma.cart.findFirst({
+        where: { userId },
+        include: { cartItems: true },
+      }),
+      prisma.cart.findFirst({
+        where: { sessionId },
+        include: { cartItems: true },
+      }),
+    ]);
+
+    if (!sessionCart) return;
+
     if (userCart) {
-      // Merge session cart items into user cart
-      for (const item of sessionCart.cartItems) {
-        const existingItem = userCart.cartItems.find(
-          (i) => i.inventoryId === item.inventoryId && i.type === item.type
-        );
-        if (existingItem) {
-          await prisma.cartItem.update({
-            where: { id: existingItem.id },
+      // Merge items into existing user cart
+      await Promise.all(
+        sessionCart.cartItems.map(async (item) => {
+          const existingItem = userCart.cartItems.find(
+            (i) => i.inventoryId === item.inventoryId && i.type === item.type
+          );
+
+          if (existingItem) {
+            return prisma.cartItem.update({
+              where: { id: existingItem.id },
+              data: {
+                quantity: (existingItem.quantity ?? 0) + (item.quantity ?? 0),
+              },
+            });
+          }
+
+          return prisma.cartItem.create({
             data: {
-              quantity: (existingItem.quantity ?? 0) + (item.quantity ?? 0),
-            },
-          });
-        } else {
-          await prisma.cartItem.create({
-            data: {
-              ...item,
               cartId: userCart.id,
+              inventoryId: item.inventoryId,
+              quantity: item.quantity,
+              type: item.type,
             },
           });
-        }
-      }
-      // Delete the session cart
+        })
+      );
+
       await prisma.cart.delete({ where: { id: sessionCart.id } });
     } else {
-      // If no user cart exists, simply update the session cart to be associated with the user
+      // Convert session cart to user cart
       await prisma.cart.update({
         where: { id: sessionCart.id },
         data: { userId, sessionId: null },
       });
     }
-  }
 
-  // Recalculate total price for the user's cart
-  await recalculateCartTotal(userId);
+    await recalculateCartTotal(userId);
+  } catch (error) {
+    console.error("Error during cart merge:", error);
+  }
 }
 
 async function recalculateCartTotal(userId: string) {
@@ -157,9 +204,7 @@ async function recalculateCartTotal(userId: string) {
       cartItems: {
         include: {
           inventory: {
-            include: {
-              product: true,
-            },
+            include: { product: true },
           },
         },
       },
@@ -167,11 +212,11 @@ async function recalculateCartTotal(userId: string) {
   });
 
   if (cart) {
-    const totalPrice = cart.cartItems.reduce((total, item) => {
-      return (
-        total + (item.inventory.product.tradePrice || 0) * (item.quantity || 0)
-      );
-    }, 0);
+    const totalPrice = cart.cartItems.reduce(
+      (total, item) =>
+        total + (item.inventory.product.tradePrice || 0) * (item.quantity || 0),
+      0
+    );
 
     await prisma.cart.update({
       where: { id: cart.id },

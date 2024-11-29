@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import PlaceholderImage from "@/images/placeholder-image.jpg";
+import PlaceholderImage from "@/images/placeholder-image.png";
 import { CategoryWithRelations } from "@/types/storefront-products";
 import Image from "next/image";
 

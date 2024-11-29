@@ -17,7 +17,7 @@ import Link from "next/link";
 import React, { useTransition } from "react";
 import Image from "next/image";
 import { deleteBrand } from "../actions";
-import PlaceholderImage from "@/images/placeholder-image.jpg";
+import PlaceholderImage from "@/images/placeholder-image.png";
 
 export type BrandWithRelations = Prisma.BrandGetPayload<{}>;
 

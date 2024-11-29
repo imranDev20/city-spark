@@ -15,17 +15,19 @@ const breadcrumbItems = [
   },
 ];
 
-export default function AdminBrandsPage({
-  searchParams,
-}: {
-  searchParams: {
-    search?: string;
-    page?: string;
-    sort_by?: string;
-    sort_order?: "asc" | "desc";
-    filter_status?: Status;
-  };
+type SearchParams = Promise<{
+  search?: string;
+  page?: string;
+  sort_by?: string;
+  sort_order?: "asc" | "desc";
+  filter_status?: Status;
+}>;
+
+export default async function AdminBrandsPage(props: {
+  searchParams: SearchParams;
 }) {
+  const searchParams = await props.searchParams;
+
   return (
     <ContentLayout title="Brands">
       <DynamicBreadcrumb items={breadcrumbItems} />

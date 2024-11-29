@@ -3,121 +3,11 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ProductFormInputType } from "./schema";
-import { Prisma, Status } from "@prisma/client";
 import { backendClient } from "@/lib/edgestore-server";
 import exceljs from "exceljs";
 import dayjs from "dayjs";
 
-export const getProducts = async ({
-  page = 1,
-  pageSize = 10,
-  search = "",
-  sortBy = "createdAt",
-  sortOrder = "desc",
-  filterStatus = "",
-}: {
-  page?: number;
-  pageSize?: number;
-  search?: string;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
-  filterStatus?: Status | "";
-}) => {
-  try {
-    const skip = (page - 1) * pageSize;
-
-    const whereClause: Prisma.ProductWhereInput = {
-      AND: [
-        search
-          ? {
-              OR: [
-                { name: { contains: search, mode: "insensitive" } },
-                { description: { contains: search, mode: "insensitive" } },
-                { model: { contains: search, mode: "insensitive" } },
-                {
-                  primaryCategory: {
-                    name: { contains: search, mode: "insensitive" },
-                  },
-                },
-                {
-                  secondaryCategory: {
-                    name: { contains: search, mode: "insensitive" },
-                  },
-                },
-                {
-                  tertiaryCategory: {
-                    name: { contains: search, mode: "insensitive" },
-                  },
-                },
-                {
-                  quaternaryCategory: {
-                    name: { contains: search, mode: "insensitive" },
-                  },
-                },
-                {
-                  brand: { name: { contains: search, mode: "insensitive" } },
-                },
-              ],
-            }
-          : {},
-        filterStatus ? { status: filterStatus } : {},
-      ],
-    };
-
-    const orderByClause: Prisma.ProductOrderByWithRelationInput = {};
-    switch (sortBy) {
-      case "name":
-        orderByClause.name = sortOrder;
-        break;
-      case "tradePrice":
-        orderByClause.tradePrice = sortOrder;
-        break;
-      case "createdAt":
-        orderByClause.createdAt = sortOrder;
-        break;
-      case "brand":
-        orderByClause.brand = { name: sortOrder };
-        break;
-      case "primaryCategory":
-        orderByClause.primaryCategory = { name: sortOrder };
-        break;
-      default:
-        orderByClause.createdAt = "desc";
-    }
-
-    const [products, totalCount] = await Promise.all([
-      prisma.product.findMany({
-        where: whereClause,
-        skip,
-        take: pageSize,
-        include: {
-          primaryCategory: true,
-          secondaryCategory: true,
-          tertiaryCategory: true,
-          quaternaryCategory: true,
-          brand: true,
-          inventory: true,
-        },
-        orderBy: orderByClause,
-      }),
-      prisma.product.count({ where: whereClause }),
-    ]);
-
-    return {
-      products,
-      pagination: {
-        currentPage: page,
-        pageSize,
-        totalCount,
-        totalPages: Math.ceil(totalCount / pageSize),
-      },
-    };
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    throw new Error("Failed to fetch products");
-  }
-};
-
+// Delete this later
 export const getProductById = async (productId: string) => {
   try {
     const product = await prisma.product.findUnique({
@@ -148,6 +38,7 @@ export const getProductById = async (productId: string) => {
     throw new Error("Failed to fetch product");
   }
 };
+// above
 
 export async function createProduct(data: ProductFormInputType) {
   try {

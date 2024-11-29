@@ -8,6 +8,7 @@ import { removeFromCart } from "../../products/actions";
 import { Prisma } from "@prisma/client";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 type CartItemWithRelations = Prisma.CartItemGetPayload<{
   include: {
@@ -26,6 +27,7 @@ interface BasketListProps {
 
 const BasketList: React.FC<BasketListProps> = ({ items, title }) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
   const [optimisticItems, addOptimisticItem] = useOptimistic(
     items,
@@ -39,6 +41,8 @@ const BasketList: React.FC<BasketListProps> = ({ items, title }) => {
     startTransition(async () => {
       try {
         const result = await removeFromCart(itemId);
+        await queryClient.invalidateQueries({ queryKey: ["cart"] });
+
         if (!result.success) {
           throw new Error(result.message);
         }
