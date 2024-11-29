@@ -2,12 +2,7 @@
 import Link from "next/link";
 import { ChevronLeft, Icon, Trash, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -43,6 +38,7 @@ const breadcrumbItems = [
   { label: "Orders", href: "/admin/orders" },
   { label: "Orders Details", href: "/admin/orders/id", isCurrentPage: true },
 ];
+
 const defaultValues = {
   name: "Mick Jeson Holder",
   email: "XNqQ4@example.com",
@@ -50,6 +46,7 @@ const defaultValues = {
   billingAddress: "same as shipping address",
   payment: "Cash on Delivery",
 };
+
 export default function AdminOrderDetailsPage() {
   const [isEdit, setIsEdit] = useState<boolean>(false);
   type FormInputType = z.infer<typeof orderDetailsSchema>;
@@ -190,10 +187,7 @@ export default function AdminOrderDetailsPage() {
                               <FormItem>
                                 <FormLabel>Name</FormLabel>
                                 <FormControl>
-                                  <Input
-                                    {...field}
-                                   
-                                  />
+                                  <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -207,10 +201,7 @@ export default function AdminOrderDetailsPage() {
                               <FormItem>
                                 <FormLabel>Email</FormLabel>
                                 <FormControl>
-                                  <Input
-                                    {...field}
-                                    
-                                  />
+                                  <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -224,10 +215,7 @@ export default function AdminOrderDetailsPage() {
                               <FormItem>
                                 <FormLabel>Shipping Address</FormLabel>
                                 <FormControl>
-                                  <Input
-                                    {...field}
-                                  
-                                  />
+                                  <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -241,10 +229,7 @@ export default function AdminOrderDetailsPage() {
                               <FormItem>
                                 <FormLabel>Billing Address</FormLabel>
                                 <FormControl>
-                                  <Input
-                                    {...field}
-                                  
-                                  />
+                                  <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -258,10 +243,7 @@ export default function AdminOrderDetailsPage() {
                               <FormItem>
                                 <FormLabel>Payment</FormLabel>
                                 <FormControl>
-                                  <Input
-                                    {...field}
-                                   
-                                  />
+                                  <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>

@@ -3,15 +3,15 @@ import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import InventoryForm from "../_components/inventory-form";
 import { getInventoryItemById } from "../actions";
 
-export default async function InventoryDetailsPage({
-  params,
-}: {
-  params: {
-    inventory_id: string;
-  };
+type PageParams = Promise<{
+  inventory_id: string;
+}>;
+
+export default async function InventoryDetailsPage(props: {
+  params: PageParams;
 }) {
-  const { inventory_id } = params;
-  const inventoryDetails = await getInventoryItemById(inventory_id);
+  const params = await props.params;
+  const inventoryDetails = await getInventoryItemById(params.inventory_id);
 
   const breadcrumbItems = [
     { label: "Dashboard", href: "/admin" },

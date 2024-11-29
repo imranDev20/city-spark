@@ -35,13 +35,13 @@ export async function GET(
   req: NextRequest
 ): Promise<NextResponse<ApiResponse<CartItemWithRelations[]>>> {
   try {
-    const session = await getServerAuthSession();
-    const sessionId = getOrCreateSessionId();
+    const [session, sessionId] = await Promise.all([
+      getServerAuthSession(),
+      getOrCreateSessionId(),
+    ]);
 
     const cart = await prisma.cart.findFirst({
-      where: session?.user?.id
-        ? { userId: session.user.id }
-        : { sessionId: sessionId },
+      where: session?.user?.id ? { userId: session.user.id } : { sessionId },
       include: {
         cartItems: {
           include: {
@@ -63,16 +63,9 @@ export async function GET(
       },
     });
 
-    if (!cart) {
-      return NextResponse.json({
-        success: true,
-        data: [],
-      });
-    }
-
     return NextResponse.json({
       success: true,
-      data: cart.cartItems,
+      data: cart?.cartItems || [],
     });
   } catch (error) {
     console.error("Cart fetch error:", error);

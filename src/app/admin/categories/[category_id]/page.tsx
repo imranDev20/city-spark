@@ -3,20 +3,22 @@ import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import CategoryForm from "../_components/category-form";
 import { getCategoryById } from "../actions";
 
-export default async function AdminEditCategoryPage({
-  params,
-}: {
-  params: {
-    category_id: string;
-  };
-  searchParams: {
-    category_type?: string;
-    parent_primary_id?: string;
-    parent_secondary_id?: string;
-  };
+type PageParams = Promise<{
+  category_id: string;
+}>;
+
+type SearchParams = Promise<{
+  category_type?: string;
+  parent_primary_id?: string;
+  parent_secondary_id?: string;
+}>;
+
+export default async function AdminEditCategoryPage(props: {
+  params: PageParams;
+  searchParams: SearchParams;
 }) {
-  const { category_id } = params;
-  const categoryDetails = await getCategoryById(category_id as string);
+  const params = await props.params;
+  const categoryDetails = await getCategoryById(params.category_id);
 
   const breadcrumbItems = [
     { label: "Dashboard", href: "/admin" },

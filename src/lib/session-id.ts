@@ -1,8 +1,8 @@
 import { cookies } from "next/headers";
 import crypto from "crypto";
 
-export function getOrCreateSessionId() {
-  const cookieStore = cookies();
+export async function getOrCreateSessionId() {
+  const cookieStore = await cookies();
   let sessionId = cookieStore.get("sessionId")?.value;
 
   if (!sessionId) {

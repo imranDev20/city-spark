@@ -273,7 +273,7 @@ export async function addToCart(
   try {
     const session = await getServerAuthSession();
     const userId = session?.user?.id;
-    const sessionId = userId ? undefined : getOrCreateSessionId();
+    const sessionId = userId ? undefined : await getOrCreateSessionId();
 
     const result = await prisma.$transaction(async (prisma) => {
       // Check if the inventory item exists
@@ -385,7 +385,7 @@ export async function removeFromCart(id: string) {
   try {
     const session = await getServerAuthSession();
     const userId = session?.user?.id;
-    const sessionId = userId ? undefined : getOrCreateSessionId();
+    const sessionId = userId ? undefined : await getOrCreateSessionId();
 
     if (!id) {
       throw new Error("Invalid input");
@@ -463,7 +463,7 @@ export async function updateCartItemQuantity(id: string, quantity: number) {
   try {
     const session = await getServerAuthSession();
     const userId = session?.user?.id;
-    const sessionId = userId ? undefined : getOrCreateSessionId();
+    const sessionId = userId ? undefined : await getOrCreateSessionId();
 
     if (!id || isNaN(quantity)) {
       throw new Error("Invalid input");
@@ -543,7 +543,7 @@ export async function getCart() {
   try {
     const session = await getServerAuthSession();
     const userId = session?.user?.id;
-    const sessionId = userId ? undefined : getOrCreateSessionId();
+    const sessionId = userId ? undefined : await getOrCreateSessionId();
 
     const cartWhereInput = getCartWhereInput(userId, sessionId);
     const cart = await prisma.cart.findFirst({

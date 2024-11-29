@@ -6,21 +6,27 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { User } from "@prisma/client";
 import bcrypt from "bcrypt";
-import { getOrCreateSessionId } from "@/lib/session-id";
+import { cookies } from "next/headers";
+
+interface AdapterUser {
+  email: string;
+  name?: string | null;
+  image?: string | null;
+  emailVerified?: Date | null;
+}
 
 export const authOptions: NextAuthOptions = {
   adapter: {
     ...PrismaAdapter(prisma),
-    // Override createUser to match your schema
-    createUser: async (data) => {
+    createUser: async (data: AdapterUser) => {
       const user = await prisma.user.create({
         data: {
           email: data.email,
-          firstName: data.name?.split(" ")[0] || null, // Split full name into first name
-          lastName: data.name?.split(" ").slice(1).join(" ") || null, // Rest of the name becomes last name
+          firstName: data.name?.split(" ")[0] || null,
+          lastName: data.name?.split(" ").slice(1).join(" ") || null,
           avatar: data.image,
           emailVerified: data.emailVerified,
-          role: "USER", // Set default role
+          role: "USER",
         },
       });
       return user;
@@ -56,19 +62,23 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  callbacks: {
-    async signIn({ user, account, profile }) {
+  events: {
+    signIn: async ({ user }) => {
       if (user.id) {
-        const sessionId = getOrCreateSessionId();
         try {
-          await mergeCartsOnLogin(user.id, sessionId);
+          const cookieStore = await cookies();
+          const sessionId = cookieStore.get("sessionId")?.value;
+
+          if (sessionId) {
+            await mergeCartsOnLogin(user.id, sessionId);
+          }
         } catch (error) {
           console.error("Error merging carts:", error);
-          // Don't block sign in if cart merging fails
         }
       }
-      return true;
     },
+  },
+  callbacks: {
     async jwt({ token, user, account }) {
       if (user) {
         token.userId = user.id;
@@ -104,7 +114,7 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 30 * 24 * 60 * 60,
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
@@ -123,13 +133,9 @@ export async function getServerAuthSession() {
   return null;
 }
 
-export async function mergeCartsOnLogin(userId: string, sessionId: string) {
+async function mergeCartsOnLogin(userId: string, sessionId: string) {
   try {
-    // First check if user exists to prevent foreign key constraint error
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       console.error("User not found during cart merge");
       return;
@@ -146,70 +152,48 @@ export async function mergeCartsOnLogin(userId: string, sessionId: string) {
       }),
     ]);
 
-    if (sessionCart) {
-      if (userCart) {
-        // Merge session cart items into user cart
-        for (const item of sessionCart.cartItems) {
+    if (!sessionCart) return;
+
+    if (userCart) {
+      // Merge items into existing user cart
+      await Promise.all(
+        sessionCart.cartItems.map(async (item) => {
           const existingItem = userCart.cartItems.find(
             (i) => i.inventoryId === item.inventoryId && i.type === item.type
           );
 
           if (existingItem) {
-            // Update existing item
-            await prisma.cartItem.update({
+            return prisma.cartItem.update({
               where: { id: existingItem.id },
               data: {
                 quantity: (existingItem.quantity ?? 0) + (item.quantity ?? 0),
               },
             });
-          } else {
-            // Create new item in user's cart
-            await prisma.cartItem.create({
-              data: {
-                cartId: userCart.id,
-                inventoryId: item.inventoryId,
-                quantity: item.quantity,
-                type: item.type,
-              },
-            });
           }
-        }
-        // Delete the session cart after merging
-        await prisma.cart.delete({
-          where: { id: sessionCart.id },
-        });
-      } else {
-        // If no user cart exists, create one and move all items
-        const newUserCart = await prisma.cart.create({
-          data: {
-            userId,
-            totalPrice: sessionCart.totalPrice,
-          },
-        });
 
-        // Move all items to the new cart
-        await Promise.all(
-          sessionCart.cartItems.map((item) =>
-            prisma.cartItem.update({
-              where: { id: item.id },
-              data: { cartId: newUserCart.id },
-            })
-          )
-        );
+          return prisma.cartItem.create({
+            data: {
+              cartId: userCart.id,
+              inventoryId: item.inventoryId,
+              quantity: item.quantity,
+              type: item.type,
+            },
+          });
+        })
+      );
 
-        // Delete the session cart
-        await prisma.cart.delete({
-          where: { id: sessionCart.id },
-        });
-      }
+      await prisma.cart.delete({ where: { id: sessionCart.id } });
+    } else {
+      // Convert session cart to user cart
+      await prisma.cart.update({
+        where: { id: sessionCart.id },
+        data: { userId, sessionId: null },
+      });
     }
 
-    // Recalculate total price
     await recalculateCartTotal(userId);
   } catch (error) {
     console.error("Error during cart merge:", error);
-    // Don't throw the error to prevent login failure
-    // but log it for debugging
   }
 }
 
@@ -220,9 +204,7 @@ async function recalculateCartTotal(userId: string) {
       cartItems: {
         include: {
           inventory: {
-            include: {
-              product: true,
-            },
+            include: { product: true },
           },
         },
       },
@@ -230,11 +212,11 @@ async function recalculateCartTotal(userId: string) {
   });
 
   if (cart) {
-    const totalPrice = cart.cartItems.reduce((total, item) => {
-      return (
-        total + (item.inventory.product.tradePrice || 0) * (item.quantity || 0)
-      );
-    }, 0);
+    const totalPrice = cart.cartItems.reduce(
+      (total, item) =>
+        total + (item.inventory.product.tradePrice || 0) * (item.quantity || 0),
+      0
+    );
 
     await prisma.cart.update({
       where: { id: cart.id },

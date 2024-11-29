@@ -3,20 +3,22 @@ import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import BrandForm from "../_components/brand-form";
 import { getBrandById } from "../actions";
 
-export default async function AdminBrandDetailsPage({
-  params,
-}: {
-  params: { brand_id: string };
+type PageParams = Promise<{
+  brand_id: string;
+}>;
+
+export default async function AdminBrandDetailsPage(props: {
+  params: PageParams;
 }) {
-  const { brand_id } = params;
-  const brandDetails = await getBrandById(brand_id);
+  const params = await props.params;
+  const brandDetails = await getBrandById(params.brand_id);
 
   const breadcrumbItems = [
     { label: "Dashboard", href: "/admin" },
     { label: "Brands", href: "/admin/brands" },
     {
       label: `Edit ${brandDetails?.name}`,
-      href: `/admin/brands/${brand_id}`,
+      href: `/admin/brands/${params.brand_id}`,
       isCurrentPage: true,
     },
   ];

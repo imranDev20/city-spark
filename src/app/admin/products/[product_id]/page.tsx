@@ -3,15 +3,15 @@ import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import ProductForm from "../_components/product-form";
 import { getProductById } from "../actions";
 
-export default async function AdminProductDetailsPage({
-  params,
-}: {
-  params: {
-    product_id: string;
-  };
+type PageParams = Promise<{
+  product_id: string;
+}>;
+
+export default async function AdminProductDetailsPage(props: {
+  params: PageParams;
 }) {
-  const { product_id } = params;
-  const productDetails = await getProductById(product_id);
+  const params = await props.params;
+  const productDetails = await getProductById(params.product_id);
 
   const breadcrumbItems = [
     { label: "Dashboard", href: "/admin" },
@@ -24,11 +24,9 @@ export default async function AdminProductDetailsPage({
   ];
 
   return (
-    <>
-      <ContentLayout title="Add New Product">
-        <DynamicBreadcrumb items={breadcrumbItems} />
-        <ProductForm productDetails={productDetails} />
-      </ContentLayout>
-    </>
+    <ContentLayout title="Add New Product">
+      <DynamicBreadcrumb items={breadcrumbItems} />
+      <ProductForm productDetails={productDetails} />
+    </ContentLayout>
   );
 }

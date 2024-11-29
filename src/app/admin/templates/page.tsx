@@ -11,17 +11,19 @@ const breadcrumbItems = [
   { label: "Templates", href: "/admin/templates", isCurrentPage: true },
 ];
 
-export default function TemplatesPage({
-  searchParams,
-}: {
-  searchParams: {
-    search?: string;
-    page?: string;
-    sort_by?: string;
-    sort_order?: "asc" | "desc";
-    filter_status?: Status;
-  };
+type SearchParams = Promise<{
+  search?: string;
+  page?: string;
+  sort_by?: string;
+  sort_order?: "asc" | "desc";
+  filter_status?: Status;
+}>;
+
+export default async function AdminTemplatesPage(props: {
+  searchParams: SearchParams;
 }) {
+  const searchParams = await props.searchParams;
+
   return (
     <ContentLayout title="Templates">
       <DynamicBreadcrumb items={breadcrumbItems} />
