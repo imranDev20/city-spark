@@ -29,11 +29,16 @@ interface ProductCarouselProps {
 }
 
 const OPTIONS: EmblaOptionsType = {
-  loop: false,
   align: "start",
   containScroll: "trimSnaps",
-  dragFree: true,
-  slidesToScroll: "auto",
+  dragFree: false,
+  loop: false,
+  // This ensures it won't get stuck between slides
+  breakpoints: {
+    "(min-width: 1024px)": { slidesToScroll: 4 },
+    "(min-width: 768px)": { slidesToScroll: 3 },
+    "(max-width: 767px)": { slidesToScroll: 2 },
+  },
 };
 
 export default function ProductCarousel({
@@ -69,6 +74,9 @@ export default function ProductCarousel({
     emblaApi.on("select", onSelect);
     emblaApi.on("reInit", onSelect);
 
+    // Ensure proper snapping after initialization
+    emblaApi.reInit({ ...OPTIONS });
+
     return () => {
       emblaApi.off("select", onSelect);
       emblaApi.off("reInit", onSelect);
@@ -76,13 +84,8 @@ export default function ProductCarousel({
   }, [emblaApi, onSelect]);
 
   return (
-    <div
-      className={cn(
-        "container max-w-screen-xl mx-auto my-10",
-        "px-4 md:px-6 lg:px-8"
-      )}
-    >
-      <div className="flex justify-between items-center">
+    <section className="container max-w-screen-xl mx-auto my-10 px-4 md:px-6 lg:px-8">
+      <div className="flex justify-between items-center mb-6">
         <h2 className="font-semibold text-xl sm:text-2xl">{title}</h2>
         <div className="flex gap-2">
           <Button
@@ -91,6 +94,7 @@ export default function ProductCarousel({
             variant="outline"
             size="icon"
             className="h-9 w-9 rounded-full transition-all hover:scale-105"
+            aria-label="Previous slide"
           >
             <ArrowLeftIcon className="h-4 w-4" />
           </Button>
@@ -100,6 +104,7 @@ export default function ProductCarousel({
             variant="outline"
             size="icon"
             className="h-9 w-9 rounded-full transition-all hover:scale-105"
+            aria-label="Next slide"
           >
             <ArrowRightIcon className="h-4 w-4" />
           </Button>
@@ -107,41 +112,40 @@ export default function ProductCarousel({
       </div>
 
       <div className="relative">
-        <div
-          className="overflow-hidden rounded-xl -mx-4 md:-mx-6 lg:-mx-8"
-          ref={emblaRef}
-        >
-          <div className="flex pl-4 md:pl-6 lg:pl-8">
+        <div className="overflow-hidden" ref={emblaRef}>
+          <div className="flex -ml-4">
             {inventoryItems.map((inventoryItem) => (
               <div
                 key={inventoryItem.id}
                 className={cn(
-                  "min-w-0 flex-[0_0_100%]", // Force 100% width on smallest screens
-                  "sm:flex-[0_0_50%]", // 50% width on small screens
-                  "md:flex-[0_0_33.333333%]", // 33.333% width on medium screens
-                  "lg:flex-[0_0_25%]", // 25% width on large screens
-                  "pr-4 md:pr-6 lg:pr-8 py-5"
+                  "pl-4", // Consistent left padding for spacing
+                  "min-w-0",
+                  "flex-[0_0_50%]", // 2 columns on mobile
+                  "md:flex-[0_0_33.333333%]", // 3 columns on tablet
+                  "lg:flex-[0_0_25%]" // 4 columns on desktop
                 )}
-                style={{ maxWidth: "100%" }} // Ensure no overflow
               >
-                <ProductCard inventoryItem={inventoryItem} />
+                <div className="h-full">
+                  <ProductCard inventoryItem={inventoryItem} />
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Progress dots for mobile and tablet */}
+        {/* Progress indicators */}
         <div className="flex justify-center gap-1 mt-4 lg:hidden">
           {scrollSnaps.map((_, index) => (
             <div
               key={index}
-              className={`h-1.5 rounded-full transition-all ${
+              className={cn(
+                "h-1.5 rounded-full transition-all",
                 index === selectedIndex ? "w-6 bg-primary" : "w-1.5 bg-gray-200"
-              }`}
+              )}
             />
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

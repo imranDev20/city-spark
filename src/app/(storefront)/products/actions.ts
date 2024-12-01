@@ -53,7 +53,7 @@ export async function getCategoriesByType(
         categories = await prisma.category.findMany({
           where: {
             type: CategoryType.SECONDARY,
-            parentPrimaryCategoryId: primaryId, //must provide
+            parentPrimaryCategoryId: primaryId,
           },
           orderBy: { name: "asc" },
           include: {
@@ -75,8 +75,8 @@ export async function getCategoriesByType(
         categories = await prisma.category.findMany({
           where: {
             type: CategoryType.TERTIARY,
-            parentSecondaryCategoryId: secondaryId, // must provide
-            parentPrimaryCategoryId: primaryId, // not necessary
+            parentSecondaryCategoryId: secondaryId,
+            parentPrimaryCategoryId: primaryId,
           },
           orderBy: { name: "asc" },
           include: {
@@ -101,7 +101,7 @@ export async function getCategoriesByType(
             type: CategoryType.QUATERNARY,
             parentPrimaryCategoryId: primaryId,
             parentSecondaryCategoryId: secondaryId,
-            parentTertiaryCategoryId: tertiaryId, // must provide
+            parentTertiaryCategoryId: tertiaryId,
           },
           orderBy: { name: "asc" },
           include: {

@@ -9,7 +9,6 @@ import {
   Users,
   ShoppingCart,
   Settings,
-  BarChart,
 } from "lucide-react";
 
 const navigation = [
@@ -33,7 +32,6 @@ const navigation = [
     href: "/admin/customers",
     icon: Users,
   },
-
   {
     name: "Settings",
     href: "/admin/settings",
@@ -41,15 +39,43 @@ const navigation = [
   },
 ];
 
+// Routes that will use a different action bottom bar
+const actionBarRoutes = [
+  // Creation routes
+  "/admin/products/new",
+  "/admin/brands/new",
+  "/admin/templates/new",
+  "/admin/categories/new",
+  "/admin/orders/new",
+  "/admin/users/new",
+
+  // Detail/Edit routes check
+  "/admin/products/",
+  "/admin/brands/",
+  "/admin/templates/",
+  "/admin/categories/",
+  "/admin/orders/",
+  "/admin/users/",
+
+  "/admin/products",
+];
+
 export default function AdminBottomNav() {
   const pathname = usePathname();
+
+  // Hide this bottom nav if we're on a route that needs the action bar
+  if (actionBarRoutes.some((route) => pathname.startsWith(route))) {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-white border-t border-gray-200 md:hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
       <div className="grid h-full max-w-lg grid-cols-5 mx-auto">
         {navigation.map((item) => {
           const isActive =
-            pathname === item.href || pathname.startsWith(`${item.href}/`);
+            item.href === "/admin"
+              ? pathname === "/admin"
+              : pathname.startsWith(item.href + "/") || pathname === item.href;
 
           return (
             <Link

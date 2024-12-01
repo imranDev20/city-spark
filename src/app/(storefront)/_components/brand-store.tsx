@@ -18,8 +18,11 @@ export default function BrandStore() {
           src={img}
           alt="Brand Store Background"
           layout="fill"
-          objectFit="cover"
+          style={{
+            objectFit: "cover",
+          }}
           className="opacity-30 rounded-xl"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
 
         <div
