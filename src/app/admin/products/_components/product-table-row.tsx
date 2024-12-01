@@ -23,6 +23,7 @@ import { MoreHorizontal, Pencil, Trash2, Eye, Archive } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useTransition } from "react";
 import { deleteProduct } from "../actions";
+import { useQueryClient } from "@tanstack/react-query";
 
 type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -43,6 +44,7 @@ export default function ProductTableRow({
 }) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -52,6 +54,13 @@ export default function ProductTableRow({
       const result = await deleteProduct(product.id);
 
       if (result.success) {
+        await queryClient.invalidateQueries({
+          queryKey: ["products"],
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ["product", product.id],
+        });
+
         toast({
           title: "Product Deleted",
           description: "The product has been successfully deleted.",
@@ -191,7 +200,11 @@ export default function ProductTableRow({
                 Archive Product
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600" onClick={handleDelete}>
+              <DropdownMenuItem
+                className="text-red-600"
+                onClick={handleDelete}
+                disabled={isPending}
+              >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete Product
               </DropdownMenuItem>

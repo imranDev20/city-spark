@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
-    const page_size = parseInt(searchParams.get("page_size") || "10");
+    const pageSize = parseInt(searchParams.get("page_size") || "10");
     const search = searchParams.get("search") || "";
     const sortBy = searchParams.get("sort_by") || "updatedAt";
     const sortOrder = (searchParams.get("sort_order") || "desc") as
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     const quaternaryCategoryId = searchParams.get("quaternary_category_id");
 
     // Calculate pagination
-    const skip = (page - 1) * page_size;
+    const skip = (page - 1) * pageSize;
 
     // Build category filters
     const categoryFilters = {
@@ -86,18 +86,18 @@ export async function GET(request: Request) {
           [sortBy]: sortOrder,
         },
         skip,
-        take: page_size,
+        take: pageSize,
       }),
     ]);
 
     // Calculate pagination metadata
-    const totalPages = Math.ceil(totalCount / page_size);
+    const totalPages = Math.ceil(totalCount / pageSize);
 
     return NextResponse.json({
       products,
       pagination: {
         currentPage: page,
-        page_size,
+        page_size: pageSize,
         totalPages,
         totalCount,
       },

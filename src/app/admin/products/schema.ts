@@ -106,10 +106,14 @@ export const createProductSchema = (
       })
       .optional(),
 
-    primaryCategoryId:
-      primaryCategories && primaryCategories.length > 0
-        ? z.string().trim().min(1, "Primary category is required")
-        : z.string().trim().optional(),
+    primaryCategoryId: z
+      .string({
+        required_error: "Primary category is required.",
+        invalid_type_error: "Primary category must be a string.",
+      })
+      .trim()
+      .min(1, "Primary category is required"),
+
     secondaryCategoryId:
       secondaryCategories && secondaryCategories.length > 0
         ? z.string().trim().min(1, "Secondary category is required")

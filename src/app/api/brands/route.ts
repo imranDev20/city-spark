@@ -1,80 +1,77 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { delay } from "@/lib/utils";
+import { Status } from "@prisma/client";
 
-export async function GET(req: NextRequest) {
-  const searchParams = req.nextUrl.searchParams;
-  const search = searchParams.get("search");
-  const limit = parseInt(searchParams.get("limit") || "5", 10);
-  const page = parseInt(searchParams.get("page") || "1", 10);
-
-  // await delay(10000);
-
+export async function GET(request: Request) {
   try {
-    const skip = (page - 1) * limit;
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const pageSize = parseInt(searchParams.get("page_size") || "10");
+    const search = searchParams.get("search") || "";
+    const sortBy = searchParams.get("sort_by") || "updatedAt";
+    const sortOrder = (searchParams.get("sort_order") || "desc") as
+      | "asc"
+      | "desc";
+    const filterStatus = searchParams.get("filter_status") as Status | null;
 
-    const [brands, totalCount] = await Promise.all([
+    const skip = (page - 1) * pageSize;
+
+    const [totalCount, brands] = await Promise.all([
+      prisma.brand.count({
+        where: {
+          ...(search
+            ? {
+                name: {
+                  contains: search,
+                  mode: "insensitive",
+                },
+              }
+            : {}),
+          ...(filterStatus ? { status: filterStatus } : {}),
+        },
+      }),
       prisma.brand.findMany({
-        where: search
-          ? {
-              name: {
-                contains: search,
-                mode: "insensitive",
-              },
-            }
-          : undefined,
-        orderBy: {
-          name: "asc",
+        where: {
+          ...(search
+            ? {
+                name: {
+                  contains: search,
+                  mode: "insensitive",
+                },
+              }
+            : {}),
+          ...(filterStatus ? { status: filterStatus } : {}),
         },
         select: {
           id: true,
           name: true,
           _count: {
-            select: { products: true },
+            select: {
+              products: true,
+            },
           },
         },
-        take: limit,
-        skip: skip,
-      }),
-      prisma.brand.count({
-        where: search
-          ? {
-              name: {
-                contains: search,
-                mode: "insensitive",
-              },
-            }
-          : undefined,
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+        skip,
+        take: pageSize,
       }),
     ]);
 
-    const totalPages = Math.ceil(totalCount / limit);
-    const hasMore = page < totalPages;
-
     return NextResponse.json({
-      success: true,
-      message: "Brands fetched successfully",
-      data: brands.map((brand) => ({
-        id: brand.id,
-        name: brand.name,
-        count: brand._count.products,
-      })),
+      data: brands,
       pagination: {
-        page,
-        limit,
+        currentPage: page,
+        pageSize: pageSize,
+        totalPages: Math.ceil(totalCount / pageSize),
         totalCount,
-        totalPages,
-        hasMore,
       },
     });
   } catch (error) {
     console.error("Error fetching brands:", error);
     return NextResponse.json(
-      {
-        success: false,
-        message: "An error occurred while fetching brands",
-        data: null,
-      },
+      { error: "Failed to fetch brands" },
       { status: 500 }
     );
   }

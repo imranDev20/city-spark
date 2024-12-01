@@ -7,7 +7,6 @@ import ProductForm from "../_components/product-form";
 import { useQuery } from "@tanstack/react-query";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Loader2 } from "lucide-react";
-import { usePathname } from "next/navigation";
 
 type PageParams = Promise<{
   product_id: string;
