@@ -3,35 +3,41 @@ import { CategoryType } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { z } from "zod";
 
+// Define the query parameter schema with proper optional handling
 const querySchema = z.object({
   page: z.coerce.number().min(1).default(1),
-  pageSize: z.coerce.number().min(1).default(10),
-  sortBy: z.enum(["name", "createdAt"]).default("createdAt"),
-  sortOrder: z.enum(["asc", "desc"]).default("desc"),
-  filterType: z.nativeEnum(CategoryType).optional(),
-  searchTerm: z.string().optional(),
+  page_size: z.coerce.number().min(1).default(10),
+  sortBy: z.enum(["name", "createdAt"]).optional().default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
+  filterType: z.nativeEnum(CategoryType).optional().nullable(),
+  searchTerm: z.string().optional().nullable(),
 });
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
-    // Parse and validate query parameters
+    // Parse and validate query parameters with null handling
     const validatedParams = querySchema.parse({
       page: searchParams.get("page"),
-      pageSize: searchParams.get("pageSize"),
-      sortBy: searchParams.get("sortBy"),
-      sortOrder: searchParams.get("sortOrder"),
+      page_size: searchParams.get("page_size"),
+      sortBy: searchParams.get("sortBy") || undefined,
+      sortOrder: searchParams.get("sortOrder") || undefined,
       filterType: searchParams.get("filterType"),
       searchTerm: searchParams.get("searchTerm"),
     });
 
-    const { page, pageSize, sortBy, sortOrder, filterType, searchTerm } =
+    const { page, page_size, sortBy, sortOrder, filterType, searchTerm } =
       validatedParams;
-    const skip = (page - 1) * pageSize;
+    const skip = (page - 1) * page_size;
 
-    // Build where clause
-    let where: any = {};
+    // Build where clause with type safety
+    const where: {
+      type?: CategoryType;
+      OR?: {
+        [key: string]: any;
+      }[];
+    } = {};
 
     if (filterType) {
       where.type = filterType;
@@ -58,25 +64,40 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    // Execute queries in parallel
+    // Execute queries in parallel with proper typing
     const [categories, totalCount] = await Promise.all([
       prisma.category.findMany({
         include: {
-          parentPrimaryCategory: true,
-          parentSecondaryCategory: true,
-          parentTertiaryCategory: true,
+          parentPrimaryCategory: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          parentSecondaryCategory: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          parentTertiaryCategory: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
         where,
         orderBy: {
           [sortBy]: sortOrder,
         },
         skip,
-        take: pageSize,
+        take: page_size,
       }),
       prisma.category.count({ where }),
     ]);
 
-    const totalPages = Math.ceil(totalCount / pageSize);
+    const totalPages = Math.ceil(totalCount / page_size);
 
     return NextResponse.json({
       status: "success",
@@ -85,7 +106,7 @@ export async function GET(req: NextRequest) {
         pagination: {
           currentPage: page,
           totalPages,
-          pageSize,
+          page_size,
           totalCount,
         },
       },
