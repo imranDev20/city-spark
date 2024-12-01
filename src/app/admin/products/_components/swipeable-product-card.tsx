@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import PlaceholderImage from "@/images/placeholder-image.png";
 import { deleteProduct } from "../actions";
+import { BLUR_DATA_URL } from "@/lib/constants";
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   select: {
@@ -158,7 +159,7 @@ export default function SwipeableProductCard({
           }}
           className="relative z-10"
         >
-          <Link href={`/admin/products/${product.id}/edit`}>
+          <Link href={`/admin/products/${product.id}`}>
             <Card className="shadow-none bg-white">
               <div className="p-4 flex items-center gap-3">
                 <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-gray-50 flex-shrink-0">
@@ -166,8 +167,12 @@ export default function SwipeableProductCard({
                     src={product.images[0] || PlaceholderImage}
                     alt={product.name}
                     fill
-                    className="object-cover"
+                    style={{
+                      objectFit: "contain",
+                    }}
                     sizes="64px"
+                    placeholder="blur"
+                    blurDataURL={BLUR_DATA_URL}
                   />
                 </div>
 

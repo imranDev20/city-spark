@@ -12,6 +12,7 @@ import { useTransition, useState, useEffect } from "react";
 import Link from "next/link";
 import { customSlugify } from "@/lib/functions";
 import { useQueryClient } from "@tanstack/react-query";
+import { BLUR_DATA_URL } from "@/lib/constants";
 
 // Types remain the same...
 type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
@@ -70,6 +71,8 @@ const ProductImage = ({ images }: { images: string[] }) => {
           className="object-contain"
           sizes="100vw"
           priority={true}
+          placeholder="blur"
+          blurDataURL={BLUR_DATA_URL}
         />
       </div>
 
@@ -88,6 +91,8 @@ const ProductImage = ({ images }: { images: string[] }) => {
           alt="Product Image"
           className="object-contain transition-all duration-300 group-hover:scale-105"
           sizes="(min-width: 1024px) 33vw, 50vw"
+          placeholder="blur"
+          blurDataURL={BLUR_DATA_URL}
         />
         {validImages.length > 1 && (
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
@@ -139,6 +144,8 @@ const DesktopImageCarousel = ({ images }: { images: string[] }) => {
         alt="Product Image"
         className="object-contain transition-all duration-300 group-hover:scale-105"
         sizes="(min-width: 641px) 50vw, 33vw"
+        placeholder="blur"
+        blurDataURL={BLUR_DATA_URL}
       />
       {validImages.length > 1 && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">

@@ -49,8 +49,7 @@ export async function createBrand(data: BrandFormInputType) {
       }
     );
 
-    revalidatePath("/admin/brands");
-    revalidatePath("/admin/products/[product_id]", "page");
+    revalidatePath("/admin", "layout");
 
     return {
       message: "Brand created successfully!",
@@ -185,8 +184,7 @@ export async function deleteBrand(brandId: string) {
       }
     );
 
-    revalidatePath("/admin/brands");
-    revalidatePath("/admin/products/[product_id]", "page");
+    revalidatePath("/admin", "layout");
 
     return {
       message: "Brand deleted successfully!",
@@ -292,9 +290,7 @@ export async function updateBrand(brandId: string, data: BrandFormInputType) {
       }
     );
 
-    revalidatePath("/admin/brands");
-    revalidatePath(`/admin/brands/${result.id}`);
-    revalidatePath("/admin/products/[product_id]", "page");
+    revalidatePath("/admin", "layout");
 
     return {
       message: "Brand Updated Successfully!",

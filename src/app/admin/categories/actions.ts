@@ -47,7 +47,7 @@ export async function createCategory(data: CategoryFormInputType) {
       }
     );
 
-    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
 
     return {
       message: "Category created successfully!",
@@ -301,7 +301,7 @@ export async function deleteCategory(categoryId: string) {
       }
     );
 
-    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
 
     return {
       message: "Category deleted successfully!",
