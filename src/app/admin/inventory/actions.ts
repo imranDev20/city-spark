@@ -7,21 +7,21 @@ import { Prisma } from "@prisma/client";
 
 export const getInventoryItems = async ({
   page = 1,
-  pageSize = 10,
+  page_size = 10,
   sortBy = "createdAt",
   sortOrder = "desc",
   filterStatus,
   searchTerm,
 }: {
   page?: number;
-  pageSize?: number;
+  page_size?: number;
   sortBy?: "name" | "stockCount" | "soldCount" | "heldCount" | "createdAt";
   sortOrder?: "asc" | "desc";
   filterStatus?: string;
   searchTerm?: string;
 }) => {
   try {
-    const skip = (page - 1) * pageSize;
+    const skip = (page - 1) * page_size;
 
     let whereClause: Prisma.InventoryWhereInput = {};
 
@@ -74,12 +74,12 @@ export const getInventoryItems = async ({
         },
         orderBy: orderBy,
         skip,
-        take: pageSize,
+        take: page_size,
       }),
       prisma.inventory.count({ where: whereClause }),
     ]);
 
-    const totalPages = Math.ceil(totalCount / pageSize);
+    const totalPages = Math.ceil(totalCount / page_size);
 
     return {
       inventories,
@@ -87,7 +87,7 @@ export const getInventoryItems = async ({
         currentPage: page,
         totalCount,
         totalPages,
-        pageSize,
+        page_size,
       },
     };
   } catch (error) {

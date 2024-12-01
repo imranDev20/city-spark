@@ -16,9 +16,6 @@ type PageParams = Promise<{
 export default function AdminProductDetailsPage(props: { params: PageParams }) {
   const { product_id } = React.use(props.params);
 
-  const pathname = usePathname();
-  console.log(pathname);
-
   const {
     data: productDetails,
     isLoading,

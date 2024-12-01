@@ -22,7 +22,7 @@ export interface ProductsResponse {
     currentPage: number;
     totalCount: number;
     totalPages: number;
-    pageSize: number;
+    page_size: number;
   };
 }
 
@@ -31,11 +31,15 @@ export interface ProductsResponse {
  */
 export interface FetchProductsParams {
   page?: string | number;
-  pageSize?: string | number;
+  page_size?: string | number;
   search?: string;
   sort_by?: string;
   sort_order?: "asc" | "desc";
   filter_status?: string;
+  primary_category_id?: string;
+  secondary_category_id?: string;
+  tertiary_category_id?: string;
+  quaternary_category_id?: string;
 }
 
 /**
@@ -43,11 +47,15 @@ export interface FetchProductsParams {
  *
  * @param params - Object containing query parameters
  * @param params.page - Current page number (default: 1)
- * @param params.pageSize - Number of items per page (default: 10)
+ * @param params.page_size - Number of items per page (default: 10)
  * @param params.search - Search term for filtering products
  * @param params.sort_by - Field to sort by (e.g., 'name', 'updatedAt')
  * @param params.sort_order - Sort direction ('asc' or 'desc')
  * @param params.filter_status - Filter by product status
+ * @param params.primary_category_id - Filter by primary category ID
+ * @param params.secondary_category_id - Filter by secondary category ID
+ * @param params.tertiary_category_id - Filter by tertiary category ID
+ * @param params.quaternary_category_id - Filter by quaternary category ID
  *
  * @returns Promise containing products data and pagination information
  *
@@ -57,11 +65,13 @@ export interface FetchProductsParams {
  * ```typescript
  * const result = await fetchProducts({
  *   page: '1',
- *   pageSize: '10',
+ *   page_size: '10',
  *   search: 'boiler',
  *   sort_by: 'updatedAt',
  *   sort_order: 'desc',
- *   filter_status: 'ACTIVE'
+ *   filter_status: 'ACTIVE',
+ *   primary_category_id: '123',
+ *   secondary_category_id: '456'
  * });
  * ```
  */
@@ -72,7 +82,7 @@ export async function fetchProducts(
     // Convert params object to URLSearchParams
     const queryParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== "") {
+      if (value !== undefined && value !== "" && value !== null) {
         queryParams.append(key, value.toString());
       }
     });

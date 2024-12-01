@@ -113,58 +113,6 @@ const ProductImage = ({ images }: { images: string[] }) => {
   );
 };
 
-// Interactive carousel for desktop
-const DesktopImageCarousel = ({ images }: { images: string[] }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const validImages = images.filter(Boolean);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isHovered && validImages.length > 1) {
-      interval = setInterval(() => {
-        setCurrentImageIndex((prev) => (prev + 1) % validImages.length);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isHovered, validImages.length]);
-
-  return (
-    <div
-      className="relative h-48 md:h-56 lg:h-64 bg-white p-6"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        setCurrentImageIndex(0);
-      }}
-    >
-      <Image
-        src={validImages[currentImageIndex] || PlaceholderImage}
-        fill
-        alt="Product Image"
-        className="object-contain transition-all duration-300 group-hover:scale-105"
-        sizes="(min-width: 641px) 50vw, 33vw"
-        placeholder="blur"
-        blurDataURL={BLUR_DATA_URL}
-      />
-      {validImages.length > 1 && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-          {validImages.map((_, index) => (
-            <div
-              key={index}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                index === currentImageIndex
-                  ? "w-4 bg-primary"
-                  : "w-1.5 bg-gray-300"
-              }`}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
 const QuantitySelector = ({
   quantity,
   onQuantityChange,

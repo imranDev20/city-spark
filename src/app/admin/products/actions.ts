@@ -7,39 +7,6 @@ import { backendClient } from "@/lib/edgestore-server";
 import exceljs from "exceljs";
 import dayjs from "dayjs";
 
-// Delete this later
-export const getProductById = async (productId: string) => {
-  try {
-    const product = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      },
-      include: {
-        brand: true,
-        productTemplate: {
-          include: {
-            fields: {
-              include: {
-                templateField: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!product) {
-      throw new Error("Product not found");
-    }
-
-    return product;
-  } catch (error) {
-    console.error("Error fetching product:", error);
-    throw new Error("Failed to fetch product");
-  }
-};
-// above
-
 export async function createProduct(data: ProductFormInputType) {
   try {
     const result = await prisma.$transaction(
@@ -177,13 +144,7 @@ export async function createProduct(data: ProductFormInputType) {
       }
     );
 
-    revalidatePath("/admin/inventory");
-    revalidatePath("/admin/products");
-    revalidatePath(`/admin/products/${result.id}`);
-    revalidatePath("/admin/products/[product_id]", "page");
-    revalidatePath("/products/[[...product_url]]", "page");
-    revalidatePath("/");
-    revalidatePath("/products");
+    revalidatePath("/", "layout");
 
     return {
       message: "Product created successfully!",
@@ -360,12 +321,7 @@ export async function updateProduct(
       }
     );
 
-    revalidatePath("/admin/products");
-    revalidatePath(`/admin/products/${productId}`);
-    revalidatePath("/admin/inventory");
-    revalidatePath("/admin/inventory/[inventory_id]", "page");
-    revalidatePath("/");
-    revalidatePath("/products/[[...product_url]]", "page");
+    revalidatePath("/", "layout");
 
     return {
       message: "Product updated successfully!",
@@ -441,11 +397,7 @@ export async function deleteProduct(productId: string) {
       }
     );
 
-    revalidatePath("/admin/products");
-    revalidatePath("/admin/inventory");
-    revalidatePath("/");
-    revalidatePath("/products");
-    revalidatePath("/products/[[...product_url]]", "page");
+    revalidatePath("/", "layout");
 
     return {
       message: "Product deleted successfully!",

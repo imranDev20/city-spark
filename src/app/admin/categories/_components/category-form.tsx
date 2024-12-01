@@ -212,6 +212,7 @@ export default function CategoryForm({
       }
     });
   };
+
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)}>

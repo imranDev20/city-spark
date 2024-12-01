@@ -106,7 +106,12 @@ export default function ProductTableRow({
       </TableCell>
       <TableCell>
         <div className="relative">
-          <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-50">
+          <div
+            className={cn(
+              "inline-flex items-center px-3 py-1.5 rounded-full",
+              `${statusMap[product.status || "DRAFT"].background}`
+            )}
+          >
             <div
               className={cn(
                 "h-1.5 w-1.5 rounded-full mr-2",

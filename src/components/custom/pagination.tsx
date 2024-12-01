@@ -34,7 +34,9 @@ export function ReusablePagination({
   const { createQueryString } = useQueryString();
 
   const navigateToPage = (page: number) => {
-    router.push(`${pathname}?${createQueryString({ page: page.toString() })}`);
+    router.push(`${pathname}?${createQueryString({ page: page.toString() })}`, {
+      scroll: false,
+    });
   };
 
   const renderPageLinks = () => {

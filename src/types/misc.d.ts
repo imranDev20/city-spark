@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 
 export type Pagination = {
   currentPage: number;
-  pageSize: number;
+  page_size: number;
   totalCount: number;
   totalPages: number;
 };

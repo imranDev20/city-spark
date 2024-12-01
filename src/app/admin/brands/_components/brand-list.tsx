@@ -27,14 +27,14 @@ export default async function BrandList({
 
   const { brands, pagination } = await getBrands({
     page: page ? parseInt(page) : 1,
-    pageSize: 10,
+    page_size: 10,
     sortBy: sort_by as "name" | "createdAt" | undefined,
     sortOrder: sort_order,
     filterStatus: filter_status,
     searchTerm: search,
   });
 
-  const { currentPage, totalCount, totalPages, pageSize } = pagination;
+  const { currentPage, totalCount, totalPages, page_size } = pagination;
 
   return (
     <>
@@ -75,7 +75,7 @@ export default async function BrandList({
 
       <ReusablePagination
         currentPage={currentPage}
-        itemsPerPage={pageSize}
+        itemsPerPage={page_size}
         totalItems={totalCount}
         totalPages={totalPages}
       />

@@ -17,25 +17,43 @@ import { fetchProducts, FetchProductsParams } from "@/services/admin-products";
 import ProductsLoading from "./products-loading";
 import ProductTableRow from "./product-table-row";
 
-export default function DesktopProductList() {
+interface DesktopProductListProps {
+  primaryCategoryId?: string;
+  secondaryCategoryId?: string;
+  tertiaryCategoryId?: string;
+  quaternaryCategoryId?: string;
+}
+
+export default function DesktopProductList({
+  primaryCategoryId,
+  secondaryCategoryId,
+  tertiaryCategoryId,
+  quaternaryCategoryId,
+}: DesktopProductListProps) {
   const searchParams = useSearchParams();
 
   const currentParams: FetchProductsParams = {
     page: searchParams.get("page") || "1",
-    pageSize: "10",
+    page_size: "10",
     search: searchParams.get("search") || "",
     sort_by: searchParams.get("sort_by") || "updatedAt",
     sort_order:
       (searchParams.get("sort_order") as FetchProductsParams["sort_order"]) ||
       "desc",
     filter_status: searchParams.get("filter_status") || "",
+    // Add category filters if they exist - using snake_case
+    ...(primaryCategoryId && { primary_category_id: primaryCategoryId }),
+    ...(secondaryCategoryId && { secondary_category_id: secondaryCategoryId }),
+    ...(tertiaryCategoryId && { tertiary_category_id: tertiaryCategoryId }),
+    ...(quaternaryCategoryId && {
+      quaternary_category_id: quaternaryCategoryId,
+    }),
   };
 
-  const { data, isLoading, isError, isFetching, isFetchedAfterMount } =
-    useQuery({
-      queryKey: ["products", currentParams],
-      queryFn: () => fetchProducts(currentParams),
-    });
+  const { data, isLoading, isError, isFetching } = useQuery({
+    queryKey: ["products", currentParams],
+    queryFn: () => fetchProducts(currentParams),
+  });
 
   if (isLoading || isFetching) {
     return <ProductsLoading />;
@@ -99,7 +117,7 @@ export default function DesktopProductList() {
         currentPage={data.pagination.currentPage}
         totalPages={data.pagination.totalPages}
         totalItems={data.pagination.totalCount}
-        itemsPerPage={data.pagination.pageSize}
+        itemsPerPage={data.pagination.page_size}
       />
     </div>
   );

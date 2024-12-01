@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
-    const pageSize = parseInt(searchParams.get("pageSize") || "10");
+    const page_size = parseInt(searchParams.get("page_size") || "10");
     const search = searchParams.get("search") || "";
     const sortBy = searchParams.get("sort_by") || "updatedAt";
     const sortOrder = (searchParams.get("sort_order") || "desc") as
@@ -14,12 +14,28 @@ export async function GET(request: Request) {
       | "desc";
     const filterStatus = searchParams.get("filter_status") as Status | null;
 
+    // Get category filters
+    const primaryCategoryId = searchParams.get("primary_category_id");
+    const secondaryCategoryId = searchParams.get("secondary_category_id");
+    const tertiaryCategoryId = searchParams.get("tertiary_category_id");
+    const quaternaryCategoryId = searchParams.get("quaternary_category_id");
+
     // Calculate pagination
-    const skip = (page - 1) * pageSize;
+    const skip = (page - 1) * page_size;
+
+    // Build category filters
+    const categoryFilters = {
+      ...(primaryCategoryId && { primaryCategoryId }),
+      ...(secondaryCategoryId && { secondaryCategoryId }),
+      ...(tertiaryCategoryId && { tertiaryCategoryId }),
+      ...(quaternaryCategoryId && { quaternaryCategoryId }),
+    };
 
     // Build the where clause for filtering
     const where = {
       AND: [
+        // Category filters - will be combined with AND
+        categoryFilters,
         // Status filter
         filterStatus ? { status: filterStatus } : {},
         // Search filter
@@ -70,18 +86,18 @@ export async function GET(request: Request) {
           [sortBy]: sortOrder,
         },
         skip,
-        take: pageSize,
+        take: page_size,
       }),
     ]);
 
     // Calculate pagination metadata
-    const totalPages = Math.ceil(totalCount / pageSize);
+    const totalPages = Math.ceil(totalCount / page_size);
 
     return NextResponse.json({
       products,
       pagination: {
         currentPage: page,
-        pageSize,
+        page_size,
         totalPages,
         totalCount,
       },

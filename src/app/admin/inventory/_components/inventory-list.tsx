@@ -20,10 +20,10 @@ export default function InventoryList({
     currentPage: number;
     totalCount: number;
     totalPages: number;
-    pageSize: number;
+    page_size: number;
   };
 }) {
-  const { currentPage, totalCount, totalPages, pageSize } = pagination;
+  const { currentPage, totalCount, totalPages, page_size } = pagination;
 
   return (
     <>
@@ -68,7 +68,7 @@ export default function InventoryList({
 
       <ReusablePagination
         currentPage={currentPage}
-        itemsPerPage={pageSize}
+        itemsPerPage={page_size}
         totalItems={totalCount}
         totalPages={totalPages}
       />
