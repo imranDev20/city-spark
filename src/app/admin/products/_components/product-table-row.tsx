@@ -29,6 +29,9 @@ type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
     brand: true;
     primaryCategory: true;
+    secondaryCategory: true;
+    tertiaryCategory: true;
+    quaternaryCategory: true;
     images: true;
     tradePrice: true;
     promotionalPrice: true;
@@ -121,9 +124,14 @@ export default function ProductTableRow({
             {product.name}
           </span>
           <span className="text-sm text-gray-500 mt-1 line-clamp-1">
-            {[product.brand?.name, product.primaryCategory?.name]
+            {[
+              product.primaryCategory?.name,
+              product.secondaryCategory?.name,
+              product.tertiaryCategory?.name,
+              product.quaternaryCategory?.name,
+            ]
               .filter(Boolean)
-              .join(" • ")}
+              .join(" > ")}
           </span>
         </div>
       </TableCell>

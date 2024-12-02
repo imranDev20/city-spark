@@ -3,7 +3,10 @@ import { getCategoriesByType } from "../actions";
 import { Prisma } from "@prisma/client";
 import Link from "next/link";
 import CategoryCard from "./category-card";
-import { CategoryWithRelations } from "@/types/storefront-products";
+import {
+  CategoryWithChildParent,
+  CategoryWithRelations,
+} from "@/types/storefront-products";
 import PageHeader from "../../_components/page-header";
 import { customSlugify } from "@/lib/functions";
 import {
@@ -17,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import CategoryLink from "./category-link";
 import { cn } from "@/lib/utils";
 import MobileBottomBar from "../../_components/mobile-bottom-bar";
+import CategoryNav from "../../_components/category-nav";
 
 type PrimaryCagoryWithChilds = Prisma.CategoryGetPayload<{
   include: {

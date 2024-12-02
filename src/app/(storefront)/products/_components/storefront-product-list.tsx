@@ -19,11 +19,14 @@ import { customSlugify } from "@/lib/functions";
 import { CategoryType } from "@prisma/client";
 import {
   getBrands,
+  getCategoriesByType,
   getCategoryById,
   getProductFilterOptions,
 } from "../actions";
 import { cn } from "@/lib/utils";
 import ProductActionBar from "./product-action-bar";
+import CategoryNav from "../../_components/category-nav";
+import { CategoryWithChildParent } from "@/types/storefront-products";
 
 export default async function StorefrontProductList({
   primaryCategoryId,

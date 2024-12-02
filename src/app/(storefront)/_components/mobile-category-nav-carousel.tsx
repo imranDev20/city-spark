@@ -135,7 +135,7 @@ export default function MobileCategoryNavCarousel({
   );
 
   return (
-    <div className="pl-4">
+    <div className="pl-4 block lg:hidden">
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex">
           {mergedCategories.map((item) => (

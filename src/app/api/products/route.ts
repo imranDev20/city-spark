@@ -81,6 +81,25 @@ export async function GET(request: Request) {
               name: true,
             },
           },
+          secondaryCategory: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+
+          tertiaryCategory: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          quaternaryCategory: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
         orderBy: {
           [sortBy]: sortOrder,
