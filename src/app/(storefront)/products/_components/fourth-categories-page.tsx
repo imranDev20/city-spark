@@ -41,7 +41,8 @@ export default async function FourthCategoriesPage({
   const { categories } = await getCategoriesByType(
     type,
     primaryId,
-    secondaryId
+    secondaryId,
+    tertiaryId
   );
   const quaternaryCategories = categories as QuaternaryCategoryWithChilds[];
 
@@ -89,6 +90,8 @@ export default async function FourthCategoriesPage({
       isCurrentPage: true,
     },
   ];
+
+  console.log(quaternaryCategories);
 
   return (
     <main className="min-h-screen flex flex-col">

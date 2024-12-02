@@ -67,8 +67,10 @@ export default function AdminProductDetailsPage(props: { params: PageParams }) {
   }
 
   return (
-    <ContentLayout title="Edit Product">
-      <DynamicBreadcrumb items={breadcrumbItems} />
+    <ContentLayout title="Edit Product" isContainer={false}>
+      <div className="container pt-8 pb-4 px-4 sm:px-8">
+        <DynamicBreadcrumb items={breadcrumbItems} />
+      </div>
       {productDetails && <ProductForm productDetails={productDetails} />}
     </ContentLayout>
   );

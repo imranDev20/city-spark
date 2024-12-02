@@ -294,74 +294,76 @@ export default function ProductForm({
           productDetails={productDetails}
         />
 
-        <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
-          <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
-            <ProductDetailsSection />
-            <BrandSpecificationsSection productDetails={productDetails} />
-            <PriceSection />
-            <FeaturesSection />
-            <TemplatesSection productDetails={productDetails} />
-            <CategoriesSection
-              primaryCategories={primaryCategories}
-              secondaryCategories={secondaryCategories}
-              tertiaryCategories={tertiaryCategories}
-              quaternaryCategories={quaternaryCategories}
-              onPrimaryCategoryChange={setPrimaryCategoryId}
-              onSecondaryCategoryChange={setSecondaryCategoryId}
-              onTertiaryCategoryChange={setTertiaryCategoryId}
-              isPrimaryLoading={isPrimaryPending}
-              isSecondaryLoading={isSecondaryPending}
-              isTertiaryLoading={isTertiaryPending}
-              isQuaternaryLoading={isQuaternaryPending}
-              primaryCategoryId={primaryCategoryId}
-              secondaryCategoryId={secondaryCategoryId}
-              tertiaryCategoryId={tertiaryCategoryId}
-            />
+        <div className="container pt-8 pb-4 px-4 sm:px-8">
+          <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
+            <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
+              <ProductDetailsSection />
+              <BrandSpecificationsSection productDetails={productDetails} />
+              <PriceSection />
+              <FeaturesSection />
+              <TemplatesSection productDetails={productDetails} />
+              <CategoriesSection
+                primaryCategories={primaryCategories}
+                secondaryCategories={secondaryCategories}
+                tertiaryCategories={tertiaryCategories}
+                quaternaryCategories={quaternaryCategories}
+                onPrimaryCategoryChange={setPrimaryCategoryId}
+                onSecondaryCategoryChange={setSecondaryCategoryId}
+                onTertiaryCategoryChange={setTertiaryCategoryId}
+                isPrimaryLoading={isPrimaryPending}
+                isSecondaryLoading={isSecondaryPending}
+                isTertiaryLoading={isTertiaryPending}
+                isQuaternaryLoading={isQuaternaryPending}
+                primaryCategoryId={primaryCategoryId}
+                secondaryCategoryId={secondaryCategoryId}
+                tertiaryCategoryId={tertiaryCategoryId}
+              />
+            </div>
+
+            <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
+              <ProductStatusSection />
+              <ProductImagesSection initialImages={productDetails?.images} />
+
+              <Card x-chunk="dashboard-07-chunk-5">
+                <CardHeader>
+                  <CardTitle>Manuals & Instructions</CardTitle>
+                  <CardDescription>
+                    Archive this product if it&apos;s no longer available.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent></CardContent>
+              </Card>
+              <Card x-chunk="dashboard-07-chunk-5">
+                <CardHeader>
+                  <CardTitle>Archive Product</CardTitle>
+                  <CardDescription>
+                    Archive this product if it&apos;s no longer available.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div></div>
+                  <Button size="sm" variant="secondary">
+                    Archive Product
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
-          <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-            <ProductStatusSection />
-            <ProductImagesSection initialImages={productDetails?.images} />
-
-            <Card x-chunk="dashboard-07-chunk-5">
-              <CardHeader>
-                <CardTitle>Manuals & Instructions</CardTitle>
-                <CardDescription>
-                  Archive this product if it&apos;s no longer available.
-                </CardDescription>
-              </CardHeader>
-              <CardContent></CardContent>
-            </Card>
-            <Card x-chunk="dashboard-07-chunk-5">
-              <CardHeader>
-                <CardTitle>Archive Product</CardTitle>
-                <CardDescription>
-                  Archive this product if it&apos;s no longer available.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div></div>
-                <Button size="sm" variant="secondary">
-                  Archive Product
-                </Button>
-              </CardContent>
-            </Card>
+          <div className="mt-8 flex justify-end md:hidden">
+            <Button type="button" variant="outline" className="mr-4">
+              <X className="mr-2 h-4 w-4" />
+              Cancel
+            </Button>
+            <LoadingButton
+              type="submit"
+              disabled={!isDirty || isPending}
+              loading={isPending}
+            >
+              {!isPending && <Check className="mr-2 h-4 w-4" />}
+              {productDetails ? "Update Product" : "Save Product"}
+            </LoadingButton>
           </div>
-        </div>
-
-        <div className="mt-8 flex justify-end md:hidden">
-          <Button type="button" variant="outline" className="mr-4">
-            <X className="mr-2 h-4 w-4" />
-            Cancel
-          </Button>
-          <LoadingButton
-            type="submit"
-            disabled={!isDirty || isPending}
-            loading={isPending}
-          >
-            {!isPending && <Check className="mr-2 h-4 w-4" />}
-            {productDetails ? "Update Product" : "Save Product"}
-          </LoadingButton>
         </div>
       </form>
     </Form>

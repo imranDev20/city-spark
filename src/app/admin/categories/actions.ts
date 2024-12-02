@@ -46,7 +46,7 @@ export async function createCategory(data: CategoryFormInputType) {
       }
     );
 
-    revalidatePath("/admin", "layout");
+    revalidatePath("/", "layout");
 
     return {
       message: "Category created successfully!",

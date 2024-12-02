@@ -41,7 +41,7 @@ const categoryData: { label: string; Icon: React.ComponentType<IconProps> }[] =
     { label: "Heating", Icon: HeatingIcon },
     { label: "Plumbing", Icon: PlumbingIcon },
     { label: "Bathrooms", Icon: BathroomIcon },
-    { label: "Kitchen", Icon: KitchenTilesIcon },
+    { label: "Kitchens", Icon: KitchenTilesIcon },
     { label: "Spares", Icon: SparesIcon },
     { label: "Renewables", Icon: RenewablesIcon },
     { label: "Tools", Icon: ToolsIcon },

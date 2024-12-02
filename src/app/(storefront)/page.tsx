@@ -19,7 +19,6 @@ export default async function HomePage() {
 
   return (
     <main className="">
-      <CategoryNav categories={navCategories} />
       <HeroCarousel />
       <MobileCategoryNav categories={navCategories} />
       <Features />

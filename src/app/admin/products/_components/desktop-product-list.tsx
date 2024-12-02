@@ -110,6 +110,7 @@ export default function DesktopProductList({
     setIsDeleting(true);
     try {
       const result = await deleteProducts(Array.from(selectedProducts));
+
       if (result.success) {
         toast({
           title: "Success",
@@ -117,6 +118,7 @@ export default function DesktopProductList({
           variant: "success",
         });
         setSelectedProducts(new Set());
+
         await queryClient.invalidateQueries({ queryKey: ["products"] });
       } else {
         throw new Error(result.message || "Failed to delete products");

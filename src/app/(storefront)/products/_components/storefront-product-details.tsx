@@ -1,20 +1,6 @@
-"use client";
-
-import React, { useState, useRef, useTransition } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import { HomeIcon, StarIcon, TruckIcon } from "lucide-react";
-import ChecklistAddIcon from "@/components/icons/checklist-add";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import BranchIcon from "@/components/icons/branch";
-import DeliveryIcon from "@/components/icons/delivary";
-import { Transform } from "@/types/misc";
-import InStockIcon from "@/components/icons/in-stock";
-import PriceIcon from "@/components/icons/price";
+import React from "react";
+import { StarIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import AcceptedPayments from "../../_components/accepted-payments";
 import { Prisma } from "@prisma/client";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import { customSlugify } from "@/lib/functions";
@@ -54,39 +40,11 @@ interface BreadcrumbItem {
   isCurrentPage?: boolean;
 }
 
-export default function StorefrontProductDetails({
+export default async function StorefrontProductDetails({
   inventoryItem,
 }: {
   inventoryItem: InventoryItemWithRelation; // Replace 'any' with the actual type of your inventory item
 }) {
-  const [mainImage, setMainImage] = useState(
-    inventoryItem.product.images[0] || ""
-  );
-  const [transform, setTransform] = useState<Transform>({
-    scale: 1,
-    x: 0,
-    y: 0,
-  });
-
-  const imageRef = useRef<HTMLImageElement | null>(null);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLElement>): void => {
-    if (imageRef.current) {
-      const { left, top, width, height } =
-        imageRef.current.getBoundingClientRect();
-      const x = ((e.clientX - left) / width) * 100;
-      const y = ((e.clientY - top) / height) * 100;
-      setTransform({ scale: 1.9, x, y });
-    }
-  };
-
-  const handleMouseLeave = () => setTransform({ scale: 1, x: 50, y: 50 });
-  const [isPending, startTransition] = useTransition();
-  const [quantity, setQuantity] = useState(1);
-  const handleQuantityChange = (newValue: number) => {
-    setQuantity(newValue);
-  };
-
   const product = inventoryItem.product;
 
   const details = [

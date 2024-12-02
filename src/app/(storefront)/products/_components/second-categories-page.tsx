@@ -25,6 +25,7 @@ import Image from "next/image";
 
 import CategoryBanner from "@/images/category-banner.png";
 import MobileBottomBar from "../../_components/mobile-bottom-bar";
+import CategoryNav from "../../_components/category-nav";
 
 type SecondaryCagoryWithChilds = Prisma.CategoryGetPayload<{
   include: {
