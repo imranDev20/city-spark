@@ -4,7 +4,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Prisma } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
-import dayjs from "dayjs";
+import { formatDistance } from "date-fns";
 import { Checkbox } from "@/components/ui/checkbox";
 import PlaceholderImage from "@/images/placeholder-image.png";
 import {
@@ -16,7 +16,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Eye,
+  ChevronRight,
+} from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useTransition } from "react";
 import { deleteCategory } from "../actions";
@@ -60,10 +66,21 @@ export default function CategoriesTableRow({
     });
   };
 
-  const directParent =
-    category.parentTertiaryCategory ||
-    category.parentSecondaryCategory ||
-    category.parentPrimaryCategory;
+  const getCategoryPath = () => {
+    const path = [];
+    if (category.parentPrimaryCategory) {
+      path.push(category.parentPrimaryCategory);
+    }
+    if (category.parentSecondaryCategory) {
+      path.push(category.parentSecondaryCategory);
+    }
+    if (category.parentTertiaryCategory) {
+      path.push(category.parentTertiaryCategory);
+    }
+    return path;
+  };
+
+  const categoryPath = getCategoryPath();
 
   return (
     <TableRow
@@ -90,35 +107,35 @@ export default function CategoriesTableRow({
         </div>
       </TableCell>
       <TableCell className="py-4">
-        <div className="relative">
-          <div className="flex flex-col">
-            <span className="font-medium text-gray-900 line-clamp-1">
-              {category.name}
-            </span>
-            <span className="text-sm text-gray-500 mt-1">{category.type}</span>
-          </div>
+        <div className="flex flex-col">
+          <span className="font-medium text-gray-900">{category.name}</span>
+          <span className="text-xs text-gray-500 mt-1">{category.type}</span>
         </div>
       </TableCell>
-      <TableCell>
+      <TableCell className="py-4">
         <div className="relative">
-          {directParent ? (
-            <div className="text-sm">
-              {directParent.name}{" "}
-              <span className="text-gray-500">
-                (
-                {directParent.type?.charAt(0).toUpperCase() +
-                  directParent.type?.slice(1).toLowerCase()}
-                )
-              </span>
+          {categoryPath.length > 0 ? (
+            <div className="flex items-center text-sm text-gray-600">
+              {categoryPath.map((parent, index) => (
+                <div key={parent.id} className="flex items-center">
+                  {index > 0 && (
+                    <ChevronRight className="h-4 w-4 text-gray-400" />
+                  )}
+                  <span className="text-gray-600">{parent.name}</span>
+                </div>
+              ))}
             </div>
           ) : (
-            <span className="text-sm text-gray-500">N/A</span>
+            <span className="text-sm text-gray-500">Root Category</span>
           )}
         </div>
       </TableCell>
-      <TableCell className="text-sm text-gray-500">
+
+      <TableCell>
         <div className="relative">
-          {dayjs(category.createdAt).format("DD-MM-YY hh:mm A")}
+          {formatDistance(new Date(category.createdAt), new Date(), {
+            addSuffix: true,
+          })}
         </div>
       </TableCell>
       <TableCell className="pr-6">

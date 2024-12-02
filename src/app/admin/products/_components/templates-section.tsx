@@ -5,7 +5,6 @@ import { useFormContext, useWatch } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronsUpDown } from "lucide-react";
 
-// UI Components
 import {
   FormControl,
   FormField,
@@ -46,10 +45,13 @@ import {
 
 // Utils and Types
 import { cn } from "@/lib/utils";
-import { fetchTemplates, fetchTemplateDetails } from "@/lib/api-client";
 import { ProductFormInputType } from "../schema";
 import { FieldType } from "@prisma/client";
 import { Prisma } from "@prisma/client";
+import {
+  fetchTemplateDetails,
+  fetchTemplates,
+} from "@/services/admin-templates";
 
 interface Template {
   id: string;
@@ -102,8 +104,14 @@ export default function TemplatesSection({
   const { data: templateDetails, isLoading: isTemplateDetailsLoading } =
     useQuery<TemplateDetails>({
       queryKey: ["templateDetails", templateId],
-      queryFn: () => fetchTemplateDetails(templateId),
-      enabled: !!templateId,
+      queryFn: () => {
+        // Only fetch if templateId exists
+        if (!templateId) {
+          throw new Error("Template ID is required");
+        }
+        return fetchTemplateDetails(templateId);
+      },
+      enabled: !!templateId, // Query will only run if templateId exists
     });
 
   useEffect(() => {
@@ -128,7 +136,7 @@ export default function TemplatesSection({
       } else {
         reset({
           ...getValues(),
-          productTemplateFields: templateDetails.fields.map((field) => ({
+          productTemplateFields: templateDetails.fields.map((field, index) => ({
             id: field.id,
             fieldId: field.id,
             fieldName: field.fieldName,
@@ -142,8 +150,11 @@ export default function TemplatesSection({
 
   const templateFields = templateDetails?.fields || [];
 
+  console.log(productDetails);
+
   return (
     <Card>
+      {/* Rest of the component remains the same */}
       {/* Template Selection Section */}
       <CardHeader>
         <CardTitle>Templates</CardTitle>

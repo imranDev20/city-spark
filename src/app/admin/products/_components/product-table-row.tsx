@@ -97,7 +97,11 @@ export default function ProductTableRow({
           onCheckedChange={(checked) => onSelect?.(checked as boolean)}
         />
       </TableCell>
-      <TableCell className="py-4">
+      <TableCell className="w-[0%] relative">
+        <Link
+          href={`/admin/products/${product.id}`}
+          className="absolute inset-0 z-10"
+        />
         <div className="relative h-14 w-14 rounded-lg overflow-hidden bg-gray-50">
           <Image
             src={product.images[0] || PlaceholderImage}
@@ -107,7 +111,11 @@ export default function ProductTableRow({
           />
         </div>
       </TableCell>
-      <TableCell className="py-4">
+      <TableCell className="min-w-[300px] relative">
+        <Link
+          href={`/admin/products/${product.id}`}
+          className="absolute inset-0 z-10"
+        />
         <div className="flex flex-col">
           <span className="font-medium text-gray-900 line-clamp-1">
             {product.name}
@@ -119,11 +127,15 @@ export default function ProductTableRow({
           </span>
         </div>
       </TableCell>
-      <TableCell>
+      <TableCell className="relative">
+        <Link
+          href={`/admin/products/${product.id}`}
+          className="absolute inset-0 z-10"
+        />
         <div
           className={cn(
             "inline-flex items-center px-3 py-1.5 rounded-full",
-            `${statusMap[product.status || "DRAFT"].background}`
+            statusMap[product.status || "DRAFT"].background
           )}
         >
           <div
@@ -137,7 +149,11 @@ export default function ProductTableRow({
           </span>
         </div>
       </TableCell>
-      <TableCell>
+      <TableCell className="relative">
+        <Link
+          href={`/admin/products/${product.id}`}
+          className="absolute inset-0 z-10"
+        />
         <div className="flex flex-col">
           <span className="font-medium text-base">
             <NumericFormat
@@ -164,59 +180,60 @@ export default function ProductTableRow({
           )}
         </div>
       </TableCell>
-      <TableCell className="text-sm text-gray-500">
-        {formatDistance(new Date(product.updatedAt), new Date(), {
-          addSuffix: true,
-        })}
-      </TableCell>
-      <TableCell className="pr-6 relative">
-        {showActions && (
-          <div className="relative z-20" onClick={(e) => e.stopPropagation()}>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[160px]">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href={`/admin/products/${product.id}`}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    View Details
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href={`/admin/products/${product.id}/edit`}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Edit Product
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Archive className="mr-2 h-4 w-4" />
-                  Archive Product
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-red-600"
-                  onClick={handleDelete}
-                  disabled={isPending}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Product
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
+      <TableCell className="text-sm text-gray-500 relative">
         <Link
           href={`/admin/products/${product.id}`}
           className="absolute inset-0 z-10"
         />
+        {formatDistance(new Date(product.updatedAt), new Date(), {
+          addSuffix: true,
+        })}
+      </TableCell>
+      <TableCell
+        className="pr-6 relative z-20"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {showActions && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[160px]">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href={`/admin/products/${product.id}`}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  View Details
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/admin/products/${product.id}`}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit Product
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Archive className="mr-2 h-4 w-4" />
+                Archive Product
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-red-600"
+                onClick={handleDelete}
+                disabled={isPending}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Product
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </TableCell>
     </TableRow>
   );

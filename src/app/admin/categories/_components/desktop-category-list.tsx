@@ -76,15 +76,14 @@ export default function DesktopCategoryList() {
                   <TableHead className="w-24 py-5">
                     <span className="sr-only">Image</span>
                   </TableHead>
-                  <TableHead className="w-[40%] min-w-[300px]">Name</TableHead>
-                  <TableHead className="w-[15%] min-w-[120px]">Type</TableHead>
-                  <TableHead className="w-[15%] min-w-[140px]">
-                    Parent
+                  <TableHead className="w-[30%] min-w-[200px]">Name</TableHead>
+                  <TableHead className="w-[35%] min-w-[250px]">
+                    Category Path
                   </TableHead>
-                  <TableHead className="w-[15%] min-w-[140px]">
-                    Created At
+                  <TableHead className="w-[20%] min-w-[150px]">
+                    Last Updated
                   </TableHead>
-                  <TableHead className="w-14 pr-6">
+                  <TableHead className="w-14 pr-6 text-right">
                     <span className="sr-only">Actions</span>
                   </TableHead>
                 </TableRow>
@@ -103,7 +102,7 @@ export default function DesktopCategoryList() {
         currentPage={pagination.currentPage}
         totalPages={pagination.totalPages}
         totalItems={pagination.totalCount}
-        itemsPerPage={pagination.page_size}
+        itemsPerPage={pagination.pageSize}
       />
     </div>
   );

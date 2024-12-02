@@ -150,7 +150,11 @@ export default function ProductForm({
       ],
       model: "",
       brand: "",
-      images: [],
+      images: [
+        {
+          image: "",
+        },
+      ],
       shape: "",
       volume: "",
       weight: "",
@@ -172,6 +176,17 @@ export default function ProductForm({
       secondaryCategoryId: "",
       tertiaryCategoryId: "",
       quaternaryCategoryId: "",
+      manuals: [],
+      productTemplateFields: [
+        {
+          fieldId: "",
+          fieldName: "",
+          fieldOptions: "",
+          fieldType: "TEXT",
+          fieldValue: "",
+          id: "",
+        },
+      ],
     },
   });
 
@@ -232,9 +247,10 @@ export default function ProductForm({
         } else {
           // Create new product
           result = await createProduct(data);
-          router.push(`/admin/inventory/${result.data?.inventory?.id}`);
         }
         if (result.success) {
+          router.push(`/admin/inventory/${result.data?.inventory?.id}`);
+
           await Promise.all([
             // Invalidate general product listings
             queryClient.invalidateQueries({ queryKey: ["products"] }),
@@ -284,7 +300,7 @@ export default function ProductForm({
             <BrandSpecificationsSection productDetails={productDetails} />
             <PriceSection />
             <FeaturesSection />
-            {/* <TemplatesSection /> */}
+            <TemplatesSection productDetails={productDetails} />
             <CategoriesSection
               primaryCategories={primaryCategories}
               secondaryCategories={secondaryCategories}
@@ -305,7 +321,7 @@ export default function ProductForm({
 
           <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
             <ProductStatusSection />
-            <ProductImagesSection />
+            <ProductImagesSection initialImages={productDetails?.images} />
 
             <Card x-chunk="dashboard-07-chunk-5">
               <CardHeader>

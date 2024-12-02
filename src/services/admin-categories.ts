@@ -27,7 +27,7 @@ export type CategoryWithRelations = Prisma.CategoryGetPayload<{
  * Response structure for paginated categories data
  */
 export interface CategoriesResponse {
-  status: "success" | "error";
+  success: boolean;
   data: {
     categories: CategoryWithRelations[];
     pagination: {
@@ -52,14 +52,6 @@ export interface FetchCategoriesParams {
   primary_category_id?: string;
   secondary_category_id?: string;
   tertiary_category_id?: string;
-}
-
-/**
- * Response structure for single category fetch
- */
-export interface CategoryResponse {
-  status: "success" | "error";
-  data: CategoryWithRelations;
 }
 
 /**
@@ -117,11 +109,11 @@ export async function fetchCategories(
     addParam("secondary_category_id", params.secondary_category_id);
     addParam("tertiary_category_id", params.tertiary_category_id);
 
-    const { data } = await axios.get<CategoriesResponse>(
+    const data = await axios.get<CategoriesResponse>(
       `/api/categories?${queryParams.toString()}`
     );
 
-    return data;
+    return data.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
@@ -148,6 +140,15 @@ export async function fetchCategories(
  * const category = await fetchCategory('123');
  * ```
  */
+
+/**
+ * Response structure for single category fetch
+ */
+export interface CategoryResponse {
+  status: "success" | "error";
+  data: CategoryWithRelations;
+}
+
 export async function fetchCategory(
   categoryId: string
 ): Promise<CategoryResponse> {
