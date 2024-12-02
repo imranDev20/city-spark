@@ -49,7 +49,7 @@ const ProductFormHeader: React.FC<ProductFormHeaderProps> = ({
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
+      setIsScrolled(window.scrollY > 100);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -63,12 +63,17 @@ const ProductFormHeader: React.FC<ProductFormHeaderProps> = ({
     : null;
 
   return (
-    <div className="mb-7 sticky top-0 z-[10]">
-      <div className="-mx-8">
+    <>
+      <div
+        className={cn(
+          "sticky top-0 z-[10] w-full",
+          isScrolled ? "bg-white shadow-md" : "bg-zinc-50"
+        )}
+      >
         <div
           className={cn(
-            "px-8 py-4 transition-all duration-200",
-            isScrolled ? "bg-white shadow-md" : "bg-zinc-50"
+            "px-8 py-3 transition-all duration-200",
+            "container pb-4 px-4 sm:px-8"
           )}
         >
           <div className="flex items-center gap-4">
@@ -121,7 +126,7 @@ const ProductFormHeader: React.FC<ProductFormHeaderProps> = ({
       </div>
 
       {isDirty && (
-        <div className="pt-4">
+        <div className="mt-4 container px-4 sm:px-8">
           <Card className="bg-amber-50 border-amber-200">
             <CardContent className="p-3">
               <div className="text-sm text-amber-600 flex items-center">
@@ -132,7 +137,7 @@ const ProductFormHeader: React.FC<ProductFormHeaderProps> = ({
           </Card>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

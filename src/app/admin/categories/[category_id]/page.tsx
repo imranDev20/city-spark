@@ -111,11 +111,13 @@ export default function AdminEditCategoryPage(props: {
   };
 
   return (
-    <ContentLayout title={`Edit ${categoryDetails.name}`}>
-      <DynamicBreadcrumb items={breadcrumbItems} />
+    <ContentLayout title={`Edit ${categoryDetails.name}`} isContainer={false}>
+      <div className="container pt-8 pb-4 px-4 sm:px-8">
+        <DynamicBreadcrumb items={breadcrumbItems} />
+      </div>
       <CategoryForm categoryDetails={categoryDetails} />
 
-      <div className="mt-10">
+      <div className="mt-10 container pt-8 pb-4 px-4 sm:px-8">
         <h2 className="text-xl font-semibold mb-6">Category Products</h2>
         <Suspense fallback={<ProductsLoading />}>
           <MobileProductList {...categoryIds} />

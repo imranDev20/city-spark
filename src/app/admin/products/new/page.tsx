@@ -15,8 +15,11 @@ const breadcrumbItems = [
 
 export default async function AdminCreateProductPage() {
   return (
-    <ContentLayout title="Add New Product">
-      <DynamicBreadcrumb items={breadcrumbItems} />
+    <ContentLayout title="Add New Product" isContainer={false}>
+      <div className="container pt-8 pb-4 px-4 sm:px-8">
+        <DynamicBreadcrumb items={breadcrumbItems} />
+      </div>
+
       <ProductForm />
     </ContentLayout>
   );

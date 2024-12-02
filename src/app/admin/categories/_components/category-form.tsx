@@ -138,38 +138,40 @@ export default function CategoryForm({
           fileState={fileState}
         />
 
-        <div className="grid gap-8 md:grid-cols-3">
-          <div className="md:col-span-2 space-y-8">
-            <CategoryDetails />
-            <ParentCategories />
+        <div className="container pt-8 pb-4 px-4 sm:px-8">
+          <div className="grid gap-8 md:grid-cols-3">
+            <div className="md:col-span-2 space-y-8">
+              <CategoryDetails />
+              <ParentCategories />
+            </div>
+
+            <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
+              <CategoryImageUpload
+                fileState={fileState}
+                setFileState={setFileState}
+              />
+            </div>
           </div>
 
-          <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-            <CategoryImageUpload
-              fileState={fileState}
-              setFileState={setFileState}
-            />
+          <div className="mt-8 flex justify-end md:hidden">
+            <Button type="button" variant="outline" className="mr-4">
+              <X className="mr-2 h-4 w-4" />
+              Cancel
+            </Button>
+            <LoadingButton
+              type="submit"
+              disabled={
+                !isDirty ||
+                isPending ||
+                typeof fileState?.progress === "number" ||
+                fileState?.progress === "PENDING"
+              }
+              loading={isPending}
+            >
+              {!isPending && <Check className="mr-2 h-4 w-4" />}
+              {categoryDetails ? "Update Category" : "Save Category"}
+            </LoadingButton>
           </div>
-        </div>
-
-        <div className="mt-8 flex justify-end md:hidden">
-          <Button type="button" variant="outline" className="mr-4">
-            <X className="mr-2 h-4 w-4" />
-            Cancel
-          </Button>
-          <LoadingButton
-            type="submit"
-            disabled={
-              !isDirty ||
-              isPending ||
-              typeof fileState?.progress === "number" ||
-              fileState?.progress === "PENDING"
-            }
-            loading={isPending}
-          >
-            {!isPending && <Check className="mr-2 h-4 w-4" />}
-            {categoryDetails ? "Update Category" : "Save Category"}
-          </LoadingButton>
         </div>
       </form>
     </Form>
