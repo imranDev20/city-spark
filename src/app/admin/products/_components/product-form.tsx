@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/ui/loading-button";
@@ -31,12 +30,18 @@ import TemplatesSection from "./templates-section";
 import CategoriesSection from "./categories-section";
 import ProductImagesSection from "./product-images-section";
 import ProductStatusSection from "./product-status-section";
+import ProductFormHeader from "./product-form-header";
 
 type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
     images: true;
     brand: true;
     features: true;
+    inventory: {
+      select: {
+        id: true;
+      };
+    };
     productTemplate: {
       include: {
         fields: {
@@ -71,7 +76,7 @@ export default function ProductForm({
         fetchCategories({
           filter_type: "PRIMARY",
           page: "1",
-          page_size: "10", // Adjust based on your needs
+          page_size: "1000", // Adjust based on your needs
         }),
     });
 
@@ -82,8 +87,9 @@ export default function ProductForm({
       queryFn: () =>
         fetchCategories({
           filter_type: "SECONDARY",
+          primary_category_id: primaryCategoryId,
           page: "1",
-          page_size: "10",
+          page_size: "1000",
         }),
       enabled: !!primaryCategoryId,
     });
@@ -95,8 +101,9 @@ export default function ProductForm({
       queryFn: () =>
         fetchCategories({
           filter_type: "TERTIARY",
+          secondary_category_id: secondaryCategoryId,
           page: "1",
-          page_size: "10",
+          page_size: "1000",
         }),
       enabled: !!secondaryCategoryId,
     });
@@ -108,8 +115,9 @@ export default function ProductForm({
       queryFn: () =>
         fetchCategories({
           filter_type: "QUATERNARY",
+          tertiary_category_id: tertiaryCategoryId,
           page: "1",
-          page_size: "10",
+          page_size: "1000",
         }),
       enabled: !!tertiaryCategoryId,
     });
@@ -133,7 +141,7 @@ export default function ProductForm({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: "",
-      status: "DRAFT",
+      status: "ACTIVE",
       description: "",
       features: [
         {
@@ -224,17 +232,26 @@ export default function ProductForm({
         } else {
           // Create new product
           result = await createProduct(data);
+          router.push(`/admin/inventory/${result.data?.inventory?.id}`);
         }
-
         if (result.success) {
-          await queryClient.invalidateQueries({ queryKey: ["products"] });
+          await Promise.all([
+            // Invalidate general product listings
+            queryClient.invalidateQueries({ queryKey: ["products"] }),
 
-          toast({
-            title: "Success",
-            description: result.message,
-            variant: "success",
-          });
-          router.push("/admin/products");
+            // Invalidate the specific product if it was an update
+            productDetails?.id &&
+              queryClient.invalidateQueries({
+                queryKey: ["product", productDetails.id],
+              }),
+          ]),
+            toast({
+              title: "Success",
+              description: result.message,
+              variant: "success",
+            });
+
+          // Route to inventory page after creation. Don't route after update
         } else {
           toast({
             title: "Error",
@@ -256,42 +273,17 @@ export default function ProductForm({
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex items-center gap-4 mb-5 mt-7">
-          <Link href="/admin/products">
-            <Button variant="outline" size="icon" className="h-9 w-9">
-              <ChevronLeft className="h-5 w-5" />
-              <span className="sr-only">Back</span>
-            </Button>
-          </Link>
-          <h1 className="flex-1 text-xl font-semibold tracking-tight">
-            {productDetails ? `Edit ${productDetails.name}` : "Add New Product"}
-          </h1>
-
-          <div className="hidden items-center gap-2 md:ml-auto md:flex">
-            <Link href="/admin/products">
-              <Button type="button" variant="outline" className="h-9">
-                <X className="mr-2 h-4 w-4" />
-                Cancel
-              </Button>
-            </Link>
-            <LoadingButton
-              type="submit"
-              className="h-9"
-              disabled={!isDirty || isPending}
-              loading={isPending}
-            >
-              {!isPending && <Check className="mr-2 h-4 w-4" />}
-              {productDetails ? "Update Product" : "Save Product"}
-            </LoadingButton>
-          </div>
-        </div>
+        <ProductFormHeader
+          isPending={isPending}
+          productDetails={productDetails}
+        />
 
         <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
           <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
             <ProductDetailsSection />
             <BrandSpecificationsSection productDetails={productDetails} />
-            {/* <PriceSection /> */}
-            {/* <FeaturesSection /> */}
+            <PriceSection />
+            <FeaturesSection />
             {/* <TemplatesSection /> */}
             <CategoriesSection
               primaryCategories={primaryCategories}
@@ -305,6 +297,9 @@ export default function ProductForm({
               isSecondaryLoading={isSecondaryPending}
               isTertiaryLoading={isTertiaryPending}
               isQuaternaryLoading={isQuaternaryPending}
+              primaryCategoryId={primaryCategoryId}
+              secondaryCategoryId={secondaryCategoryId}
+              tertiaryCategoryId={tertiaryCategoryId}
             />
           </div>
 

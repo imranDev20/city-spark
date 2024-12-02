@@ -1,12 +1,16 @@
 "use client";
 
 import * as React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import ProductForm from "../_components/product-form";
-import { useQuery } from "@tanstack/react-query";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Loader2 } from "lucide-react";
+import {
+  fetchProductDetails,
+  ProductWithDetails,
+} from "@/services/admin-products";
 
 type PageParams = Promise<{
   product_id: string;
@@ -20,16 +24,9 @@ export default function AdminProductDetailsPage(props: { params: PageParams }) {
     isLoading,
     isError,
     error,
-  } = useQuery({
+  } = useQuery<ProductWithDetails, Error>({
     queryKey: ["product", product_id],
-    queryFn: async () => {
-      const response = await fetch(`/api/products/${product_id}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch product details");
-      }
-      const data = await response.json();
-      return data.data;
-    },
+    queryFn: () => fetchProductDetails(product_id),
   });
 
   const breadcrumbItems = [
@@ -62,9 +59,7 @@ export default function AdminProductDetailsPage(props: { params: PageParams }) {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            {error instanceof Error
-              ? error.message
-              : "Failed to load product details"}
+            {error?.message || "Failed to load product details"}
           </AlertDescription>
         </Alert>
       </ContentLayout>

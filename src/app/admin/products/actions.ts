@@ -91,9 +91,16 @@ export async function createProduct(data: ProductFormInputType) {
                   connect: { id: data.brand },
                 }
               : undefined,
-            status: data.status || "DRAFT",
+            status: data.status || "ACTIVE",
             manuals: data.manuals,
             images: [], // We'll update this after confirming uploads
+          },
+          include: {
+            inventory: {
+              select: {
+                id: true,
+              },
+            },
           },
         });
 
@@ -132,11 +139,19 @@ export async function createProduct(data: ProductFormInputType) {
         }
 
         // Update product with confirmed images
-        await tx.product.update({
+        const updatedProduct = await tx.product.update({
           where: { id: createdProduct.id },
           data: { images: confirmedImages },
+          include: {
+            inventory: {
+              select: {
+                id: true,
+              },
+            },
+          },
         });
-        return createdProduct;
+
+        return updatedProduct;
       },
       {
         maxWait: 5000, // 5 seconds
@@ -170,7 +185,14 @@ export async function updateProduct(
       async (tx) => {
         const existingProduct = await tx.product.findUnique({
           where: { id: productId },
-          include: { productTemplate: true },
+          include: {
+            productTemplate: true,
+            inventory: {
+              select: {
+                id: true,
+              },
+            },
+          },
         });
 
         if (!existingProduct) {
@@ -218,7 +240,7 @@ export async function updateProduct(
           });
         }
 
-        // Handle image deletions
+        // Handle image deletions and confirmations as before...
         const imagesToDelete = existingProduct.images.filter(
           (image) => !data.images?.some((img) => img.image === image)
         );
@@ -287,7 +309,7 @@ export async function updateProduct(
             material: data.material,
             volume: data.volume ?? null,
             shape: data.shape ?? null,
-            status: data.status ?? "DRAFT",
+            status: data.status ?? "ACTIVE",
             productTemplate: productTemplateId
               ? { connect: { id: productTemplateId } }
               : { disconnect: true },
@@ -311,13 +333,20 @@ export async function updateProduct(
             images: confirmedImages,
             updatedAt: new Date(),
           },
+          include: {
+            inventory: {
+              select: {
+                id: true,
+              },
+            },
+          },
         });
 
         return updatedProduct;
       },
       {
-        maxWait: 5000, // 5 seconds
-        timeout: 10000, // 10 seconds
+        maxWait: 5000,
+        timeout: 10000,
       }
     );
 
@@ -337,6 +366,7 @@ export async function updateProduct(
     };
   }
 }
+
 export async function deleteProduct(productId: string) {
   if (!productId) {
     return {

@@ -105,6 +105,54 @@ export async function fetchProducts(
   }
 }
 
+// Types
+export type ProductWithDetails = Prisma.ProductGetPayload<{
+  include: {
+    images: true;
+    brand: true;
+    features: true;
+    inventory: {
+      select: {
+        id: true;
+      };
+    };
+    productTemplate: {
+      include: {
+        fields: {
+          include: {
+            templateField: true;
+          };
+        };
+      };
+    };
+  };
+}>;
+
+type ApiResponse<T> = {
+  data: T;
+  message?: string;
+  success: boolean;
+};
+
+// API Functions
+export async function fetchProductDetails(
+  productId: string
+): Promise<ProductWithDetails> {
+  const response = await fetch(`/api/products/${productId}`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch product details: ${response.statusText}`);
+  }
+
+  const result: ApiResponse<ProductWithDetails> = await response.json();
+
+  if (!result.success || !result.data) {
+    throw new Error(result.message || "Failed to fetch product details");
+  }
+
+  return result.data;
+}
+
 /**
  * Type definition for a brand with its related product count
  */

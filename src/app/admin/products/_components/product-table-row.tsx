@@ -37,11 +37,19 @@ type ProductWithRelations = Prisma.ProductGetPayload<{
   };
 }>;
 
+interface ProductTableRowProps {
+  product: ProductWithRelations;
+  isSelected?: boolean;
+  onSelect?: (checked: boolean) => void;
+  showActions?: boolean;
+}
+
 export default function ProductTableRow({
   product,
-}: {
-  product: ProductWithRelations;
-}) {
+  isSelected = false,
+  onSelect,
+  showActions = true,
+}: ProductTableRowProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -78,10 +86,17 @@ export default function ProductTableRow({
     });
   };
 
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
-    <TableRow key={product.id} className="group relative">
-      <TableCell className="pl-6">
-        <Checkbox />
+    <TableRow className={cn("group relative", isSelected && "bg-primary/5")}>
+      <TableCell className="pl-6" onClick={handleCheckboxClick}>
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={(checked) => onSelect?.(checked as boolean)}
+        />
       </TableCell>
       <TableCell className="py-4">
         <Link
@@ -170,47 +185,49 @@ export default function ProductTableRow({
         </div>
       </TableCell>
       <TableCell className="pr-6">
-        <div className="relative z-20">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[160px]">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href={`/admin/products/${product.id}`}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  View Details
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/admin/products/${product.id}`}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Edit Product
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Archive className="mr-2 h-4 w-4" />
-                Archive Product
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-red-600"
-                onClick={handleDelete}
-                disabled={isPending}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Product
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        {showActions && (
+          <div className="relative z-20">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[160px]">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href={`/admin/products/${product.id}`}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Details
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/admin/products/${product.id}`}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit Product
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Archive className="mr-2 h-4 w-4" />
+                  Archive Product
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-600"
+                  onClick={handleDelete}
+                  disabled={isPending}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Product
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </TableCell>
     </TableRow>
   );

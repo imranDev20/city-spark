@@ -38,13 +38,16 @@ interface CategorySectionProps {
   secondaryCategories: Category[] | undefined;
   tertiaryCategories: Category[] | undefined;
   quaternaryCategories: Category[] | undefined;
-  onPrimaryCategoryChange: (id: string) => void;
-  onSecondaryCategoryChange: (id: string) => void;
-  onTertiaryCategoryChange: (id: string) => void;
+  onPrimaryCategoryChange: (id: string | undefined) => void;
+  onSecondaryCategoryChange: (id: string | undefined) => void;
+  onTertiaryCategoryChange: (id: string | undefined) => void;
   isPrimaryLoading: boolean;
   isSecondaryLoading: boolean;
   isTertiaryLoading: boolean;
   isQuaternaryLoading: boolean;
+  primaryCategoryId: string | undefined;
+  secondaryCategoryId: string | undefined;
+  tertiaryCategoryId: string | undefined;
 }
 
 export default function CategoriesSection({
@@ -59,16 +62,15 @@ export default function CategoriesSection({
   isSecondaryLoading,
   isTertiaryLoading,
   isQuaternaryLoading,
+  primaryCategoryId,
+  secondaryCategoryId,
+  tertiaryCategoryId,
 }: CategorySectionProps) {
   const { control, setValue } = useFormContext<ProductFormInputType>();
   const [openPrimary, setOpenPrimary] = useState(false);
   const [openSecondary, setOpenSecondary] = useState(false);
   const [openTertiary, setOpenTertiary] = useState(false);
   const [openQuaternary, setOpenQuaternary] = useState(false);
-
-  const [primaryCategoryId, setPrimaryCategoryId] = useState<string>();
-  const [secondaryCategoryId, setSecondaryCategoryId] = useState<string>();
-  const [tertiaryCategoryId, setTertiaryCategoryId] = useState<string>();
 
   return (
     <Card>
@@ -124,10 +126,9 @@ export default function CategoriesSection({
                                   setValue("tertiaryCategoryId", "");
                                   setValue("quaternaryCategoryId", "");
                                   setOpenPrimary(false);
-                                  setPrimaryCategoryId(primaryCategory.id);
                                   onPrimaryCategoryChange(primaryCategory.id);
-                                  setSecondaryCategoryId(undefined);
-                                  setTertiaryCategoryId(undefined);
+                                  onSecondaryCategoryChange(undefined);
+                                  onTertiaryCategoryChange(undefined);
                                 }}
                               >
                                 <Check
@@ -198,11 +199,10 @@ export default function CategoriesSection({
                                   setValue("tertiaryCategoryId", "");
                                   setValue("quaternaryCategoryId", "");
                                   setOpenSecondary(false);
-                                  setSecondaryCategoryId(secondaryCategory.id);
                                   onSecondaryCategoryChange(
                                     secondaryCategory.id
                                   );
-                                  setTertiaryCategoryId(undefined);
+                                  onTertiaryCategoryChange(undefined);
                                 }}
                               >
                                 <Check
@@ -272,7 +272,6 @@ export default function CategoriesSection({
                                   field.onChange(tertiaryCategory.id);
                                   setValue("quaternaryCategoryId", "");
                                   setOpenTertiary(false);
-                                  setTertiaryCategoryId(tertiaryCategory.id);
                                   onTertiaryCategoryChange(tertiaryCategory.id);
                                 }}
                               >

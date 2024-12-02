@@ -3,68 +3,110 @@ import { CategoryType } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { z } from "zod";
 
-// Define the query parameter schema with proper optional handling
+// Enhanced query schema to include parent category filters
 const querySchema = z.object({
   page: z.coerce.number().min(1).default(1),
   page_size: z.coerce.number().min(1).default(10),
-  sortBy: z.enum(["name", "createdAt"]).optional().default("createdAt"),
-  sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
-  filterType: z.nativeEnum(CategoryType).optional().nullable(),
-  searchTerm: z.string().optional().nullable(),
+  sort_by: z.enum(["name", "createdAt"]).optional().default("createdAt"),
+  sort_order: z.enum(["asc", "desc"]).optional().default("desc"),
+  filter_type: z.nativeEnum(CategoryType).optional().nullable(),
+  search: z.string().optional().nullable(),
+  primary_category_id: z.string().optional().nullable(),
+  secondary_category_id: z.string().optional().nullable(),
+  tertiary_category_id: z.string().optional().nullable(),
 });
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
-    // Parse and validate query parameters with null handling
+    // Parse and validate query parameters
     const validatedParams = querySchema.parse({
       page: searchParams.get("page"),
       page_size: searchParams.get("page_size"),
-      sortBy: searchParams.get("sortBy") || undefined,
-      sortOrder: searchParams.get("sortOrder") || undefined,
-      filterType: searchParams.get("filterType"),
-      searchTerm: searchParams.get("searchTerm"),
+      sort_by: searchParams.get("sort_by") || undefined,
+      sort_order: searchParams.get("sort_order") || undefined,
+      filter_type: searchParams.get("filter_type"),
+      search: searchParams.get("search"),
+      primary_category_id: searchParams.get("primary_category_id"),
+      secondary_category_id: searchParams.get("secondary_category_id"),
+      tertiary_category_id: searchParams.get("tertiary_category_id"),
     });
 
-    const { page, page_size, sortBy, sortOrder, filterType, searchTerm } =
-      validatedParams;
+    const {
+      page,
+      page_size,
+      sort_by,
+      sort_order,
+      filter_type,
+      search,
+      primary_category_id,
+      secondary_category_id,
+      tertiary_category_id,
+    } = validatedParams;
+
     const skip = (page - 1) * page_size;
 
-    // Build where clause with type safety
+    // Build the base where clause
     const where: {
       type?: CategoryType;
+      AND?: any[];
       OR?: {
         [key: string]: any;
       }[];
     } = {};
 
-    if (filterType) {
-      where.type = filterType;
+    // Initialize AND array for combining conditions
+    const andConditions = [];
+
+    // Add type filter if provided
+    if (filter_type) {
+      andConditions.push({ type: filter_type });
     }
 
-    if (searchTerm) {
-      where.OR = [
-        { name: { contains: searchTerm, mode: "insensitive" } },
-        {
-          parentPrimaryCategory: {
-            name: { contains: searchTerm, mode: "insensitive" },
-          },
-        },
-        {
-          parentSecondaryCategory: {
-            name: { contains: searchTerm, mode: "insensitive" },
-          },
-        },
-        {
-          parentTertiaryCategory: {
-            name: { contains: searchTerm, mode: "insensitive" },
-          },
-        },
-      ];
+    // Add parent category filters if provided
+    if (primary_category_id) {
+      andConditions.push({ parentPrimaryCategoryId: primary_category_id });
     }
 
-    // Execute queries in parallel with proper typing
+    if (secondary_category_id) {
+      andConditions.push({ parentSecondaryCategoryId: secondary_category_id });
+    }
+
+    if (tertiary_category_id) {
+      andConditions.push({ parentTertiaryCategoryId: tertiary_category_id });
+    }
+
+    // Add search condition if provided
+    if (search) {
+      andConditions.push({
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          {
+            parentPrimaryCategory: {
+              name: { contains: search, mode: "insensitive" },
+            },
+          },
+          {
+            parentSecondaryCategory: {
+              name: { contains: search, mode: "insensitive" },
+            },
+          },
+          {
+            parentTertiaryCategory: {
+              name: { contains: search, mode: "insensitive" },
+            },
+          },
+        ],
+      });
+    }
+
+    // Add AND conditions to where clause if there are any
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
+    }
+
+    // Execute queries in parallel
     const [categories, totalCount] = await Promise.all([
       prisma.category.findMany({
         include: {
@@ -72,24 +114,38 @@ export async function GET(req: NextRequest) {
             select: {
               id: true,
               name: true,
+              type: true,
             },
           },
           parentSecondaryCategory: {
             select: {
               id: true,
               name: true,
+              type: true,
             },
           },
           parentTertiaryCategory: {
             select: {
               id: true,
               name: true,
+              type: true,
+            },
+          },
+          _count: {
+            select: {
+              primaryProducts: true,
+              secondaryProducts: true,
+              tertiaryProducts: true,
+              quaternaryProducts: true,
+              primaryChildCategories: true,
+              secondaryChildCategories: true,
+              tertiaryChildCategories: true,
             },
           },
         },
         where,
         orderBy: {
-          [sortBy]: sortOrder,
+          [sort_by]: sort_order,
         },
         skip,
         take: page_size,
@@ -106,7 +162,7 @@ export async function GET(req: NextRequest) {
         pagination: {
           currentPage: page,
           totalPages,
-          page_size,
+          pageSize: page_size,
           totalCount,
         },
       },
