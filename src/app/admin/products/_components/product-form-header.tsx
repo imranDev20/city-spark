@@ -126,7 +126,7 @@ const ProductFormHeader: React.FC<ProductFormHeaderProps> = ({
             <CardContent className="p-3">
               <div className="text-sm text-amber-600 flex items-center">
                 <div className="h-1.5 w-1.5 rounded-full bg-amber-500 mr-2" />
-                You have unsaved changes. Don't forget to save your work.
+                You have unsaved changes. Don&apos;t forget to save your work.
               </div>
             </CardContent>
           </Card>

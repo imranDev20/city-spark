@@ -118,7 +118,7 @@ export default function SwipeableProductCard({
 
   const handleConfirmDelete = () => {
     startTransition(async () => {
-      await deleteProducts(product.id);
+      await deleteProducts([product.id]);
       api.start({ x: 0 });
       isOpen.current = false;
       setShowDeleteAlert(false);
