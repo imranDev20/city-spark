@@ -111,6 +111,7 @@ model Product {
     quaternaryCategoryId String?
     brand                Brand?           @relation(fields: [brandId], references: [id])
     brandId              String?
+    manufacturerLink     String?
     status               Status?          @default(DRAFT)
     manuals              String[]
     images               String[]

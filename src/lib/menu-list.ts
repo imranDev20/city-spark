@@ -56,24 +56,25 @@ export function getMenuList(pathname: string): Group[] {
       groupLabel: "Catalog Management",
       menus: [
         {
+          href: "/inventory",
+          label: "Inventory",
+          active: pathname.includes("/inventory"),
+          icon: PackagePlus,
+          submenus: [],
+        },
+        {
           href: "/products",
           label: "Products",
           active: pathname.includes("/products"),
           icon: Package2,
           submenus: [],
         },
+
         {
           href: "/templates",
           label: "Templates",
           active: pathname.includes("/templates"),
           icon: Blocks,
-          submenus: [],
-        },
-        {
-          href: "/brands",
-          label: "Brands",
-          active: pathname.includes("/brands"),
-          icon: Award,
           submenus: [],
         },
         {
@@ -84,10 +85,10 @@ export function getMenuList(pathname: string): Group[] {
           submenus: [],
         },
         {
-          href: "/inventory",
-          label: "Inventory",
-          active: pathname.includes("/inventory"),
-          icon: PackagePlus,
+          href: "/brands",
+          label: "Brands",
+          active: pathname.includes("/brands"),
+          icon: Award,
           submenus: [],
         },
       ],
