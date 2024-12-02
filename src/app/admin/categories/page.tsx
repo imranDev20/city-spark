@@ -1,10 +1,9 @@
 import { Suspense } from "react";
 import { ContentLayout } from "../_components/content-layout";
 import DynamicBreadcrumb from "../_components/dynamic-breadcrumb";
-import CategoryList from "./_components/category-list";
 import CategoryTableHeader from "./_components/category-table-header";
-import { CategoryType } from "@prisma/client";
 import CategoriesLoading from "./_components/categories-loading";
+import DesktopCategoryList from "./_components/desktop-category-list";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -15,25 +14,13 @@ const breadcrumbItems = [
   },
 ];
 
-type SearchParams = Promise<{
-  search?: string;
-  page?: string;
-  sort_by?: string;
-  sort_order?: "asc" | "desc";
-  filter_type?: CategoryType;
-}>;
-
-export default async function AdminCategoriesPage(props: {
-  searchParams: SearchParams;
-}) {
-  const searchParams = await props.searchParams;
-
+export default async function AdminCategoriesPage() {
   return (
     <ContentLayout title="Categories">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <CategoryTableHeader />
       <Suspense fallback={<CategoriesLoading />}>
-        <CategoryList searchParams={searchParams} />
+        <DesktopCategoryList />
       </Suspense>
     </ContentLayout>
   );

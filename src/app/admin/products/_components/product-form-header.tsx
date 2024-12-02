@@ -1,0 +1,139 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
+import { Check, ChevronLeft, ExternalLink, Eye, X } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { useFormContext } from "react-hook-form";
+import { customSlugify } from "@/lib/functions";
+import { Prisma } from "@prisma/client";
+import { cn } from "@/lib/utils";
+
+type ProductWithRelations = Prisma.ProductGetPayload<{
+  include: {
+    images: true;
+    brand: true;
+    features: true;
+    inventory: {
+      select: {
+        id: true;
+      };
+    };
+    productTemplate: {
+      include: {
+        fields: {
+          include: {
+            templateField: true;
+          };
+        };
+      };
+    };
+  };
+}>;
+
+type ProductFormHeaderProps = {
+  productDetails?: ProductWithRelations | null;
+  isPending: boolean;
+};
+
+const ProductFormHeader: React.FC<ProductFormHeaderProps> = ({
+  productDetails,
+  isPending,
+}) => {
+  const {
+    formState: { isDirty },
+  } = useFormContext();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const productStoreUrl = productDetails?.inventory?.id
+    ? `/products/p/${customSlugify(productDetails.name)}/p/${
+        productDetails.inventory.id
+      }`
+    : null;
+
+  return (
+    <div className="mb-7 sticky top-0 z-[10]">
+      <div className="-mx-8">
+        <div
+          className={cn(
+            "px-8 py-4 transition-all duration-200",
+            isScrolled ? "bg-white shadow-md" : "bg-zinc-50"
+          )}
+        >
+          <div className="flex items-center gap-4">
+            <Link href="/admin/products">
+              <Button variant="outline" size="icon" className="h-9 w-9">
+                <ChevronLeft className="h-5 w-5" />
+                <span className="sr-only">Back</span>
+              </Button>
+            </Link>
+
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl font-semibold tracking-tight truncate">
+                {productDetails
+                  ? `Edit ${productDetails.name}`
+                  : "Add New Product"}
+              </h1>
+              {productStoreUrl && (
+                <Link
+                  href={productStoreUrl}
+                  className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors mt-1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  View in store
+                  <ExternalLink className="h-3 w-3 ml-1" />
+                </Link>
+              )}
+            </div>
+
+            <div className="hidden items-center gap-2 md:flex">
+              <Link href="/admin/products">
+                <Button type="button" variant="outline" className="h-9">
+                  <X className="mr-2 h-4 w-4" />
+                  Cancel
+                </Button>
+              </Link>
+              <LoadingButton
+                type="submit"
+                className="h-9"
+                disabled={!isDirty || isPending}
+                loading={isPending}
+              >
+                {!isPending && <Check className="mr-2 h-4 w-4" />}
+                {productDetails ? "Update Product" : "Save Product"}
+              </LoadingButton>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {isDirty && (
+        <div className="pt-4">
+          <Card className="bg-amber-50 border-amber-200">
+            <CardContent className="p-3">
+              <div className="text-sm text-amber-600 flex items-center">
+                <div className="h-1.5 w-1.5 rounded-full bg-amber-500 mr-2" />
+                You have unsaved changes. Don&apos;t forget to save your work.
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ProductFormHeader;

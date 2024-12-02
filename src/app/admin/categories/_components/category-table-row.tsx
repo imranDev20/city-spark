@@ -1,23 +1,31 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { Prisma } from "@prisma/client";
+import Image from "next/image";
+import Link from "next/link";
+import { formatDistance } from "date-fns";
+import { Checkbox } from "@/components/ui/checkbox";
+import PlaceholderImage from "@/images/placeholder-image.png";
 import {
+  DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenu,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TableCell, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Eye,
+  ChevronRight,
+} from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { Prisma } from "@prisma/client";
-import dayjs from "dayjs";
-import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
-import Link from "next/link";
-import React, { useTransition } from "react";
-import Image from "next/image";
+import { useTransition } from "react";
 import { deleteCategory } from "../actions";
-import PlaceholderImage from "@/images/placeholder-image.png";
 
 export type CategoryWithRelations = Prisma.CategoryGetPayload<{
   include: {
@@ -35,7 +43,7 @@ export default function CategoriesTableRow({
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
-  const handleDelete = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -58,79 +66,113 @@ export default function CategoriesTableRow({
     });
   };
 
-  const directParent =
-    category.parentTertiaryCategory ||
-    category.parentSecondaryCategory ||
-    category.parentPrimaryCategory;
+  const getCategoryPath = () => {
+    const path = [];
+    if (category.parentPrimaryCategory) {
+      path.push(category.parentPrimaryCategory);
+    }
+    if (category.parentSecondaryCategory) {
+      path.push(category.parentSecondaryCategory);
+    }
+    if (category.parentTertiaryCategory) {
+      path.push(category.parentTertiaryCategory);
+    }
+    return path;
+  };
+
+  const categoryPath = getCategoryPath();
 
   return (
-    <TableRow className={`${isPending ? "opacity-30" : "opacity-100"}`}>
-      <Link href={`/admin/categories/${category.id}`} className="contents">
-        <TableCell className="hidden sm:table-cell">
-          {category?.image ? (
+    <TableRow
+      key={category.id}
+      className={`group relative ${isPending ? "opacity-30" : "opacity-100"}`}
+    >
+      <TableCell className="pl-6">
+        <Checkbox />
+      </TableCell>
+      <TableCell className="py-4">
+        <Link
+          href={`/admin/categories/${category.id}`}
+          className="absolute inset-0 z-10"
+        />
+        <div className="relative">
+          <div className="h-14 w-14 rounded-lg overflow-hidden bg-gray-50">
             <Image
-              alt="Category Image"
-              className="aspect-square rounded-md object-cover"
-              height="64"
-              src={category.image}
-              width="64"
+              src={category?.image || PlaceholderImage}
+              alt={category.name}
+              fill
+              className="object-cover"
             />
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="py-4">
+        <div className="flex flex-col">
+          <span className="font-medium text-gray-900">{category.name}</span>
+          <span className="text-xs text-gray-500 mt-1">{category.type}</span>
+        </div>
+      </TableCell>
+      <TableCell className="py-4">
+        <div className="relative">
+          {categoryPath.length > 0 ? (
+            <div className="flex items-center text-sm text-gray-600">
+              {categoryPath.map((parent, index) => (
+                <div key={parent.id} className="flex items-center">
+                  {index > 0 && (
+                    <ChevronRight className="h-4 w-4 text-gray-400" />
+                  )}
+                  <span className="text-gray-600">{parent.name}</span>
+                </div>
+              ))}
+            </div>
           ) : (
-            <Image
-              alt="Category Image"
-              className="aspect-square rounded-md object-cover border border-input"
-              height="64"
-              src={PlaceholderImage}
-              loading="lazy"
-              width="64"
-            />
+            <span className="text-sm text-gray-500">Root Category</span>
           )}
-        </TableCell>
-        <TableCell className="font-medium flex-1">{category.name}</TableCell>
-        <TableCell className="hidden md:table-cell">{category.type}</TableCell>
-        <TableCell className="hidden md:table-cell">
-          {directParent
-            ? `${directParent.name} (${
-                directParent.type.charAt(0).toUpperCase() +
-                directParent.type.slice(1).toLowerCase()
-              })`
-            : "N/A"}
-        </TableCell>
-        <TableCell className="hidden md:table-cell">
-          {dayjs(category.createdAt).format("DD-MM-YY hh:mm A")}
-        </TableCell>
-        <TableCell>
+        </div>
+      </TableCell>
+
+      <TableCell>
+        <div className="relative">
+          {formatDistance(new Date(category.createdAt), new Date(), {
+            addSuffix: true,
+          })}
+        </div>
+      </TableCell>
+      <TableCell className="pr-6">
+        <div className="relative z-20">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                aria-haspopup="true"
-                size="icon"
                 variant="ghost"
-                onClick={(e) => e.preventDefault()}
+                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Toggle menu</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-[160px]">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = `/admin/categories/${category.id}`;
-                }}
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href={`/admin/categories/${category.id}`}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  View Details
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDelete}>
+              <DropdownMenuItem asChild>
+                <Link href={`/admin/categories/${category.id}`}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit Category
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-600" onClick={handleDelete}>
                 <Trash2 className="mr-2 h-4 w-4" />
-                Delete
+                Delete Category
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </TableCell>
-      </Link>
+        </div>
+      </TableCell>
     </TableRow>
   );
 }

@@ -67,16 +67,19 @@ export const categoryData: {
 export const statusMap = {
   ACTIVE: {
     label: "Active",
+    background: "bg-emerald-500/15",
     indicator: "bg-emerald-500",
     className: "bg-emerald-50 text-emerald-700",
   },
   DRAFT: {
     label: "Draft",
+    background: "bg-amber-500/15",
     indicator: "bg-amber-500",
     className: "bg-amber-50 text-amber-700",
   },
   ARCHIVED: {
     label: "Archived",
+    background: "bg-gray-500/15",
     indicator: "bg-gray-500",
     className: "bg-gray-50 text-gray-700",
   },

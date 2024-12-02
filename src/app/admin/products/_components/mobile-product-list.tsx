@@ -1,29 +1,44 @@
 "use client";
 
 import React, { useRef, useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Loader2, Package2 } from "lucide-react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { fetchProducts, FetchProductsParams } from "@/services/admin-products";
 import SwipeableProductCard from "./swipeable-product-card";
-import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 
-export default function MobileProductList() {
-  const router = useRouter();
-  const { toast } = useToast();
+interface MobileProductListProps {
+  primaryCategoryId?: string;
+  secondaryCategoryId?: string;
+  tertiaryCategoryId?: string;
+  quaternaryCategoryId?: string;
+}
+
+export default function MobileProductList({
+  primaryCategoryId,
+  secondaryCategoryId,
+  tertiaryCategoryId,
+  quaternaryCategoryId,
+}: MobileProductListProps) {
   const searchParams = useSearchParams();
   const observerTarget = useRef<HTMLDivElement>(null);
 
   const currentParams: Omit<FetchProductsParams, "page"> = {
-    pageSize: "10",
+    page_size: "10",
     search: searchParams.get("search") || "",
     sort_by: searchParams.get("sort_by") || "updatedAt",
     sort_order:
       (searchParams.get("sort_order") as FetchProductsParams["sort_order"]) ||
       "desc",
     filter_status: searchParams.get("filter_status") || "",
+    // Add category filters if they exist - using snake_case
+    ...(primaryCategoryId && { primary_category_id: primaryCategoryId }),
+    ...(secondaryCategoryId && { secondary_category_id: secondaryCategoryId }),
+    ...(tertiaryCategoryId && { tertiary_category_id: tertiaryCategoryId }),
+    ...(quaternaryCategoryId && {
+      quaternary_category_id: quaternaryCategoryId,
+    }),
   };
 
   const {
@@ -87,7 +102,7 @@ export default function MobileProductList() {
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-gray-500">
+      <div className="flex lg:hidden flex-col items-center justify-center min-h-[400px] text-gray-500">
         <p className="text-red-500 mb-4">Error loading products</p>
         <Button onClick={() => refetch()} variant="outline">
           Try Again
@@ -98,7 +113,7 @@ export default function MobileProductList() {
 
   if (!data || !data.pages[0].products.length) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-gray-500">
+      <div className="flex lg:hidden flex-col items-center justify-center min-h-[400px] text-gray-500">
         <Package2 className="h-12 w-12 mb-4" />
         <p>No products found</p>
       </div>
@@ -107,7 +122,6 @@ export default function MobileProductList() {
 
   return (
     <div className="grid lg:hidden gap-2 pb-[72px]">
-      {/* Added padding bottom to account for fixed bar */}
       {data.pages.map((page, i) => (
         <React.Fragment key={i}>
           {page.products.map((product) => (
@@ -116,7 +130,6 @@ export default function MobileProductList() {
         </React.Fragment>
       ))}
       <div ref={observerTarget} className="flex justify-center py-6 mb-6">
-        {/* Increased padding and margin */}
         {isFetchingNextPage ? (
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
         ) : hasNextPage ? (

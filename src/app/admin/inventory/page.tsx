@@ -25,7 +25,7 @@ export default async function InventoryPage(props: {
 
   const { inventories, pagination } = await getInventoryItems({
     page: searchParams.page ? parseInt(searchParams.page) : 1,
-    pageSize: 10,
+    page_size: 10,
     sortBy: searchParams.sort_by as
       | "name"
       | "stockCount"

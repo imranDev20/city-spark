@@ -42,7 +42,7 @@ export async function createTemplate(data: TemplateFormInputType) {
 
 type GetTemplatesParams = {
   page?: number;
-  pageSize?: number;
+  page_size?: number;
   sortBy?: "name" | "createdAt";
   sortOrder?: "asc" | "desc";
   filterStatus?: Status;
@@ -51,14 +51,14 @@ type GetTemplatesParams = {
 
 export const getTemplates = async ({
   page = 1,
-  pageSize = 10,
+  page_size = 10,
   sortBy = "createdAt",
   sortOrder = "desc",
   filterStatus,
   searchTerm,
 }: GetTemplatesParams = {}) => {
   try {
-    const skip = (page - 1) * pageSize;
+    const skip = (page - 1) * page_size;
 
     let whereClause: Prisma.TemplateWhereInput = {};
 
@@ -77,19 +77,19 @@ export const getTemplates = async ({
       prisma.template.findMany({
         where: whereClause,
         skip,
-        take: pageSize,
+        take: page_size,
         orderBy: { [sortBy]: sortOrder },
       }),
       prisma.template.count({ where: whereClause }),
     ]);
 
-    const totalPages = Math.ceil(totalCount / pageSize);
+    const totalPages = Math.ceil(totalCount / page_size);
 
     return {
       templates,
       pagination: {
         currentPage: page,
-        pageSize,
+        page_size,
         totalCount,
         totalPages,
       },

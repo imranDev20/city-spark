@@ -23,7 +23,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import PlaceholderImage from "@/images/placeholder-image.png";
-import { deleteProduct } from "../actions";
+import { deleteProducts } from "../actions";
 import { BLUR_DATA_URL } from "@/lib/constants";
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
@@ -118,7 +118,7 @@ export default function SwipeableProductCard({
 
   const handleConfirmDelete = () => {
     startTransition(async () => {
-      await deleteProduct(product.id);
+      await deleteProducts([product.id]);
       api.start({ x: 0 });
       isOpen.current = false;
       setShowDeleteAlert(false);

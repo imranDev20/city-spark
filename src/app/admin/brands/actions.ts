@@ -81,7 +81,7 @@ export async function createBrand(data: BrandFormInputType) {
 
 interface GetBrandsParams {
   page?: number;
-  pageSize?: number;
+  page_size?: number;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
   filterStatus?: Status;
@@ -90,14 +90,14 @@ interface GetBrandsParams {
 
 export const getBrands = async ({
   page = 1,
-  pageSize = 10,
+  page_size = 10,
   sortBy = "createdAt",
   sortOrder = "desc",
   filterStatus,
   searchTerm,
 }: GetBrandsParams = {}) => {
   try {
-    const skip = (page - 1) * pageSize;
+    const skip = (page - 1) * page_size;
 
     let whereClause: Prisma.BrandWhereInput = {};
 
@@ -117,19 +117,19 @@ export const getBrands = async ({
       prisma.brand.findMany({
         where: whereClause,
         skip,
-        take: pageSize,
+        take: page_size,
         orderBy: { [sortBy]: sortOrder },
       }),
       prisma.brand.count({ where: whereClause }),
     ]);
 
-    const totalPages = Math.ceil(totalCount / pageSize);
+    const totalPages = Math.ceil(totalCount / page_size);
 
     return {
       brands,
       pagination: {
         currentPage: page,
-        pageSize,
+        page_size,
         totalCount,
         totalPages,
       },

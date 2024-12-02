@@ -7,39 +7,6 @@ import { backendClient } from "@/lib/edgestore-server";
 import exceljs from "exceljs";
 import dayjs from "dayjs";
 
-// Delete this later
-export const getProductById = async (productId: string) => {
-  try {
-    const product = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      },
-      include: {
-        brand: true,
-        productTemplate: {
-          include: {
-            fields: {
-              include: {
-                templateField: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!product) {
-      throw new Error("Product not found");
-    }
-
-    return product;
-  } catch (error) {
-    console.error("Error fetching product:", error);
-    throw new Error("Failed to fetch product");
-  }
-};
-// above
-
 export async function createProduct(data: ProductFormInputType) {
   try {
     const result = await prisma.$transaction(
@@ -124,9 +91,16 @@ export async function createProduct(data: ProductFormInputType) {
                   connect: { id: data.brand },
                 }
               : undefined,
-            status: data.status || "DRAFT",
+            status: data.status || "ACTIVE",
             manuals: data.manuals,
             images: [], // We'll update this after confirming uploads
+          },
+          include: {
+            inventory: {
+              select: {
+                id: true,
+              },
+            },
           },
         });
 
@@ -165,11 +139,19 @@ export async function createProduct(data: ProductFormInputType) {
         }
 
         // Update product with confirmed images
-        await tx.product.update({
+        const updatedProduct = await tx.product.update({
           where: { id: createdProduct.id },
           data: { images: confirmedImages },
+          include: {
+            inventory: {
+              select: {
+                id: true,
+              },
+            },
+          },
         });
-        return createdProduct;
+
+        return updatedProduct;
       },
       {
         maxWait: 5000, // 5 seconds
@@ -177,13 +159,7 @@ export async function createProduct(data: ProductFormInputType) {
       }
     );
 
-    revalidatePath("/admin/inventory");
-    revalidatePath("/admin/products");
-    revalidatePath(`/admin/products/${result.id}`);
-    revalidatePath("/admin/products/[product_id]", "page");
-    revalidatePath("/products/[[...product_url]]", "page");
-    revalidatePath("/");
-    revalidatePath("/products");
+    revalidatePath("/", "layout");
 
     return {
       message: "Product created successfully!",
@@ -209,7 +185,14 @@ export async function updateProduct(
       async (tx) => {
         const existingProduct = await tx.product.findUnique({
           where: { id: productId },
-          include: { productTemplate: true },
+          include: {
+            productTemplate: true,
+            inventory: {
+              select: {
+                id: true,
+              },
+            },
+          },
         });
 
         if (!existingProduct) {
@@ -257,7 +240,7 @@ export async function updateProduct(
           });
         }
 
-        // Handle image deletions
+        // Handle image deletions and confirmations as before...
         const imagesToDelete = existingProduct.images.filter(
           (image) => !data.images?.some((img) => img.image === image)
         );
@@ -326,7 +309,7 @@ export async function updateProduct(
             material: data.material,
             volume: data.volume ?? null,
             shape: data.shape ?? null,
-            status: data.status ?? "DRAFT",
+            status: data.status ?? "ACTIVE",
             productTemplate: productTemplateId
               ? { connect: { id: productTemplateId } }
               : { disconnect: true },
@@ -350,22 +333,24 @@ export async function updateProduct(
             images: confirmedImages,
             updatedAt: new Date(),
           },
+          include: {
+            inventory: {
+              select: {
+                id: true,
+              },
+            },
+          },
         });
 
         return updatedProduct;
       },
       {
-        maxWait: 5000, // 5 seconds
-        timeout: 10000, // 10 seconds
+        maxWait: 5000,
+        timeout: 10000,
       }
     );
 
-    revalidatePath("/admin/products");
-    revalidatePath(`/admin/products/${productId}`);
-    revalidatePath("/admin/inventory");
-    revalidatePath("/admin/inventory/[inventory_id]", "page");
-    revalidatePath("/");
-    revalidatePath("/products/[[...product_url]]", "page");
+    revalidatePath("/", "layout");
 
     return {
       message: "Product updated successfully!",
@@ -381,10 +366,11 @@ export async function updateProduct(
     };
   }
 }
-export async function deleteProduct(productId: string) {
-  if (!productId) {
+
+export async function deleteProducts(productIds: string[]) {
+  if (!productIds || productIds.length === 0) {
     return {
-      message: "Product ID is required",
+      message: "No products selected for deletion",
       success: false,
     };
   }
@@ -392,71 +378,104 @@ export async function deleteProduct(productId: string) {
   try {
     const result = await prisma.$transaction(
       async (tx) => {
-        // Fetch the product to be deleted
-        const productToDelete = await tx.product.findUnique({
-          where: { id: productId },
-          include: { productTemplate: true },
+        // Fetch all products to be deleted with their relations
+        const productsToDelete = await tx.product.findMany({
+          where: { id: { in: productIds } },
+          include: {
+            productTemplate: true,
+            inventory: true,
+          },
         });
 
-        if (!productToDelete) {
-          throw new Error("Product not found");
+        if (productsToDelete.length === 0) {
+          throw new Error("No products found");
         }
 
-        // Delete associated images
-        if (productToDelete.images && productToDelete.images.length > 0) {
-          for (const image of productToDelete.images) {
-            try {
-              await backendClient.publicImages.deleteFile({
-                url: image,
-              });
-            } catch (error) {
-              console.error(`Failed to delete image ${image}:`, error);
-              throw new Error(`Failed to delete image ${image}`);
+        // Delete images for all products
+        for (const product of productsToDelete) {
+          if (product.images && product.images.length > 0) {
+            for (const image of product.images) {
+              try {
+                await backendClient.publicImages.deleteFile({
+                  url: image,
+                });
+              } catch (error) {
+                console.error(`Failed to delete image ${image}:`, error);
+                // Continue with deletion even if image deletion fails
+              }
             }
           }
         }
 
-        // Delete associated product template if it exists
-        if (productToDelete.productTemplateId) {
-          await tx.productTemplate.delete({
-            where: { id: productToDelete.productTemplateId },
+        // Delete associated product templates
+        const templateIds = productsToDelete
+          .map((p) => p.productTemplateId)
+          .filter((id): id is string => id !== null);
+
+        if (templateIds.length > 0) {
+          await tx.productTemplate.deleteMany({
+            where: { id: { in: templateIds } },
           });
         }
 
-        // Delete the inventory associated with the product
+        // Get all valid inventory IDs
+        const inventoryIds = productsToDelete
+          .flatMap((p) => p.inventory)
+          .filter((inv): inv is NonNullable<typeof inv> => inv !== null)
+          .map((inv) => inv.id);
+
+        // Delete cart items referencing these products' inventories
+        if (inventoryIds.length > 0) {
+          await tx.cartItem.deleteMany({
+            where: {
+              inventoryId: {
+                in: inventoryIds,
+              },
+            },
+          });
+        }
+
+        // Delete inventories
         await tx.inventory.deleteMany({
-          where: { productId: productId },
+          where: { productId: { in: productIds } },
         });
 
-        // Finally, delete the product
-        const deletedProduct = await tx.product.delete({
-          where: { id: productId },
+        // Delete order items referencing these products
+        await tx.orderItem.deleteMany({
+          where: { productId: { in: productIds } },
         });
 
-        return deletedProduct;
+        // Finally, delete the products
+        const deletedProducts = await tx.product.deleteMany({
+          where: { id: { in: productIds } },
+        });
+
+        return {
+          count: deletedProducts.count,
+          products: productsToDelete,
+        };
       },
       {
-        maxWait: 5000, // 5 seconds
-        timeout: 10000, // 10 seconds
+        maxWait: 10000, // 10 seconds
+        timeout: 30000, // 30 seconds
       }
     );
 
-    revalidatePath("/admin/products");
-    revalidatePath("/admin/inventory");
-    revalidatePath("/");
-    revalidatePath("/products");
-    revalidatePath("/products/[[...product_url]]", "page");
+    revalidatePath("/", "layout");
 
     return {
-      message: "Product deleted successfully!",
+      message: `Successfully deleted ${result.count} ${
+        result.count === 1 ? "product" : "products"
+      }`,
       success: true,
       data: result,
     };
   } catch (error) {
-    console.error("Error in deleteProduct:", error);
+    console.error("Error in deleteProducts:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     return {
-      message:
-        "An error occurred while deleting the product. Please try again later.",
+      message: `Failed to delete products: ${errorMessage}`,
       success: false,
     };
   }

@@ -4,7 +4,6 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { CategoryFormInputType } from "./schema";
 import { backendClient } from "@/lib/edgestore-server";
-import { CategoryType } from "@prisma/client";
 
 // Create a new category
 export async function createCategory(data: CategoryFormInputType) {
@@ -63,110 +62,6 @@ export async function createCategory(data: CategoryFormInputType) {
     };
   }
 }
-
-export type SortField = "name" | "createdAt";
-export type SortOrder = "asc" | "desc";
-
-export const getCategories = async ({
-  page = 1,
-  pageSize = 10,
-  sortBy = "createdAt",
-  sortOrder = "desc",
-  filterType,
-  searchTerm,
-}: {
-  page?: number;
-  pageSize?: number;
-  sortBy?: SortField;
-  sortOrder?: SortOrder;
-  filterType?: CategoryType;
-  searchTerm?: string;
-}) => {
-  // await new Promise((resolve) => setTimeout(resolve, 2000));
-
-  try {
-    const skip = (page - 1) * pageSize;
-    let where: any = {};
-
-    if (filterType) {
-      where.type = filterType;
-    }
-
-    if (searchTerm) {
-      where.OR = [
-        { name: { contains: searchTerm, mode: "insensitive" } },
-        {
-          parentPrimaryCategory: {
-            name: { contains: searchTerm, mode: "insensitive" },
-          },
-        },
-        {
-          parentSecondaryCategory: {
-            name: { contains: searchTerm, mode: "insensitive" },
-          },
-        },
-        {
-          parentTertiaryCategory: {
-            name: { contains: searchTerm, mode: "insensitive" },
-          },
-        },
-      ];
-    }
-
-    const [categories, totalCount] = await Promise.all([
-      prisma.category.findMany({
-        include: {
-          parentPrimaryCategory: true,
-          parentSecondaryCategory: true,
-          parentTertiaryCategory: true,
-        },
-        where,
-        orderBy: {
-          [sortBy]: sortOrder,
-        },
-        skip,
-        take: pageSize,
-      }),
-      prisma.category.count({ where }),
-    ]);
-
-    const totalPages = Math.ceil(totalCount / pageSize);
-
-    return {
-      categories,
-      pagination: {
-        currentPage: page,
-        totalPages,
-        pageSize,
-        totalCount,
-      },
-    };
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-    throw new Error("Failed to fetch categories. Please try again later.");
-  }
-};
-
-// Fetch a category by ID
-export const getCategoryById = async (categoryId: string) => {
-  try {
-    const category = await prisma.category.findUnique({
-      where: {
-        id: categoryId,
-      },
-      include: {
-        parentPrimaryCategory: true,
-        parentSecondaryCategory: true,
-        parentTertiaryCategory: true,
-      },
-    });
-
-    return category;
-  } catch (error) {
-    console.error("Error fetching category:", error);
-    throw new Error("Failed to fetch category. Please try again later.");
-  }
-};
 
 // Update a category
 export async function updateCategory(
