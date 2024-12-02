@@ -1,20 +1,6 @@
-"use client";
-
-import React, { useState, useRef, useTransition } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import { HomeIcon, StarIcon, TruckIcon } from "lucide-react";
-import ChecklistAddIcon from "@/components/icons/checklist-add";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import BranchIcon from "@/components/icons/branch";
-import DeliveryIcon from "@/components/icons/delivary";
-import { Transform } from "@/types/misc";
-import InStockIcon from "@/components/icons/in-stock";
-import PriceIcon from "@/components/icons/price";
+import React from "react";
+import { StarIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import AcceptedPayments from "../../_components/accepted-payments";
 import { Prisma } from "@prisma/client";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import { customSlugify } from "@/lib/functions";

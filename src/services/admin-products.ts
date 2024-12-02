@@ -10,6 +10,7 @@ export type ProductWithRelations = Prisma.ProductGetPayload<{
     primaryCategory: true;
     secondaryCategory: true;
     tertiaryCategory: true;
+    quaternaryCategory: true;
   };
 }>;
 
