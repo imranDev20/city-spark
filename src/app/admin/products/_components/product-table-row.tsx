@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Pencil, Trash2, Eye, Archive } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useTransition } from "react";
-import { deleteProduct } from "../actions";
+import { deleteProducts } from "../actions";
 import { useQueryClient } from "@tanstack/react-query";
 
 type ProductWithRelations = Prisma.ProductGetPayload<{
@@ -59,7 +59,7 @@ export default function ProductTableRow({
     e.stopPropagation();
 
     startTransition(async () => {
-      const result = await deleteProduct(product.id);
+      const result = await deleteProducts([product.id]);
 
       if (result.success) {
         await queryClient.invalidateQueries({
@@ -86,107 +86,92 @@ export default function ProductTableRow({
     });
   };
 
-  const handleCheckboxClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
-
   return (
-    <TableRow className={cn("group relative", isSelected && "bg-primary/5")}>
-      <TableCell className="pl-6" onClick={handleCheckboxClick}>
+    <TableRow className={cn("group", isSelected && "bg-primary/5")}>
+      <TableCell
+        className="pl-6 relative z-20"
+        onClick={(e) => e.stopPropagation()}
+      >
         <Checkbox
           checked={isSelected}
           onCheckedChange={(checked) => onSelect?.(checked as boolean)}
         />
       </TableCell>
       <TableCell className="py-4">
-        <Link
-          href={`/admin/products/${product.id}`}
-          className="absolute inset-0 z-10"
-        />
-        <div className="relative">
-          <div className="h-14 w-14 rounded-lg overflow-hidden bg-gray-50">
-            <Image
-              src={product.images[0] || PlaceholderImage}
-              alt={product.name}
-              fill
-              className="object-cover"
-            />
-          </div>
+        <div className="relative h-14 w-14 rounded-lg overflow-hidden bg-gray-50">
+          <Image
+            src={product.images[0] || PlaceholderImage}
+            alt={product.name}
+            fill
+            className="object-cover"
+          />
         </div>
       </TableCell>
       <TableCell className="py-4">
-        <div className="relative">
-          <div className="flex flex-col">
-            <span className="font-medium text-gray-900 line-clamp-1">
-              {product.name}
-            </span>
-            <span className="text-sm text-gray-500 mt-1 line-clamp-1">
-              {[product.brand?.name, product.primaryCategory?.name]
-                .filter(Boolean)
-                .join(" • ")}
-            </span>
-          </div>
+        <div className="flex flex-col">
+          <span className="font-medium text-gray-900 line-clamp-1">
+            {product.name}
+          </span>
+          <span className="text-sm text-gray-500 mt-1 line-clamp-1">
+            {[product.brand?.name, product.primaryCategory?.name]
+              .filter(Boolean)
+              .join(" • ")}
+          </span>
         </div>
       </TableCell>
       <TableCell>
-        <div className="relative">
+        <div
+          className={cn(
+            "inline-flex items-center px-3 py-1.5 rounded-full",
+            `${statusMap[product.status || "DRAFT"].background}`
+          )}
+        >
           <div
             className={cn(
-              "inline-flex items-center px-3 py-1.5 rounded-full",
-              `${statusMap[product.status || "DRAFT"].background}`
+              "h-1.5 w-1.5 rounded-full mr-2",
+              statusMap[product.status || "DRAFT"].indicator
             )}
-          >
-            <div
-              className={cn(
-                "h-1.5 w-1.5 rounded-full mr-2",
-                statusMap[product.status || "DRAFT"].indicator
-              )}
-            />
-            <span className="text-sm font-medium">
-              {statusMap[product.status || "DRAFT"].label}
-            </span>
-          </div>
+          />
+          <span className="text-sm font-medium">
+            {statusMap[product.status || "DRAFT"].label}
+          </span>
         </div>
       </TableCell>
       <TableCell>
-        <div className="relative">
-          <div className="flex flex-col">
-            <span className="font-medium text-base">
+        <div className="flex flex-col">
+          <span className="font-medium text-base">
+            <NumericFormat
+              value={product.tradePrice}
+              displayType="text"
+              prefix="£"
+              decimalScale={2}
+              fixedDecimalScale
+              thousandSeparator
+            />
+          </span>
+          {product.promotionalPrice && (
+            <span className="text-sm text-emerald-600 font-medium mt-0.5">
               <NumericFormat
-                value={product.tradePrice}
+                value={product.promotionalPrice}
                 displayType="text"
                 prefix="£"
                 decimalScale={2}
                 fixedDecimalScale
                 thousandSeparator
-              />
+              />{" "}
+              promo
             </span>
-            {product.promotionalPrice && (
-              <span className="text-sm text-emerald-600 font-medium mt-0.5">
-                <NumericFormat
-                  value={product.promotionalPrice}
-                  displayType="text"
-                  prefix="£"
-                  decimalScale={2}
-                  fixedDecimalScale
-                  thousandSeparator
-                />{" "}
-                promo
-              </span>
-            )}
-          </div>
+          )}
         </div>
       </TableCell>
       <TableCell className="text-sm text-gray-500">
-        <div className="relative">
-          {formatDistance(new Date(product.updatedAt), new Date(), {
-            addSuffix: true,
-          })}
-        </div>
+        {formatDistance(new Date(product.updatedAt), new Date(), {
+          addSuffix: true,
+        })}
       </TableCell>
-      <TableCell className="pr-6">
+      <TableCell className="pr-6 relative">
         {showActions && (
-          <div className="relative z-20">
+          <div className="relative z-20" onClick={(e) => e.stopPropagation()}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -206,7 +191,7 @@ export default function ProductTableRow({
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href={`/admin/products/${product.id}`}>
+                  <Link href={`/admin/products/${product.id}/edit`}>
                     <Pencil className="mr-2 h-4 w-4" />
                     Edit Product
                   </Link>
@@ -228,6 +213,10 @@ export default function ProductTableRow({
             </DropdownMenu>
           </div>
         )}
+        <Link
+          href={`/admin/products/${product.id}`}
+          className="absolute inset-0 z-10"
+        />
       </TableCell>
     </TableRow>
   );
