@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Card,
   CardContent,
@@ -8,6 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import PlaceholderImage from "@/images/placeholder-image.png";
+import { BLUR_DATA_URL } from "@/lib/constants";
 import { CategoryWithRelations } from "@/types/storefront-products";
 import Image from "next/image";
 
@@ -51,6 +50,8 @@ export default function CategoryCard({
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
             className="object-contain transition-all duration-300 group-hover:scale-105"
+            placeholder="blur"
+            blurDataURL={BLUR_DATA_URL}
           />
         </div>
       </CardContent>
