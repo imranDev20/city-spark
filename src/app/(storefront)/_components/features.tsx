@@ -24,7 +24,7 @@ export default function PromotionalGrid() {
         </div>
         <div>
           <Image
-            src="/api/placeholder/400/200"
+            src={MainCombi30KWFlue}
             alt="Promotion 2"
             width={400}
             height={200}
@@ -33,7 +33,7 @@ export default function PromotionalGrid() {
         </div>
         <div>
           <Image
-            src="/api/placeholder/400/200"
+            src={MainEcoCompact25KWNaturalGas}
             alt="Promotion 3"
             width={400}
             height={200}
@@ -42,7 +42,7 @@ export default function PromotionalGrid() {
         </div>
         <div>
           <Image
-            src="/api/placeholder/400/200"
+            src={MainEcoCompact30KWGasCombination}
             alt="Promotion 4"
             width={400}
             height={200}
@@ -51,7 +51,7 @@ export default function PromotionalGrid() {
         </div>
         <div>
           <Image
-            src="/api/placeholder/800/200"
+            src={VaillantEcoTechPro826Flue}
             alt="Promotion 5"
             width={800}
             height={200}
