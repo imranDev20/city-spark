@@ -24,10 +24,8 @@ import {
 } from "../actions";
 import { cn } from "@/lib/utils";
 import ProductActionBar from "./product-action-bar";
-import CategoryNav from "../../_components/category-nav";
-import { CategoryWithChildParent } from "@/types/storefront-products";
 
-export default async function StorefrontProductList({
+export default async function StorefrontProductListPage({
   primaryCategoryId,
   secondaryCategoryId,
   tertiaryCategoryId,

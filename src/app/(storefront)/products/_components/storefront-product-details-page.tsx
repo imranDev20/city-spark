@@ -40,7 +40,7 @@ interface BreadcrumbItem {
   isCurrentPage?: boolean;
 }
 
-export default async function StorefrontProductDetails({
+export default async function StorefrontProductDetailsPage({
   inventoryItem,
 }: {
   inventoryItem: InventoryItemWithRelation; // Replace 'any' with the actual type of your inventory item

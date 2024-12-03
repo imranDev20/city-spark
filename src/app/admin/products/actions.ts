@@ -186,6 +186,155 @@ export async function createProduct(data: ProductFormInputType) {
   }
 }
 
+export async function duplicateProduct(productId: string) {
+  try {
+    // Get the original product with all necessary relations
+    const originalProduct = await prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        productTemplate: {
+          include: {
+            fields: {
+              include: {
+                templateField: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!originalProduct) {
+      return {
+        message: "Original product not found",
+        success: false,
+      };
+    }
+
+    const result = await prisma.$transaction(
+      async (tx) => {
+        // Create a new product template if the original had one
+        let duplicatedTemplate;
+        if (originalProduct.productTemplate) {
+          duplicatedTemplate = await tx.productTemplate.create({
+            data: {
+              templateId: originalProduct.productTemplate.templateId,
+              fields: {
+                create: originalProduct.productTemplate.fields.map((field) => ({
+                  templateField: {
+                    connect: {
+                      id: field.templateFieldId,
+                    },
+                  },
+                  fieldValue: field.fieldValue,
+                })),
+              },
+            },
+          });
+        }
+
+        // Create the duplicated product
+        const duplicatedProduct = await tx.product.create({
+          data: {
+            name: `${originalProduct.name} (Copy)`,
+            description: originalProduct.description,
+            model: originalProduct.model,
+            type: originalProduct.type,
+            warranty: originalProduct.warranty,
+            guarantee: originalProduct.guarantee,
+            tradePrice: originalProduct.tradePrice,
+            contractPrice: originalProduct.contractPrice,
+            promotionalPrice: originalProduct.promotionalPrice,
+            unit: originalProduct.unit,
+            weight: originalProduct.weight,
+            color: originalProduct.color,
+            length: originalProduct.length,
+            width: originalProduct.width,
+            height: originalProduct.height,
+            material: originalProduct.material,
+            volume: originalProduct.volume,
+            shape: originalProduct.shape,
+            productTemplate: duplicatedTemplate
+              ? {
+                  connect: { id: duplicatedTemplate.id },
+                }
+              : undefined,
+            features: originalProduct.features,
+            primaryCategory: originalProduct.primaryCategoryId
+              ? {
+                  connect: { id: originalProduct.primaryCategoryId },
+                }
+              : undefined,
+            secondaryCategory: originalProduct.secondaryCategoryId
+              ? {
+                  connect: { id: originalProduct.secondaryCategoryId },
+                }
+              : undefined,
+            tertiaryCategory: originalProduct.tertiaryCategoryId
+              ? {
+                  connect: { id: originalProduct.tertiaryCategoryId },
+                }
+              : undefined,
+            quaternaryCategory: originalProduct.quaternaryCategoryId
+              ? {
+                  connect: { id: originalProduct.quaternaryCategoryId },
+                }
+              : undefined,
+            brand: originalProduct.brandId
+              ? {
+                  connect: { id: originalProduct.brandId },
+                }
+              : undefined,
+            status: "DRAFT", // Always create duplicate as draft
+            manuals: originalProduct.manuals,
+            images: originalProduct.images,
+          },
+          include: {
+            inventory: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        });
+
+        // Create inventory record for the duplicated product
+        await tx.inventory.create({
+          data: {
+            productId: duplicatedProduct.id,
+            deliveryEligibility: false,
+            collectionEligibility: false,
+            stockCount: 0,
+            collectionPoints: [],
+            deliveryAreas: [],
+          },
+        });
+
+        return duplicatedProduct;
+      },
+      {
+        maxWait: 5000, // 5 seconds
+        timeout: 10000, // 10 seconds
+      }
+    );
+
+    revalidatePath("/", "layout");
+
+    return {
+      message: "Product duplicated successfully!",
+      data: result,
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error in duplicateProduct:", error);
+    return {
+      message:
+        "An error occurred while duplicating the product. Please try again later.",
+      success: false,
+    };
+  }
+}
+
 export async function updateProduct(
   productId: string,
   data: ProductFormInputType
