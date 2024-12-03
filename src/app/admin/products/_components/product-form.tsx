@@ -192,7 +192,7 @@ export default function ProductForm({
 
   const {
     handleSubmit,
-    formState: { isDirty },
+    formState: { isDirty, errors },
 
     reset,
   } = form;
@@ -285,6 +285,8 @@ export default function ProductForm({
       }
     });
   };
+
+  console.log(errors);
 
   return (
     <Form {...form}>
