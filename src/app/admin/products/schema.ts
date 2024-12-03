@@ -56,24 +56,25 @@ export const createProductSchema = (
 
     productTemplateFields: z
       .array(
-        z.object({
-          id: z.string().trim().optional(),
-          fieldId: z.string().trim().min(1, "Field ID is required"),
-          fieldName: z
-            .string({
-              required_error: "Field name is required.",
-              invalid_type_error: "Field name must be a string.",
-            })
-            .trim()
-            .min(1, "Field name is required and can't be left blank."),
-          fieldType: z.enum(["TEXT", "SELECT"], {
-            invalid_type_error: "Field type must be either 'TEXT' or 'SELECT'.",
-          }),
-          fieldOptions: z.string().trim().optional(),
-          fieldValue: z.string().trim().optional(),
-        })
+        z
+          .object({
+            id: z.string().trim().optional(),
+            fieldId: z.string().trim().optional(),
+            fieldName: z.string().trim().optional(),
+            fieldType: z
+              .enum(["TEXT", "SELECT"], {
+                invalid_type_error:
+                  "Field type must be either 'TEXT' or 'SELECT'.",
+              })
+              .optional(),
+            fieldOptions: z.string().trim().optional(),
+            fieldValue: z.string().trim().optional(),
+          })
+          .optional()
       )
-      .optional(),
+      .optional()
+      .default([]), // Provide a default empty array
+
     shape: z.string().trim().optional(),
     volume: z.string().trim().optional(),
     features: z

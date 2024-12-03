@@ -24,6 +24,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useTransition } from "react";
 import { deleteProducts } from "../actions";
 import { useQueryClient } from "@tanstack/react-query";
+import { BLUR_DATA_URL } from "@/lib/constants";
 
 type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -110,6 +111,8 @@ export default function ProductTableRow({
             src={product.images[0] || PlaceholderImage}
             alt={product.name}
             fill
+            placeholder="blur"
+            blurDataURL={BLUR_DATA_URL}
             className="object-cover"
           />
         </div>
