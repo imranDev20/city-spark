@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import img from "@/images/payment-options.png";
+import PaymentOptionsImage from "@/images/payment-options.png";
 import Image from "next/image";
 import Link from "next/link";
 import { FiFacebook, FiInstagram, FiTwitter, FiYoutube } from "react-icons/fi";
 import { cn } from "@/lib/utils";
+import GrowrivaIcon from "@/images/growriva-icon.png";
 
 const StorefrontFooter = () => {
   return (
@@ -50,7 +51,7 @@ const StorefrontFooter = () => {
                 Easy Payment
               </h2>
               <Image
-                src={img}
+                src={PaymentOptionsImage}
                 alt="payment"
                 height={48}
                 width={350}
@@ -199,11 +200,32 @@ const StorefrontFooter = () => {
           </div>
 
           {/* Copyright Section */}
-          <div className="text-primary-foreground/60">
-            <hr className="my-8 md:my-10 border-primary-foreground/20" />
-            <p className="text-xs text-center md:text-left">
-              Copyright © City Spark 2024
-            </p>
+          <div className="bg-primary pt-8 md:pt-12 pb-6 text-primary-foreground">
+            {/* Previous content remains unchanged until copyright section */}
+
+            <div className="text-primary-foreground/60">
+              <hr className="my-8 md:my-10 border-primary-foreground/20" />
+              <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs">
+                <p>Copyright © City Spark 2024</p>
+                <p className="text-primary-foreground/40 flex items-center gap-3">
+                  Developed by{" "}
+                  <Link
+                    href="https://www.growriva.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-secondary transition-colors duration-200"
+                  >
+                    <Image
+                      src={GrowrivaIcon}
+                      alt="Icon"
+                      width={30}
+                      height={30}
+                      className="rounded-full"
+                    />
+                  </Link>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -38,6 +38,7 @@ import { fetchBrands } from "@/services/admin-brands";
 import { ProductFormInputType } from "../schema";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CommandLoading } from "cmdk";
+import Image from "next/image";
 
 type Props = {
   productDetails?: {
@@ -186,6 +187,7 @@ export default function BrandSpecificationsSection({ productDetails }: Props) {
                                           : "opacity-0"
                                       )}
                                     />
+
                                     {brand.name}
                                   </CommandItem>
                                 ))}
