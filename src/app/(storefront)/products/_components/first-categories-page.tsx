@@ -3,10 +3,7 @@ import { getCategoriesByType } from "../actions";
 import { Prisma } from "@prisma/client";
 import Link from "next/link";
 import CategoryCard from "./category-card";
-import {
-  CategoryWithChildParent,
-  CategoryWithRelations,
-} from "@/types/storefront-products";
+import { CategoryWithRelations } from "@/types/storefront-products";
 import PageHeader from "../../_components/page-header";
 import { customSlugify } from "@/lib/functions";
 import {

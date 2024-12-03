@@ -150,8 +150,6 @@ export default function TemplatesSection({
 
   const templateFields = templateDetails?.fields || [];
 
-  console.log(productDetails);
-
   return (
     <Card>
       {/* Rest of the component remains the same */}

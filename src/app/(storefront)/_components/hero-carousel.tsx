@@ -1,7 +1,7 @@
 "use client";
 
-import bannerImage1 from "@/images/banners.jpg";
-import mobileNavImage1 from "@/images/mobile-nav-image.jpg";
+import VaillantEcoFitPlus832Combi from "@/images/advertisements/vaillant-ecofit-plus-832-combi.jpg";
+import IdealAtlantic30CombiFlue from "@/images/advertisements/ideal-atlantic-30-combi-flue.jpg";
 import { cn } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
@@ -13,10 +13,12 @@ const CarouselContent = ({
   content,
   className,
   showNavButtons = false,
+  isDesktop = false,
 }: {
   content: { image: any }[];
   className?: string;
   showNavButtons?: boolean;
+  isDesktop?: boolean;
 }) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
     Autoplay({ delay: 5000 }),
@@ -48,22 +50,37 @@ const CarouselContent = ({
       <div ref={emblaRef} className="overflow-hidden">
         <div className="flex">
           {content.map((item, index) => (
-            <div key={index} className="flex-[0_0_100%] min-w-0 relative">
-              <Image
-                src={item.image}
-                alt={`Banner ${index + 1}`}
-                style={{
-                  objectFit: "contain",
-                }}
-                priority={index === 0}
-                sizes="100vw"
-              />
+            <div
+              key={index}
+              className={cn(
+                "flex-[0_0_100%] min-w-0 relative",
+                isDesktop && "flex justify-center items-center px-4"
+              )}
+            >
+              <div
+                className={cn(
+                  "relative",
+                  isDesktop && "max-w-screen-xl w-full"
+                )}
+              >
+                <Image
+                  src={item.image}
+                  alt={`Banner ${index + 1}`}
+                  className={cn("w-full h-auto", isDesktop && "object-contain")}
+                  style={{
+                    objectFit: "contain",
+                  }}
+                  priority={index === 0}
+                  sizes={
+                    isDesktop ? "(max-width: 1280px) 100vw, 1280px" : "100vw"
+                  }
+                />
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Navigation Buttons - Only show on desktop */}
       {showNavButtons && (
         <>
           <button
@@ -95,7 +112,6 @@ const CarouselContent = ({
         </>
       )}
 
-      {/* Circular Dot Navigation */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
         {content.map((_, index) => (
           <button
@@ -115,21 +131,25 @@ const CarouselContent = ({
 };
 
 export default function HeroCarousel() {
-  const desktopContent = [{ image: bannerImage1 }, { image: bannerImage1 }];
+  const desktopContent = [
+    { image: VaillantEcoFitPlus832Combi },
+    { image: IdealAtlantic30CombiFlue },
+  ];
 
   const mobileContent = [
-    { image: mobileNavImage1 },
-    { image: mobileNavImage1 },
+    { image: VaillantEcoFitPlus832Combi },
+    { image: IdealAtlantic30CombiFlue },
   ];
 
   return (
-    <>
+    <section className="bg-primary w-full">
       <CarouselContent
         content={desktopContent}
-        className="hidden lg:block"
+        className="hidden lg:block py-4"
         showNavButtons={true}
+        isDesktop={true}
       />
       <CarouselContent content={mobileContent} className="lg:hidden mt-5" />
-    </>
+    </section>
   );
 }

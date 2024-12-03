@@ -5,7 +5,7 @@ import img from "@/images/banner-bg2.png";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-export default function Blogs() {
+export default function AdvertisementTwoColumn() {
   return (
     <div
       className={cn(
@@ -33,21 +33,21 @@ export default function Blogs() {
           )}
         >
           <h1 className="text-3xl md:text-4xl font-bold text-secondary">
-            Explore Our Blog
+            Stay Ahead with Industry Insights
           </h1>
           <p
             className={cn("text-primary-foreground/90 text-sm", "px-4 md:px-0")}
           >
-            Lorem Ipsum is simply dummy text of the printing
+            Discover expert analysis, trends, and innovations
             <span className="hidden md:inline">
               {" "}
               <br />
             </span>{" "}
-            and typesetting industry.
+            in plumbing and heating solutions.
           </p>
 
           <Button variant="secondary" className="font-medium">
-            READ BLOG
+            EXPLORE INSIGHTS
           </Button>
         </div>
       </div>

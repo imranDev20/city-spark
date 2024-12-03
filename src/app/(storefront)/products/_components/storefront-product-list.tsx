@@ -19,7 +19,6 @@ import { customSlugify } from "@/lib/functions";
 import { CategoryType } from "@prisma/client";
 import {
   getBrands,
-  getCategoriesByType,
   getCategoryById,
   getProductFilterOptions,
 } from "../actions";
