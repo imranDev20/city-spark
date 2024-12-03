@@ -17,11 +17,12 @@ export default function AdvertisementWideOne() {
           alt="Brand Store Background"
           width={1400}
           height={300}
-          className="rounded-xl"
+          className="rounded-lg"
           style={{
             objectFit: "contain",
           }}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          placeholder="blur"
         />
       </div>
     </div>

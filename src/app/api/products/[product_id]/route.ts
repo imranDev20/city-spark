@@ -39,26 +39,7 @@ export async function GET(req: Request, { params }: { params: RouteParams }) {
             template: true,
           },
         },
-        inventory: {
-          select: {
-            id: true,
-            stockCount: true,
-            soldCount: true,
-            heldCount: true,
-            deliveryEligibility: true,
-            maxDeliveryTime: true,
-            maxDeliveryTimeExceedingStock: true,
-            deliveryAreas: true,
-            minDeliveryCount: true,
-            maxDeliveryCount: true,
-            collectionEligibility: true,
-            collectionAvailabilityTime: true,
-            maxCollectionTimeExceedingStock: true,
-            collectionPoints: true,
-            minCollectionCount: true,
-            maxCollectionCount: true,
-          },
-        },
+        inventory: true,
       },
     });
 

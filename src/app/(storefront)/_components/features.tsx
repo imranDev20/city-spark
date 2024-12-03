@@ -1,11 +1,8 @@
-"use client";
-
 import Image from "next/image";
 import MainCombi25KWFlue from "@/images/advertisements/main-combi-25kw-flue.jpg";
 import MainCombi30KWFlue from "@/images/advertisements/main-combi-30kw-flue.jpg";
 import MainEcoCompact25KWNaturalGas from "@/images/advertisements/main-eco-compact-25kw-natural-gas.jpg";
 import MainEcoCompact30KWGasCombination from "@/images/advertisements/main-eco-compact-30kw-gas-combination.jpg";
-import VaillantEcoFitPlus832Combi from "@/images/advertisements/vaillant-ecofit-plus-832-combi.jpg";
 import VaillantEcoTechPro826Flue from "@/images/advertisements/vaillant-eco-tech-pro-826-26kw-flue.jpg";
 
 export default function PromotionalGrid() {
@@ -20,6 +17,8 @@ export default function PromotionalGrid() {
             width={800}
             height={400}
             className="w-full rounded-lg"
+            placeholder="blur"
+            sizes="(max-width: 1024px) 100vw, 0"
           />
         </div>
         <div>
@@ -29,6 +28,8 @@ export default function PromotionalGrid() {
             width={400}
             height={200}
             className="w-full rounded-lg"
+            placeholder="blur"
+            sizes="(max-width: 1024px) 100vw, 0"
           />
         </div>
         <div>
@@ -38,6 +39,8 @@ export default function PromotionalGrid() {
             width={400}
             height={200}
             className="w-full rounded-lg"
+            placeholder="blur"
+            sizes="(max-width: 1024px) 100vw, 0"
           />
         </div>
         <div>
@@ -47,6 +50,8 @@ export default function PromotionalGrid() {
             width={400}
             height={200}
             className="w-full rounded-lg"
+            placeholder="blur"
+            sizes="(max-width: 1024px) 100vw, 0"
           />
         </div>
         <div>
@@ -56,6 +61,8 @@ export default function PromotionalGrid() {
             width={800}
             height={200}
             className="w-full rounded-lg"
+            placeholder="blur"
+            sizes="(max-width: 1024px) 100vw, 0"
           />
         </div>
       </div>
@@ -72,6 +79,8 @@ export default function PromotionalGrid() {
             width={1000}
             height={600}
             className="rounded-lg h-full"
+            placeholder="blur"
+            sizes="(min-width: 1024px) 66vw, 0"
           />
         </div>
         <div className="relative">
@@ -81,6 +90,8 @@ export default function PromotionalGrid() {
             width={500}
             height={300}
             className="rounded-lg h-full"
+            placeholder="blur"
+            sizes="(min-width: 1024px) 33vw, 0"
           />
         </div>
         <div className="relative">
@@ -90,6 +101,8 @@ export default function PromotionalGrid() {
             width={500}
             height={300}
             className="rounded-lg h-full"
+            placeholder="blur"
+            sizes="(min-width: 1024px) 33vw, 0"
           />
         </div>
         <div className="relative">
@@ -98,6 +111,8 @@ export default function PromotionalGrid() {
             alt="Secondary promotion 3"
             fill
             className="object-cover rounded-lg h-full"
+            placeholder="blur"
+            sizes="(min-width: 1024px) 33vw, 0"
           />
         </div>
         <div className="col-span-2 relative">
@@ -107,6 +122,8 @@ export default function PromotionalGrid() {
             width={1000}
             height={200}
             className="rounded-lg h-full"
+            placeholder="blur"
+            sizes="(min-width: 1024px) 66vw, 0"
           />
         </div>
       </div>

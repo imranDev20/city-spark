@@ -13,17 +13,27 @@ export async function createProduct(data: ProductFormInputType) {
       async (tx) => {
         let createdProductTemplate;
 
-        if (data.templateId) {
+        if (data.templateId && data.productTemplateFields) {
           createdProductTemplate = await tx.productTemplate.create({
             data: {
               templateId: data.templateId,
               fields: {
-                create: data.productTemplateFields?.map(
-                  (productTemplateField) => ({
-                    templateFieldId: productTemplateField.fieldId,
-                    fieldValue: productTemplateField.fieldValue,
+                create: data.productTemplateFields
+                  .filter((field): field is NonNullable<typeof field> => {
+                    return (
+                      field !== undefined &&
+                      field.fieldId !== undefined &&
+                      field.fieldValue !== undefined
+                    );
                   })
-                ),
+                  .map((productTemplateField) => ({
+                    templateField: {
+                      connect: {
+                        id: productTemplateField.fieldId,
+                      },
+                    },
+                    fieldValue: productTemplateField.fieldValue,
+                  })),
               },
             },
             include: {
@@ -201,7 +211,15 @@ export async function updateProduct(
 
         // Handle product template
         let productTemplateId = null;
-        if (data.templateId && data.productTemplateFields) {
+        if (data.templateId && data.productTemplateFields?.length) {
+          // Filter out any undefined fields and ensure required properties exist
+          const validTemplateFields = data.productTemplateFields.filter(
+            (field): field is NonNullable<typeof field> =>
+              field !== undefined &&
+              field.fieldId !== undefined &&
+              field.fieldValue !== undefined
+          );
+
           if (existingProduct.productTemplate?.id) {
             // Update existing product template
             const updatedProductTemplate = await tx.productTemplate.update({
@@ -210,8 +228,12 @@ export async function updateProduct(
                 templateId: data.templateId,
                 fields: {
                   deleteMany: {},
-                  create: data.productTemplateFields.map((field) => ({
-                    templateFieldId: field.fieldId,
+                  create: validTemplateFields.map((field) => ({
+                    templateField: {
+                      connect: {
+                        id: field.fieldId,
+                      },
+                    },
                     fieldValue: field.fieldValue,
                   })),
                 },
@@ -224,8 +246,12 @@ export async function updateProduct(
               data: {
                 templateId: data.templateId,
                 fields: {
-                  create: data.productTemplateFields.map((field) => ({
-                    templateFieldId: field.fieldId,
+                  create: validTemplateFields.map((field) => ({
+                    templateField: {
+                      connect: {
+                        id: field.fieldId,
+                      },
+                    },
                     fieldValue: field.fieldValue,
                   })),
                 },
@@ -240,9 +266,9 @@ export async function updateProduct(
           });
         }
 
-        // Handle image deletions and confirmations as before...
+        // Handle image deletions and confirmations
         const imagesToDelete = existingProduct.images.filter(
-          (image) => !data.images?.some((img) => img.image === image)
+          (image) => !data.images?.some((img) => img?.image === image)
         );
 
         for (const image of imagesToDelete) {
@@ -258,30 +284,44 @@ export async function updateProduct(
 
         // Handle new image confirmations
         const confirmedImages = [];
-        for (const imageData of data.images || []) {
-          if (!existingProduct.images.includes(imageData.image)) {
-            try {
-              const result = await backendClient.publicImages.confirmUpload({
-                url: imageData.image,
-              });
-              if (result.success) {
-                confirmedImages.push(imageData.image);
-              } else {
-                throw new Error(
-                  `Failed to confirm upload for ${imageData.image}`
+        if (data.images) {
+          for (const imageData of data.images) {
+            if (
+              imageData?.image &&
+              !existingProduct.images.includes(imageData.image)
+            ) {
+              try {
+                const result = await backendClient.publicImages.confirmUpload({
+                  url: imageData.image,
+                });
+                if (result.success) {
+                  confirmedImages.push(imageData.image);
+                } else {
+                  throw new Error(
+                    `Failed to confirm upload for ${imageData.image}`
+                  );
+                }
+              } catch (error) {
+                console.error(
+                  `Failed to confirm upload for ${imageData.image}:`,
+                  error
                 );
+                throw new Error(`Failed to upload ${imageData.image}`);
               }
-            } catch (error) {
-              console.error(
-                `Failed to confirm upload for ${imageData.image}:`,
-                error
-              );
-              throw new Error(`Failed to upload ${imageData.image}`);
+            } else if (imageData?.image) {
+              confirmedImages.push(imageData.image);
             }
-          } else {
-            confirmedImages.push(imageData.image);
           }
         }
+
+        // Features array with null check and undefined filtering
+        const features =
+          data.features
+            ?.filter(
+              (item): item is NonNullable<typeof item> =>
+                item !== undefined && item.feature !== undefined
+            )
+            .map((item) => item.feature) ?? [];
 
         // Update the product
         const updatedProduct = await tx.product.update({
@@ -306,14 +346,14 @@ export async function updateProduct(
             length: data.length ? parseFloat(data.length) : null,
             width: data.width ? parseFloat(data.width) : null,
             height: data.height ? parseFloat(data.height) : null,
-            material: data.material,
+            material: data.material ?? null,
             volume: data.volume ?? null,
             shape: data.shape ?? null,
             status: data.status ?? "ACTIVE",
             productTemplate: productTemplateId
               ? { connect: { id: productTemplateId } }
               : { disconnect: true },
-            features: data.features?.map((item) => item.feature),
+            features: features,
             brand: data.brand
               ? { connect: { id: data.brand } }
               : { disconnect: true },

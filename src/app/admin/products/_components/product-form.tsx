@@ -150,11 +150,7 @@ export default function ProductForm({
       ],
       model: "",
       brand: "",
-      images: [
-        {
-          image: "",
-        },
-      ],
+      images: [],
       shape: "",
       volume: "",
       weight: "",
@@ -177,16 +173,7 @@ export default function ProductForm({
       tertiaryCategoryId: "",
       quaternaryCategoryId: "",
       manuals: [],
-      productTemplateFields: [
-        {
-          fieldId: "",
-          fieldName: "",
-          fieldOptions: "",
-          fieldType: "TEXT",
-          fieldValue: "",
-          id: "",
-        },
-      ],
+      productTemplateFields: [],
     },
   });
 

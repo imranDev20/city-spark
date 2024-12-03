@@ -39,13 +39,11 @@ import { ProductFormInputType } from "../schema";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CommandLoading } from "cmdk";
 import Image from "next/image";
+import { Brand } from "@prisma/client";
 
 type Props = {
   productDetails?: {
-    brand?: {
-      id: string;
-      name: string;
-    } | null;
+    brand?: Brand | null;
   } | null;
 };
 
@@ -92,6 +90,7 @@ export default function BrandSpecificationsSection({ productDetails }: Props) {
   // Find the selected brand, including the initial product details
   const selectedBrand = useMemo(() => {
     if (!selectedBrandId) return null;
+
     return (
       brands.find((brand) => brand.id === selectedBrandId) ||
       (productDetails?.brand?.id === selectedBrandId
@@ -144,7 +143,22 @@ export default function BrandSpecificationsSection({ productDetails }: Props) {
                           {isLoading ? (
                             "Loading..."
                           ) : selectedBrand ? (
-                            selectedBrand.name
+                            <div className="flex items-center gap-2">
+                              <div className="relative h-5 w-5 rounded overflow-hidden flex-shrink-0 flex items-center">
+                                {selectedBrand.image && (
+                                  <Image
+                                    src={selectedBrand.image}
+                                    alt={selectedBrand.name}
+                                    width={50}
+                                    height={50}
+                                    className="object-cover"
+                                  />
+                                )}
+                              </div>
+                              <span className="truncate">
+                                {selectedBrand.name}
+                              </span>
+                            </div>
                           ) : (
                             <p className="text-muted-foreground">
                               Select a brand
@@ -178,6 +192,7 @@ export default function BrandSpecificationsSection({ productDetails }: Props) {
                                       field.onChange(brand.id);
                                       setOpenBrands(false);
                                     }}
+                                    className="flex items-center gap-2"
                                   >
                                     <Check
                                       className={cn(
@@ -187,8 +202,20 @@ export default function BrandSpecificationsSection({ productDetails }: Props) {
                                           : "opacity-0"
                                       )}
                                     />
-
-                                    {brand.name}
+                                    <div className="relative h-5 w-5 rounded overflow-hidden flex-shrink-0 flex items-center">
+                                      {brand.image && (
+                                        <Image
+                                          src={brand.image}
+                                          alt={brand.name}
+                                          width={50}
+                                          height={50}
+                                          className="object-cover"
+                                        />
+                                      )}
+                                    </div>
+                                    <span className="truncate">
+                                      {brand.name}
+                                    </span>
                                   </CommandItem>
                                 ))}
                                 {hasNextPage && (
