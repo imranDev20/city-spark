@@ -1,56 +1,36 @@
-"use client";
+import IdealAdlantic30CombiFlue from "@/images/advertisements/ideal-atlantic-30-combi-flue.jpg";
+import VaillantEcoFitPlus832Combi from "@/images/advertisements/vaillant-ecofit-plus-832-combi.jpg";
 
-import { Button } from "@/components/ui/button";
-import img from "@/images/banner-bg2.png";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 export default function AdvertisementTwoColumn() {
   return (
-    <div
+    <section
       className={cn(
         "container max-w-screen-xl mx-auto my-12",
-        "px-4 md:px-6 lg:px-8"
+        "px-4 md:px-6 lg:px-8",
+        "grid grid-cols-2 gap-5"
       )}
     >
-      <div className="relative bg-primary text-primary-foreground rounded-xl">
+      <div className="lg:col-span-1 relative">
         <Image
-          src={img}
-          alt="Blog Background"
-          layout="fill"
-          style={{
-            objectFit: "cover",
-          }}
-          className="opacity-20 rounded-xl"
-          placeholder="blur"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          src={VaillantEcoFitPlus832Combi}
+          alt="Ideal Atlantic"
+          width={600}
+          height={400}
+          className="rounded-lg h-full"
         />
-
-        <div
-          className={cn(
-            "relative z-10 flex flex-col items-center justify-center text-center",
-            "p-6 md:p-10 space-y-4"
-          )}
-        >
-          <h1 className="text-3xl md:text-4xl font-bold text-secondary">
-            Stay Ahead with Industry Insights
-          </h1>
-          <p
-            className={cn("text-primary-foreground/90 text-sm", "px-4 md:px-0")}
-          >
-            Discover expert analysis, trends, and innovations
-            <span className="hidden md:inline">
-              {" "}
-              <br />
-            </span>{" "}
-            in plumbing and heating solutions.
-          </p>
-
-          <Button variant="secondary" className="font-medium">
-            EXPLORE INSIGHTS
-          </Button>
-        </div>
       </div>
-    </div>
+      <div className="lg:col-span-1 relative">
+        <Image
+          src={IdealAdlantic30CombiFlue}
+          alt="Ideal Atlantic"
+          width={600}
+          height={400}
+          className="rounded-lg h-full"
+        />
+      </div>
+    </section>
   );
 }

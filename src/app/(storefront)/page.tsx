@@ -26,9 +26,8 @@ export default async function HomePage() {
       />
       <AdvertisementWideOne />
       <ProductCarousel title="New Products" inventoryItems={inventoryItems} />
-
-      <AdvertisementWideTwo />
       <AdvertisementTwoColumn />
+      <AdvertisementWideTwo />
     </main>
   );
 }
