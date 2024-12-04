@@ -1,15 +1,67 @@
 import React from "react";
 import MobileCategoryNav from "./mobile-category-nav";
-import { getCategoriesByType } from "../products/actions";
-import { CategoryWithChildParent } from "@/types/storefront-products";
+import prisma from "@/lib/prisma";
 
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+import { getDeviceType } from "@/lib/server-utils";
+import { unstable_cache as cache } from "next/cache";
+
+async function fetchCategories() {
+  // First fetch Boilers and Radiators (secondary categories)
+  const secondaryCategories = await prisma.category.findMany({
+    where: {
+      type: "SECONDARY",
+      OR: [
+        { name: { equals: "Boilers", mode: "insensitive" } },
+        { name: { equals: "Radiators", mode: "insensitive" } },
+      ],
+    },
+    select: {
+      id: true,
+      name: true,
+      type: true,
+      parentPrimaryCategory: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  // Then fetch primary categories (excluding Boilers and Radiators)
+  const primaryCategories = await prisma.category.findMany({
+    where: {
+      type: "PRIMARY",
+      name: {
+        notIn: ["Boilers", "Radiators"],
+      },
+    },
+    select: {
+      id: true,
+      name: true,
+      type: true,
+    },
+  });
+
+  return [...secondaryCategories, ...primaryCategories];
+}
+
+export const getCategoriesForNav = cache(
+  fetchCategories,
+  ["getCategoriesForNav"],
+  {
+    revalidate: 3600, // Revalidate cache every 60 seconds
+  }
+);
 
 export default async function MobileCategoryNavContainer() {
-  // await wait(1000);
+  const { isMobile } = await getDeviceType();
 
-  const { categories } = await getCategoriesByType("PRIMARY", "");
-  const navCategories = categories as CategoryWithChildParent[];
+  if (isMobile) {
+    const categories = await getCategoriesForNav();
+    return <MobileCategoryNav categories={categories} />;
+  }
 
-  return <MobileCategoryNav categories={navCategories} />;
+  // Return null for desktop devices to prevent unnecessary rendering
+  return null;
 }

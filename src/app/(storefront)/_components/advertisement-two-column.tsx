@@ -21,6 +21,7 @@ export default function AdvertisementTwoColumn() {
           className="rounded-lg object-cover object-center"
           placeholder="blur"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
+          loading="lazy"
         />
       </div>
       <div className="relative w-full">
@@ -32,6 +33,7 @@ export default function AdvertisementTwoColumn() {
           className="rounded-lg object-cover object-center"
           placeholder="blur"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
+          loading="lazy"
         />
       </div>
     </section>
