@@ -80,9 +80,19 @@ export default async function ProductCardsContainer(
         {totalCount} Products
       </p>
 
-      <Image src={BannerImage} alt="" className="w-full h-auto rounded-lg" />
+      <div className="h-24 lg:h-52 relative">
+        <Image
+          src={BannerImage}
+          alt=""
+          className="w-full h-auto rounded-lg"
+          placeholder="blur"
+          fill
+          loading="lazy"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1400px"
+        />
+      </div>
 
-      <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+      <div className="flex justify-between items-center mb-6 flex-wrap gap-4 lg:mt-6">
         <p className="text-base text-gray-600 hidden lg:block">
           Showing{" "}
           <span className="font-semibold text-gray-900">{totalCount}</span>{" "}

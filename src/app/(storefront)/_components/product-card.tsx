@@ -70,7 +70,7 @@ const ProductImage = ({ images }: { images: string[] }) => {
           alt="Product Image"
           className="object-contain"
           sizes="100vw"
-          priority={true}
+          loading="lazy"
           placeholder="blur"
           blurDataURL={BLUR_DATA_URL}
         />
@@ -93,6 +93,7 @@ const ProductImage = ({ images }: { images: string[] }) => {
           sizes="(min-width: 1024px) 33vw, 50vw"
           placeholder="blur"
           blurDataURL={BLUR_DATA_URL}
+          loading="lazy"
         />
         {validImages.length > 1 && (
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
