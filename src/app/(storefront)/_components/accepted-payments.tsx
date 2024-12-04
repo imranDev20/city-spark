@@ -30,6 +30,8 @@ export default function AcceptedPayments() {
               style={{
                 objectFit: "contain",
               }}
+              loading="lazy"
+              placeholder="blur"
             />
           </span>
         ))}

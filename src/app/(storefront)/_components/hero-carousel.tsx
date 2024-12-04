@@ -26,7 +26,9 @@ const CarouselContent = ({
   // Initialize carousel without autoplay
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true },
-    autoplayEnabled ? [Autoplay({ delay: 5000, stopOnInteraction: false })] : []
+    autoplayEnabled
+      ? [Autoplay({ delay: 10000, stopOnInteraction: false })]
+      : []
   );
 
   useEffect(() => {
