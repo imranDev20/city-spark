@@ -26,30 +26,29 @@ const CarouselContent = ({
   // Initialize carousel without autoplay
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true },
-    autoplayEnabled
-      ? [Autoplay({ delay: 10000, stopOnInteraction: false })]
-      : []
+    autoplayEnabled ? [Autoplay({ delay: 5000, stopOnInteraction: false })] : []
   );
 
   useEffect(() => {
-    // Enable autoplay only after page load and when browser is idle
+    // Enable autoplay after page load and 10 second delay
     if (typeof window !== "undefined") {
-      // Request idle callback with fallback for browsers that don't support it
+      // Request idle callback with fallback
       const requestIdleCallback =
         window.requestIdleCallback || ((cb) => setTimeout(cb, 1));
 
-      // Wait for page load
-      window.addEventListener("load", () => {
-        // Then wait for browser to be idle
-        requestIdleCallback(() => {
+      const enableAutoplayWithDelay = () => {
+        // Set a 10 second timeout before enabling autoplay
+        setTimeout(() => {
           setAutoplayEnabled(true);
-        });
-      });
+        }, 10000);
+      };
 
-      // If page is already loaded, just wait for idle
+      // Wait for page load
       if (document.readyState === "complete") {
-        requestIdleCallback(() => {
-          setAutoplayEnabled(true);
+        requestIdleCallback(enableAutoplayWithDelay);
+      } else {
+        window.addEventListener("load", () => {
+          requestIdleCallback(enableAutoplayWithDelay);
         });
       }
     }

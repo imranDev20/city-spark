@@ -11,7 +11,7 @@ import PromotionalGrid from "./_components/promotional-grid";
 export default function HomePage() {
   return (
     <main>
-      {/* <HeroCarousel /> */}
+      <HeroCarousel />
       <Suspense fallback={<MobileCategoryNavSkeleton />}>
         <MobileCategoryNavContainer />
       </Suspense>
