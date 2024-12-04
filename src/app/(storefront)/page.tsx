@@ -11,22 +11,22 @@ import PromotionalGrid from "./_components/promotional-grid";
 export default function HomePage() {
   return (
     <main>
-      <HeroCarousel />
+      {/* <HeroCarousel /> */}
       <Suspense fallback={<MobileCategoryNavSkeleton />}>
         <MobileCategoryNavContainer />
       </Suspense>
-      <PromotionalGrid />
+      {/* <PromotionalGrid /> */}
 
-      <Suspense fallback="Loading...">
+      {/* <Suspense fallback="Loading...">
         <ProductCarouselContainer title="Best Selling Products" />
-      </Suspense>
-      <AdvertisementWideOne />
-
+      </Suspense> */}
+      {/* <AdvertisementWideOne /> */}
+      {/* 
       <Suspense fallback="Loading...">
         <ProductCarouselContainer title="New Products" />
-      </Suspense>
-      <AdvertisementTwoColumn />
-      <AdvertisementWideTwo />
+      </Suspense> */}
+      {/* <AdvertisementTwoColumn />
+      <AdvertisementWideTwo /> */}
     </main>
   );
 }
