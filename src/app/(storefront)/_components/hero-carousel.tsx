@@ -1,13 +1,13 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 import VaillantEcoFitPlus832Combi from "@/images/advertisements/vaillant-ecofit-plus-832-combi.jpg";
 import IdealAtlantic30CombiFlue from "@/images/advertisements/ideal-atlantic-30-combi-flue.jpg";
-import { cn } from "@/lib/utils";
-import Autoplay from "embla-carousel-autoplay";
-import useEmblaCarousel from "embla-carousel-react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
 
 const CarouselContent = ({
   content,
@@ -20,30 +20,42 @@ const CarouselContent = ({
   showNavButtons?: boolean;
   isDesktop?: boolean;
 }) => {
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
-    Autoplay({ delay: 5000 }),
+    Autoplay({ delay: 5000, stopOnInteraction: false }),
   ]);
 
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setSelectedIndex(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
-
+  // Fixed useEffect with proper type handling
   useEffect(() => {
+    const updateSelectedIndex = () => {
+      if (!emblaApi) return;
+      setSelectedIndex(emblaApi.selectedScrollSnap());
+    };
+
     if (!emblaApi) return;
 
-    onSelect();
-    emblaApi.on("select", onSelect);
+    updateSelectedIndex();
+    emblaApi.on("select", updateSelectedIndex);
 
     return () => {
-      emblaApi.off("select", onSelect);
+      emblaApi.off("select", updateSelectedIndex);
     };
-  }, [emblaApi, onSelect]);
+  }, [emblaApi]);
 
-  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
-  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
+  const scrollTo = useCallback(
+    (index: number) => {
+      if (emblaApi) emblaApi.scrollTo(index);
+    },
+    [emblaApi]
+  );
 
   return (
     <div className={cn("relative group", className)}>
@@ -67,15 +79,15 @@ const CarouselContent = ({
                   src={item.image}
                   alt={`Banner ${index + 1}`}
                   className={cn("w-full h-auto", isDesktop && "object-contain")}
+                  fill
+                  priority={index === 0}
+                  quality={75}
+                  sizes={
+                    isDesktop ? "(min-width: 1280px) 1280px, 100vw" : "100vw"
+                  }
                   style={{
                     objectFit: "contain",
                   }}
-                  fill
-                  quality={40}
-                  priority
-                  sizes={
-                    isDesktop ? "(max-width: 1280px) 100vw, 1280px" : "100vw"
-                  }
                 />
               </div>
             </div>
@@ -87,26 +99,14 @@ const CarouselContent = ({
         <>
           <button
             onClick={scrollPrev}
-            className={cn(
-              "absolute left-4 top-1/2 -translate-y-1/2",
-              "bg-white/80 hover:bg-white rounded-full p-2",
-              "transition-all duration-200",
-              "opacity-0 group-hover:opacity-100",
-              "shadow-lg hover:shadow-xl"
-            )}
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 transition-all duration-200 opacity-0 group-hover:opacity-100 shadow-lg hover:shadow-xl"
             aria-label="Previous slide"
           >
             <ChevronLeft className="h-6 w-6 text-gray-800" />
           </button>
           <button
             onClick={scrollNext}
-            className={cn(
-              "absolute right-4 top-1/2 -translate-y-1/2",
-              "bg-white/80 hover:bg-white rounded-full p-2",
-              "transition-all duration-200",
-              "opacity-0 group-hover:opacity-100",
-              "shadow-lg hover:shadow-xl"
-            )}
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 transition-all duration-200 opacity-0 group-hover:opacity-100 shadow-lg hover:shadow-xl"
             aria-label="Next slide"
           >
             <ChevronRight className="h-6 w-6 text-gray-800" />
@@ -118,9 +118,9 @@ const CarouselContent = ({
         {content.map((_, index) => (
           <button
             key={index}
-            onClick={() => emblaApi?.scrollTo(index)}
+            onClick={() => scrollTo(index)}
             className={cn(
-              "w-2.5 h-2.5 rounded-full transition-all duration-300",
+              "w-2.5 h-2.5 rounded-full transition-colors duration-300",
               "hover:bg-white/80",
               selectedIndex === index ? "bg-white scale-110" : "bg-white/50"
             )}
@@ -133,12 +133,7 @@ const CarouselContent = ({
 };
 
 export default function HeroCarousel() {
-  const desktopContent = [
-    { image: VaillantEcoFitPlus832Combi },
-    { image: IdealAtlantic30CombiFlue },
-  ];
-
-  const mobileContent = [
+  const content = [
     { image: VaillantEcoFitPlus832Combi },
     { image: IdealAtlantic30CombiFlue },
   ];
@@ -146,12 +141,12 @@ export default function HeroCarousel() {
   return (
     <section className="bg-primary w-full">
       <CarouselContent
-        content={desktopContent}
+        content={content}
         className="hidden lg:block py-4"
         showNavButtons={true}
         isDesktop={true}
       />
-      <CarouselContent content={mobileContent} className="lg:hidden mt-5" />
+      <CarouselContent content={content} className="lg:hidden mt-5" />
     </section>
   );
 }
