@@ -59,7 +59,7 @@ const CarouselContent = ({
             >
               <div
                 className={cn(
-                  "relative",
+                  "relative h-[200px] lg:h-[400px]",
                   isDesktop && "max-w-screen-xl w-full"
                 )}
               >
@@ -70,10 +70,13 @@ const CarouselContent = ({
                   style={{
                     objectFit: "contain",
                   }}
+                  fill
+                  quality={60}
                   priority={index === 0}
                   sizes={
                     isDesktop ? "(max-width: 1280px) 100vw, 1280px" : "100vw"
                   }
+                  placeholder="blur"
                 />
               </div>
             </div>

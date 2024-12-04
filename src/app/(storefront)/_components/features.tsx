@@ -19,7 +19,6 @@ export default function PromotionalGrid() {
             className="w-full rounded-lg"
             placeholder="blur"
             sizes="(max-width: 1024px) 100vw, 0"
-            loading="lazy"
           />
         </div>
         <div>
@@ -31,7 +30,6 @@ export default function PromotionalGrid() {
             className="w-full rounded-lg"
             placeholder="blur"
             sizes="(max-width: 1024px) 100vw, 0"
-            loading="lazy"
           />
         </div>
         <div>
@@ -43,7 +41,6 @@ export default function PromotionalGrid() {
             className="w-full rounded-lg"
             placeholder="blur"
             sizes="(max-width: 1024px) 100vw, 0"
-            loading="lazy"
           />
         </div>
         <div>
@@ -55,7 +52,6 @@ export default function PromotionalGrid() {
             className="w-full rounded-lg"
             placeholder="blur"
             sizes="(max-width: 1024px) 100vw, 0"
-            loading="lazy"
           />
         </div>
         <div>
@@ -67,7 +63,6 @@ export default function PromotionalGrid() {
             className="w-full rounded-lg"
             placeholder="blur"
             sizes="(max-width: 1024px) 100vw, 0"
-            loading="lazy"
           />
         </div>
       </div>
@@ -86,7 +81,6 @@ export default function PromotionalGrid() {
             className="rounded-lg h-full"
             placeholder="blur"
             sizes="(min-width: 1024px) 66vw, 0"
-            loading="lazy"
           />
         </div>
         <div className="relative">
@@ -98,7 +92,6 @@ export default function PromotionalGrid() {
             className="rounded-lg h-full"
             placeholder="blur"
             sizes="(min-width: 1024px) 33vw, 0"
-            loading="lazy"
           />
         </div>
         <div className="relative">
@@ -110,7 +103,6 @@ export default function PromotionalGrid() {
             className="rounded-lg h-full"
             placeholder="blur"
             sizes="(min-width: 1024px) 33vw, 0"
-            loading="lazy"
           />
         </div>
         <div className="relative">
@@ -121,7 +113,6 @@ export default function PromotionalGrid() {
             className="object-cover rounded-lg h-full"
             placeholder="blur"
             sizes="(min-width: 1024px) 33vw, 0"
-            loading="lazy"
           />
         </div>
         <div className="col-span-2 relative">
@@ -133,7 +124,6 @@ export default function PromotionalGrid() {
             className="rounded-lg h-full"
             placeholder="blur"
             sizes="(min-width: 1024px) 66vw, 0"
-            loading="lazy"
           />
         </div>
       </div>
