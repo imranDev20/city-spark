@@ -14,8 +14,8 @@ export default function AdvertisementWideTwo() {
         <Image
           src={WideAdvertisementTwo}
           alt="Brand Store Background"
-          width={1400}
-          height={300}
+          width={2000}
+          height={400}
           className="rounded-lg"
           style={{
             objectFit: "contain",

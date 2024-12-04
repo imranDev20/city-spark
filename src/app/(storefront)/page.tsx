@@ -2,30 +2,28 @@ import AdvertisementWideOne from "./_components/advertisement-wide-one";
 import HeroCarousel from "./_components/hero-carousel";
 import Features from "./_components/features";
 import AdvertisementWideTwo from "./_components/advertisement-wide-two";
-import { getLatestInventoryItems } from "./actions";
-import ProductCarousel from "./_components/product-carousel";
-import MobileCategoryNav from "./_components/mobile-category-nav";
-import { getCategoriesByType } from "./products/actions";
-import { CategoryWithChildParent } from "@/types/storefront-products";
 import AdvertisementTwoColumn from "./_components/advertisement-two-column";
+import ProductCarouselContainer from "./_components/product-carousel-container";
+import MobileCategoryNavContainer from "./_components/mobile-category-nav-container";
+import { Suspense } from "react";
 
-export default async function HomePage() {
-  const inventoryItems = await getLatestInventoryItems(20);
-
-  const { categories } = await getCategoriesByType("PRIMARY", "");
-  const navCategories = categories as CategoryWithChildParent[];
-
+export default function HomePage() {
   return (
-    <main className="">
+    <main>
       <HeroCarousel />
-      <MobileCategoryNav categories={navCategories} />
+      <Suspense fallback="Loading...">
+        <MobileCategoryNavContainer />
+      </Suspense>
       <Features />
-      <ProductCarousel
-        title="Best Selling Products"
-        inventoryItems={inventoryItems}
-      />
+
+      <Suspense fallback="Loading...">
+        <ProductCarouselContainer title="Best Selling Products" />
+      </Suspense>
       <AdvertisementWideOne />
-      <ProductCarousel title="New Products" inventoryItems={inventoryItems} />
+
+      <Suspense fallback="Loading...">
+        <ProductCarouselContainer title="New Products" />
+      </Suspense>
       <AdvertisementTwoColumn />
       <AdvertisementWideTwo />
     </main>

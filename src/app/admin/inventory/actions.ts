@@ -106,6 +106,8 @@ export const updateInventoryStock = async (
       data: { stockCount: newStockCount },
     });
 
+    revalidatePath("/", "layout");
+
     return updatedInventory;
   } catch (error) {
     console.error("Error updating inventory stock:", error);
