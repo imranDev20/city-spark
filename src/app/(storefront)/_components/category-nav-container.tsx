@@ -14,8 +14,6 @@ export default async function CategoryNavContainer() {
     );
     const navCategories = mobileNavCategories as CategoryWithChildParent[];
 
-    console.log(navCategories);
-
     return <CategoryNav categories={navCategories} />;
   }
 
