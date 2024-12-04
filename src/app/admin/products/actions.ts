@@ -101,6 +101,7 @@ export async function createProduct(data: ProductFormInputType) {
                   connect: { id: data.brand },
                 }
               : undefined,
+            manufacturerLink: data.manufacturerLink || null,
             status: data.status || "ACTIVE",
             manuals: data.manuals,
             images: [], // We'll update this after confirming uploads
@@ -506,6 +507,7 @@ export async function updateProduct(
             brand: data.brand
               ? { connect: { id: data.brand } }
               : { disconnect: true },
+            manufacturerLink: data.manufacturerLink || null,
             manuals: data.manuals ?? [],
             primaryCategory: data.primaryCategoryId
               ? { connect: { id: data.primaryCategoryId } }

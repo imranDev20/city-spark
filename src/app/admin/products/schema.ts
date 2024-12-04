@@ -25,6 +25,7 @@ export const createProductSchema = (
       .trim()
       .min(1, "Product description is required and can't be left blank."),
     brand: z.string().trim().optional(),
+    manufacturerLink: z.string().trim().optional(),
     model: z.string().trim().optional(),
     type: z.string().trim().optional(),
     warranty: z.string().trim().optional(),

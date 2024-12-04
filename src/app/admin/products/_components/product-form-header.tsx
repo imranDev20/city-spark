@@ -4,7 +4,15 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/ui/loading-button";
-import { Check, ChevronLeft, ExternalLink, Eye, X } from "lucide-react";
+import {
+  Box,
+  Check,
+  ChevronLeft,
+  ExternalLink,
+  Eye,
+  Globe,
+  X,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
 import { customSlugify } from "@/lib/functions";
@@ -90,31 +98,44 @@ const ProductFormHeader: React.FC<ProductFormHeaderProps> = ({
                   ? `Edit ${productDetails.name}`
                   : "Add New Product"}
               </h1>
-              {productStoreUrl && (
-                <Link
-                  href={productStoreUrl}
-                  className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors mt-1"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Eye className="h-4 w-4 mr-1" />
-                  View in store
-                  <ExternalLink className="h-3 w-3 ml-1" />
-                </Link>
-              )}
 
-              {productDetails?.inventory?.id && (
-                <Link
-                  href={`/inventory/${productDetails?.inventory?.id}`}
-                  className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors mt-1"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Eye className="h-4 w-4 mr-1" />
-                  View Inventory
-                  <ExternalLink className="h-3 w-3 ml-1" />
-                </Link>
-              )}
+              <div className="flex items-center space-x-4 mt-2">
+                {productStoreUrl && (
+                  <Link
+                    href={productStoreUrl}
+                    className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Eye className="h-4 w-4 mr-1.5" />
+                    View in store
+                  </Link>
+                )}
+
+                {productDetails?.inventory?.id && (
+                  <Link
+                    href={`/admin/inventory/${productDetails?.inventory?.id}`}
+                    className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Box className="h-4 w-4 mr-1.5" />
+                    View Inventory
+                  </Link>
+                )}
+
+                {productDetails?.manufacturerLink && (
+                  <Link
+                    href={productDetails.manufacturerLink}
+                    className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Globe className="h-4 w-4 mr-1.5" />
+                    Manufacturer Website
+                  </Link>
+                )}
+              </div>
             </div>
 
             <div className="hidden items-center gap-2 md:flex">
