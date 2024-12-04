@@ -40,7 +40,7 @@ const CarouselContent = ({
         // Set a 10 second timeout before enabling autoplay
         setTimeout(() => {
           setAutoplayEnabled(true);
-        }, 10000);
+        }, 5000);
       };
 
       // Wait for page load
@@ -105,7 +105,7 @@ const CarouselContent = ({
                 <Image
                   src={item.image}
                   alt={`Banner ${index + 1}`}
-                  className={cn("w-full h-auto", isDesktop && "object-contain")}
+                  className={cn("w-full h-auto")}
                   fill
                   priority={index === 0}
                   quality={75}
@@ -113,8 +113,11 @@ const CarouselContent = ({
                   sizes={
                     isDesktop
                       ? "(min-width: 1280px) 1280px, 100vw"
-                      : "(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1280px"
+                      : "(max-width: 640px) 92vw, (max-width: 768px) 95vw, (max-width: 1024px) 96vw, 1280px"
                   }
+                  style={{
+                    objectFit: "contain",
+                  }}
                 />
               </div>
             </div>
