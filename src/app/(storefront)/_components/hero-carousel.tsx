@@ -71,12 +71,11 @@ const CarouselContent = ({
                     objectFit: "contain",
                   }}
                   fill
-                  quality={60}
-                  priority={index === 0}
+                  quality={40}
+                  priority
                   sizes={
                     isDesktop ? "(max-width: 1280px) 100vw, 1280px" : "100vw"
                   }
-                  placeholder="blur"
                 />
               </div>
             </div>
