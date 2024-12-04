@@ -2,7 +2,7 @@ import React from "react";
 import { getCategoriesByType } from "../actions";
 import { Prisma } from "@prisma/client";
 import Link from "next/link";
-import StorefrontProductList from "./storefront-product-list";
+import StorefrontProductListPage from "./storefront-product-list-page";
 import CategoryCard from "./category-card";
 import {
   CategoryWithChildParent,
@@ -54,7 +54,7 @@ export default async function SecondCategoriesPage({
   if (secondaryCategories.length === 0) {
     return (
       <>
-        <StorefrontProductList
+        <StorefrontProductListPage
           primaryCategoryId={primaryId}
           isPrimaryRequired
         />

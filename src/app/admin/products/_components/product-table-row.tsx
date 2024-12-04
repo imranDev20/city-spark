@@ -19,12 +19,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Trash2, Eye, Archive } from "lucide-react";
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Eye,
+  Archive,
+  Copy,
+} from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useTransition } from "react";
-import { deleteProducts } from "../actions";
+import { deleteProducts, duplicateProduct } from "../actions";
 import { useQueryClient } from "@tanstack/react-query";
 import { BLUR_DATA_URL } from "@/lib/constants";
+import { useRouter } from "next/navigation";
 
 type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -57,6 +65,7 @@ export default function ProductTableRow({
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -84,6 +93,40 @@ export default function ProductTableRow({
           description:
             result.message ||
             "There was an error deleting the product. Please try again.",
+          variant: "destructive",
+        });
+      }
+    });
+  };
+
+  const handleDuplicate = async () => {
+    startTransition(async () => {
+      try {
+        const result = await duplicateProduct(product.id);
+
+        if (result?.success) {
+          toast({
+            title: "Success",
+            description: "Product duplicated successfully",
+            variant: "success",
+          });
+
+          await queryClient.invalidateQueries({
+            queryKey: ["products"],
+          });
+
+          router.push(`/admin/products/${result.data?.id}`);
+        } else {
+          toast({
+            title: "Error",
+            description: result.message || "Failed to duplicate product",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred",
           variant: "destructive",
         });
       }
@@ -228,6 +271,10 @@ export default function ProductTableRow({
                   <Pencil className="mr-2 h-4 w-4" />
                   Edit Product
                 </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDuplicate} disabled={isPending}>
+                <Copy className="mr-2 h-4 w-4" />
+                Duplicate
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Archive className="mr-2 h-4 w-4" />

@@ -102,6 +102,19 @@ const ProductFormHeader: React.FC<ProductFormHeaderProps> = ({
                   <ExternalLink className="h-3 w-3 ml-1" />
                 </Link>
               )}
+
+              {productDetails?.inventory?.id && (
+                <Link
+                  href={`/inventory/${productDetails?.inventory?.id}`}
+                  className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors mt-1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  View Inventory
+                  <ExternalLink className="h-3 w-3 ml-1" />
+                </Link>
+              )}
             </div>
 
             <div className="hidden items-center gap-2 md:flex">
