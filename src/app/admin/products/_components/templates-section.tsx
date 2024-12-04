@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useFormContext, useWatch } from "react-hook-form";
+import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronsUpDown } from "lucide-react";
 
@@ -91,7 +91,8 @@ export default function TemplatesSection({
   productDetails,
 }: TemplatesSectionProps) {
   const [openTemplates, setOpenTemplates] = useState(false);
-  const { control, reset, getValues } = useFormContext<ProductFormInputType>();
+  const { control, reset, getValues, watch } =
+    useFormContext<ProductFormInputType>();
   const templateId = useWatch({ control, name: "templateId" });
 
   const { data: templates, isPending: isTemplatesPending } = useQuery<
@@ -148,7 +149,10 @@ export default function TemplatesSection({
     }
   }, [reset, getValues, templateDetails, productDetails, templateId]);
 
-  const templateFields = templateDetails?.fields || [];
+  const { fields: templateFields } = useFieldArray({
+    control,
+    name: "productTemplateFields",
+  });
 
   return (
     <Card>

@@ -46,6 +46,3 @@ export function createFormData(
   }
   return formData;
 }
-export function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}

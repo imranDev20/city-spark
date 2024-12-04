@@ -8,7 +8,7 @@ import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProductFormInputType, createProductSchema } from "../schema";
-import { Check, ChevronLeft, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { Prisma } from "@prisma/client";
 import {
   Card,

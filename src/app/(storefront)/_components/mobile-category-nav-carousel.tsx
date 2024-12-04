@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { CategoryType } from "@prisma/client";
 import { customSlugify } from "@/lib/functions";
-import { CategoryWithChildParent } from "@/types/storefront-products";
 import BoilerIcon from "@/components/icons/boiler";
 import RadiatorIcon from "@/components/icons/radiator";
 import HeatingIcon from "@/components/icons/heating";
@@ -24,48 +23,50 @@ type IconProps = {
   width?: number | string;
 };
 
-type PrimaryCategory = CategoryWithChildParent;
-type SecondaryCategory =
-  CategoryWithChildParent["primaryChildCategories"][number];
+type NavCategory = {
+  id: string;
+  name: string;
+  type: CategoryType;
+  parentPrimaryCategory?: {
+    id: string;
+    name: string;
+  } | null;
+};
 
-type CategoryWithParent<T extends PrimaryCategory | SecondaryCategory> = T & {
+type CategoryWithIcon = NavCategory & {
   Icon: React.ComponentType<IconProps>;
   route: string;
 };
 
-const categoryData: { label: string; Icon: React.ComponentType<IconProps> }[] =
-  [
-    { label: "Boilers", Icon: BoilerIcon },
-    { label: "Radiators", Icon: RadiatorIcon },
-    { label: "Heating", Icon: HeatingIcon },
-    { label: "Plumbing", Icon: PlumbingIcon },
-    { label: "Bathrooms", Icon: BathroomIcon },
-    { label: "Kitchen", Icon: KitchenTilesIcon },
-    { label: "Spares", Icon: SparesIcon },
-    { label: "Renewables", Icon: RenewablesIcon },
-    { label: "Tools", Icon: ToolsIcon },
-    { label: "Electrical", Icon: ElectricalIcon },
-  ];
+const categoryIcons: Record<string, React.ComponentType<IconProps>> = {
+  boilers: BoilerIcon,
+  radiators: RadiatorIcon,
+  heating: HeatingIcon,
+  plumbing: PlumbingIcon,
+  bathrooms: BathroomIcon,
+  kitchen: KitchenTilesIcon,
+  spares: SparesIcon,
+  renewables: RenewablesIcon,
+  tools: ToolsIcon,
+  electrical: ElectricalIcon,
+};
 
-function createMergedCategory<T extends PrimaryCategory | SecondaryCategory>(
-  category: T,
-  icon: React.ComponentType<IconProps>
-): CategoryWithParent<T> {
-  const isSecondary = category.type === CategoryType.SECONDARY;
-  const primaryCategoryName =
-    isSecondary && category.parentPrimaryCategory
-      ? customSlugify(category.parentPrimaryCategory.name)
-      : "";
+function createCategory(category: NavCategory): CategoryWithIcon | null {
+  const Icon = categoryIcons[category.name.toLowerCase()];
+  if (!Icon) return null;
 
-  const route = isSecondary
-    ? `/products/c/${primaryCategoryName}/${customSlugify(
-        category.name
-      )}/c?p_id=${category.parentPrimaryCategory?.id}&s_id=${category.id}`
-    : `/products/c/${customSlugify(category.name)}/c?p_id=${category.id}`;
+  const route =
+    category.type === CategoryType.SECONDARY && category.parentPrimaryCategory
+      ? `/products/c/${customSlugify(
+          category.parentPrimaryCategory.name
+        )}/${customSlugify(category.name)}/c?p_id=${
+          category.parentPrimaryCategory.id
+        }&s_id=${category.id}`
+      : `/products/c/${customSlugify(category.name)}/c?p_id=${category.id}`;
 
   return {
     ...category,
-    Icon: icon,
+    Icon,
     route,
   };
 }
@@ -73,7 +74,7 @@ function createMergedCategory<T extends PrimaryCategory | SecondaryCategory>(
 export default function MobileCategoryNavCarousel({
   categories,
 }: {
-  categories: CategoryWithChildParent[];
+  categories: NavCategory[];
 }) {
   const [emblaRef] = useEmblaCarousel({
     align: "start",
@@ -82,63 +83,15 @@ export default function MobileCategoryNavCarousel({
     containScroll: "trimSnaps",
   });
 
-  const mergedCategories: CategoryWithParent<
-    PrimaryCategory | SecondaryCategory
-  >[] = categoryData.flatMap(
-    (item): CategoryWithParent<PrimaryCategory | SecondaryCategory>[] => {
-      const category = categories.find(
-        (cat) => cat.name.toLowerCase() === item.label.toLowerCase()
-      );
-
-      if (category) {
-        if (category.name.toLowerCase() === "heating") {
-          const result: CategoryWithParent<
-            PrimaryCategory | SecondaryCategory
-          >[] = [];
-
-          const boilers = category.primaryChildCategories?.find(
-            (subcat) => subcat.name.toLowerCase() === "boilers"
-          );
-          const radiators = category.primaryChildCategories?.find(
-            (subcat) => subcat.name.toLowerCase() === "radiators"
-          );
-
-          if (boilers) {
-            result.push(
-              createMergedCategory(boilers as SecondaryCategory, BoilerIcon)
-            );
-          }
-          if (radiators) {
-            result.push(
-              createMergedCategory(radiators as SecondaryCategory, RadiatorIcon)
-            );
-          }
-          result.push(
-            createMergedCategory(category as PrimaryCategory, item.Icon)
-          );
-
-          return result;
-        }
-
-        return [
-          createMergedCategory(
-            category.type === CategoryType.PRIMARY
-              ? (category as PrimaryCategory)
-              : (category as SecondaryCategory),
-            item.Icon
-          ),
-        ];
-      }
-
-      return [];
-    }
-  );
+  const processedCategories = categories
+    .map(createCategory)
+    .filter((category): category is CategoryWithIcon => category !== null);
 
   return (
     <div className="pl-4 block lg:hidden">
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex">
-          {mergedCategories.map((item) => (
+          {processedCategories.map((item) => (
             <div key={item.id} className="flex-none w-[31%] min-w-[110px] pr-3">
               <Link
                 href={item.route}

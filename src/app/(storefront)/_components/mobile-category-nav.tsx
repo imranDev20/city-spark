@@ -1,15 +1,39 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { CategoryWithChildParent } from "@/types/storefront-products";
 import MobileCategoryNavCarousel from "./mobile-category-nav-carousel";
+import { Prisma } from "@prisma/client";
+
+type SecondaryNavCategory = Prisma.CategoryGetPayload<{
+  select: {
+    id: true;
+    name: true;
+    type: true;
+    parentPrimaryCategory: {
+      select: {
+        id: true;
+        name: true;
+      };
+    };
+  };
+}>;
+
+// Type for primary categories
+type PrimaryNavCategory = Prisma.CategoryGetPayload<{
+  select: {
+    id: true;
+    name: true;
+    type: true;
+  };
+}>;
+
+// Union type since array contains both types
+type NavCategory = SecondaryNavCategory | PrimaryNavCategory;
 
 export default function MobileCategoryNav({
   categories,
 }: {
-  categories: CategoryWithChildParent[];
+  categories: NavCategory[];
 }) {
   return (
     <div className="lg:hidden mt-5">

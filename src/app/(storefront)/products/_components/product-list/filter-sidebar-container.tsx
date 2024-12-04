@@ -8,7 +8,5 @@ export default async function FilterSidebarContainer() {
   const brands = await getBrands();
   const filterOptions = await getProductFilterOptions();
 
-  //   await wait(3000);
-
   return <FilterSidebar initialBrands={brands} filterOptions={filterOptions} />;
 }
