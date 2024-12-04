@@ -2,7 +2,6 @@ import React from "react";
 import MobileCategoryNav from "./mobile-category-nav";
 import prisma from "@/lib/prisma";
 
-import { getDeviceType } from "@/lib/server-utils";
 import { unstable_cache as cache } from "next/cache";
 
 async function fetchCategories() {
@@ -55,13 +54,7 @@ export const getCategoriesForNav = cache(
 );
 
 export default async function MobileCategoryNavContainer() {
-  const { isMobile } = await getDeviceType();
+  const categories = await getCategoriesForNav();
 
-  if (isMobile) {
-    const categories = await getCategoriesForNav();
-    return <MobileCategoryNav categories={categories} />;
-  }
-
-  // Return null for desktop devices to prevent unnecessary rendering
-  return null;
+  return <MobileCategoryNav categories={categories} />;
 }
