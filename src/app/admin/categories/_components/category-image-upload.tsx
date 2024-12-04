@@ -64,7 +64,13 @@ export default function CategoryImageUpload({
                     maxFiles: 1,
                     maxSize: 1024 * 1024 * 1, // 1MB
                   }}
-                  onChange={setFileState}
+                  onChange={(file) => {
+                    setFileState(file);
+
+                    if (file === null) {
+                      field.onChange("");
+                    }
+                  }}
                   onFilesAdded={async (addedFile) => {
                     if (!(addedFile.file instanceof File)) {
                       console.error(
@@ -83,14 +89,19 @@ export default function CategoryImageUpload({
                         options: {
                           temporary: true,
                         },
+
                         input: { type: "category" },
+
                         onProgressChange: async (progress) => {
                           updateFileProgress(addedFile.key, progress);
 
                           if (progress === 100) {
+                            // wait 1 second to set it to complete
+                            // so that the user can see the progress bar at 100%
                             await new Promise((resolve) =>
                               setTimeout(resolve, 1000)
                             );
+
                             updateFileProgress(addedFile.key, "COMPLETE");
                           }
                         },

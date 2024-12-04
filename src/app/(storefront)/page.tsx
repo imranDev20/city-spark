@@ -15,7 +15,7 @@ export default function HomePage() {
       <Suspense fallback={<MobileCategoryNavSkeleton />}>
         <MobileCategoryNavContainer />
       </Suspense>
-      {/* <PromotionalGrid /> */}
+      <PromotionalGrid />
 
       {/* <Suspense fallback="Loading...">
         <ProductCarouselContainer title="Best Selling Products" />
