@@ -83,19 +83,7 @@ export default function CategoryForm({
         }
 
         if (result.success) {
-          await Promise.all([
-            // Invalidate all category-related queries
-            queryClient.invalidateQueries({ queryKey: ["categories"] }),
-
-            // Invalidate the specific category if it was an update
-            categoryDetails?.id &&
-              queryClient.invalidateQueries({
-                queryKey: ["category", categoryDetails.id],
-              }),
-
-            // Invalidate all product queries since they may reference categories
-            queryClient.invalidateQueries({ queryKey: ["products"] }),
-          ]);
+          await queryClient.invalidateQueries();
 
           toast({
             title: categoryDetails ? "Category Updated" : "Category Created",
@@ -128,6 +116,8 @@ export default function CategoryForm({
       }
     });
   };
+
+  console.log(form.formState.errors);
 
   return (
     <Form {...form}>

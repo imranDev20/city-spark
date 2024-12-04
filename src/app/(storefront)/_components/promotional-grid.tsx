@@ -4,6 +4,7 @@ import MainCombi30KWFlue from "@/images/advertisements/main-combi-30kw-flue.jpg"
 import MainEcoCompact25KWNaturalGas from "@/images/advertisements/main-eco-compact-25kw-natural-gas.jpg";
 import MainEcoCompact30KWGasCombination from "@/images/advertisements/main-eco-compact-30kw-gas-combination.jpg";
 import VaillantEcoTechPro826Flue from "@/images/advertisements/vaillant-eco-tech-pro-826-26kw-flue.jpg";
+import Link from "next/link";
 
 export default function PromotionalGrid() {
   return (
@@ -32,7 +33,7 @@ export default function PromotionalGrid() {
           className="w-full rounded-lg"
           placeholder="blur"
           sizes="92vw"
-          loading="lazy"
+          priority
           quality={50}
         />
         <Image
@@ -43,7 +44,6 @@ export default function PromotionalGrid() {
           className="w-full rounded-lg"
           placeholder="blur"
           sizes="92vw"
-          loading="lazy"
           quality={50}
         />
         <Image
@@ -92,30 +92,34 @@ export default function PromotionalGrid() {
 
         {/* Secondary images */}
         <div>
-          <Image
-            src={MainCombi30KWFlue}
-            alt="Main Combi 30KW Flue Boiler"
-            width={500}
-            height={300}
-            className="rounded-lg h-full w-full object-cover"
-            placeholder="blur"
-            sizes="33vw"
-            loading="lazy"
-            quality={50}
-          />
+          <Link href="/products/p/main-eco-compact-30kw-natural-gas-combination-boiler-erp/p/cm49j07ox001mjf032ej7j82s">
+            <Image
+              src={MainCombi30KWFlue}
+              alt="Main Combi 30KW Flue Boiler"
+              width={500}
+              height={300}
+              className="rounded-lg h-full w-full object-cover"
+              placeholder="blur"
+              sizes="33vw"
+              priority
+              quality={50}
+            />
+          </Link>
         </div>
         <div>
-          <Image
-            src={MainEcoCompact25KWNaturalGas}
-            alt="Main Eco Compact 25KW Natural Gas Boiler"
-            width={500}
-            height={300}
-            className="rounded-lg h-full w-full object-cover"
-            placeholder="blur"
-            sizes="33vw"
-            loading="lazy"
-            quality={50}
-          />
+          <Link href="/products/p/main-eco-compact-25kw-natural-gas-combination-boiler-erp/p/cm49i340f0012jf036q5tu8n2">
+            <Image
+              src={MainEcoCompact25KWNaturalGas}
+              alt="Main Eco Compact 25KW Natural Gas Boiler"
+              width={500}
+              height={300}
+              className="rounded-lg h-full w-full object-cover"
+              placeholder="blur"
+              sizes="33vw"
+              priority
+              quality={50}
+            />
+          </Link>
         </div>
         <div>
           <Image

@@ -238,7 +238,9 @@ export default function ProductForm({
           result = await createProduct(data);
         }
         if (result.success) {
-          router.push(`/admin/inventory/${result.data?.inventory?.id}`);
+          // router.push(`/admin/inventory/${result.data?.inventory?.id}`);
+
+          form.reset();
 
           await Promise.all([
             // Invalidate general product listings
