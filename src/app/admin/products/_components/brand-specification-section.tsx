@@ -122,182 +122,211 @@ export default function BrandSpecificationsSection({ productDetails }: Props) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-6 sm:grid-cols-3">
-          <div className="grid gap-3">
-            <FormField
-              control={control}
-              name="brand"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Brand Name</FormLabel>
-                  <FormControl>
-                    <Popover open={openBrands} onOpenChange={setOpenBrands}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          disabled={isLoading}
-                          aria-expanded={openBrands}
-                          className="w-full justify-between"
-                        >
-                          {isLoading ? (
-                            "Loading..."
-                          ) : selectedBrand ? (
-                            <div className="flex items-center gap-2">
-                              <div className="relative h-5 w-5 rounded overflow-hidden flex-shrink-0 flex items-center">
-                                {selectedBrand.image && (
-                                  <Image
-                                    src={selectedBrand.image}
-                                    alt={selectedBrand.name}
-                                    width={50}
-                                    height={50}
-                                    className="object-cover"
-                                  />
-                                )}
-                              </div>
-                              <span className="truncate">
-                                {selectedBrand.name}
-                              </span>
-                            </div>
-                          ) : (
-                            <p className="text-muted-foreground">
-                              Select a brand
-                            </p>
-                          )}
-                          {isLoading ? (
-                            <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[200px] p-0">
-                        <Command shouldFilter={false}>
-                          <CommandInput
-                            placeholder="Search brands..."
-                            value={search}
-                            onValueChange={setSearch}
-                          />
-                          <CommandList>
-                            <CommandEmpty>No brands found.</CommandEmpty>
-                            {isPending ? (
-                              <CommandLoading>Loading brands...</CommandLoading>
-                            ) : (
-                              <CommandGroup>
-                                {brands?.map((brand) => (
-                                  <CommandItem
-                                    key={brand.id}
-                                    value={brand.name}
-                                    onSelect={() => {
-                                      field.onChange(brand.id);
-                                      setOpenBrands(false);
-                                    }}
-                                    className="flex items-center gap-2"
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        field.value === brand.id
-                                          ? "opacity-100"
-                                          : "opacity-0"
-                                      )}
+        <div className="space-y-6">
+          <div className="grid gap-6 sm:grid-cols-3">
+            <div className="grid gap-3">
+              <FormField
+                control={control}
+                name="brand"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Brand Name</FormLabel>
+                    <FormControl>
+                      <Popover open={openBrands} onOpenChange={setOpenBrands}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            disabled={isLoading}
+                            aria-expanded={openBrands}
+                            className="w-full justify-between"
+                          >
+                            {isLoading ? (
+                              "Loading..."
+                            ) : selectedBrand ? (
+                              <div className="flex items-center gap-2">
+                                <div className="relative h-5 w-5 rounded overflow-hidden flex-shrink-0 flex items-center">
+                                  {selectedBrand.image && (
+                                    <Image
+                                      src={selectedBrand.image}
+                                      alt={selectedBrand.name}
+                                      width={50}
+                                      height={50}
+                                      className="object-cover"
                                     />
-                                    <div className="relative h-5 w-5 rounded overflow-hidden flex-shrink-0 flex items-center">
-                                      {brand.image && (
-                                        <Image
-                                          src={brand.image}
-                                          alt={brand.name}
-                                          width={50}
-                                          height={50}
-                                          className="object-cover"
-                                        />
-                                      )}
-                                    </div>
-                                    <span className="truncate">
-                                      {brand.name}
-                                    </span>
-                                  </CommandItem>
-                                ))}
-                                {hasNextPage && (
-                                  <Button
-                                    variant="ghost"
-                                    className="w-full"
-                                    onClick={() => fetchNextPage()}
-                                    disabled={isFetchingNextPage}
-                                  >
-                                    {isFetchingNextPage ? (
-                                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    ) : (
-                                      "Load more"
-                                    )}
-                                  </Button>
-                                )}
-                              </CommandGroup>
+                                  )}
+                                </div>
+                                <span className="truncate">
+                                  {selectedBrand.name}
+                                </span>
+                              </div>
+                            ) : (
+                              <p className="text-muted-foreground">
+                                Select a brand
+                              </p>
                             )}
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                            {isLoading ? (
+                              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                            ) : (
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[200px] p-0">
+                          <Command shouldFilter={false}>
+                            <CommandInput
+                              placeholder="Search brands..."
+                              value={search}
+                              onValueChange={setSearch}
+                            />
+                            <CommandList>
+                              <CommandEmpty>No brands found.</CommandEmpty>
+                              {isPending ? (
+                                <CommandLoading>
+                                  Loading brands...
+                                </CommandLoading>
+                              ) : (
+                                <CommandGroup>
+                                  {brands?.map((brand) => (
+                                    <CommandItem
+                                      key={brand.id}
+                                      value={brand.name}
+                                      onSelect={() => {
+                                        field.onChange(brand.id);
+                                        setOpenBrands(false);
+                                      }}
+                                      className="flex items-center gap-2"
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          field.value === brand.id
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                      <div className="relative h-5 w-5 rounded overflow-hidden flex-shrink-0 flex items-center">
+                                        {brand.image && (
+                                          <Image
+                                            src={brand.image}
+                                            alt={brand.name}
+                                            width={50}
+                                            height={50}
+                                            className="object-cover"
+                                          />
+                                        )}
+                                      </div>
+                                      <span className="truncate">
+                                        {brand.name}
+                                      </span>
+                                    </CommandItem>
+                                  ))}
+                                  {hasNextPage && (
+                                    <Button
+                                      variant="ghost"
+                                      className="w-full"
+                                      onClick={() => fetchNextPage()}
+                                      disabled={isFetchingNextPage}
+                                    >
+                                      {isFetchingNextPage ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                      ) : (
+                                        "Load more"
+                                      )}
+                                    </Button>
+                                  )}
+                                </CommandGroup>
+                              )}
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid gap-3">
+              <FormField
+                control={control}
+                name="model"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Model</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter model" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid gap-3">
+              <FormField
+                control={control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Type</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter type" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid gap-3">
+              <FormField
+                control={control}
+                name="warranty"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Warranty</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter warranty in months"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid gap-3">
+              <FormField
+                control={control}
+                name="guarantee"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Guarantee</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter guarantee in months"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
+
           <div className="grid gap-3">
             <FormField
               control={control}
-              name="model"
+              name="manufacturerLink"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Model</FormLabel>
+                  <FormLabel>Manufacturer Website Link</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter model" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="grid gap-3">
-            <FormField
-              control={control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Type</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter type" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="grid gap-3">
-            <FormField
-              control={control}
-              name="warranty"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Warranty</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter warranty in months" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="grid gap-3">
-            <FormField
-              control={control}
-              name="guarantee"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Guarantee</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter guarantee in months" {...field} />
+                    <Input
+                      placeholder="Enter manufacturer website URL"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
