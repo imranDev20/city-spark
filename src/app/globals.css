@@ -73,7 +73,62 @@
   }
 }
 
-/* mine */
+@layer utilities {
+  /* Content Visibility Classes */
+  .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
+  }
+
+  .cv-card {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 200px;
+  }
+
+  .cv-section {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 800px;
+  }
+
+  .cv-list {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 400px;
+  }
+
+  .cv-gallery {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 300px;
+  }
+
+  .cv-comments {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 1000px;
+  }
+
+  .cv-sidebar {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 100vh;
+  }
+
+  .cv-footer {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 300px;
+  }
+
+  .contain-layout {
+    contain: layout;
+  }
+
+  .contain-paint {
+    contain: paint;
+  }
+
+  .contain-strict {
+    contain: strict;
+  }
+}
+
+/* Animations */
 @keyframes typing {
   from {
     width: 0;
@@ -88,6 +143,7 @@
   overflow: hidden;
   white-space: nowrap;
   animation: typing 2s steps(30, end), blink-caret 0.5s step-end infinite;
+  will-change: width;
 }
 
 .popover-content-width-same-as-its-trigger {
@@ -95,15 +151,12 @@
   max-height: var(--radix-popover-content-available-height);
 }
 
-.spinner-none {
-  -webkit-appearance: textfield;
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-
+/* Remove spinner arrows */
+.spinner-none,
 .spinner-none::-webkit-inner-spin-button,
 .spinner-none::-webkit-outer-spin-button {
   -webkit-appearance: none;
+  appearance: textfield;
   margin: 0;
 }
 
@@ -120,6 +173,7 @@
 
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-out;
+  will-change: transform, opacity;
 }
 
 /* Toast animations */
@@ -151,5 +205,13 @@
   100% {
     stroke-dasharray: 20;
     stroke-dashoffset: 0;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .typing-placeholder,
+  .animate-fadeIn {
+    animation: none;
   }
 }

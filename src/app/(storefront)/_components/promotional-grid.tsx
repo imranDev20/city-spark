@@ -11,68 +11,63 @@ export default function PromotionalGrid() {
       {/* Mobile View */}
       <div className="lg:hidden space-y-4">
         {/* First image - prioritized since it's above the fold */}
-        <div>
-          <Image
-            src={MainCombi25KWFlue}
-            alt="Main Combi 25KW Flue Boiler"
-            width={800}
-            height={400}
-            className="w-full rounded-lg"
-            placeholder="blur"
-            sizes="(max-width: 1024px) 92vw"
-            priority
-          />
-        </div>
+        <Image
+          src={MainCombi25KWFlue}
+          alt="Main Combi 25KW Flue Boiler"
+          width={800}
+          height={400}
+          className="w-full rounded-lg"
+          placeholder="blur"
+          sizes="92vw"
+          priority
+          quality={60}
+        />
 
-        {/* Other mobile images - lazy loaded since likely below fold */}
-        <div>
-          <Image
-            src={MainCombi30KWFlue}
-            alt="Main Combi 30KW Flue Boiler"
-            width={400}
-            height={200}
-            className="w-full rounded-lg"
-            placeholder="blur"
-            sizes="(max-width: 1024px) 92vw"
-            loading="lazy"
-          />
-        </div>
-        <div>
-          <Image
-            src={MainEcoCompact25KWNaturalGas}
-            alt="Main Eco Compact 25KW Natural Gas Boiler"
-            width={400}
-            height={200}
-            className="w-full rounded-lg"
-            placeholder="blur"
-            sizes="(max-width: 1024px) 92vw"
-            loading="lazy"
-          />
-        </div>
-        <div>
-          <Image
-            src={MainEcoCompact30KWGasCombination}
-            alt="Main Eco Compact 30KW Gas Combination Boiler"
-            width={400}
-            height={200}
-            className="w-full rounded-lg"
-            placeholder="blur"
-            sizes="(max-width: 1024px) 92vw"
-            loading="lazy"
-          />
-        </div>
-        <div>
-          <Image
-            src={VaillantEcoTechPro826Flue}
-            alt="Vaillant Eco Tech Pro 826 Flue"
-            width={800}
-            height={200}
-            className="w-full rounded-lg"
-            placeholder="blur"
-            sizes="(max-width: 1024px) 92vw"
-            loading="lazy"
-          />
-        </div>
+        {/* Other images with lazy loading */}
+        <Image
+          src={MainCombi30KWFlue}
+          alt="Main Combi 30KW Flue Boiler"
+          width={800}
+          height={400}
+          className="w-full rounded-lg"
+          placeholder="blur"
+          sizes="92vw"
+          loading="lazy"
+          quality={50}
+        />
+        <Image
+          src={MainEcoCompact25KWNaturalGas}
+          alt="Main Eco Compact 25KW Natural Gas Boiler"
+          width={800}
+          height={400}
+          className="w-full rounded-lg"
+          placeholder="blur"
+          sizes="92vw"
+          loading="lazy"
+          quality={50}
+        />
+        <Image
+          src={MainEcoCompact30KWGasCombination}
+          alt="Main Eco Compact 30KW Gas Combination Boiler"
+          width={800}
+          height={400}
+          className="w-full rounded-lg"
+          placeholder="blur"
+          sizes="92vw"
+          loading="lazy"
+          quality={50}
+        />
+        <Image
+          src={VaillantEcoTechPro826Flue}
+          alt="Vaillant Eco Tech Pro 826 Flue"
+          width={800}
+          height={400}
+          className="w-full rounded-lg"
+          placeholder="blur"
+          sizes="92vw"
+          loading="lazy"
+          quality={50}
+        />
       </div>
 
       {/* Desktop Grid */}
@@ -80,8 +75,8 @@ export default function PromotionalGrid() {
         className="hidden lg:grid grid-cols-3 gap-4"
         style={{ gridTemplateRows: "repeat(3, minmax(180px, 1fr))" }}
       >
-        {/* Main large image - prioritized for desktop */}
-        <div className="col-span-2 row-span-2 relative">
+        {/* Main large image */}
+        <div className="col-span-2 row-span-2">
           <Image
             src={MainCombi25KWFlue}
             alt="Main Combi 25KW Flue Boiler"
@@ -89,13 +84,14 @@ export default function PromotionalGrid() {
             height={600}
             className="rounded-lg h-full w-full object-cover"
             placeholder="blur"
-            sizes="(min-width: 1024px) 66vw"
+            sizes="66vw"
             priority
+            quality={60}
           />
         </div>
 
-        {/* Secondary images - lazy loaded */}
-        <div className="relative">
+        {/* Secondary images */}
+        <div>
           <Image
             src={MainCombi30KWFlue}
             alt="Main Combi 30KW Flue Boiler"
@@ -103,11 +99,12 @@ export default function PromotionalGrid() {
             height={300}
             className="rounded-lg h-full w-full object-cover"
             placeholder="blur"
-            sizes="(min-width: 1024px) 33vw"
-            priority
+            sizes="33vw"
+            loading="lazy"
+            quality={50}
           />
         </div>
-        <div className="relative">
+        <div>
           <Image
             src={MainEcoCompact25KWNaturalGas}
             alt="Main Eco Compact 25KW Natural Gas Boiler"
@@ -115,11 +112,12 @@ export default function PromotionalGrid() {
             height={300}
             className="rounded-lg h-full w-full object-cover"
             placeholder="blur"
-            sizes="(min-width: 1024px) 33vw"
+            sizes="33vw"
             loading="lazy"
+            quality={50}
           />
         </div>
-        <div className="relative">
+        <div>
           <Image
             src={MainEcoCompact30KWGasCombination}
             alt="Main Eco Compact 30KW Gas Combination Boiler"
@@ -127,20 +125,22 @@ export default function PromotionalGrid() {
             height={300}
             className="rounded-lg h-full w-full object-cover"
             placeholder="blur"
-            sizes="(min-width: 1024px) 33vw"
+            sizes="33vw"
             loading="lazy"
+            quality={50}
           />
         </div>
-        <div className="col-span-2 relative">
+        <div className="col-span-2">
           <Image
             src={VaillantEcoTechPro826Flue}
             alt="Vaillant Eco Tech Pro 826 Flue"
             width={1000}
-            height={200}
+            height={300}
             className="rounded-lg h-full w-full object-cover"
             placeholder="blur"
-            sizes="(min-width: 1024px) 66vw"
+            sizes="66vw"
             loading="lazy"
+            quality={50}
           />
         </div>
       </div>

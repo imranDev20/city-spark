@@ -21,18 +21,44 @@ const CarouselContent = ({
   isDesktop?: boolean;
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
-    Autoplay({ delay: 5000, stopOnInteraction: false }),
-  ]);
+  const [autoplayEnabled, setAutoplayEnabled] = useState(false);
 
-  // Fixed useEffect with proper type handling
+  // Initialize carousel without autoplay
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { loop: true },
+    autoplayEnabled ? [Autoplay({ delay: 5000, stopOnInteraction: false })] : []
+  );
+
   useEffect(() => {
+    // Enable autoplay only after page load and when browser is idle
+    if (typeof window !== "undefined") {
+      // Request idle callback with fallback for browsers that don't support it
+      const requestIdleCallback =
+        window.requestIdleCallback || ((cb) => setTimeout(cb, 1));
+
+      // Wait for page load
+      window.addEventListener("load", () => {
+        // Then wait for browser to be idle
+        requestIdleCallback(() => {
+          setAutoplayEnabled(true);
+        });
+      });
+
+      // If page is already loaded, just wait for idle
+      if (document.readyState === "complete") {
+        requestIdleCallback(() => {
+          setAutoplayEnabled(true);
+        });
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+
     const updateSelectedIndex = () => {
-      if (!emblaApi) return;
       setSelectedIndex(emblaApi.selectedScrollSnap());
     };
-
-    if (!emblaApi) return;
 
     updateSelectedIndex();
     emblaApi.on("select", updateSelectedIndex);
@@ -82,12 +108,12 @@ const CarouselContent = ({
                   fill
                   priority={index === 0}
                   quality={75}
+                  loading={index === 0 ? "eager" : "lazy"}
                   sizes={
-                    isDesktop ? "(min-width: 1280px) 1280px, 100vw" : "100vw"
+                    isDesktop
+                      ? "(min-width: 1280px) 1280px, 100vw"
+                      : "(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1280px"
                   }
-                  style={{
-                    objectFit: "contain",
-                  }}
                 />
               </div>
             </div>
@@ -99,14 +125,14 @@ const CarouselContent = ({
         <>
           <button
             onClick={scrollPrev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 transition-all duration-200 opacity-0 group-hover:opacity-100 shadow-lg hover:shadow-xl"
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 transition-opacity duration-200 opacity-0 group-hover:opacity-100 shadow-lg hover:shadow-xl"
             aria-label="Previous slide"
           >
             <ChevronLeft className="h-6 w-6 text-gray-800" />
           </button>
           <button
             onClick={scrollNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 transition-all duration-200 opacity-0 group-hover:opacity-100 shadow-lg hover:shadow-xl"
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 transition-opacity duration-200 opacity-0 group-hover:opacity-100 shadow-lg hover:shadow-xl"
             aria-label="Next slide"
           >
             <ChevronRight className="h-6 w-6 text-gray-800" />
@@ -121,7 +147,6 @@ const CarouselContent = ({
             onClick={() => scrollTo(index)}
             className={cn(
               "w-2.5 h-2.5 rounded-full transition-colors duration-300",
-              "hover:bg-white/80",
               selectedIndex === index ? "bg-white scale-110" : "bg-white/50"
             )}
             aria-label={`Go to slide ${index + 1}`}
