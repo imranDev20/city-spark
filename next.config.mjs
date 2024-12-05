@@ -1,24 +1,9 @@
 /** @type {import('next').NextConfig} */
+
 const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-      {
-        protocol: "https",
-        hostname: "www.kubota-chemix.co.jp",
-      },
-      {
-        protocol: "https",
-        hostname: "www.shutterstock.com",
-      },
-      {
-        protocol: "https",
-        hostname: "skipperpipes.in",
-      },
       {
         protocol: "https",
         hostname: "files.edgestore.dev",

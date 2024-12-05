@@ -10,9 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import ProductCard from "@/app/(storefront)/_components/product-card";
-import { Card, CardContent } from "@/components/ui/card";
-import { PackageX } from "lucide-react";
+import ProductCardsLoadMore from "./product-cards-load-more";
 
 type ProductCardsContainerProps = {
   primaryCategoryId?: string;
@@ -123,28 +121,11 @@ export default async function ProductCardsContainer(
         </div>
       </div>
 
-      <div>
-        {inventoryItems.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {inventoryItems.map((item) => (
-              <ProductCard key={item.id} inventoryItem={item} />
-            ))}
-          </div>
-        ) : (
-          <Card className="w-full h-64 flex items-center justify-center shadow-none border-0">
-            <CardContent className="text-center">
-              <PackageX className="h-12 w-12 text-gray-400 mb-4" />
-              <p className="text-xl font-semibold text-gray-900">
-                No products found
-              </p>
-              <p className="text-gray-600">
-                Try adjusting your search or filter to find what you&apos;re
-                looking for.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      <ProductCardsLoadMore
+        initialData={inventoryItems}
+        initialTotalCount={totalCount}
+        {...props}
+      />
     </>
   );
 }

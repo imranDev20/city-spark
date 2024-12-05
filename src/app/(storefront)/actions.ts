@@ -1,6 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { getImageBlurData } from "@/lib/image-blur";
 import { unstable_cache as cache } from "next/cache";
 
 export const getInventoryItemsForStorefront = cache(
@@ -13,7 +14,7 @@ export const getInventoryItemsForStorefront = cache(
     isSecondaryRequired = false,
     isTertiaryRequired = false,
     isQuaternaryRequired = false,
-    limit = 15,
+    limit = 12,
     search,
   }: {
     primaryCategoryId?: string;

@@ -42,7 +42,7 @@ export default function StorefrontProductListPage(
           {/* Desktop Filter Sidebar */}
           <div className="hidden md:block col-span-3">
             <Suspense fallback={<FilterSidebarSkeleton />}>
-              <FilterSidebarContainer />
+              <FilterSidebarContainer {...props} />
             </Suspense>
           </div>
 
