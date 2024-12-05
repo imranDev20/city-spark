@@ -7,7 +7,7 @@ import PageHeaderSkeleton from "./product-list/page-header-skeleton";
 import FilterSidebarContainer from "./product-list/filter-sidebar-container";
 import FilterSidebarSkeleton from "./product-list/filter-sidebar-skeleton";
 import ProductCardsContainer from "./product-list/product-cards-container";
-import ProductCardsContainerSkeleton from "./product-list/product-cards-skeleton";
+import ProductCardsContainerSkeleton from "./product-list/product-cards-container-skeleton";
 
 type PageHeaderContainerProps = {
   primaryCategoryId?: string;

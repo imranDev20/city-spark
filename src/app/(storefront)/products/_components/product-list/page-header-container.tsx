@@ -18,8 +18,6 @@ type PageHeaderContainerProps = {
   search?: string;
 };
 
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export default async function PageHeaderContainer({
   primaryCategoryId,
   secondaryCategoryId,
@@ -32,8 +30,6 @@ export default async function PageHeaderContainer({
   isSearch,
   search,
 }: PageHeaderContainerProps) {
-  //   await wait(3000);
-
   let currentCategory;
 
   if (isQuaternaryRequired && quaternaryCategoryId) {

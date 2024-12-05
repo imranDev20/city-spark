@@ -233,7 +233,7 @@ export default function SearchInput() {
             isFocused && "border-secondary shadow-md ring-1 ring-secondary/20"
           )}
         >
-          <div className="px-4 text-secondary border-r">
+          <div className="px-4 text-primary border-r">
             <Search className="h-5 w-5" />
           </div>
 

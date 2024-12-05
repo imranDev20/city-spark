@@ -14,9 +14,9 @@
     --secondary: 35 85% 55%;
     --secondary-hover: 35 85% 50%;
     --secondary-active: 35 85% 45%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary-foreground: 35 90% 15%; /* Updated to a darker color for better contrast */
 
-    /* Semantic Colors for Better UX */
+    /* Rest of the tokens remain the same */
     --success: 142 72% 29%;
     --success-foreground: 0 0% 100%;
     --info: 216 76% 40%;

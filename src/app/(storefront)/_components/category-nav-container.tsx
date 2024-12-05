@@ -1,7 +1,6 @@
 import { CategoryWithChildParent } from "@/types/storefront-products";
 import { getCategoriesByType } from "../products/actions";
 import CategoryNav from "./category-nav";
-import { delay } from "@/lib/server-utils";
 
 export default async function CategoryNavContainer() {
   const { categories: mobileNavCategories } = await getCategoriesByType(
@@ -9,8 +8,6 @@ export default async function CategoryNavContainer() {
     ""
   );
   const navCategories = mobileNavCategories as CategoryWithChildParent[];
-
-  await delay(200);
 
   return <CategoryNav categories={navCategories} />;
 }
