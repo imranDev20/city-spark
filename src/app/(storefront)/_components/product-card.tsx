@@ -66,12 +66,12 @@ const ProductImage = ({ images }: { images: string[] }) => {
       <div className="sm:hidden relative h-32 p-4">
         <Image
           src={validImages[0] || PlaceholderImage}
-          fill
           alt="Product Image"
           className="object-contain"
           sizes="100vw"
           loading="lazy"
           placeholder="blur"
+          fill
           blurDataURL={BLUR_DATA_URL}
         />
       </div>

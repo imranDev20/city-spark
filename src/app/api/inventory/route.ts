@@ -2,136 +2,168 @@ import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-  const searchParams = req.nextUrl.searchParams;
-  const search = searchParams.get("search");
-  const limit = parseInt(searchParams.get("limit") || "10", 10);
-  const page = parseInt(searchParams.get("page") || "1", 10);
-  const min_price = parseFloat(searchParams.get("min_price") || "0");
-  const max_price = parseFloat(searchParams.get("max_price") || "Infinity");
-
   try {
+    const searchParams = req.nextUrl.searchParams;
+
+    // Parse query parameters
+    const search = searchParams.get("search");
+    const limit = parseInt(searchParams.get("limit") || "12", 10);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const primaryCategoryId =
+      searchParams.get("primaryCategoryId") || undefined;
+    const secondaryCategoryId =
+      searchParams.get("secondaryCategoryId") || undefined;
+    const tertiaryCategoryId =
+      searchParams.get("tertiaryCategoryId") || undefined;
+    const quaternaryCategoryId =
+      searchParams.get("quaternaryCategoryId") || undefined;
+    const isPrimaryRequired = searchParams.get("isPrimaryRequired") === "true";
+    const isSecondaryRequired =
+      searchParams.get("isSecondaryRequired") === "true";
+    const isTertiaryRequired =
+      searchParams.get("isTertiaryRequired") === "true";
+    const isQuaternaryRequired =
+      searchParams.get("isQuaternaryRequired") === "true";
+
     const skip = (page - 1) * limit;
 
-    // Base where clause
-    let whereClause: any = {
-      AND: [
-        search
-          ? {
-              OR: [
-                {
-                  product: { name: { contains: search, mode: "insensitive" } },
-                },
-                {
-                  product: {
-                    description: { contains: search, mode: "insensitive" },
-                  },
-                },
-                {
-                  product: {
-                    brand: { name: { contains: search, mode: "insensitive" } },
-                  },
-                },
-              ],
-            }
-          : {},
-        {
-          product: {
-            tradePrice: {
-              gte: min_price,
-              lte: max_price,
-            },
-          },
+    // Check if any required category is missing (only if not searching)
+    if (
+      !search &&
+      ((isPrimaryRequired && !primaryCategoryId) ||
+        (isSecondaryRequired && !secondaryCategoryId) ||
+        (isTertiaryRequired && !tertiaryCategoryId) ||
+        (isQuaternaryRequired && !quaternaryCategoryId))
+    ) {
+      return NextResponse.json({
+        success: true,
+        data: [],
+        pagination: {
+          page,
+          limit,
+          totalCount: 0,
+          totalPages: 0,
+          hasMore: false,
         },
-      ],
-    };
+      });
+    }
 
-    // Dynamic filters
-    searchParams.forEach((value, key) => {
-      if (
-        !["search", "limit", "page", "min_price", "max_price"].includes(key)
-      ) {
-        if (key === "brands") {
-          whereClause.AND.push({
-            product: {
-              brand: {
-                name: { equals: value, mode: "insensitive" },
-              },
-            },
-          });
-        } else if (
-          [
-            "material",
-            "color",
-            "shape",
-            "unit",
-            "warranty",
-            "guarantee",
-          ].includes(key)
-        ) {
-          whereClause.AND.push({
-            product: {
-              [key]: { equals: value, mode: "insensitive" },
-            },
-          });
-        } else if (
-          ["width", "height", "length", "weight", "volume"].includes(key)
-        ) {
-          whereClause.AND.push({
-            product: {
-              [key]: { equals: parseFloat(value) },
-            },
-          });
-        } else {
-          // Handle custom fields from product templates
-          whereClause.AND.push({
-            product: {
-              productTemplate: {
-                fields: {
-                  some: {
-                    templateField: {
-                      fieldName: key,
-                    },
-                    fieldValue: { equals: value, mode: "insensitive" },
-                  },
-                },
-              },
-            },
-          });
-        }
+    const whereClause: {
+      product?: {
+        AND?: any[];
+        primaryCategoryId?: string;
+        secondaryCategoryId?: string;
+        tertiaryCategoryId?: string;
+        quaternaryCategoryId?: string;
+      };
+    } = {};
+
+    // Build the where clause for categories
+    if (
+      !search &&
+      (primaryCategoryId ||
+        secondaryCategoryId ||
+        tertiaryCategoryId ||
+        quaternaryCategoryId)
+    ) {
+      whereClause.product = {};
+      if (primaryCategoryId)
+        whereClause.product.primaryCategoryId = primaryCategoryId;
+      if (secondaryCategoryId)
+        whereClause.product.secondaryCategoryId = secondaryCategoryId;
+      if (tertiaryCategoryId)
+        whereClause.product.tertiaryCategoryId = tertiaryCategoryId;
+      if (quaternaryCategoryId)
+        whereClause.product.quaternaryCategoryId = quaternaryCategoryId;
+    }
+
+    // Add search condition
+    if (search) {
+      whereClause.product = {
+        ...whereClause.product,
+        AND: [
+          {
+            OR: [
+              { name: { contains: search, mode: "insensitive" } },
+              { description: { contains: search, mode: "insensitive" } },
+              { model: { contains: search, mode: "insensitive" } },
+              { brand: { name: { contains: search, mode: "insensitive" } } },
+            ],
+          },
+        ],
+      };
+    }
+
+    // Check if any of the provided category IDs exist (only if not searching)
+    if (
+      !search &&
+      (primaryCategoryId ||
+        secondaryCategoryId ||
+        tertiaryCategoryId ||
+        quaternaryCategoryId)
+    ) {
+      const categoryExists = await prisma.category.findFirst({
+        where: {
+          OR: [
+            { id: primaryCategoryId },
+            { id: secondaryCategoryId },
+            { id: tertiaryCategoryId },
+            { id: quaternaryCategoryId },
+          ].filter(Boolean),
+        },
+      });
+
+      if (!categoryExists) {
+        return NextResponse.json({
+          success: true,
+          data: [],
+          pagination: {
+            page,
+            limit,
+            totalCount: 0,
+            totalPages: 0,
+            hasMore: false,
+          },
+        });
       }
-    });
+    }
 
-    // Rest of the function remains the same
-    const [inventoryItems, totalCount] = await Promise.all([
+    // Get items and total count
+    const [items, total] = await Promise.all([
       prisma.inventory.findMany({
         where: whereClause,
-        orderBy: {
+        include: {
           product: {
-            name: "asc",
+            include: {
+              primaryCategory: true,
+              secondaryCategory: true,
+              tertiaryCategory: true,
+              quaternaryCategory: true,
+              brand: true,
+            },
           },
         },
-        include: {
-          product: true,
+        orderBy: {
+          createdAt: "desc",
         },
+        skip,
         take: limit,
-        skip: skip,
       }),
-      prisma.inventory.count({
-        where: whereClause,
-      }),
+      prisma.inventory.count({ where: whereClause }),
     ]);
 
-    const totalPages = Math.ceil(totalCount / limit);
-    const hasMore = page < totalPages;
+    // Calculate pagination
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = page * limit < total;
 
     return NextResponse.json({
       success: true,
       message: "Inventory items fetched successfully",
-      data: inventoryItems,
+      data: items,
       pagination: {
         page,
         limit,
-        totalCount,
+        totalCount: total,
         totalPages,
         hasMore,
       },
@@ -142,7 +174,14 @@ export async function GET(req: NextRequest) {
       {
         success: false,
         message: "An error occurred while fetching inventory items",
-        data: null,
+        data: [],
+        pagination: {
+          page: 1,
+          limit: 12,
+          totalCount: 0,
+          totalPages: 0,
+          hasMore: false,
+        },
       },
       { status: 500 }
     );
