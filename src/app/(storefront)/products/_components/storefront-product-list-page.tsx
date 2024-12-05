@@ -7,7 +7,7 @@ import PageHeaderSkeleton from "./product-list/page-header-skeleton";
 import FilterSidebarContainer from "./product-list/filter-sidebar-container";
 import FilterSidebarSkeleton from "./product-list/filter-sidebar-skeleton";
 import ProductCardsContainer from "./product-list/product-cards-container";
-import ProductCardsContainerSkeleton from "./product-list/product-cards-skeleton";
+import ProductCardsSkeleton from "./product-list/product-cards-skeleton";
 
 type PageHeaderContainerProps = {
   primaryCategoryId?: string;
@@ -47,7 +47,7 @@ export default function StorefrontProductListPage(
           </div>
 
           <div className="col-span-12 md:col-span-9">
-            <Suspense fallback={<ProductCardsContainerSkeleton />}>
+            <Suspense fallback={<ProductCardsSkeleton />}>
               <ProductCardsContainer {...props} />
             </Suspense>
           </div>

@@ -11,11 +11,7 @@ const breadcrumbItems = [
   { label: "Products", href: "/admin/products", isCurrentPage: true },
 ];
 
-// const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export default function AdminProductsPage() {
-  // await wait(3000);
-
   return (
     <ContentLayout title="Products">
       <DynamicBreadcrumb items={breadcrumbItems} />

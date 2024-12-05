@@ -27,13 +27,9 @@ type ProductCardsContainerProps = {
   search?: string;
 };
 
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export default async function ProductCardsContainer(
   props: ProductCardsContainerProps
 ) {
-  //   await wait(3000);
-
   const {
     primaryCategoryId,
     secondaryCategoryId,

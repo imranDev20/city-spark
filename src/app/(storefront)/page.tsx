@@ -7,6 +7,7 @@ import MobileCategoryNavContainer from "./_components/mobile-category-nav-contai
 import { Suspense } from "react";
 import MobileCategoryNavSkeleton from "./_components/homepage/mobile-category-nav-skeleton";
 import PromotionalGrid from "./_components/promotional-grid";
+import ProductCarouselSkeleton from "./_components/homepage/product-carousel-skeleton";
 
 export default function HomePage() {
   return (
@@ -17,14 +18,15 @@ export default function HomePage() {
       </Suspense>
       <PromotionalGrid />
 
-      {/* <Suspense fallback="Loading...">
+      <Suspense fallback={<ProductCarouselSkeleton />}>
         <ProductCarouselContainer title="Best Selling Products" />
-      </Suspense> */}
-      {/* <AdvertisementWideOne /> */}
-      {/* 
-      <Suspense fallback="Loading...">
+      </Suspense>
+
+      <AdvertisementWideOne />
+
+      <Suspense fallback={<ProductCarouselSkeleton />}>
         <ProductCarouselContainer title="New Products" />
-      </Suspense> */}
+      </Suspense>
       <AdvertisementTwoColumn />
       <AdvertisementWideTwo />
     </main>
