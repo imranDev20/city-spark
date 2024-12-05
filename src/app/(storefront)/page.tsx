@@ -25,8 +25,8 @@ export default function HomePage() {
       <Suspense fallback="Loading...">
         <ProductCarouselContainer title="New Products" />
       </Suspense> */}
-      {/* <AdvertisementTwoColumn />
-      <AdvertisementWideTwo /> */}
+      <AdvertisementTwoColumn />
+      <AdvertisementWideTwo />
     </main>
   );
 }
