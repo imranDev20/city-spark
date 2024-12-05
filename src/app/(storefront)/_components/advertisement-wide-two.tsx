@@ -4,16 +4,21 @@ import WideAdvertisementTwo from "@/images/advertisements/home-wide-advertisemen
 
 export default function AdvertisementWideTwo() {
   return (
-    <div
+    <section
       className={cn(
         "container max-w-screen-xl mx-auto my-12",
         "px-4 md:px-6 lg:px-8"
       )}
+      aria-label="Advertisement Section"
     >
-      <div className="relative ">
+      <div
+        className="relative"
+        role="region"
+        aria-label="Brand Store Advertisement"
+      >
         <Image
           src={WideAdvertisementTwo}
-          alt="Brand Store Background"
+          alt="Brand Store promotional advertisement featuring store products and special offers"
           width={2000}
           height={400}
           className="rounded-lg"
@@ -25,6 +30,6 @@ export default function AdvertisementWideTwo() {
           loading="lazy"
         />
       </div>
-    </div>
+    </section>
   );
 }

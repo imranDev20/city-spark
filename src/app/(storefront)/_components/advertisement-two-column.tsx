@@ -11,11 +11,16 @@ export default function AdvertisementTwoColumn() {
         "px-4 sm:px-6 lg:px-8",
         "grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 lg:gap-8"
       )}
+      aria-label="Featured Boilers Advertisement Section"
     >
-      <div className="relative w-full ">
+      <div
+        className="relative w-full"
+        role="region"
+        aria-label="Vaillant Boiler Advertisement"
+      >
         <Image
           src={VaillantEcoFitPlus832Combi}
-          alt="Vaillant EcoFit Plus 832 Combi Boiler"
+          alt="Vaillant EcoFit Plus 832 Combi Boiler - High efficiency combination boiler with advanced heating controls"
           width={800}
           height={450}
           className="rounded-lg object-cover object-center"
@@ -24,10 +29,14 @@ export default function AdvertisementTwoColumn() {
           loading="lazy"
         />
       </div>
-      <div className="relative w-full">
+      <div
+        className="relative w-full"
+        role="region"
+        aria-label="Ideal Boiler Advertisement"
+      >
         <Image
           src={IdealAdlantic30CombiFlue}
-          alt="Ideal Atlantic 30 Combi Flue Boiler"
+          alt="Ideal Atlantic 30 Combi Flue Boiler - Compact and efficient heating system with integrated flue system"
           width={800}
           height={450}
           className="rounded-lg object-cover object-center"
