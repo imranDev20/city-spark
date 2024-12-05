@@ -18,39 +18,63 @@ import ToolsIcon from "@/components/icons/tools";
 import ElectricalIcon from "@/components/icons/electrical";
 import { CategoryWithChildParent } from "@/types/storefront-products";
 import { CategoryType } from "@prisma/client";
-
-type IconProps = {
-  className?: string;
-  height?: number | string;
-  width?: number | string;
-};
+import { SVGProps } from "react";
 
 type PrimaryCategory = CategoryWithChildParent;
 export type SecondaryCategory =
   CategoryWithChildParent["primaryChildCategories"][number];
 
 type CategoryWithParent<T extends PrimaryCategory | SecondaryCategory> = T & {
-  Icon: React.ComponentType<IconProps>;
+  Icon: React.FC<SVGProps<SVGSVGElement>>;
   route: string;
+  ariaLabel: string;
 };
 
-const categoryData: { label: string; Icon: React.ComponentType<IconProps> }[] =
-  [
-    { label: "Boilers", Icon: BoilerIcon },
-    { label: "Radiators", Icon: RadiatorIcon },
-    { label: "Heating", Icon: HeatingIcon },
-    { label: "Plumbing", Icon: PlumbingIcon },
-    { label: "Bathrooms", Icon: BathroomIcon },
-    { label: "Kitchens", Icon: KitchenTilesIcon },
-    { label: "Spares", Icon: SparesIcon },
-    { label: "Renewables", Icon: RenewablesIcon },
-    { label: "Tools", Icon: ToolsIcon },
-    { label: "Electrical", Icon: ElectricalIcon },
-  ];
+const categoryData: {
+  label: string;
+  Icon: React.FC<SVGProps<SVGSVGElement>>;
+  ariaLabel: string;
+}[] = [
+  { label: "Boilers", Icon: BoilerIcon, ariaLabel: "Browse boiler products" },
+  {
+    label: "Radiators",
+    Icon: RadiatorIcon,
+    ariaLabel: "Browse radiator products",
+  },
+  { label: "Heating", Icon: HeatingIcon, ariaLabel: "Browse heating products" },
+  {
+    label: "Plumbing",
+    Icon: PlumbingIcon,
+    ariaLabel: "Browse plumbing products",
+  },
+  {
+    label: "Bathrooms",
+    Icon: BathroomIcon,
+    ariaLabel: "Browse bathroom products",
+  },
+  {
+    label: "Kitchens",
+    Icon: KitchenTilesIcon,
+    ariaLabel: "Browse kitchen products",
+  },
+  { label: "Spares", Icon: SparesIcon, ariaLabel: "Browse spare parts" },
+  {
+    label: "Renewables",
+    Icon: RenewablesIcon,
+    ariaLabel: "Browse renewable products",
+  },
+  { label: "Tools", Icon: ToolsIcon, ariaLabel: "Browse tools" },
+  {
+    label: "Electrical",
+    Icon: ElectricalIcon,
+    ariaLabel: "Browse electrical products",
+  },
+];
 
 function createMergedCategory<T extends PrimaryCategory | SecondaryCategory>(
   category: T,
-  icon: React.ComponentType<IconProps>
+  icon: React.FC<SVGProps<SVGSVGElement>>,
+  ariaLabel: string
 ): CategoryWithParent<T> {
   const isSecondary = category.type === CategoryType.SECONDARY;
   const primaryCategoryName =
@@ -68,6 +92,7 @@ function createMergedCategory<T extends PrimaryCategory | SecondaryCategory>(
     ...category,
     Icon: icon,
     route,
+    ariaLabel,
   };
 }
 
@@ -82,67 +107,83 @@ export default function CategoryNav({
   const excludedRoutes = ["/login", "/register", "/cart", "/checkout"];
 
   useEffect(() => {
-    // Close megamenu when route changes
     setHoveredCategory(null);
   }, [pathname]);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   if (excludedRoutes.includes(pathname)) {
     return null;
   }
 
-  const mergedCategories: CategoryWithParent<
-    PrimaryCategory | SecondaryCategory
-  >[] = categoryData.flatMap(
-    (item): CategoryWithParent<PrimaryCategory | SecondaryCategory>[] => {
-      const category = categories.find(
-        (cat) => cat.name.toLowerCase() === item.label.toLowerCase()
-      );
+  const mergedCategories = categoryData.flatMap((item) => {
+    const category = categories.find(
+      (cat) => cat.name.toLowerCase() === item.label.toLowerCase()
+    );
 
-      if (category) {
-        if (category.name.toLowerCase() === "heating") {
-          const result: CategoryWithParent<
-            PrimaryCategory | SecondaryCategory
-          >[] = [];
+    if (category) {
+      if (category.name.toLowerCase() === "heating") {
+        const result: CategoryWithParent<
+          PrimaryCategory | SecondaryCategory
+        >[] = [];
 
-          const boilers = category.primaryChildCategories?.find(
-            (subcat) => subcat.name.toLowerCase() === "boilers"
-          );
-          const radiators = category.primaryChildCategories?.find(
-            (subcat) => subcat.name.toLowerCase() === "radiators"
-          );
+        const boilers = category.primaryChildCategories?.find(
+          (subcat) => subcat.name.toLowerCase() === "boilers"
+        );
+        const radiators = category.primaryChildCategories?.find(
+          (subcat) => subcat.name.toLowerCase() === "radiators"
+        );
 
-          if (boilers) {
-            result.push(
-              createMergedCategory(boilers as SecondaryCategory, BoilerIcon)
-            );
-          }
-
-          if (radiators) {
-            result.push(
-              createMergedCategory(radiators as SecondaryCategory, RadiatorIcon)
-            );
-          }
-
+        if (boilers) {
           result.push(
-            createMergedCategory(category as PrimaryCategory, item.Icon)
+            createMergedCategory(
+              boilers as SecondaryCategory,
+              BoilerIcon,
+              "Browse boiler products"
+            )
           );
-
-          return result;
         }
 
-        return [
+        if (radiators) {
+          result.push(
+            createMergedCategory(
+              radiators as SecondaryCategory,
+              RadiatorIcon,
+              "Browse radiator products"
+            )
+          );
+        }
+
+        result.push(
           createMergedCategory(
-            category.type === CategoryType.PRIMARY
-              ? (category as PrimaryCategory)
-              : (category as SecondaryCategory),
-            item.Icon
-          ),
-        ];
+            category as PrimaryCategory,
+            item.Icon,
+            item.ariaLabel
+          )
+        );
+
+        return result;
       }
 
-      return [];
+      return [
+        createMergedCategory(
+          category.type === CategoryType.PRIMARY
+            ? (category as PrimaryCategory)
+            : (category as SecondaryCategory),
+          item.Icon,
+          item.ariaLabel
+        ),
+      ];
     }
-  );
+
+    return [];
+  });
 
   const handleMouseEnter = (categoryId: string) => {
     if (timeoutRef.current) {
@@ -162,12 +203,31 @@ export default function CategoryNav({
     }, 300);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent, categoryId: string) => {
+    switch (e.key) {
+      case "Enter":
+      case " ":
+        e.preventDefault();
+        setHoveredCategory(categoryId === hoveredCategory ? null : categoryId);
+        break;
+      case "Escape":
+        if (hoveredCategory) {
+          e.preventDefault();
+          setHoveredCategory(null);
+        }
+        break;
+    }
+  };
+
   return (
-    <div className="relative bg-white border-b hidden lg:block">
+    <nav
+      className="relative bg-white border-b hidden lg:block"
+      aria-label="Main product categories"
+    >
       <div className="container mx-auto max-w-screen-xl px-0">
-        <div className="flex w-full">
+        <ul className="flex w-full" role="menubar">
           {mergedCategories.map((item) => (
-            <div
+            <li
               key={item.id}
               className={cn(
                 "flex-1 relative group border-r last:border-r-0 border-gray-100",
@@ -175,14 +235,20 @@ export default function CategoryNav({
               )}
               onMouseEnter={() => handleMouseEnter(item.id)}
               onMouseLeave={handleMouseLeave}
+              onKeyDown={(e) => handleKeyDown(e, item.id)}
+              role="menuitem"
+              aria-haspopup="true"
+              aria-expanded={hoveredCategory === item.id}
+              tabIndex={0}
             >
               <Link
                 href={item.route}
                 onClick={() => setHoveredCategory(null)}
                 className={cn(
                   "flex flex-col items-center p-3 w-full transition-all duration-200 hover:bg-primary/5",
-                  "relative overflow-hidden"
+                  "relative overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm"
                 )}
+                aria-label={item.ariaLabel}
               >
                 <div className="relative flex flex-col items-center w-full">
                   <item.Icon
@@ -193,8 +259,10 @@ export default function CategoryNav({
                     )}
                     height={26}
                     width={26}
+                    aria-hidden="true"
+                    focusable="false"
                   />
-                  <h5
+                  <h2
                     className={cn(
                       "text-xs mt-2 text-center font-medium px-1",
                       "group-hover:text-primary transition-colors duration-200",
@@ -202,12 +270,12 @@ export default function CategoryNav({
                     )}
                   >
                     {item.name}
-                  </h5>
+                  </h2>
                 </div>
               </Link>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
       {hoveredCategory && (
         <MegaMenu
@@ -220,6 +288,6 @@ export default function CategoryNav({
           onCloseMenu={() => setHoveredCategory(null)}
         />
       )}
-    </div>
+    </nav>
   );
 }

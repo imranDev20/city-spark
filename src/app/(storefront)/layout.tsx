@@ -4,6 +4,8 @@ import StorefrontFooter from "./_components/storefront-footer";
 import TopBar from "./_components/topbar";
 import MobileBottomBar from "./_components/mobile-bottom-bar";
 import CategoryNavContainer from "./_components/category-nav-container";
+import { Suspense } from "react";
+import CategoryNavSkeleton from "./_components/category-nav-skeleton";
 
 export default function StorefrontLayout({
   children,
@@ -15,7 +17,10 @@ export default function StorefrontLayout({
       <StoreTopLoader />
       <TopBar />
       <Header />
-      <CategoryNavContainer />
+      <Suspense fallback={<CategoryNavSkeleton />}>
+        <CategoryNavContainer />
+      </Suspense>
+
       {children}
       <MobileBottomBar />
       <StorefrontFooter />

@@ -36,24 +36,28 @@ type NavCategory = {
 type CategoryWithIcon = NavCategory & {
   Icon: React.ComponentType<IconProps>;
   route: string;
+  ariaLabel: string;
 };
 
-const categoryIcons: Record<string, React.ComponentType<IconProps>> = {
-  boilers: BoilerIcon,
-  radiators: RadiatorIcon,
-  heating: HeatingIcon,
-  plumbing: PlumbingIcon,
-  bathrooms: BathroomIcon,
-  kitchen: KitchenTilesIcon,
-  spares: SparesIcon,
-  renewables: RenewablesIcon,
-  tools: ToolsIcon,
-  electrical: ElectricalIcon,
+const categoryIcons: Record<
+  string,
+  { Icon: React.ComponentType<IconProps>; ariaLabel: string }
+> = {
+  boilers: { Icon: BoilerIcon, ariaLabel: "Browse boiler products" },
+  radiators: { Icon: RadiatorIcon, ariaLabel: "Browse radiator products" },
+  heating: { Icon: HeatingIcon, ariaLabel: "Browse heating products" },
+  plumbing: { Icon: PlumbingIcon, ariaLabel: "Browse plumbing products" },
+  bathrooms: { Icon: BathroomIcon, ariaLabel: "Browse bathroom products" },
+  kitchen: { Icon: KitchenTilesIcon, ariaLabel: "Browse kitchen products" },
+  spares: { Icon: SparesIcon, ariaLabel: "Browse spare parts" },
+  renewables: { Icon: RenewablesIcon, ariaLabel: "Browse renewable products" },
+  tools: { Icon: ToolsIcon, ariaLabel: "Browse tools" },
+  electrical: { Icon: ElectricalIcon, ariaLabel: "Browse electrical products" },
 };
 
 function createCategory(category: NavCategory): CategoryWithIcon | null {
-  const Icon = categoryIcons[category.name.toLowerCase()];
-  if (!Icon) return null;
+  const iconData = categoryIcons[category.name.toLowerCase()];
+  if (!iconData) return null;
 
   const route =
     category.type === CategoryType.SECONDARY && category.parentPrimaryCategory
@@ -66,8 +70,9 @@ function createCategory(category: NavCategory): CategoryWithIcon | null {
 
   return {
     ...category,
-    Icon,
+    Icon: iconData.Icon,
     route,
+    ariaLabel: iconData.ariaLabel,
   };
 }
 
@@ -88,19 +93,34 @@ export default function MobileCategoryNavCarousel({
     .filter((category): category is CategoryWithIcon => category !== null);
 
   return (
-    <div className="pl-4 block lg:hidden">
-      <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex">
+    <nav
+      className="pl-4 block lg:hidden"
+      aria-label="Mobile category navigation"
+    >
+      <div
+        className="overflow-hidden"
+        ref={emblaRef}
+        role="region"
+        aria-label="Scrollable categories"
+        tabIndex={0}
+      >
+        <ul className="flex" role="list" aria-label="Product categories">
           {processedCategories.map((item) => (
-            <div key={item.id} className="flex-none w-[31%] min-w-[110px] pr-3">
+            <li
+              key={item.id}
+              className="flex-none w-[31%] min-w-[110px] pr-3"
+              role="listitem"
+            >
               <Link
                 href={item.route}
                 className={cn(
                   "flex flex-col items-center p-4 w-full transition-all duration-200",
                   "hover:bg-primary/5 group rounded-xl",
                   "border border-border hover:border-primary/20",
-                  "bg-white"
+                  "bg-white",
+                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 )}
+                aria-label={item.ariaLabel}
               >
                 <item.Icon
                   className={cn(
@@ -109,20 +129,21 @@ export default function MobileCategoryNavCarousel({
                   )}
                   height={32}
                   width={32}
+                  aria-hidden="true"
                 />
-                <h5
+                <h2
                   className={cn(
                     "text-xs mt-3 text-center font-medium",
                     "group-hover:text-primary transition-colors duration-200"
                   )}
                 >
                   {item.name}
-                </h5>
+                </h2>
               </Link>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
-    </div>
+    </nav>
   );
 }
