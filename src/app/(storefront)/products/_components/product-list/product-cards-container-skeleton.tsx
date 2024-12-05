@@ -1,10 +1,11 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import ProductCardSkeleton from "./product-card-skeleton";
 
 interface ProductCardsContainerSkeletonProps {
   count?: number;
 }
 
-export default function ProductCardsSkeleton({
+export default function ProductCardsContainerSkeleton({
   count = 12,
 }: ProductCardsContainerSkeletonProps) {
   return (
@@ -27,7 +28,7 @@ export default function ProductCardsSkeleton({
       {/* Product grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {[...Array(count)].map((_, index) => (
-          <ProductCardsSkeleton key={index} />
+          <ProductCardSkeleton key={index} />
         ))}
       </div>
     </div>
