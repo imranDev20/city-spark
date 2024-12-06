@@ -72,6 +72,7 @@ const MenuItem = ({
 export default function AccountDropdown() {
   const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -85,7 +86,9 @@ export default function AccountDropdown() {
   };
 
   const handleSignOut = () => {
-    signOut();
+    startTransition(async () => {
+      await signOut();
+    });
   };
 
   useEffect(() => {
@@ -212,7 +215,12 @@ export default function AccountDropdown() {
           <Separator />
 
           <div className="px-2 py-1">
-            <MenuItem icon={LogOut} label="Log out" onClick={handleSignOut} />
+            <MenuItem
+              icon={LogOut}
+              label="Log out"
+              onClick={handleSignOut}
+              loading={isPending}
+            />
           </div>
         </div>
       )}
