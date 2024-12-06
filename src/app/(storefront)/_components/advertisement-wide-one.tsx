@@ -1,5 +1,4 @@
 import Image from "next/image";
-import img from "@/images/baneer-bg1.jpeg";
 import { cn } from "@/lib/utils";
 import WideAdvertisementOne from "@/images/advertisements/home-wide-advertisement-one.jpg";
 

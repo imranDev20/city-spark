@@ -2,7 +2,6 @@ import { Breadcrumb, BreadcrumbList } from "@/components/ui/breadcrumb";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PageHeaderSkeleton() {
-  // Create an array of 3 items to show a reasonable loading state
   const items = Array.from({ length: 3 });
 
   return (
@@ -12,21 +11,18 @@ export default function PageHeaderSkeleton() {
           <BreadcrumbList>
             {/* Home item skeleton */}
             <div className="flex items-center">
-              <div className="h-4 w-4 rounded bg-primary/20 animate-pulse" />
-              <div className="ml-1 h-4 w-16 rounded bg-primary/20 animate-pulse" />
+              <div className="h-4 w-4 rounded bg-white/30 animate-pulse" />
+              <div className="ml-1 h-4 w-16 rounded bg-white/30 animate-pulse" />
             </div>
 
             {items.map((_, index) => (
               <div key={index} className="flex items-center">
-                {/* Separator */}
-                <div className="mx-2 text-white">/</div>
-
-                {/* Breadcrumb item skeleton */}
+                <div className="mx-2 text-white/70">/</div>
                 <div
                   className={`h-4 rounded animate-pulse ${
                     index === items.length - 1
-                      ? "w-24 bg-secondary/20"
-                      : "w-20 bg-primary/20"
+                      ? "w-24 bg-secondary/80" // More visible secondary color
+                      : "w-20 bg-white/30" // Semi-transparent white for better contrast
                   }`}
                 />
               </div>
@@ -34,8 +30,8 @@ export default function PageHeaderSkeleton() {
           </BreadcrumbList>
         </Breadcrumb>
 
-        {/* Title skeleton */}
-        <Skeleton className="h-10 w-64 bg-white rounded animate-pulse mt-4" />
+        {/* Title skeleton with improved contrast */}
+        <Skeleton className="h-10 w-64 bg-white/40 rounded animate-pulse mt-4" />
       </div>
     </section>
   );

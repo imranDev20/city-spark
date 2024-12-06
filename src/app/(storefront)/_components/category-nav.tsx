@@ -19,6 +19,7 @@ import ElectricalIcon from "@/components/icons/electrical";
 import { CategoryWithChildParent } from "@/types/storefront-products";
 import { CategoryType } from "@prisma/client";
 import { SVGProps } from "react";
+import { BrandsByCategory } from "../products/actions";
 
 type PrimaryCategory = CategoryWithChildParent;
 export type SecondaryCategory =
@@ -98,8 +99,10 @@ function createMergedCategory<T extends PrimaryCategory | SecondaryCategory>(
 
 export default function CategoryNav({
   categories,
+  topBrands,
 }: {
   categories: CategoryWithChildParent[];
+  topBrands: BrandsByCategory;
 }) {
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -189,18 +192,24 @@ export default function CategoryNav({
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    timeoutRef.current = setTimeout(() => {
-      setHoveredCategory(categoryId);
-    }, 150);
-  };
 
+    // If there's already a hovered category, transition immediately
+    if (hoveredCategory) {
+      setHoveredCategory(categoryId);
+    } else {
+      // Apply delay only for initial hover
+      timeoutRef.current = setTimeout(() => {
+        setHoveredCategory(categoryId);
+      }, 450);
+    }
+  };
   const handleMouseLeave = () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
     timeoutRef.current = setTimeout(() => {
       setHoveredCategory(null);
-    }, 300);
+    }, 100);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, categoryId: string) => {
@@ -283,6 +292,7 @@ export default function CategoryNav({
             mergedCategories.find((c) => c.id === hoveredCategory) ||
             mergedCategories[0]
           }
+          topBrands={topBrands}
           onMouseEnter={() => handleMouseEnter(hoveredCategory)}
           onMouseLeave={handleMouseLeave}
           onCloseMenu={() => setHoveredCategory(null)}

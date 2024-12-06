@@ -638,3 +638,83 @@ export async function searchProducts(searchTerm: string) {
     throw error;
   }
 }
+
+type BrandInfo = {
+  id: string;
+  name: string;
+  image: string | null;
+};
+
+export type BrandsByCategory = {
+  [categoryName: string]: BrandInfo[];
+};
+
+export async function getTopBrands(): Promise<BrandsByCategory> {
+  try {
+    // First get all primary categories
+    const primaryCategories = await prisma.category.findMany({
+      where: {
+        type: "PRIMARY",
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    // Create a map to store results
+    const brandsByCategory: BrandsByCategory = {};
+
+    // For each primary category, get top 10 brands
+    await Promise.all(
+      primaryCategories.map(async (category) => {
+        const brands = await prisma.brand.findMany({
+          where: {
+            status: "ACTIVE",
+            products: {
+              some: {
+                primaryCategoryId: category.id,
+              },
+            },
+          },
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            _count: {
+              select: {
+                products: {
+                  where: {
+                    primaryCategoryId: category.id,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            products: {
+              _count: "desc",
+            },
+          },
+          take: 10,
+        });
+
+        if (brands.length > 0) {
+          // Only add categories that have brands
+          brandsByCategory[category.name.toLowerCase()] = brands.map(
+            (brand) => ({
+              id: brand.id,
+              name: brand.name,
+              image: brand.image,
+            })
+          );
+        }
+      })
+    );
+
+    return brandsByCategory;
+  } catch (error) {
+    console.error("Error fetching top brands:", error);
+    return {};
+  }
+}

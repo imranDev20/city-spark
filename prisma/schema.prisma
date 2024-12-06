@@ -86,9 +86,9 @@ model Product {
     type                 String?
     warranty             String?
     guarantee            String?
-    tradePrice           Float?
-    contractPrice        Float?
-    promotionalPrice     Float?
+    tradePrice           Float?           @default(0)
+    contractPrice        Float?           @default(0)
+    promotionalPrice     Float?           @default(0)
     unit                 String?
     weight               Float?
     color                String?
@@ -186,17 +186,17 @@ enum FieldType {
 
 model Inventory {
     id                              String     @id @default(cuid())
-    deliveryEligibility             Boolean
+    deliveryEligibility             Boolean    @default(true)
     maxDeliveryTime                 String?
     maxDeliveryTimeExceedingStock   String?
     deliveryAreas                   String[]
-    minDeliveryCount                Int?
+    minDeliveryCount                Int?       @default(0)
     maxDeliveryCount                Int?
-    collectionEligibility           Boolean
+    collectionEligibility           Boolean    @default(true)
     collectionAvailabilityTime      String?
     maxCollectionTimeExceedingStock String?
     collectionPoints                String[]
-    minCollectionCount              Int?
+    minCollectionCount              Int?       @default(0)
     maxCollectionCount              Int?
     stockCount                      Int        @default(0)
     soldCount                       Int        @default(0)

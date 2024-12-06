@@ -24,15 +24,14 @@ export default function CategoriesLoading() {
                   <TableHead className="w-24 py-5">
                     <span className="sr-only">Image</span>
                   </TableHead>
-                  <TableHead className="w-[40%] min-w-[300px]">Name</TableHead>
-                  <TableHead className="w-[15%] min-w-[120px]">Type</TableHead>
-                  <TableHead className="w-[15%] min-w-[140px]">
-                    Parent
+                  <TableHead className="w-[30%] min-w-[200px]">Name</TableHead>
+                  <TableHead className="w-[35%] min-w-[250px]">
+                    Category Path
                   </TableHead>
-                  <TableHead className="w-[15%] min-w-[140px]">
-                    Created At
+                  <TableHead className="w-[20%] min-w-[150px]">
+                    Last Updated
                   </TableHead>
-                  <TableHead className="w-14 pr-6">
+                  <TableHead className="w-14 pr-6 text-right">
                     <span className="sr-only">Actions</span>
                   </TableHead>
                 </TableRow>
@@ -47,22 +46,16 @@ export default function CategoriesLoading() {
                       <Skeleton className="h-14 w-14 rounded-lg" />
                     </TableCell>
                     <TableCell>
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-[250px]" />
-                        <Skeleton className="h-4 w-[200px]" />
-                      </div>
+                      <Skeleton className="h-5 w-[180px]" />
                     </TableCell>
                     <TableCell>
-                      <Skeleton className="h-8 w-24" />
+                      <Skeleton className="h-5 w-[230px]" />
                     </TableCell>
                     <TableCell>
-                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-5 w-[130px]" />
                     </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-32" />
-                    </TableCell>
-                    <TableCell className="pr-6">
-                      <Skeleton className="h-8 w-8" />
+                    <TableCell className="pr-6 text-right">
+                      <Skeleton className="h-8 w-8 ml-auto" />
                     </TableCell>
                   </TableRow>
                 ))}

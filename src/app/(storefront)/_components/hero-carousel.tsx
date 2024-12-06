@@ -118,6 +118,7 @@ const CarouselContent = ({
                   style={{
                     objectFit: "contain",
                   }}
+                  placeholder="blur"
                 />
               </div>
             </div>
