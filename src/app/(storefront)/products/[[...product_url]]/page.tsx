@@ -1,9 +1,9 @@
 import React from "react";
 import { Metadata } from "next";
-import FirstCategoriesPage from "../_components/first-categories-page";
-import SecondCategoriesPage from "../_components/second-categories-page";
-import ThirdCategoriesPage from "../_components/third-categories-page";
-import FourthCategoriesPage from "../_components/fourth-categories-page";
+import FirstCategoriesPage from "../_components/categories-pages/first-categories-page";
+import SecondCategoriesPage from "../_components/categories-pages/second-categories-page";
+import ThirdCategoriesPage from "../_components/categories-pages/third-categories-page";
+import FourthCategoriesPage from "../_components/categories-pages/fourth-categories-page";
 import StorefrontProductListPage from "../_components/storefront-product-list-page";
 import StorefrontProductDetailsPage from "../_components/storefront-product-details-page";
 import { getInventoryItem } from "../../actions";
