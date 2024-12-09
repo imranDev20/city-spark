@@ -4,6 +4,9 @@ import React from "react";
 import Link from "next/link";
 import { customSlugify } from "@/lib/functions";
 import { CategoryWithChildParent } from "@/types/storefront-products";
+import { BrandsByCategory } from "../products/actions";
+import Image from "next/image";
+import { Separator } from "@/components/ui/separator";
 
 type CategoryType = "PRIMARY" | "SECONDARY" | "TERTIARY" | "QUATERNARY";
 
@@ -43,6 +46,7 @@ type MegaMenuProps = {
   onMouseEnter: () => void;
   onMouseLeave: () => void;
   onCloseMenu: () => void;
+  topBrands: BrandsByCategory;
 };
 
 const MegaMenu: React.FC<MegaMenuProps> = ({
@@ -50,6 +54,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
   onMouseEnter,
   onMouseLeave,
   onCloseMenu,
+  topBrands,
 }) => {
   const renderContent = () => {
     if (category.type === CategoryTypeEnum.SECONDARY) {
@@ -151,6 +156,8 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
     ));
   };
 
+  const categoryBrands = topBrands[category.name.toLowerCase()];
+
   return (
     <div
       className="absolute top-full left-0 w-full bg-muted border-b border-gray-300 shadow-lg z-10 border-t"
@@ -158,10 +165,49 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
       onMouseLeave={onMouseLeave}
     >
       <div className="container mx-auto max-w-screen-xl px-0 py-4">
-        <div className="h-96 overflow-y-auto">
-          <div className="grid grid-cols-5 gap-4 min-h-full">
-            {renderContent()}
+        <div className="flex flex-col h-[400px]">
+          <div className="h-96 overflow-y-auto">
+            <div className="grid grid-cols-5 gap-4 min-h-full">
+              {renderContent()}
+            </div>
           </div>
+
+          <Separator className="my-5" />
+
+          {/* Fixed Brands Section */}
+          {categoryBrands?.length > 0 && (
+            <div className="mt-2">
+              <h3 className="text-sm font-semibold text-gray-900 mb-5">
+                Top Brands
+              </h3>
+              <div className="flex justify-start gap-10">
+                {categoryBrands.slice(0, 7).map((brand) => (
+                  <Link
+                    key={brand.id}
+                    href={`/brands/${customSlugify(brand.name)}`}
+                    onClick={onCloseMenu}
+                    className="relative h-16 rounded-lg hover:opacity-80 transition-opacity"
+                  >
+                    {brand?.image && (
+                      <Image
+                        src={brand.image}
+                        alt={brand.name}
+                        width={200}
+                        height={100}
+                        sizes="120px"
+                        className="rounded-md"
+                        style={{
+                          objectFit: "contain",
+                          height: "100%",
+                          width: "100%",
+                        }}
+                      />
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

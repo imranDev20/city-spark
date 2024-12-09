@@ -118,11 +118,14 @@ export async function createProduct(data: ProductFormInputType) {
         await tx.inventory.create({
           data: {
             productId: createdProduct.id,
-            deliveryEligibility: false,
-            collectionEligibility: false,
-            stockCount: 0,
+            deliveryEligibility: true,
+            collectionEligibility: true,
+            stockCount: 10,
             collectionPoints: [],
             deliveryAreas: [],
+            heldCount: 0,
+            minDeliveryCount: 0,
+            minCollectionCount: 0,
           },
         });
 
