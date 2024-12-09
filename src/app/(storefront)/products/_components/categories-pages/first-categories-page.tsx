@@ -1,23 +1,19 @@
 import React, { Suspense } from "react";
 import { cn } from "@/lib/utils";
-import PageHeader from "../../../_components/page-header";
 import MobileBottomBar from "../../../_components/mobile-bottom-bar";
 import CategoryGrid from "./dynamic-category-grid";
 import CategorySidebarSkeleton from "./category-sidebar-skeleton";
 import CategoryGridSkeleton from "./category-grid-skeleton";
 import DynamicCategorySidebar from "./dynamic-category-sidebar";
-
-const breadcrumbItems = [
-  {
-    label: "Products",
-    isCurrentPage: true,
-  },
-];
+import DynamicPageHeader from "./dynamic-category-page-header";
+import PageHeaderSkeleton from "../product-list/page-header-skeleton";
 
 export default function FirstCategoriesPage() {
   return (
     <main className="min-h-screen flex flex-col">
-      <PageHeader breadcrumbItems={breadcrumbItems} title="Products" />
+      <Suspense fallback={<PageHeaderSkeleton />}>
+        <DynamicPageHeader />
+      </Suspense>
 
       <section
         className={cn(

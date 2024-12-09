@@ -3,8 +3,6 @@ import { getCategoriesByType } from "../../actions";
 import { CategoryType, Prisma } from "@prisma/client";
 import StorefrontProductListPage from "../storefront-product-list-page";
 import { CategoryWithChildParent } from "@/types/storefront-products";
-import PageHeader from "../../../_components/page-header";
-import { customSlugify } from "@/lib/functions";
 import { cn } from "@/lib/utils";
 import MobileCategoryNavCarousel from "../../../_components/mobile-category-nav-carousel";
 import Image from "next/image";
@@ -14,6 +12,8 @@ import DynamicCategorySidebar from "./dynamic-category-sidebar";
 import CategorySidebarSkeleton from "./category-sidebar-skeleton";
 import CategoryGridSkeleton from "./category-grid-skeleton";
 import DynamicCategoryGrid from "./dynamic-category-grid";
+import DynamicPageHeader from "./dynamic-category-page-header";
+import PageHeaderSkeleton from "../product-list/page-header-skeleton";
 
 type QuaternaryCategoryWithChilds = Prisma.CategoryGetPayload<{
   include: {
@@ -62,37 +62,15 @@ export default async function FourthCategoriesPage({
     );
   }
 
-  const breadcrumbItems = [
-    {
-      label: "Products",
-      href: "/products",
-    },
-    {
-      label: `${quaternaryCategories[0].parentPrimaryCategory?.name}`,
-      href: `/products/c/${customSlugify(
-        quaternaryCategories[0].parentPrimaryCategory?.name
-      )}/c?p_id=${primaryId}`,
-    },
-    {
-      label: `${quaternaryCategories[0].parentSecondaryCategory?.name}`,
-      href: `/products/c/${customSlugify(
-        quaternaryCategories[0].parentPrimaryCategory?.name
-      )}/${customSlugify(
-        quaternaryCategories[0].parentSecondaryCategory?.name
-      )}/c?p_id=${primaryId}&s_id=${secondaryId}`,
-    },
-    {
-      label: `${quaternaryCategories[0].parentTertiaryCategory?.name}`,
-      isCurrentPage: true,
-    },
-  ];
-
   return (
     <main className="min-h-screen flex flex-col">
-      <PageHeader
-        breadcrumbItems={breadcrumbItems}
-        title={`${quaternaryCategories[0].parentTertiaryCategory?.name}`}
-      />
+      <Suspense fallback={<PageHeaderSkeleton />}>
+        <DynamicPageHeader
+          primaryCategoryId={primaryId}
+          secondaryCategoryId={secondaryId}
+          tertiaryCategoryId={tertiaryId}
+        />
+      </Suspense>
 
       <section className="mt-5">
         <MobileCategoryNavCarousel categories={navCategories} />

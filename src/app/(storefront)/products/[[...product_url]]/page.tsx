@@ -7,6 +7,7 @@ import FourthCategoriesPage from "../_components/categories-pages/fourth-categor
 import StorefrontProductListPage from "../_components/storefront-product-list-page";
 import StorefrontProductDetailsPage from "../_components/storefront-product-details-page";
 import { getInventoryItem } from "../../actions";
+import DynamicCategoryPage from "../_components/categories-pages/dynamic-categories-page";
 
 type PageParams = Promise<{
   product_url?: string[];
@@ -89,29 +90,33 @@ export default async function StorefrontProductsPage(props: {
 
   if (categories.length === 3) {
     return (
-      <FourthCategoriesPage
+      <DynamicCategoryPage
         primaryId={searchParams.p_id}
         secondaryId={searchParams.s_id}
         tertiaryId={searchParams.t_id}
+        type="QUATERNARY"
       />
     );
   }
 
   if (categories.length === 2) {
     return (
-      <ThirdCategoriesPage
+      <DynamicCategoryPage
         primaryId={searchParams.p_id}
         secondaryId={searchParams.s_id}
+        type="TERTIARY"
       />
     );
   }
 
   if (categories.length === 1) {
-    return <SecondCategoriesPage primaryId={searchParams.p_id} />;
+    return (
+      <DynamicCategoryPage primaryId={searchParams.p_id} type="SECONDARY" />
+    );
   }
 
   if (!params.product_url?.length) {
-    return <FirstCategoriesPage />;
+    return <DynamicCategoryPage type="PRIMARY" />;
   }
 
   return <div>Page not available</div>;

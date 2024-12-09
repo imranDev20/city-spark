@@ -3,7 +3,6 @@ import { getCategoriesByType } from "../../actions";
 import { Prisma } from "@prisma/client";
 import StorefrontProductListPage from "../storefront-product-list-page";
 import { CategoryWithChildParent } from "@/types/storefront-products";
-import PageHeader from "../../../_components/page-header";
 import { cn } from "@/lib/utils";
 import MobileCategoryNavCarousel from "../../../_components/mobile-category-nav-carousel";
 import Image from "next/image";
@@ -13,6 +12,8 @@ import DynamicCategorySidebar from "./dynamic-category-sidebar";
 import CategorySidebarSkeleton from "./category-sidebar-skeleton";
 import DynamicCategoryGrid from "./dynamic-category-grid";
 import CategoryGridSkeleton from "./category-grid-skeleton";
+import DynamicPageHeader from "./dynamic-category-page-header";
+import PageHeaderSkeleton from "../product-list/page-header-skeleton";
 
 type SecondaryCagoryWithChilds = Prisma.CategoryGetPayload<{
   include: {
@@ -47,23 +48,11 @@ export default async function SecondCategoriesPage({
     );
   }
 
-  const breadcrumbItems = [
-    {
-      label: "Products",
-      href: "/products",
-    },
-    {
-      label: `${secondaryCategories[0].parentPrimaryCategory?.name}`,
-      isCurrentPage: true,
-    },
-  ];
-
   return (
     <main className="min-h-screen flex flex-col">
-      <PageHeader
-        breadcrumbItems={breadcrumbItems}
-        title={`${secondaryCategories[0].parentPrimaryCategory?.name}`}
-      />
+      <Suspense fallback={<PageHeaderSkeleton />}>
+        <DynamicPageHeader primaryCategoryId={primaryId} />
+      </Suspense>
 
       <section className="mt-5 block lg:hidden">
         <MobileCategoryNavCarousel categories={navCategories} />
