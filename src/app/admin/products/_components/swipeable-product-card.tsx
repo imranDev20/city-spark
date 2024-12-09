@@ -134,7 +134,7 @@ export default function SwipeableProductCard({
       <div className="mb-2 relative">
         {/* Delete Button - Behind the card */}
         <div className="absolute inset-y-0 right-0 rounded-xl flex items-stretch">
-          <animated.div
+          {/* <animated.div
             style={{
               opacity: x.to([SWIPE_DISTANCE, -40, 0], [1, 0.5, 0]),
             }}
@@ -147,11 +147,11 @@ export default function SwipeableProductCard({
               <Trash2 className="w-6 h-6 mb-1" />
               <span className="text-sm font-medium">Delete</span>
             </button>
-          </animated.div>
+          </animated.div> */}
         </div>
 
         {/* Swipeable Card */}
-        <animated.div
+        {/* <animated.div
           {...bind()}
           style={{
             x,
@@ -255,7 +255,7 @@ export default function SwipeableProductCard({
               </div>
             </Card>
           </Link>
-        </animated.div>
+        </animated.div> */}
       </div>
 
       <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>

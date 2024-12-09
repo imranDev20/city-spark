@@ -1,8 +1,9 @@
+"use client";
+
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "../../lib/utils";
-
+import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
 const buttonVariants = cva(
@@ -41,60 +42,49 @@ export interface ButtonProps
   loading?: boolean;
 }
 
+const LoadingSpinner = ({
+  show,
+  hasContent,
+}: {
+  show: boolean;
+  hasContent: boolean;
+}) => {
+  if (!show) return null;
+  return (
+    <Loader2 className={cn("h-4 w-4 animate-spin", hasContent && "mr-2")} />
+  );
+};
+
 const LoadingButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     { className, variant, size, asChild = false, loading, children, ...props },
     ref
   ) => {
-    if (asChild) {
-      return (
-        <Slot ref={ref} {...props}>
-          <>
-            {React.Children.map(
-              children as React.ReactElement,
-              (child: React.ReactElement) => {
-                return React.cloneElement(child, {
-                  className: cn(buttonVariants({ variant, size }), className),
-                  children: (
-                    <>
-                      {loading && (
-                        <Loader2
-                          className={cn(
-                            "h-4 w-4 animate-spin",
-                            children && "mr-2"
-                          )}
-                        />
-                      )}
-                      {child.props.children}
-                    </>
-                  ),
-                });
-              }
-            )}
-          </>
-        </Slot>
-      );
-    }
+    const buttonClassNames = cn(buttonVariants({ variant, size }), className);
+    const hasContent = Boolean(children);
+
+    const content = (
+      <>
+        <LoadingSpinner show={loading ?? false} hasContent={hasContent} />
+        {children}
+      </>
+    );
+
+    const Component = asChild ? Slot : "button";
 
     return (
-      <button
-        className={cn(buttonVariants({ variant, size, className }))}
-        disabled={loading}
+      <Component
         ref={ref}
+        className={buttonClassNames}
+        disabled={loading}
         {...props}
       >
-        <>
-          {loading && (
-            <Loader2
-              className={cn("h-4 w-4 animate-spin", children && "mr-2")}
-            />
-          )}
-          {children}
-        </>
-      </button>
+        {content}
+      </Component>
     );
   }
 );
+
 LoadingButton.displayName = "LoadingButton";
 
 export { LoadingButton, buttonVariants };
