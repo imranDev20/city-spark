@@ -66,3 +66,30 @@ export async function fetchBrands(
     throw new Error("Failed to fetch brands");
   }
 }
+
+export type BrandWithDetails = Prisma.BrandGetPayload<{
+  include: {
+    products: true;
+  };
+}>;
+
+export async function fetchBrandDetails(
+  brandId: string
+): Promise<BrandWithDetails> {
+  try {
+    const { data } = await axios.get(`/api/brands/${brandId}`);
+
+    if (!data.success) {
+      throw new Error(data.message || "Failed to fetch brand details");
+    }
+
+    return data.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch brand details"
+      );
+    }
+    throw error;
+  }
+}
