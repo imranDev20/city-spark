@@ -31,6 +31,7 @@ import CategoriesSection from "./categories-section";
 import ProductImagesSection from "./product-images-section";
 import ProductStatusSection from "./product-status-section";
 import ProductFormHeader from "./product-form-header";
+// import ManualsSection from "./manuals-section";
 
 type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -317,15 +318,8 @@ export default function ProductForm({
               <ProductStatusSection />
               <ProductImagesSection initialImages={productDetails?.images} />
 
-              <Card x-chunk="dashboard-07-chunk-5">
-                <CardHeader>
-                  <CardTitle>Manuals & Instructions</CardTitle>
-                  <CardDescription>
-                    Archive this product if it&apos;s no longer available.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent></CardContent>
-              </Card>
+              {/* <ManualsSection /> */}
+
               <Card x-chunk="dashboard-07-chunk-5">
                 <CardHeader>
                   <CardTitle>Archive Product</CardTitle>

@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+type RouteParams = Promise<{
+  brand_id: string;
+}>;
+
 export async function GET(
   req: NextRequest,
-  { params }: { params: { brand_id: string } }
+  { params }: { params: RouteParams }
 ) {
   try {
+    const resolvedParams = await params;
+
     const brand = await prisma.brand.findUnique({
       where: {
-        id: params.brand_id,
+        id: resolvedParams.brand_id,
       },
       include: {
         products: true,
