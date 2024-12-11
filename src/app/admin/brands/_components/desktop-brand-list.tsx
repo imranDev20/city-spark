@@ -37,8 +37,9 @@ import {
 import BrandsTableRow from "./brand-table-row";
 import { fetchBrands, type FetchBrandsParams } from "@/services/admin-brands";
 import { Status } from "@prisma/client";
+import BrandsLoading from "./brands-loading";
 
-export default function BrandList() {
+export default function DesktopBrandList() {
   const searchParams = useSearchParams();
   const [selectedBrands, setSelectedBrands] = useState<Set<string>>(new Set());
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -88,7 +89,7 @@ export default function BrandList() {
   };
 
   if (isLoading || isFetching) {
-    return <div>Loading...</div>;
+    return <BrandsLoading />;
   }
 
   if (isError) {

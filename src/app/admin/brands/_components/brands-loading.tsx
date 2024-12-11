@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 
-export default function ProductsLoading() {
+export default function BrandsLoading() {
   return (
     <div className="space-y-4 hidden lg:block">
       <Card className="shadow-sm border-gray-200 overflow-hidden">
@@ -23,15 +23,17 @@ export default function ProductsLoading() {
                     <Checkbox disabled />
                   </TableHead>
                   <TableHead className="w-24 py-5">
-                    <span className="sr-only">Image</span>
+                    <span className="sr-only">Logo</span>
                   </TableHead>
                   <TableHead className="w-[40%] min-w-[300px]">
-                    Product Details
+                    Brand Details
                   </TableHead>
                   <TableHead className="w-[15%] min-w-[120px]">
                     Status
                   </TableHead>
-                  <TableHead className="w-[15%] min-w-[140px]">Price</TableHead>
+                  <TableHead className="w-[15%] min-w-[100px]">
+                    Products
+                  </TableHead>
                   <TableHead className="w-[15%] min-w-[140px]">
                     Last Updated
                   </TableHead>
@@ -60,10 +62,7 @@ export default function ProductsLoading() {
                       <Skeleton className="h-8 w-24 rounded-full" />
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col gap-2">
-                        <Skeleton className="h-4 w-20" />
-                        <Skeleton className="h-4 w-24" />
-                      </div>
+                      <Skeleton className="h-4 w-12" />
                     </TableCell>
                     <TableCell>
                       <Skeleton className="h-4 w-24" />

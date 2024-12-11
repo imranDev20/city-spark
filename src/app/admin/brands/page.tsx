@@ -1,9 +1,7 @@
-import { Suspense } from "react";
 import { ContentLayout } from "../_components/content-layout";
 import DynamicBreadcrumb from "../_components/dynamic-breadcrumb";
-import BrandList from "./_components/brand-list";
+import DesktopBrandList from "./_components/desktop-brand-list";
 import BrandTableHeader from "./_components/brand-table-header";
-import BrandsLoading from "./_components/brands-loadint";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -19,9 +17,7 @@ export default async function AdminBrandsPage() {
     <ContentLayout title="Brands">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <BrandTableHeader />
-      <Suspense fallback={<BrandsLoading />}>
-        <BrandList />
-      </Suspense>
+      <DesktopBrandList />
     </ContentLayout>
   );
 }

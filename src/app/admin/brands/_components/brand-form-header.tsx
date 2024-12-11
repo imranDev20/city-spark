@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/ui/loading-button";
-import { Check, ChevronLeft, Globe, X } from "lucide-react";
+import { Check, ChevronLeft, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
 import { Prisma } from "@prisma/client";
@@ -69,25 +69,6 @@ const BrandFormHeader: React.FC<BrandFormHeaderProps> = ({
               <h1 className="text-xl font-semibold tracking-tight truncate">
                 {brandDetails ? `Edit ${brandDetails.name}` : "Add New Brand"}
               </h1>
-
-              <div className="flex items-center space-x-4 mt-2">
-                {brandDetails?.website && (
-                  <Link
-                    href={brandDetails.website}
-                    className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Globe className="h-4 w-4 mr-1.5" />
-                    Visit Website
-                  </Link>
-                )}
-                {brandDetails?.products && (
-                  <span className="text-sm text-muted-foreground">
-                    {brandDetails.products.length} Products
-                  </span>
-                )}
-              </div>
             </div>
 
             <div className="hidden items-center gap-2 md:flex">
