@@ -4,42 +4,19 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/ui/loading-button";
-import { Box, Check, ChevronLeft, Eye, Globe, X } from "lucide-react";
+import { Check, ChevronLeft, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
-import { customSlugify } from "@/lib/functions";
-import { Prisma } from "@prisma/client";
 import { cn } from "@/lib/utils";
+import { Template } from "@prisma/client";
 
-type ProductWithRelations = Prisma.ProductGetPayload<{
-  include: {
-    images: true;
-    brand: true;
-    features: true;
-    inventory: {
-      select: {
-        id: true;
-      };
-    };
-    productTemplate: {
-      include: {
-        fields: {
-          include: {
-            templateField: true;
-          };
-        };
-      };
-    };
-  };
-}>;
-
-type ProductFormHeaderProps = {
-  productDetails?: ProductWithRelations | null;
+type TemplateFormHeaderProps = {
+  templateDetails?: Template | null;
   isPending: boolean;
 };
 
-const ProductFormHeader: React.FC<ProductFormHeaderProps> = ({
-  productDetails,
+const TemplateFormHeader: React.FC<TemplateFormHeaderProps> = ({
+  templateDetails,
   isPending,
 }) => {
   const {
@@ -56,12 +33,6 @@ const ProductFormHeader: React.FC<ProductFormHeaderProps> = ({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const productStoreUrl = productDetails?.inventory?.id
-    ? `/products/p/${customSlugify(productDetails.name)}/p/${
-        productDetails.inventory.id
-      }`
-    : null;
-
   return (
     <>
       <div
@@ -77,7 +48,7 @@ const ProductFormHeader: React.FC<ProductFormHeaderProps> = ({
           )}
         >
           <div className="flex items-center gap-4">
-            <Link href="/admin/products">
+            <Link href="/admin/templates">
               <Button variant="outline" size="icon" className="h-9 w-9">
                 <ChevronLeft className="h-5 w-5" />
                 <span className="sr-only">Back</span>
@@ -86,52 +57,21 @@ const ProductFormHeader: React.FC<ProductFormHeaderProps> = ({
 
             <div className="flex-1 min-w-0">
               <h1 className="text-xl font-semibold tracking-tight truncate">
-                {productDetails
-                  ? `Edit ${productDetails.name}`
-                  : "Add New Product"}
+                {templateDetails
+                  ? `Edit ${templateDetails.name}`
+                  : "Add New Template"}
               </h1>
 
               <div className="flex items-center space-x-4 mt-2">
-                {productStoreUrl && (
-                  <Link
-                    href={productStoreUrl}
-                    className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Eye className="h-4 w-4 mr-1.5" />
-                    View in store
-                  </Link>
-                )}
-
-                {productDetails?.inventory?.id && (
-                  <Link
-                    href={`/admin/inventory/${productDetails?.inventory?.id}`}
-                    className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Box className="h-4 w-4 mr-1.5" />
-                    View Inventory
-                  </Link>
-                )}
-
-                {productDetails?.manufacturerLink && (
-                  <Link
-                    href={productDetails.manufacturerLink}
-                    className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Globe className="h-4 w-4 mr-1.5" />
-                    Manufacturer Website
-                  </Link>
-                )}
+                <span className="text-sm text-muted-foreground">
+                  {templateDetails?.status === "ACTIVE" ? "Active" : "Draft"}{" "}
+                  Template
+                </span>
               </div>
             </div>
 
             <div className="hidden items-center gap-2 md:flex">
-              <Link href="/admin/products">
+              <Link href="/admin/templates">
                 <Button type="button" variant="outline" className="h-9">
                   <X className="mr-2 h-4 w-4" />
                   Cancel
@@ -144,7 +84,7 @@ const ProductFormHeader: React.FC<ProductFormHeaderProps> = ({
                 loading={isPending}
               >
                 {!isPending && <Check className="mr-2 h-4 w-4" />}
-                {productDetails ? "Update Product" : "Save Product"}
+                {templateDetails ? "Update Template" : "Save Template"}
               </LoadingButton>
             </div>
           </div>
@@ -167,4 +107,4 @@ const ProductFormHeader: React.FC<ProductFormHeaderProps> = ({
   );
 };
 
-export default ProductFormHeader;
+export default TemplateFormHeader;

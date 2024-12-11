@@ -1,40 +1,91 @@
 import axios from "axios";
-import { Prisma } from "@prisma/client";
+import { Prisma, Status } from "@prisma/client";
 
 /**
- * Type definition for a template with its related fields
+ * Type definition for a template with its related fields and counts
  */
-export type TemplateWithFields = Prisma.TemplateGetPayload<{
+export type TemplateWithDetails = Prisma.TemplateGetPayload<{
   include: {
     fields: true;
+    _count: {
+      select: {
+        fields: true;
+      };
+    };
   };
-}>;
+}> & {
+  productCount: number;
+};
 
 /**
- * Fetches all templates with their fields
+ * Parameters for fetching templates with pagination, sorting and filtering
+ */
+export interface FetchTemplatesParams {
+  page?: string;
+  page_size?: string;
+  search?: string;
+  sort_by?: string;
+  sort_order?: "asc" | "desc";
+  filter_status?: string;
+}
+
+/**
+ * Response structure for paginated templates
+ */
+export interface TemplatesResponse {
+  templates: TemplateWithDetails[];
+  pagination: {
+    currentPage: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
+}
+
+/**
+ * Fetches templates with pagination, sorting, and filtering support
  *
- * @returns Promise containing array of templates with their fields
+ * @param params - Query parameters for filtering and pagination
+ * @returns Promise containing paginated templates and pagination metadata
  *
  * @throws Will throw an error if the API request fails
  *
  * @example
  * ```typescript
- * const templates = await fetchTemplates();
+ * const { templates, pagination } = await fetchTemplates({
+ *   page: "1",
+ *   page_size: "10",
+ *   sort_by: "createdAt",
+ *   sort_order: "desc",
+ *   filter_status: "ACTIVE"
+ * });
  * ```
  */
-export async function fetchTemplates(): Promise<TemplateWithFields[]> {
+export async function fetchTemplates(
+  params: FetchTemplatesParams
+): Promise<TemplatesResponse> {
   try {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) searchParams.append(key, value);
+    });
+
     const { data } = await axios.get<{
       success: boolean;
       message: string;
-      data: TemplateWithFields[];
-    }>("/api/templates");
+      data: TemplateWithDetails[];
+      pagination: TemplatesResponse["pagination"];
+    }>(`/api/templates?${searchParams.toString()}`);
 
     if (!data.success || !data.data) {
       throw new Error(data.message || "Failed to fetch templates");
     }
 
-    return data.data;
+    return {
+      templates: data.data,
+      pagination: data.pagination,
+    };
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
@@ -62,12 +113,12 @@ export async function fetchTemplates(): Promise<TemplateWithFields[]> {
  */
 export async function fetchTemplateDetails(
   templateId: string
-): Promise<TemplateWithFields> {
+): Promise<TemplateWithDetails> {
   try {
     const { data } = await axios.get<{
       success: boolean;
       message: string;
-      data: TemplateWithFields;
+      data: TemplateWithDetails;
     }>(`/api/templates/${templateId}`);
 
     if (!data.success || !data.data) {

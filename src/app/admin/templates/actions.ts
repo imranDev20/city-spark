@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { TemplateFormInputType } from "./schema";
-import { Prisma, Status } from "@prisma/client";
+import { FieldType, Prisma } from "@prisma/client";
 
 export async function createTemplate(data: TemplateFormInputType) {
   try {
@@ -22,9 +22,7 @@ export async function createTemplate(data: TemplateFormInputType) {
       },
     });
 
-    revalidatePath("/admin/templates");
-    revalidatePath("/admin/products/[product_id]", "page");
-    revalidatePath("/admin/products/new");
+    revalidatePath("/admin", "layout");
 
     return {
       message: "Template created successfully!",
@@ -40,119 +38,104 @@ export async function createTemplate(data: TemplateFormInputType) {
   }
 }
 
-type GetTemplatesParams = {
-  page?: number;
-  page_size?: number;
-  sortBy?: "name" | "createdAt";
-  sortOrder?: "asc" | "desc";
-  filterStatus?: Status;
-  searchTerm?: string;
-};
-
-export const getTemplates = async ({
-  page = 1,
-  page_size = 10,
-  sortBy = "createdAt",
-  sortOrder = "desc",
-  filterStatus,
-  searchTerm,
-}: GetTemplatesParams = {}) => {
-  try {
-    const skip = (page - 1) * page_size;
-
-    let whereClause: Prisma.TemplateWhereInput = {};
-
-    if (filterStatus) {
-      whereClause.status = filterStatus;
-    }
-
-    if (searchTerm) {
-      whereClause.OR = [
-        { name: { contains: searchTerm, mode: "insensitive" } },
-        { description: { contains: searchTerm, mode: "insensitive" } },
-      ];
-    }
-
-    const [templates, totalCount] = await Promise.all([
-      prisma.template.findMany({
-        where: whereClause,
-        skip,
-        take: page_size,
-        orderBy: { [sortBy]: sortOrder },
-      }),
-      prisma.template.count({ where: whereClause }),
-    ]);
-
-    const totalPages = Math.ceil(totalCount / page_size);
-
+export async function deleteTemplates(templateIds: string[]) {
+  if (!templateIds?.length) {
     return {
-      templates,
-      pagination: {
-        currentPage: page,
-        page_size,
-        totalCount,
-        totalPages,
-      },
+      message: "At least one template ID is required",
+      success: false,
     };
-  } catch (error) {
-    console.error("Error fetching templates:", error);
-    throw new Error("Failed to fetch templates");
   }
-};
 
-export async function deleteTemplate(templateId: string) {
   try {
-    if (!templateId) {
+    // First check for any templates with associated product templates
+    const templatesWithProducts = await prisma.template.findMany({
+      where: {
+        id: {
+          in: templateIds,
+        },
+        productTemplates: {
+          some: {
+            products: {
+              some: {},
+            },
+          },
+        },
+      },
+      include: {
+        productTemplates: {
+          include: {
+            products: true,
+          },
+        },
+      },
+    });
+
+    // If any templates have associated products, return an error
+    if (templatesWithProducts.length > 0) {
+      const templateNames = templatesWithProducts
+        .map((t) => `"${t.name}"`)
+        .join(", ");
       return {
-        message: "Template ID is required",
+        message: `Cannot delete ${
+          templatesWithProducts.length > 1 ? "templates" : "template"
+        } ${templateNames} because ${
+          templatesWithProducts.length > 1 ? "they are" : "it is"
+        } being used by one or more products. Please remove the product associations first.`,
         success: false,
       };
     }
 
-    await prisma.template.delete({
+    // If no associations exist, proceed with deletion
+    await prisma.template.deleteMany({
       where: {
-        id: templateId,
+        id: {
+          in: templateIds,
+        },
       },
     });
 
-    revalidatePath("/admin/templates");
-    revalidatePath("/admin/products/[product_id]", "page");
-    revalidatePath("/admin/products");
+    revalidatePath("/admin", "layout");
 
     return {
-      message: "Template deleted successfully!",
+      message:
+        templateIds.length === 1
+          ? "Template deleted successfully!"
+          : `${templateIds.length} templates deleted successfully!`,
       success: true,
     };
   } catch (error) {
-    console.error("Error deleting template:", error);
+    console.error("Error deleting templates:", error);
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2003"
+    ) {
+      return {
+        message:
+          "Cannot delete templates that have associated products. Please remove all product associations first.",
+        success: false,
+      };
+    }
+
     return {
-      message: "An error occurred while deleting the template.",
+      message: "An error occurred while deleting the template(s).",
       success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
 
-export const getTemplateById = async (templateId: string) => {
-  if (!templateId) {
-    console.error("No template Id");
-    return null;
-  }
+type FieldToUpdate = {
+  fieldId: string;
+  fieldName: string;
+  fieldType: FieldType;
+  fieldOptions: string | null;
+};
 
-  try {
-    const template = await prisma.template.findUnique({
-      where: {
-        id: templateId,
-      },
-      include: {
-        fields: true,
-      },
-    });
-
-    return template;
-  } catch (error) {
-    console.error("Error fetching templates:", error);
-    throw new Error("Failed to fetch templates");
-  }
+type FieldToCreate = {
+  fieldName: string;
+  fieldType: FieldType;
+  fieldOptions: string | null;
 };
 
 export async function updateTemplate(
@@ -160,73 +143,194 @@ export async function updateTemplate(
   data: TemplateFormInputType
 ) {
   try {
-    // First, fetch the existing template with its fields
+    console.log("Starting template update for templateId:", templateId);
+    console.log("Update data received:", data);
+
     const existingTemplate = await prisma.template.findUnique({
       where: { id: templateId },
-      include: { fields: true },
+      include: {
+        fields: true,
+        productTemplates: {
+          include: {
+            fields: true,
+          },
+        },
+      },
     });
 
     if (!existingTemplate) {
+      console.log("Template not found:", templateId);
       throw new Error("Template not found");
     }
 
-    // Prepare arrays for update, create, and delete operations
-    const fieldsToUpdate = [];
-    const fieldsToCreate = [];
-    const fieldIdsToKeep = new Set();
+    console.log("Existing template found:", {
+      id: existingTemplate.id,
+      name: existingTemplate.name,
+      fieldCount: existingTemplate.fields.length,
+      productTemplateCount: existingTemplate.productTemplates.length,
+    });
 
-    // Categorize fields
+    const fieldsToUpdate: FieldToUpdate[] = [];
+    const fieldsToCreate: FieldToCreate[] = [];
+    const fieldIdsToKeep = new Set<string>();
+
+    // Log incoming field data
+    console.log("Processing fields from form data:", data.fields);
+
     for (const field of data.fields) {
       if (field.fieldId) {
-        fieldsToUpdate.push(field);
+        console.log("Field to update:", field);
+        fieldsToUpdate.push({
+          fieldId: field.fieldId,
+          fieldName: field.fieldName,
+          fieldType: field.fieldType,
+          fieldOptions: field.fieldOptions ?? "",
+        });
         fieldIdsToKeep.add(field.fieldId);
       } else {
-        fieldsToCreate.push(field);
+        console.log("New field to create:", field);
+        fieldsToCreate.push({
+          fieldName: field.fieldName,
+          fieldType: field.fieldType,
+          fieldOptions: field.fieldOptions ?? "",
+        });
       }
     }
 
-    // Identify fields to delete
     const fieldIdsToDelete = existingTemplate.fields
       .filter((field) => !fieldIdsToKeep.has(field.id))
       .map((field) => field.id);
 
-    // Perform the update
-    const updatedTemplate = await prisma.template.update({
-      where: { id: templateId },
-      data: {
-        name: data.name,
-        description: data.description,
-        status: data.status,
-        fields: {
-          update: fieldsToUpdate.map((field) => ({
-            where: { id: field.fieldId },
-            data: {
-              fieldName: field.fieldName,
-              fieldType: field.fieldType,
-              fieldOptions: field.fieldOptions,
-            },
-          })),
-          create: fieldsToCreate,
-          deleteMany: { id: { in: fieldIdsToDelete } },
-        },
-      },
-      include: { fields: true },
+    console.log("Fields analysis:", {
+      toUpdate: fieldsToUpdate.length,
+      toCreate: fieldsToCreate.length,
+      toDelete: fieldIdsToDelete.length,
+      idsToDelete: fieldIdsToDelete,
     });
 
-    revalidatePath("/admin/templates");
-    revalidatePath(`/admin/templates/${updatedTemplate.id}`);
-    revalidatePath("/admin/products/[product_id]", "page");
-    revalidatePath("/admin/products/new");
+    const result = await prisma.$transaction(async (tx) => {
+      console.log("Starting database transaction");
+
+      // 1. Update template
+      console.log("Updating main template...");
+      const updatedTemplate = await tx.template.update({
+        where: { id: templateId },
+        data: {
+          name: data.name,
+          description: data.description,
+          status: data.status,
+          fields: {
+            update: fieldsToUpdate.map((field) => ({
+              where: { id: field.fieldId },
+              data: {
+                fieldName: field.fieldName,
+                fieldType: field.fieldType,
+                fieldOptions: field.fieldOptions,
+              },
+            })),
+            create: fieldsToCreate,
+            deleteMany: { id: { in: fieldIdsToDelete } },
+          },
+        },
+        include: { fields: true },
+      });
+
+      console.log("Template updated successfully:", {
+        id: updatedTemplate.id,
+        updatedFieldCount: updatedTemplate.fields.length,
+      });
+
+      // 2. Update ProductTemplates
+      console.log("Starting product templates update...");
+      for (const productTemplate of existingTemplate.productTemplates) {
+        console.log("Processing product template:", productTemplate.id);
+
+        // Handle deletions
+        if (fieldIdsToDelete.length > 0) {
+          console.log(
+            "Deleting fields from product template:",
+            fieldIdsToDelete
+          );
+          await tx.productTemplateField.deleteMany({
+            where: {
+              productTemplateId: productTemplate.id,
+              templateFieldId: { in: fieldIdsToDelete },
+            },
+          });
+        }
+
+        // Handle updates
+        for (const field of fieldsToUpdate) {
+          console.log("Updating field in product template:", field);
+          await tx.productTemplateField.updateMany({
+            where: {
+              productTemplateId: productTemplate.id,
+              templateFieldId: field.fieldId,
+            },
+            data: {
+              templateFieldId: field.fieldId,
+            },
+          });
+        }
+
+        // Handle new fields
+        if (fieldsToCreate.length > 0) {
+          console.log("Creating new fields in product template");
+          const newTemplateFields = await tx.templateField.findMany({
+            where: {
+              templateId,
+              fieldName: { in: fieldsToCreate.map((f) => f.fieldName) },
+            },
+          });
+
+          console.log("New template fields found:", newTemplateFields.length);
+
+          await tx.productTemplateField.createMany({
+            data: newTemplateFields.map((templateField) => ({
+              productTemplateId: productTemplate.id,
+              templateFieldId: templateField.id,
+              fieldValue: null,
+            })),
+          });
+        }
+      }
+
+      return updatedTemplate;
+    });
+
+    console.log("Transaction completed successfully");
+    revalidatePath("/", "layout");
 
     return {
-      message: "Template updated successfully!",
-      data: updatedTemplate,
+      message:
+        "Template and associated product templates updated successfully!",
+      data: result,
       success: true,
     };
   } catch (error) {
-    console.error("Error updating template:", error);
+    console.error("Detailed error in updateTemplate:", error);
+
+    // Enhanced error logging
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      console.error("Prisma error details:", {
+        code: error.code,
+        meta: error.meta,
+        message: error.message,
+      });
+
+      if (error.code === "P2002") {
+        return {
+          message: "A template with this name already exists.",
+          success: false,
+        };
+      }
+    }
+
     return {
-      message: "An error occurred while updating the template.",
+      message:
+        error instanceof Error
+          ? error.message
+          : "An error occurred while updating the template.",
       success: false,
     };
   }
