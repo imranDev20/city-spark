@@ -14,8 +14,10 @@ const breadcrumbItems = [
 
 export default function AdminCreateTemplatePage() {
   return (
-    <ContentLayout title="Create Template">
-      <DynamicBreadcrumb items={breadcrumbItems} />
+    <ContentLayout title="Create Template" isContainer={false}>
+      <div className="container pt-8 pb-4 px-4 sm:px-8">
+        <DynamicBreadcrumb items={breadcrumbItems} />
+      </div>
       <TemplateForm />
     </ContentLayout>
   );

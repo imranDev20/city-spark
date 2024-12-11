@@ -15,12 +15,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Edit, Trash2, Eye, Archive, Copy } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Eye, Archive } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useTransition } from "react";
 import { deleteTemplates } from "../actions";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { statusMap } from "@/app/data";
 
 type TemplateWithRelations = Prisma.TemplateGetPayload<{
   include: {
@@ -51,7 +52,6 @@ export default function TemplateTableRow({
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -88,12 +88,6 @@ export default function TemplateTableRow({
     });
   };
 
-  const statusColorMap = {
-    DRAFT: "bg-gray-100 text-gray-800",
-    ACTIVE: "bg-green-100 text-green-800",
-    ARCHIVED: "bg-yellow-100 text-yellow-800",
-  };
-
   return (
     <TableRow className={cn("group", isSelected && "bg-primary/5")}>
       <TableCell
@@ -126,11 +120,19 @@ export default function TemplateTableRow({
         />
         <div
           className={cn(
-            "inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium",
-            statusColorMap[template.status || "DRAFT"]
+            "inline-flex items-center px-3 py-1.5 rounded-full",
+            statusMap[template.status || "DRAFT"].background
           )}
         >
-          {template.status}
+          <div
+            className={cn(
+              "h-1.5 w-1.5 rounded-full mr-2",
+              statusMap[template.status || "DRAFT"].indicator
+            )}
+          />
+          <span className="text-sm font-medium">
+            {statusMap[template.status || "DRAFT"].label}
+          </span>
         </div>
       </TableCell>
       <TableCell className="relative">
