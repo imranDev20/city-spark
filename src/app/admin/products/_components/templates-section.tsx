@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 
 import {
   FormControl,
@@ -51,23 +51,11 @@ import { Prisma } from "@prisma/client";
 import {
   fetchTemplateDetails,
   fetchTemplates,
+  TemplateWithDetails,
+  TemplatesResponse,
 } from "@/services/admin-templates";
-
-interface Template {
-  id: string;
-  name: string;
-}
-
-interface TemplateField {
-  id: string;
-  fieldName: string;
-  fieldType: FieldType;
-  fieldOptions: string | null;
-}
-
-interface TemplateDetails {
-  fields: TemplateField[];
-}
+import { useDebounce } from "@/hooks/use-debounce";
+import { CommandLoading } from "cmdk";
 
 type ProductWithTemplate = Prisma.ProductGetPayload<{
   include: {
@@ -91,30 +79,60 @@ export default function TemplatesSection({
   productDetails,
 }: TemplatesSectionProps) {
   const [openTemplates, setOpenTemplates] = useState(false);
-  const { control, reset, getValues, watch } =
-    useFormContext<ProductFormInputType>();
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  const { control, reset, getValues } = useFormContext<ProductFormInputType>();
   const templateId = useWatch({ control, name: "templateId" });
 
-  const { data: templates, isPending: isTemplatesPending } = useQuery<
-    Template[]
-  >({
-    queryKey: ["templates"],
-    queryFn: () => fetchTemplates(),
+  // Templates infinite query
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+    isLoading,
+  } = useInfiniteQuery<TemplatesResponse>({
+    queryKey: ["templates", debouncedSearch],
+    initialPageParam: 1,
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await fetchTemplates({
+        sort_by: "name",
+        sort_order: "asc",
+        filter_status: "ACTIVE",
+        page: String(pageParam),
+        page_size: "10",
+        search: debouncedSearch,
+      });
+      return response;
+    },
+    getNextPageParam: (lastPage) => {
+      if (lastPage.pagination.currentPage < lastPage.pagination.totalPages) {
+        return lastPage.pagination.currentPage + 1;
+      }
+      return undefined;
+    },
   });
 
+  // Template details query
   const { data: templateDetails, isLoading: isTemplateDetailsLoading } =
-    useQuery<TemplateDetails>({
+    useQuery({
       queryKey: ["templateDetails", templateId],
       queryFn: () => {
-        // Only fetch if templateId exists
         if (!templateId) {
           throw new Error("Template ID is required");
         }
         return fetchTemplateDetails(templateId);
       },
-      enabled: !!templateId, // Query will only run if templateId exists
+      enabled: !!templateId,
     });
 
+  // Memoize the flattened templates array
+  const templates = useMemo(() => {
+    return data?.pages.flatMap((page) => page.templates) ?? [];
+  }, [data?.pages]);
+
+  // Effect to update form fields when template details change
   useEffect(() => {
     if (templateDetails) {
       if (
@@ -137,7 +155,7 @@ export default function TemplatesSection({
       } else {
         reset({
           ...getValues(),
-          productTemplateFields: templateDetails.fields.map((field, index) => ({
+          productTemplateFields: templateDetails.fields.map((field) => ({
             id: field.id,
             fieldId: field.id,
             fieldName: field.fieldName,
@@ -149,15 +167,33 @@ export default function TemplatesSection({
     }
   }, [reset, getValues, templateDetails, productDetails, templateId]);
 
+  // Load more pages until we find the selected template
+  useEffect(() => {
+    const findSelectedTemplate = async () => {
+      if (!templateId || !openTemplates) return;
+      if (templates.some((template) => template.id === templateId)) return;
+
+      if (hasNextPage) {
+        await fetchNextPage();
+      }
+    };
+
+    findSelectedTemplate();
+  }, [templateId, templates, hasNextPage, fetchNextPage, openTemplates]);
+
   const { fields: templateFields } = useFieldArray({
     control,
     name: "productTemplateFields",
   });
 
+  // Selected template from the flattened list
+  const selectedTemplate = useMemo(() => {
+    if (!templateId) return null;
+    return templates.find((template) => template.id === templateId);
+  }, [templateId, templates]);
+
   return (
     <Card>
-      {/* Rest of the component remains the same */}
-      {/* Template Selection Section */}
       <CardHeader>
         <CardTitle>Templates</CardTitle>
         <CardDescription>
@@ -183,47 +219,75 @@ export default function TemplatesSection({
                           variant="outline"
                           role="combobox"
                           className="justify-between"
-                          disabled={isTemplatesPending}
+                          disabled={isLoading}
                         >
-                          {field.value ? (
-                            templates?.find(
-                              (template) => template.id === field.value
-                            )?.name
+                          {isLoading ? (
+                            "Loading..."
+                          ) : selectedTemplate ? (
+                            selectedTemplate.name
                           ) : (
                             <p className="text-muted-foreground">
                               Select a template
                             </p>
                           )}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          {isLoading ? (
+                            <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          )}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="p-0 popover-content-width-same-as-its-trigger">
-                        <Command>
-                          <CommandInput placeholder="Search templates..." />
+                        <Command shouldFilter={false}>
+                          <CommandInput
+                            placeholder="Search templates..."
+                            value={search}
+                            onValueChange={setSearch}
+                          />
                           <CommandList>
                             <CommandEmpty>No template found.</CommandEmpty>
-                            <CommandGroup>
-                              {templates?.map((template) => (
-                                <CommandItem
-                                  key={template.id}
-                                  value={template.name}
-                                  onSelect={() => {
-                                    field.onChange(template.id);
-                                    setOpenTemplates(false);
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      field.value === template.id
-                                        ? "opacity-100"
-                                        : "opacity-0"
+                            {isPending ? (
+                              <CommandLoading>
+                                Loading templates...
+                              </CommandLoading>
+                            ) : (
+                              <CommandGroup>
+                                {templates?.map((template) => (
+                                  <CommandItem
+                                    key={template.id}
+                                    value={template.name}
+                                    onSelect={() => {
+                                      field.onChange(template.id);
+                                      setOpenTemplates(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        field.value === template.id
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                    {template.name}
+                                  </CommandItem>
+                                ))}
+                                {hasNextPage && (
+                                  <Button
+                                    variant="ghost"
+                                    className="w-full"
+                                    onClick={() => fetchNextPage()}
+                                    disabled={isFetchingNextPage}
+                                  >
+                                    {isFetchingNextPage ? (
+                                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                      "Load more"
                                     )}
-                                  />
-                                  {template.name}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
+                                  </Button>
+                                )}
+                              </CommandGroup>
+                            )}
                           </CommandList>
                         </Command>
                       </PopoverContent>

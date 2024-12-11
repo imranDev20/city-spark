@@ -264,7 +264,7 @@ export default function FilterSidebar({
                 onClick={() => toggleFilter(option.id)}
               >
                 <span className="font-semibold text-gray-900 capitalize">
-                  {option.name.toLowerCase()}
+                  {option.name}
                 </span>
                 <ChevronDown
                   className={`w-5 h-5 text-gray-500 transition-all duration-200 ${

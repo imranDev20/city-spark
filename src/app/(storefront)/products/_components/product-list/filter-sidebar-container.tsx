@@ -1,5 +1,5 @@
 import React from "react";
-import FilterSidebar from "../filter-sidebar";
+import FilterSidebar from "./filter-sidebar";
 import { getBrands, getProductFilterOptions } from "../../actions";
 
 type ProductCardsContainerProps = {
