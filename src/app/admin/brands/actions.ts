@@ -88,58 +88,6 @@ interface GetBrandsParams {
   searchTerm?: string;
 }
 
-export const getBrands = async ({
-  page = 1,
-  page_size = 10,
-  sortBy = "createdAt",
-  sortOrder = "desc",
-  filterStatus,
-  searchTerm,
-}: GetBrandsParams = {}) => {
-  try {
-    const skip = (page - 1) * page_size;
-
-    let whereClause: Prisma.BrandWhereInput = {};
-
-    if (filterStatus) {
-      whereClause.status = filterStatus;
-    }
-
-    if (searchTerm) {
-      whereClause.OR = [
-        { name: { contains: searchTerm, mode: "insensitive" } },
-        { description: { contains: searchTerm, mode: "insensitive" } },
-        { countryOfOrigin: { contains: searchTerm, mode: "insensitive" } },
-      ];
-    }
-
-    const [brands, totalCount] = await Promise.all([
-      prisma.brand.findMany({
-        where: whereClause,
-        skip,
-        take: page_size,
-        orderBy: { [sortBy]: sortOrder },
-      }),
-      prisma.brand.count({ where: whereClause }),
-    ]);
-
-    const totalPages = Math.ceil(totalCount / page_size);
-
-    return {
-      brands,
-      pagination: {
-        currentPage: page,
-        page_size,
-        totalCount,
-        totalPages,
-      },
-    };
-  } catch (error) {
-    console.error("Error fetching brands:", error);
-    throw new Error("Failed to fetch brands");
-  }
-};
-
 export async function deleteBrand(brandId: string) {
   if (!brandId) {
     return {
@@ -199,25 +147,6 @@ export async function deleteBrand(brandId: string) {
     };
   }
 }
-
-export const getBrandById = async (brandId: string) => {
-  try {
-    const brand = await prisma.brand.findUnique({
-      where: {
-        id: brandId,
-      },
-    });
-
-    if (!brand) {
-      throw new Error("Brand not found");
-    }
-
-    return brand;
-  } catch (error) {
-    console.error("Error fetching brand:", error);
-    throw new Error("Failed to fetch brand");
-  }
-};
 
 export async function updateBrand(brandId: string, data: BrandFormInputType) {
   try {

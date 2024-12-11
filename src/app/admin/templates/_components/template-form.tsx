@@ -29,7 +29,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Trash2, Plus } from "lucide-react";
+import { Check, Trash2, Plus, ListFilter, Layers } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useTransition } from "react";
 import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
@@ -181,18 +181,33 @@ export default function TemplateForm({ templateDetails }: TemplateFormProps) {
               </Card>
 
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-2xl">Fields & Values</CardTitle>
-                  <CardDescription>
-                    Specify the fields for this template. Add, edit, or remove
-                    fields as needed.
-                  </CardDescription>
+                <CardHeader className="pb-8">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-2xl">
+                        Fields & Values
+                      </CardTitle>
+                      <CardDescription className="mt-2">
+                        Specify the fields for this template. Add, edit, or
+                        remove fields as needed.
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2 py-2 px-4 bg-primary/5 rounded-lg">
+                      <Layers className="w-5 h-5 text-primary/70" />
+                      <span className="font-medium">
+                        {fields.length} Field{fields.length !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
                     {fields.map((field, index) => (
-                      <Fragment key={field.id}>
-                        <div className="grid gap-4 sm:grid-cols-12 items-center">
+                      <div
+                        key={field.id}
+                        className="border border-gray-200 rounded-lg p-6 bg-white"
+                      >
+                        <div className="grid gap-6 sm:grid-cols-12 items-start">
                           <div className="sm:col-span-5">
                             <FormField
                               name={`fields.${index}.fieldName`}
@@ -256,7 +271,7 @@ export default function TemplateForm({ templateDetails }: TemplateFormProps) {
                           </div>
 
                           {watch(`fields.${index}.fieldType`) === "SELECT" && (
-                            <div className="sm:col-span-10 sm:col-start-1">
+                            <div className="sm:col-span-10 sm:col-start-1 mt-4">
                               <FormField
                                 name={`fields.${index}.fieldOptions`}
                                 control={control}
@@ -275,11 +290,7 @@ export default function TemplateForm({ templateDetails }: TemplateFormProps) {
                             </div>
                           )}
                         </div>
-
-                        {index < fields.length - 1 && (
-                          <Separator className="my-6" />
-                        )}
-                      </Fragment>
+                      </div>
                     ))}
 
                     <Button
@@ -292,7 +303,7 @@ export default function TemplateForm({ templateDetails }: TemplateFormProps) {
                           fieldOptions: "",
                         })
                       }
-                      className="mt-4"
+                      className="mt-8"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       Add new field

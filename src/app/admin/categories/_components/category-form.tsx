@@ -117,8 +117,6 @@ export default function CategoryForm({
     });
   };
 
-  console.log(form.formState.errors);
-
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)}>

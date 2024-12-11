@@ -1,35 +1,57 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenu,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import { Prisma } from "@prisma/client";
-import dayjs from "dayjs";
-import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { BrandWithProducts } from "@/services/admin-brands";
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Eye,
+  Archive,
+  Copy,
+} from "lucide-react";
 import Link from "next/link";
 import React, { useTransition } from "react";
 import Image from "next/image";
 import { deleteBrand } from "../actions";
 import PlaceholderImage from "@/images/placeholder-image.png";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { BLUR_DATA_URL } from "@/lib/constants";
+import { statusMap } from "@/app/data";
+import { formatDistance } from "date-fns";
 
-export type BrandWithRelations = Prisma.BrandGetPayload<{}>;
+interface BrandsTableRowProps {
+  brand: BrandWithProducts;
+  isSelected?: boolean;
+  onSelect?: (checked: boolean) => void;
+  showActions?: boolean;
+}
 
 export default function BrandsTableRow({
   brand,
-}: {
-  brand: BrandWithRelations;
-}) {
+  isSelected = false,
+  onSelect,
+  showActions = true,
+}: BrandsTableRowProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const router = useRouter();
 
-  const handleDelete = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -37,15 +59,22 @@ export default function BrandsTableRow({
       const result = await deleteBrand(brand.id);
 
       if (result?.success) {
+        await queryClient.invalidateQueries({
+          queryKey: ["brands"],
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ["brand", brand.id],
+        });
+
         toast({
           title: "Brand Deleted",
-          description: result.message,
+          description: "The brand has been successfully deleted.",
           variant: "success",
         });
       } else {
         toast({
-          title: "Error Deleting Brand",
-          description: result?.message,
+          title: "Error",
+          description: result?.message || "Failed to delete brand",
           variant: "destructive",
         });
       }
@@ -53,68 +82,136 @@ export default function BrandsTableRow({
   };
 
   return (
-    <TableRow className={`${isPending ? "opacity-30" : "opacity-100"}`}>
-      <Link href={`/admin/brands/${brand.id}`} className="contents">
-        <TableCell className="hidden sm:table-cell">
-          {brand?.image ? (
-            <Image
-              alt="Brand Logo"
-              className="aspect-square rounded-md object-cover"
-              height="64"
-              src={brand.image}
-              width="64"
-            />
-          ) : (
-            <Image
-              alt="Brand Logo"
-              className="aspect-square rounded-md object-cover border border-input"
-              height="64"
-              src={PlaceholderImage}
-              loading="lazy"
-              width="64"
-            />
+    <TableRow className={cn("group", isSelected && "bg-primary/5")}>
+      <TableCell
+        className="pl-6 relative z-20"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={(checked) => onSelect?.(checked as boolean)}
+        />
+      </TableCell>
+
+      <TableCell className="w-[0%] relative">
+        <Link
+          href={`/admin/brands/${brand.id}`}
+          className="absolute inset-0 z-10"
+        />
+        <div className="relative h-14 w-14 rounded-lg overflow-hidden bg-gray-50">
+          <Image
+            src={brand.image || PlaceholderImage}
+            alt={brand.name}
+            fill
+            className="object-cover"
+            placeholder="blur"
+            blurDataURL={BLUR_DATA_URL}
+          />
+        </div>
+      </TableCell>
+
+      <TableCell className="min-w-[300px] relative">
+        <Link
+          href={`/admin/brands/${brand.id}`}
+          className="absolute inset-0 z-10"
+        />
+        <div className="flex flex-col">
+          <span className="font-medium text-gray-900">{brand.name}</span>
+          <span className="text-sm text-gray-500 mt-1">
+            {brand.description || "No description"}
+          </span>
+        </div>
+      </TableCell>
+
+      <TableCell className="relative">
+        <Link
+          href={`/admin/brands/${brand.id}`}
+          className="absolute inset-0 z-10"
+        />
+        <div
+          className={cn(
+            "inline-flex items-center px-3 py-1.5 rounded-full",
+            statusMap[brand.status || "DRAFT"].background
           )}
-        </TableCell>
-        <TableCell className="font-medium flex-1">{brand.name}</TableCell>
-        <TableCell className="hidden md:table-cell">{brand.status}</TableCell>
-        <TableCell className="hidden md:table-cell">
-          {brand.countryOfOrigin}
-        </TableCell>
-        <TableCell className="hidden md:table-cell">
-          {dayjs(brand.createdAt).format("DD-MM-YY hh:mm A")}
-        </TableCell>
-        <TableCell>
+        >
+          <div
+            className={cn(
+              "h-1.5 w-1.5 rounded-full mr-2",
+              statusMap[brand.status || "DRAFT"].indicator
+            )}
+          />
+          <span className="text-sm font-medium">
+            {statusMap[brand.status || "DRAFT"].label}
+          </span>
+        </div>
+      </TableCell>
+
+      <TableCell className="relative">
+        <Link
+          href={`/admin/brands/${brand.id}`}
+          className="absolute inset-0 z-10"
+        />
+        <span className="text-base font-medium">{brand._count.products}</span>
+      </TableCell>
+
+      <TableCell className="text-sm text-gray-500 relative">
+        <Link
+          href={`/admin/brands/${brand.id}`}
+          className="absolute inset-0 z-10"
+        />
+        {brand.updatedAt
+          ? formatDistance(new Date(brand.updatedAt), new Date(), {
+              addSuffix: true,
+            })
+          : "Never"}
+      </TableCell>
+
+      <TableCell
+        className="pr-6 relative z-20"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {showActions && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                aria-haspopup="true"
-                size="icon"
                 variant="ghost"
-                onClick={(e) => e.preventDefault()}
+                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Toggle menu</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-[160px]">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = `/admin/brands/${brand.id}`;
-                }}
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href={`/admin/brands/${brand.id}`}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  View Details
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDelete}>
+              <DropdownMenuItem asChild>
+                <Link href={`/admin/brands/${brand.id}`}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit Brand
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Archive className="mr-2 h-4 w-4" />
+                Archive Brand
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-red-600"
+                onClick={handleDelete}
+                disabled={isPending}
+              >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Delete
+                Delete Brand
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </TableCell>
-      </Link>
+        )}
+      </TableCell>
     </TableRow>
   );
 }

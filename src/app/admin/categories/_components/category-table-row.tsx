@@ -26,6 +26,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useTransition } from "react";
 import { deleteCategory } from "../actions";
+import { useQueryClient } from "@tanstack/react-query";
 
 export type CategoryWithRelations = Prisma.CategoryGetPayload<{
   include: {
@@ -42,6 +43,7 @@ export default function CategoriesTableRow({
 }) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -51,6 +53,8 @@ export default function CategoriesTableRow({
       const result = await deleteCategory(category.id);
 
       if (result?.success) {
+        await queryClient.invalidateQueries();
+
         toast({
           title: "Category Deleted",
           description: result.message,

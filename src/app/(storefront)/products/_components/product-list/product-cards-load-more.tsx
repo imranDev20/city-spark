@@ -7,7 +7,6 @@ import ProductCard from "@/app/(storefront)/_components/product-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, PackageX } from "lucide-react";
-import { type ImageBlurDataMap } from "@/lib/image-blur";
 
 const ITEMS_PER_PAGE = 12;
 

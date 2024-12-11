@@ -14,8 +14,10 @@ const breadcrumbItems = [
 
 export default async function CreateBrandPage() {
   return (
-    <ContentLayout title="Create Brand">
-      <DynamicBreadcrumb items={breadcrumbItems} />
+    <ContentLayout title="Create Brand" isContainer={false}>
+      <div className="container pt-8 pb-4 px-4 sm:px-8">
+        <DynamicBreadcrumb items={breadcrumbItems} />
+      </div>
       <BrandForm />
     </ContentLayout>
   );
