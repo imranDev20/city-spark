@@ -241,8 +241,6 @@ export default function ProductForm({
         if (result.success) {
           // router.push(`/admin/inventory/${result.data?.inventory?.id}`);
 
-          if (!productDetails) form.reset();
-
           await Promise.all([
             // Invalidate general product listings
             queryClient.invalidateQueries({ queryKey: ["products"] }),
