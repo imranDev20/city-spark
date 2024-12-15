@@ -31,6 +31,7 @@ import CategoriesSection from "./categories-section";
 import ProductImagesSection from "./product-images-section";
 import ProductStatusSection from "./product-status-section";
 import ProductFormHeader from "./product-form-header";
+import ManualsSection from "./manuals-section";
 // import ManualsSection from "./manuals-section";
 
 type ProductWithRelations = Prisma.ProductGetPayload<{
@@ -132,7 +133,6 @@ export default function ProductForm({
     quaternaryCategoriesResponse?.data.categories || [];
 
   const productSchema = createProductSchema(
-    primaryCategories,
     secondaryCategories,
     tertiaryCategories,
     quaternaryCategories
@@ -163,6 +163,7 @@ export default function ProductForm({
       templateId: "",
       contractPrice: "",
       tradePrice: "",
+      retailPrice: "",
       guarantee: "",
       warranty: "",
       promotionalPrice: "",
@@ -181,7 +182,7 @@ export default function ProductForm({
 
   const {
     handleSubmit,
-    formState: { isDirty, errors },
+    formState: { isDirty },
 
     reset,
   } = form;
@@ -189,6 +190,7 @@ export default function ProductForm({
   useEffect(() => {
     if (productDetails) {
       reset({
+        ...form.getValues(),
         name: productDetails.name,
         description: productDetails.description || "",
         brand: productDetails.brandId || "",
@@ -198,6 +200,7 @@ export default function ProductForm({
         warranty: productDetails.warranty || "",
         guarantee: productDetails.guarantee || "",
         tradePrice: productDetails.tradePrice?.toString() || "",
+        retailPrice: productDetails.retailPrice?.toString() || "",
         contractPrice: productDetails.contractPrice?.toString() || "",
         promotionalPrice: productDetails.promotionalPrice?.toString() || "",
         unit: productDetails.unit || "",
@@ -238,10 +241,9 @@ export default function ProductForm({
           // Create new product
           result = await createProduct(data);
         }
+
         if (result.success) {
           // router.push(`/admin/inventory/${result.data?.inventory?.id}`);
-
-          if (!productDetails) form.reset();
 
           await Promise.all([
             // Invalidate general product listings
@@ -278,8 +280,6 @@ export default function ProductForm({
     });
   };
 
-  console.log(errors);
-
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -292,8 +292,9 @@ export default function ProductForm({
           <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
             <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
               <ProductDetailsSection />
-              <BrandSpecificationsSection productDetails={productDetails} />
               <PriceSection />
+              <BrandSpecificationsSection productDetails={productDetails} />
+
               <FeaturesSection />
               <TemplatesSection productDetails={productDetails} />
               <CategoriesSection
@@ -318,7 +319,7 @@ export default function ProductForm({
               <ProductStatusSection />
               <ProductImagesSection initialImages={productDetails?.images} />
 
-              {/* <ManualsSection /> */}
+              <ManualsSection />
 
               <Card x-chunk="dashboard-07-chunk-5">
                 <CardHeader>

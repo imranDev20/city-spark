@@ -25,19 +25,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Trash2, Plus, ListFilter, Layers } from "lucide-react";
+import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Fragment, useEffect, useTransition } from "react";
-import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
+import { useEffect, useTransition } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { createTemplate, updateTemplate } from "../actions";
 import { TemplateFormInputType, templateSchema } from "../schema";
 import { Prisma } from "@prisma/client";
 import TemplateFormHeader from "./template-form-header";
 import { useQueryClient } from "@tanstack/react-query";
+import { FieldsSection } from "./fields-section";
 
 export type TemplateWithRelations = Prisma.TemplateGetPayload<{
   include: {
@@ -61,17 +61,19 @@ export default function TemplateForm({ templateDetails }: TemplateFormProps) {
       name: "",
       description: "",
       fields: [
-        { fieldId: "", fieldName: "", fieldType: "TEXT", fieldOptions: "" },
+        {
+          fieldId: "",
+          fieldName: "",
+          fieldType: "TEXT",
+          fieldOptions: "",
+          orderIndex: 0,
+        },
       ],
       status: "DRAFT",
     },
   });
 
-  const { control, handleSubmit, watch, formState, reset } = form;
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "fields",
-  });
+  const { control, handleSubmit, formState, reset } = form;
 
   useEffect(() => {
     if (templateDetails) {
@@ -79,27 +81,36 @@ export default function TemplateForm({ templateDetails }: TemplateFormProps) {
         name: templateDetails.name,
         description: templateDetails.description || "",
         status: templateDetails.status || "DRAFT",
-        fields: templateDetails.fields.map((field) => ({
+        fields: templateDetails.fields.map((field, index) => ({
           fieldId: field.id,
           fieldName: field.fieldName,
           fieldType: field.fieldType,
           fieldOptions: field.fieldOptions || "",
+          orderIndex: field.orderIndex ?? index,
         })),
       });
     }
   }, [templateDetails, reset]);
 
   const onSubmit: SubmitHandler<TemplateFormInputType> = async (data) => {
+    const modifiedData = {
+      ...data,
+      fields: data.fields.map((field, index) => ({
+        ...field,
+        orderIndex: index,
+      })),
+    };
+
+    console.log(modifiedData);
+
     startTransition(async () => {
       try {
         const result = templateDetails
-          ? await updateTemplate(templateDetails.id, data)
-          : await createTemplate(data);
-
+          ? await updateTemplate(templateDetails.id, modifiedData)
+          : await createTemplate(modifiedData);
         if (result.success) {
           // Invalidate entire cache
           await queryClient.invalidateQueries();
-
           toast({
             title: templateDetails ? "Template Updated" : "Template Created",
             description: result.message,
@@ -180,137 +191,7 @@ export default function TemplateForm({ templateDetails }: TemplateFormProps) {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader className="pb-8">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-2xl">
-                        Fields & Values
-                      </CardTitle>
-                      <CardDescription className="mt-2">
-                        Specify the fields for this template. Add, edit, or
-                        remove fields as needed.
-                      </CardDescription>
-                    </div>
-                    <div className="flex items-center gap-2 py-2 px-4 bg-primary/5 rounded-lg">
-                      <Layers className="w-5 h-5 text-primary/70" />
-                      <span className="font-medium">
-                        {fields.length} Field{fields.length !== 1 ? "s" : ""}
-                      </span>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    {fields.map((field, index) => (
-                      <div
-                        key={field.id}
-                        className="border border-gray-200 rounded-lg p-6 bg-white"
-                      >
-                        <div className="grid gap-6 sm:grid-cols-12 items-start">
-                          <div className="sm:col-span-5">
-                            <FormField
-                              name={`fields.${index}.fieldName`}
-                              control={control}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      placeholder="Enter Field Name"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          <div className="sm:col-span-5">
-                            <FormField
-                              name={`fields.${index}.fieldType`}
-                              control={control}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Select
-                                      onValueChange={(value) => {
-                                        field.onChange(value);
-                                      }}
-                                      value={field.value}
-                                    >
-                                      <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select Field Type" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="TEXT">
-                                          Text
-                                        </SelectItem>
-                                        <SelectItem value="SELECT">
-                                          Select
-                                        </SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-
-                          <div className="sm:col-span-2 flex justify-end">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => remove(index)}
-                              disabled={fields.length === 1}
-                              className="text-red-500 hover:text-red-700 hover:bg-red-100"
-                            >
-                              <Trash2 className="w-5 h-5" />
-                              <span className="sr-only">Remove field</span>
-                            </Button>
-                          </div>
-
-                          {watch(`fields.${index}.fieldType`) === "SELECT" && (
-                            <div className="sm:col-span-10 sm:col-start-1 mt-4">
-                              <FormField
-                                name={`fields.${index}.fieldOptions`}
-                                control={control}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormControl>
-                                      <Input
-                                        {...field}
-                                        placeholder="Enter options (separated by commas)"
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() =>
-                        append({
-                          fieldName: "",
-                          fieldType: "TEXT",
-                          fieldOptions: "",
-                        })
-                      }
-                      className="mt-8"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add new field
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <FieldsSection />
             </div>
 
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">

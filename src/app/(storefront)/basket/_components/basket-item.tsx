@@ -7,26 +7,37 @@ import { Button } from "@/components/ui/button";
 import { updateCartItemQuantity } from "../../products/actions";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { Prisma } from "@prisma/client";
+import PlaceholderImage from "@/images/placeholder-image.png";
+import { BLUR_DATA_URL } from "@/lib/constants";
+
+type CartItemWithRelations = Prisma.CartItemGetPayload<{
+  include: {
+    inventory: {
+      include: {
+        product: {
+          select: {
+            id: true;
+            name: true;
+            images: true;
+            tradePrice: true;
+            promotionalPrice: true;
+            retailPrice: true;
+          };
+        };
+      };
+    };
+  };
+}>;
 
 interface BasketItemProps {
-  id: string;
-  image: string;
-  name: string;
-  price: number | null;
-  initialQuantity: number | null;
+  cartItem: CartItemWithRelations;
   onRemove: (id: string) => Promise<void>;
 }
 
-const BasketItem: React.FC<BasketItemProps> = ({
-  id,
-  image,
-  name,
-  price,
-  initialQuantity,
-  onRemove,
-}) => {
+const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
   const { toast } = useToast();
-  const [quantity, setQuantity] = useState(initialQuantity ?? 1);
+  const [quantity, setQuantity] = useState(cartItem.quantity ?? 1);
   const [debouncedQuantity, setDebouncedQuantity] = useState(quantity);
   const [isPending, startTransition] = useTransition();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -48,10 +59,13 @@ const BasketItem: React.FC<BasketItemProps> = ({
   }, [quantity]);
 
   useEffect(() => {
-    if (debouncedQuantity !== initialQuantity) {
+    if (debouncedQuantity !== cartItem.quantity) {
       startTransition(async () => {
         try {
-          const result = await updateCartItemQuantity(id, debouncedQuantity);
+          const result = await updateCartItemQuantity(
+            cartItem.id,
+            debouncedQuantity
+          );
           if (!result.success) {
             throw new Error(result.message);
           }
@@ -62,16 +76,20 @@ const BasketItem: React.FC<BasketItemProps> = ({
               error instanceof Error ? error.message : "An error occurred",
             variant: "destructive",
           });
-          setQuantity(initialQuantity ?? 1);
+          setQuantity(cartItem.quantity ?? 1);
         }
       });
     }
-  }, [debouncedQuantity, id, initialQuantity, toast]);
+  }, [debouncedQuantity, cartItem.id, cartItem.quantity, toast]);
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity < 1) return;
     setQuantity(newQuantity);
   };
+
+  const displayPrice =
+    cartItem.inventory.product.promotionalPrice ||
+    cartItem.inventory.product.retailPrice;
 
   return (
     <div
@@ -80,16 +98,25 @@ const BasketItem: React.FC<BasketItemProps> = ({
         isPending && "opacity-30 pointer-events-none"
       )}
     >
-      <div className="flex items-start space-x-4 flex-1">
-        <div className="relative w-24 h-24 rounded-md overflow-hidden">
-          <Image src={image} alt={name} fill style={{ objectFit: "contain" }} />
+      <div className="flex items-start space-x-6 flex-1">
+        <div className="relative w-24 h-24 rounded-md bg-gray-50">
+          <Image
+            src={cartItem.inventory.product.images[0] || PlaceholderImage}
+            alt={cartItem.inventory.product.name}
+            fill
+            style={{ objectFit: "contain" }}
+            placeholder="blur"
+            blurDataURL={BLUR_DATA_URL}
+          />
         </div>
         <div className="flex flex-col space-y-5">
-          <h3 className="font-semibold text-lg text-gray-800">{name}</h3>
-          <div className="flex justify-between bg-gray-200 rounded-md text-lg relative overflow-hidden w-32 h-9">
+          <h3 className="font-semibold text-lg text-gray-800">
+            {cartItem.inventory.product.name}
+          </h3>
+          <div className="flex justify-between bg-gray-100 rounded-md text-lg relative overflow-hidden w-32 h-9">
             <button
               onClick={() => handleQuantityChange(quantity - 1)}
-              className="absolute top-0 left-0 h-full w-10 flex items-center justify-center transition-colors duration-200 ease-in-out hover:bg-gray-300 active:bg-gray-400"
+              className="absolute top-0 left-0 h-full w-10 flex items-center justify-center transition-colors duration-200 ease-in-out hover:bg-gray-200 active:bg-gray-400"
             >
               <span className="text-gray-600 font-medium select-none">-</span>
             </button>
@@ -114,14 +141,14 @@ const BasketItem: React.FC<BasketItemProps> = ({
       <div className="flex flex-col items-end space-y-5">
         <div className="text-right">
           <p className="text-xl font-semibold text-gray-800">
-            £{price?.toFixed(2) ?? "0.00"}
+            £{displayPrice?.toFixed(2) ?? "0.00"}
           </p>
           <p className="text-xs text-gray-500">inc. VAT</p>
         </div>
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => onRemove(id)}
+          onClick={() => onRemove(cartItem.id)}
           className="text-red-500 hover:text-red-600"
         >
           <Trash2 className="h-4 w-4" />

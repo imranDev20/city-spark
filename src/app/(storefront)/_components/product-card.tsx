@@ -205,18 +205,18 @@ export default function ProductCard({
   const productUrl = `/products/p/${customSlugify(product.name)}/p/${id}`;
 
   return (
-    <Card className="shadow-none lg:shadow-md group h-full flex flex-col bg-white border-gray-300 rounded-xl overflow-hidden lg:hover:shadow-lg transition-all duration-300 relative">
+    <Card className="shadow-none group h-full flex flex-col bg-white border-gray-300 rounded-xl overflow-hidden lg:hover:shadow-lg transition-all duration-300 relative">
       <Link href={productUrl} className="contents">
         <ProductImage images={product.images || []} />
 
         {product.promotionalPrice &&
-          product.tradePrice &&
-          product.promotionalPrice < product.tradePrice && (
+          product.retailPrice &&
+          product.promotionalPrice < product.retailPrice && (
             <div className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-primary text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium">
               Save{" "}
               {Math.round(
-                ((product.tradePrice - product.promotionalPrice) /
-                  product.tradePrice) *
+                ((product.retailPrice - product.promotionalPrice) /
+                  product.retailPrice) *
                   100
               )}
               %
@@ -225,12 +225,7 @@ export default function ProductCard({
 
         {/* Rest of the component remains the same */}
         <div className="flex flex-col p-2 sm:p-4">
-          <div className="space-y-1 sm:space-y-2 mb-2 sm:mb-4">
-            <div className="text-xs sm:text-sm font-medium text-primary hidden sm:block">
-              {product.brand?.name ||
-                product.primaryCategory?.name ||
-                "Category"}
-            </div>
+          <div className="space-y-1 sm:space-y-2 mb-2 sm:mb-5">
             <StarRating rating={rating} />
 
             <h3 className="font-medium text-gray-900 text-sm sm:text-base line-clamp-3 min-h-[2.5rem]">
@@ -238,16 +233,34 @@ export default function ProductCard({
             </h3>
           </div>
 
-          <div className="flex items-baseline">
-            <span className=" sm:text-2xl font-bold text-gray-900">
-              £{product.promotionalPrice?.toFixed(2)}
-            </span>
-            {product.tradePrice &&
-              product.tradePrice > product.promotionalPrice! && (
-                <span className="ml-1 sm:ml-2 text-xs sm:text-sm text-gray-500 line-through">
-                  £{product.tradePrice.toFixed(2)}
+          <div className="flex items-baseline gap-2">
+            {product.promotionalPrice ? (
+              // Case 1: Show promotional price with Inc VAT and strikethrough retail price
+              <>
+                <span className="sm:text-2xl font-bold text-gray-900">
+                  £{product.promotionalPrice.toFixed(2)}
                 </span>
-              )}
+                <div className="text-[10px] text-gray-500 leading-none">
+                  Inc. VAT
+                </div>
+                {product.retailPrice &&
+                  product.retailPrice > product.promotionalPrice && (
+                    <span className="text-xs sm:text-sm text-gray-500 line-through">
+                      £{product.retailPrice.toFixed(2)}
+                    </span>
+                  )}
+              </>
+            ) : (
+              // Case 2: Show retail price with Inc VAT only
+              <>
+                <span className="sm:text-2xl font-bold text-gray-900">
+                  £{product.retailPrice?.toFixed(2)}
+                </span>
+                <div className="text-[10px] text-gray-500 leading-none">
+                  Inc. VAT
+                </div>
+              </>
+            )}
           </div>
         </div>
       </Link>

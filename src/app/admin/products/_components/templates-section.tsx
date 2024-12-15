@@ -46,12 +46,10 @@ import {
 // Utils and Types
 import { cn } from "@/lib/utils";
 import { ProductFormInputType } from "../schema";
-import { FieldType } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import {
   fetchTemplateDetails,
   fetchTemplates,
-  TemplateWithDetails,
   TemplatesResponse,
 } from "@/services/admin-templates";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -161,6 +159,7 @@ export default function TemplatesSection({
             fieldName: field.fieldName,
             fieldOptions: field.fieldOptions ?? "",
             fieldType: field.fieldType,
+            fieldValue: "",
           })),
         });
       }

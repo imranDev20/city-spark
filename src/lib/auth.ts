@@ -207,7 +207,14 @@ async function recalculateCartTotal(userId: string) {
       cartItems: {
         include: {
           inventory: {
-            include: { product: true },
+            include: {
+              product: {
+                select: {
+                  tradePrice: true,
+                  promotionalPrice: true,
+                },
+              },
+            },
           },
         },
       },
@@ -215,15 +222,47 @@ async function recalculateCartTotal(userId: string) {
   });
 
   if (cart) {
-    const totalPrice = cart.cartItems.reduce(
-      (total, item) =>
-        total + (item.inventory.product.tradePrice || 0) * (item.quantity || 0),
-      0
-    );
+    let deliveryTotalWithVat = 0;
+    let collectionTotalWithVat = 0;
+
+    // Calculate totals with VAT included
+    cart.cartItems.forEach((item) => {
+      const priceWithVat =
+        item.inventory.product.promotionalPrice ||
+        item.inventory.product.tradePrice ||
+        0;
+      const itemTotalWithVat = priceWithVat * (item.quantity || 0);
+
+      if (item.type === "FOR_DELIVERY") {
+        deliveryTotalWithVat += itemTotalWithVat;
+      } else {
+        collectionTotalWithVat += itemTotalWithVat;
+      }
+    });
+
+    // Calculate VAT-exclusive amounts (VAT rate is 20%)
+    const deliveryTotalWithoutVat = deliveryTotalWithVat / 1.2;
+    const collectionTotalWithoutVat = collectionTotalWithVat / 1.2;
+    const subTotalWithVat = deliveryTotalWithVat + collectionTotalWithVat;
+    const subTotalWithoutVat =
+      deliveryTotalWithoutVat + collectionTotalWithoutVat;
+    const vat = subTotalWithVat - subTotalWithoutVat;
+    const totalPriceWithVat = subTotalWithVat;
+    const totalPriceWithoutVat = subTotalWithoutVat;
 
     await prisma.cart.update({
       where: { id: cart.id },
-      data: { totalPrice },
+      data: {
+        deliveryTotalWithVat,
+        deliveryTotalWithoutVat,
+        collectionTotalWithVat,
+        collectionTotalWithoutVat,
+        subTotalWithVat,
+        subTotalWithoutVat,
+        vat,
+        totalPriceWithVat,
+        totalPriceWithoutVat,
+      },
     });
   }
 }

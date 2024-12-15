@@ -14,8 +14,10 @@ const breadcrumbItems = [
 
 export default async function CreateCategoryPage() {
   return (
-    <ContentLayout title="Create Category">
-      <DynamicBreadcrumb items={breadcrumbItems} />
+    <ContentLayout title="Create Category" isContainer={false}>
+      <div className="container pt-8 pb-4 px-4 sm:px-8">
+        <DynamicBreadcrumb items={breadcrumbItems} />
+      </div>
       <CategoryForm />
     </ContentLayout>
   );

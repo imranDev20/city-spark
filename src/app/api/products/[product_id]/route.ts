@@ -35,6 +35,11 @@ export async function GET(req: Request, { params }: { params: RouteParams }) {
               include: {
                 templateField: true,
               },
+              orderBy: {
+                templateField: {
+                  orderIndex: "asc",
+                },
+              },
             },
             template: true,
           },

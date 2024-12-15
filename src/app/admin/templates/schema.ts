@@ -22,6 +22,7 @@ export const templateSchema = z.object({
         fieldName: z.string().trim().min(1, "Field Name is required"),
         fieldType: zodFieldType,
         fieldOptions: z.string().trim().optional(),
+        orderIndex: z.number().int().nonnegative(), // Add this line
       })
     )
     .min(1),

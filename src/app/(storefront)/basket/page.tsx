@@ -3,15 +3,126 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-
 import Link from "next/link";
 import AcceptedPayments from "../_components/accepted-payments";
-import { getCart } from "../products/actions";
 import { FulFillmentType } from "@prisma/client";
 import { ShoppingCart } from "lucide-react";
 import BasketList from "./_components/basket-list";
+import { getServerAuthSession } from "@/lib/auth";
+import { getOrCreateSessionId } from "@/lib/session-id";
+import { getCartWhereInput } from "@/lib/cart-utils";
+import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
+
+async function getCart() {
+  try {
+    const session = await getServerAuthSession();
+    const userId = session?.user?.id;
+    const sessionId = userId ? undefined : await getOrCreateSessionId();
+
+    const cartWhereInput = getCartWhereInput(userId, sessionId);
+    const cart = await prisma.cart.findFirst({
+      where: cartWhereInput,
+      include: {
+        cartItems: {
+          include: {
+            inventory: {
+              include: {
+                product: {
+                  select: {
+                    id: true,
+                    name: true,
+                    images: true,
+                    tradePrice: true,
+                    promotionalPrice: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
+      },
+    });
+
+    if (!cart) return null;
+
+    // Calculate totals with VAT included prices
+    let deliveryTotalWithVat = 0;
+    let collectionTotalWithVat = 0;
+
+    cart.cartItems.forEach((item) => {
+      const priceWithVat =
+        item.inventory.product.promotionalPrice ||
+        item.inventory.product.tradePrice ||
+        0;
+      const itemTotalWithVat = priceWithVat * (item.quantity || 0);
+
+      if (item.type === FulFillmentType.FOR_DELIVERY) {
+        deliveryTotalWithVat += itemTotalWithVat;
+      } else {
+        collectionTotalWithVat += itemTotalWithVat;
+      }
+    });
+
+    // Calculate VAT-exclusive amounts
+    const deliveryTotalWithoutVat = deliveryTotalWithVat / 1.2;
+    const collectionTotalWithoutVat = collectionTotalWithVat / 1.2;
+    const subTotalWithVat = deliveryTotalWithVat + collectionTotalWithVat;
+    const subTotalWithoutVat =
+      deliveryTotalWithoutVat + collectionTotalWithoutVat;
+    const vat = subTotalWithVat - subTotalWithoutVat;
+    const totalPriceWithVat = subTotalWithVat;
+    const totalPriceWithoutVat = subTotalWithoutVat;
+
+    // Update cart with all calculated values
+    const updatedCart = await prisma.cart.update({
+      where: { id: cart.id },
+      data: {
+        deliveryTotalWithVat,
+        deliveryTotalWithoutVat,
+        collectionTotalWithVat,
+        collectionTotalWithoutVat,
+        subTotalWithVat,
+        subTotalWithoutVat,
+        vat,
+        totalPriceWithVat,
+        totalPriceWithoutVat,
+      },
+      include: {
+        cartItems: {
+          include: {
+            inventory: {
+              include: {
+                product: {
+                  select: {
+                    id: true,
+                    name: true,
+                    images: true,
+                    tradePrice: true,
+                    promotionalPrice: true,
+                    retailPrice: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
+      },
+    });
+
+    return updatedCart;
+  } catch (error) {
+    console.error("Error getting cart:", error);
+    return null;
+  }
+}
 
 export default async function StorefrontBasketPage() {
   const cart = await getCart();
@@ -23,15 +134,11 @@ export default async function StorefrontBasketPage() {
     (item) => item.type === FulFillmentType.FOR_DELIVERY
   );
 
-  const subtotal = cart?.totalPrice || 0;
-  const vat = subtotal * 0.2; // Assuming 20% VAT
-  const total = subtotal + vat;
-
   if (!cart || cart.cartItems.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-screen-xl">
         <h1 className="text-5xl font-extrabold mb-8">My Basket</h1>
-        <Card className="p-8 shadow-none border-gray-350 text-center">
+        <Card className="p-8 shadow-none border-gray-300 text-center">
           <ShoppingCart className="mx-auto mb-4 h-16 w-16 text-gray-400" />
           <h2 className="text-2xl font-semibold mb-4">Your basket is empty</h2>
           <p className="text-gray-600 mb-6">
@@ -84,7 +191,7 @@ export default async function StorefrontBasketPage() {
 
         <div className="lg:col-span-1">
           <div className="sticky top-20">
-            <Card className="shadow-none bg-offWhite border-gray-350">
+            <Card className="shadow-none bg-offWhite border-gray-300">
               <CardHeader>
                 <CardTitle className="text-2xl">Order Summary</CardTitle>
               </CardHeader>
@@ -96,8 +203,8 @@ export default async function StorefrontBasketPage() {
                 </p>
                 <div className="flex mb-6">
                   <Input
-                    placeholder="Gift card or promo code "
-                    className="mr-2 border border-gray-350"
+                    placeholder="Gift card or promo code"
+                    className="mr-2 border border-gray-300"
                   />
                   <Button className="bg-secondary hover:bg-secondary/80">
                     Apply
@@ -106,20 +213,26 @@ export default async function StorefrontBasketPage() {
                 <div className="mb-6">
                   <div className="flex justify-between mb-4">
                     <span>Subtotal (Ex.VAT)</span>
-                    <span>£{subtotal.toFixed(2)}</span>
+                    <span>£{cart.subTotalWithoutVat?.toFixed(2)}</span>
                   </div>
+                  {/* {deliveryItems && deliveryItems.length > 0 && (
+                    <div className="flex justify-between mb-4">
+                      <span>Delivery</span>
+                      <span>£5.00</span>
+                    </div>
+                  )} */}
                   <div className="flex justify-between mb-4">
                     <span>VAT</span>
-                    <span>£{vat.toFixed(2)}</span>
+                    <span>£{cart.vat?.toFixed(2)}</span>
                   </div>
-                  <Separator className="my-4 bg-gray-350" />
+                  <Separator className="my-4 bg-gray-300" />
                   <div className="flex justify-between font-semibold">
                     <span>Total</span>
-                    <span>£{total.toFixed(2)}</span>
+                    <span>£{cart.totalPriceWithVat?.toFixed(2)}</span>
                   </div>
                 </div>
                 <Link href="/checkout">
-                  <Button variant="default" className="w-full ">
+                  <Button variant="default" className="w-full">
                     Checkout
                   </Button>
                 </Link>

@@ -13,27 +13,38 @@ export async function createProduct(data: ProductFormInputType) {
       async (tx) => {
         let createdProductTemplate;
 
-        if (data.templateId && data.productTemplateFields) {
+        if (data.templateId) {
+          // First fetch all template fields for the selected template
+          const templateFields = await tx.templateField.findMany({
+            where: {
+              templateId: data.templateId,
+            },
+          });
+
+          // Create a map of provided field values
+          const fieldValuesMap = new Map(
+            data.productTemplateFields
+              ?.filter(
+                (field): field is NonNullable<typeof field> =>
+                  field !== undefined && field.fieldId !== undefined
+              )
+              .map((field) => [field.fieldId, field.fieldValue || ""])
+          );
+
+          // Create product template fields for all template fields, including empty ones
           createdProductTemplate = await tx.productTemplate.create({
             data: {
               templateId: data.templateId,
               fields: {
-                create: data.productTemplateFields
-                  .filter((field): field is NonNullable<typeof field> => {
-                    return (
-                      field !== undefined &&
-                      field.fieldId !== undefined &&
-                      field.fieldValue !== undefined
-                    );
-                  })
-                  .map((productTemplateField) => ({
-                    templateField: {
-                      connect: {
-                        id: productTemplateField.fieldId,
-                      },
+                create: [...templateFields].reverse().map((templateField) => ({
+                  // Reverse the array before mapping to maintain original order
+                  templateField: {
+                    connect: {
+                      id: templateField.id,
                     },
-                    fieldValue: productTemplateField.fieldValue,
-                  })),
+                  },
+                  fieldValue: fieldValuesMap.get(templateField.id) || "",
+                })),
               },
             },
             include: {
@@ -55,6 +66,7 @@ export async function createProduct(data: ProductFormInputType) {
             warranty: data.warranty ?? null,
             guarantee: data.guarantee ?? null,
             tradePrice: data.tradePrice ? parseFloat(data.tradePrice) : null,
+            retailPrice: data.retailPrice ? parseFloat(data.retailPrice) : null,
             contractPrice: data.contractPrice
               ? parseFloat(data.contractPrice)
               : null,
@@ -247,6 +259,7 @@ export async function duplicateProduct(productId: string) {
             warranty: originalProduct.warranty,
             guarantee: originalProduct.guarantee,
             tradePrice: originalProduct.tradePrice,
+            retailPrice: originalProduct.retailPrice,
             contractPrice: originalProduct.contractPrice,
             promotionalPrice: originalProduct.promotionalPrice,
             unit: originalProduct.unit,
@@ -364,13 +377,22 @@ export async function updateProduct(
 
         // Handle product template
         let productTemplateId = null;
-        if (data.templateId && data.productTemplateFields?.length) {
-          // Filter out any undefined fields and ensure required properties exist
-          const validTemplateFields = data.productTemplateFields.filter(
-            (field): field is NonNullable<typeof field> =>
-              field !== undefined &&
-              field.fieldId !== undefined &&
-              field.fieldValue !== undefined
+        if (data.templateId) {
+          // Get template fields to maintain order
+          const templateFields = await tx.templateField.findMany({
+            where: {
+              templateId: data.templateId,
+            },
+          });
+
+          // Create a map of field values including empty strings
+          const fieldValuesMap = new Map(
+            data.productTemplateFields
+              ?.filter(
+                (field): field is NonNullable<typeof field> =>
+                  field !== undefined && field.fieldId !== undefined
+              )
+              .map((field) => [field.fieldId, field.fieldValue || ""])
           );
 
           if (existingProduct.productTemplate?.id) {
@@ -381,14 +403,16 @@ export async function updateProduct(
                 templateId: data.templateId,
                 fields: {
                   deleteMany: {},
-                  create: validTemplateFields.map((field) => ({
-                    templateField: {
-                      connect: {
-                        id: field.fieldId,
+                  create: [...templateFields]
+                    .reverse()
+                    .map((templateField) => ({
+                      templateField: {
+                        connect: {
+                          id: templateField.id,
+                        },
                       },
-                    },
-                    fieldValue: field.fieldValue,
-                  })),
+                      fieldValue: fieldValuesMap.get(templateField.id) || "",
+                    })),
                 },
               },
             });
@@ -399,14 +423,16 @@ export async function updateProduct(
               data: {
                 templateId: data.templateId,
                 fields: {
-                  create: validTemplateFields.map((field) => ({
-                    templateField: {
-                      connect: {
-                        id: field.fieldId,
+                  create: [...templateFields]
+                    .reverse()
+                    .map((templateField) => ({
+                      templateField: {
+                        connect: {
+                          id: templateField.id,
+                        },
                       },
-                    },
-                    fieldValue: field.fieldValue,
-                  })),
+                      fieldValue: fieldValuesMap.get(templateField.id) || "",
+                    })),
                 },
               },
             });
@@ -487,6 +513,7 @@ export async function updateProduct(
             warranty: data.warranty ?? null,
             guarantee: data.guarantee ?? null,
             tradePrice: data.tradePrice ? parseFloat(data.tradePrice) : null,
+            retailPrice: data.retailPrice ? parseFloat(data.retailPrice) : null,
             contractPrice: data.contractPrice
               ? parseFloat(data.contractPrice)
               : null,

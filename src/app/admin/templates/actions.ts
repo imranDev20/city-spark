@@ -17,6 +17,7 @@ export async function createTemplate(data: TemplateFormInputType) {
             fieldName: item.fieldName,
             fieldType: item.fieldType,
             fieldOptions: item.fieldOptions,
+            orderIndex: item.orderIndex,
           })),
         },
       },
@@ -130,12 +131,14 @@ type FieldToUpdate = {
   fieldName: string;
   fieldType: FieldType;
   fieldOptions: string | null;
+  orderIndex: number;
 };
 
 type FieldToCreate = {
   fieldName: string;
   fieldType: FieldType;
   fieldOptions: string | null;
+  orderIndex: number;
 };
 
 export async function updateTemplate(
@@ -177,7 +180,8 @@ export async function updateTemplate(
     // Log incoming field data
     console.log("Processing fields from form data:", data.fields);
 
-    for (const field of data.fields) {
+    // Process fields with order index
+    data.fields.forEach((field, index) => {
       if (field.fieldId) {
         console.log("Field to update:", field);
         fieldsToUpdate.push({
@@ -185,6 +189,7 @@ export async function updateTemplate(
           fieldName: field.fieldName,
           fieldType: field.fieldType,
           fieldOptions: field.fieldOptions ?? "",
+          orderIndex: index, // Add order index
         });
         fieldIdsToKeep.add(field.fieldId);
       } else {
@@ -193,9 +198,10 @@ export async function updateTemplate(
           fieldName: field.fieldName,
           fieldType: field.fieldType,
           fieldOptions: field.fieldOptions ?? "",
+          orderIndex: index, // Add order index
         });
       }
-    }
+    });
 
     const fieldIdsToDelete = existingTemplate.fields
       .filter((field) => !fieldIdsToKeep.has(field.id))
@@ -226,13 +232,23 @@ export async function updateTemplate(
                 fieldName: field.fieldName,
                 fieldType: field.fieldType,
                 fieldOptions: field.fieldOptions,
+                orderIndex: field.orderIndex, // Include order index in update
               },
             })),
-            create: fieldsToCreate,
+            create: fieldsToCreate.map((field) => ({
+              ...field,
+              orderIndex: field.orderIndex, // Include order index in create
+            })),
             deleteMany: { id: { in: fieldIdsToDelete } },
           },
         },
-        include: { fields: true },
+        include: {
+          fields: {
+            orderBy: {
+              orderIndex: "asc", // Order fields by index when returning
+            },
+          },
+        },
       });
 
       console.log("Template updated successfully:", {
@@ -281,6 +297,9 @@ export async function updateTemplate(
               templateId,
               fieldName: { in: fieldsToCreate.map((f) => f.fieldName) },
             },
+            orderBy: {
+              orderIndex: "asc", // Maintain order when finding new fields
+            },
           });
 
           console.log("New template fields found:", newTemplateFields.length);
@@ -310,7 +329,6 @@ export async function updateTemplate(
   } catch (error) {
     console.error("Detailed error in updateTemplate:", error);
 
-    // Enhanced error logging
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       console.error("Prisma error details:", {
         code: error.code,
