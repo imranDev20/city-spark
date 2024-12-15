@@ -15,7 +15,16 @@ type CartItemWithRelations = Prisma.CartItemGetPayload<{
   include: {
     inventory: {
       include: {
-        product: true;
+        product: {
+          select: {
+            id: true;
+            name: true;
+            images: true;
+            tradePrice: true;
+            promotionalPrice: true;
+            retailPrice: true;
+          };
+        };
       };
     };
   };

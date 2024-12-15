@@ -13,6 +13,8 @@ import { getOrCreateSessionId } from "@/lib/session-id";
 import { getCartWhereInput } from "@/lib/cart-utils";
 import prisma from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 async function getCart() {
   try {
     const session = await getServerAuthSession();
@@ -102,6 +104,7 @@ async function getCart() {
                     images: true,
                     tradePrice: true,
                     promotionalPrice: true,
+                    retailPrice: true,
                   },
                 },
               },
