@@ -10,6 +10,8 @@ import { Prisma } from "@prisma/client";
 import { NumericFormat } from "react-number-format";
 import Link from "next/link";
 import { fetchCartItems } from "@/services/cart";
+import PlaceholderImage from "@/images/placeholder-image.png";
+import { BLUR_DATA_URL } from "@/lib/constants";
 
 type CartItemWithRelations = Prisma.CartItemGetPayload<{
   include: {
@@ -60,12 +62,14 @@ const CartItemCard = ({ item }: { item: CartItemWithRelations }) => {
 
   return (
     <div className="flex gap-3 py-3">
-      <div className="relative h-16 w-16 rounded-md border bg-gray-50">
+      <div className="relative h-16 w-16 rounded-md bg-gray-50">
         <Image
-          src={product.images[0] || "/placeholder.png"}
+          src={product.images[0] || PlaceholderImage}
           alt={product.name}
           fill
           className="object-contain p-2"
+          placeholder="blur"
+          blurDataURL={BLUR_DATA_URL}
         />
       </div>
       <div className="flex flex-1 flex-col">

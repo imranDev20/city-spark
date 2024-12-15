@@ -3,7 +3,6 @@ import { z } from "zod";
 // Product schema with detailed error messages and trimmed text fields
 
 export const createProductSchema = (
-  primaryCategories?: any[],
   secondaryCategories?: any[],
   tertiaryCategories?: any[],
   quaternaryCategories?: any[]
@@ -31,6 +30,7 @@ export const createProductSchema = (
     warranty: z.string().trim().optional(),
     guarantee: z.string().trim().optional(),
     tradePrice: z.string().optional(),
+    retailPrice: z.string().optional(),
     contractPrice: z.string().optional(),
     promotionalPrice: z.string().optional(),
     unit: z.string().trim().optional(),

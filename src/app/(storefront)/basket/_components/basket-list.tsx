@@ -36,10 +36,10 @@ const BasketList: React.FC<BasketListProps> = ({ items, title }) => {
   );
 
   const handleRemoveItem = async (itemId: string) => {
-    addOptimisticItem(itemId);
-
     startTransition(async () => {
       try {
+        addOptimisticItem(itemId);
+
         const result = await removeFromCart(itemId);
         await queryClient.invalidateQueries({ queryKey: ["cart"] });
 
@@ -54,7 +54,6 @@ const BasketList: React.FC<BasketListProps> = ({ items, title }) => {
             error instanceof Error ? error.message : "Failed to remove item",
           variant: "destructive",
         });
-        // Note: In a real-world scenario, you might want to revert the optimistic update here
       }
     });
   };
@@ -65,22 +64,15 @@ const BasketList: React.FC<BasketListProps> = ({ items, title }) => {
         <>
           <h2 className="text-2xl font-semibold mb-3">{title}</h2>
           <Card
-            className={`p-5 shadow-none mb-5 border-gray-350 ${
+            className={`p-5 shadow-none mb-5 border-gray-300 ${
               isPending ? "opacity-50" : ""
             }`}
           >
             {optimisticItems.map((item, index) => (
               <React.Fragment key={item.id}>
-                <BasketItem
-                  id={item.id}
-                  image={item.inventory.product.images[0] || ""}
-                  name={item.inventory.product.name}
-                  price={item.inventory.product.tradePrice}
-                  initialQuantity={item.quantity}
-                  onRemove={handleRemoveItem}
-                />
+                <BasketItem cartItem={item} onRemove={handleRemoveItem} />
                 {index < optimisticItems.length - 1 && (
-                  <Separator className="my-4 bg-gray-350" />
+                  <Separator className="my-4 bg-gray-300" />
                 )}
               </React.Fragment>
             ))}

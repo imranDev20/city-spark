@@ -26,8 +26,18 @@ export async function GET(
   try {
     const template = await prisma.template.findUnique({
       where: { id: template_id },
-      include: { fields: true },
+      include: {
+        fields: {
+          orderBy: [
+            {
+              orderIndex: "asc",
+            },
+          ],
+        },
+      },
     });
+
+    console.log(template);
 
     if (!template) {
       return NextResponse.json(

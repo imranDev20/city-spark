@@ -347,13 +347,11 @@ export async function addToCart(
 
       let cartItem;
       if (existingCartItem) {
-        // Update existing cart item
         cartItem = await prisma.cartItem.update({
           where: { id: existingCartItem.id },
           data: { quantity: { increment: quantity } },
         });
       } else {
-        // Create new cart item
         cartItem = await prisma.cartItem.create({
           data: {
             cartId: cart.id,
@@ -364,7 +362,7 @@ export async function addToCart(
         });
       }
 
-      // Recalculate total price
+      // Get updated cart with all items
       const updatedCart = await prisma.cart.findUnique({
         where: { id: cart.id },
         include: {
@@ -382,17 +380,49 @@ export async function addToCart(
         throw new Error("Failed to retrieve updated cart");
       }
 
-      const totalPrice = updatedCart.cartItems.reduce((total, item) => {
-        return (
-          total +
-          (item.inventory.product.tradePrice || 0) * (item.quantity || 0)
-        );
-      }, 0);
+      // Calculate totals
+      let deliveryTotalWithVat = 0;
+      let collectionTotalWithVat = 0;
 
-      // Update cart with new total price
+      updatedCart.cartItems.forEach((item) => {
+        // Use promotional price if available, otherwise use trade price
+        const priceWithVat =
+          item.inventory.product.promotionalPrice ||
+          item.inventory.product.tradePrice ||
+          0;
+        const itemTotalWithVat = priceWithVat * (item.quantity || 0);
+
+        if (item.type === FulFillmentType.FOR_DELIVERY) {
+          deliveryTotalWithVat += itemTotalWithVat;
+        } else {
+          collectionTotalWithVat += itemTotalWithVat;
+        }
+      });
+
+      // Calculate VAT-exclusive prices (divide by 1.2 to remove 20% VAT)
+      const deliveryTotalWithoutVat = deliveryTotalWithVat / 1.2;
+      const collectionTotalWithoutVat = collectionTotalWithVat / 1.2;
+      const subTotalWithVat = deliveryTotalWithVat + collectionTotalWithVat;
+      const subTotalWithoutVat =
+        deliveryTotalWithoutVat + collectionTotalWithoutVat;
+      const vat = subTotalWithVat - subTotalWithoutVat;
+      const totalPriceWithVat = subTotalWithVat;
+      const totalPriceWithoutVat = subTotalWithoutVat;
+
+      // Update cart with all calculated values
       const finalCart = await prisma.cart.update({
         where: { id: cart.id },
-        data: { totalPrice },
+        data: {
+          deliveryTotalWithVat,
+          deliveryTotalWithoutVat,
+          collectionTotalWithVat,
+          collectionTotalWithoutVat,
+          subTotalWithVat,
+          subTotalWithoutVat,
+          vat,
+          totalPriceWithVat,
+          totalPriceWithoutVat,
+        },
         include: { cartItems: true },
       });
 
@@ -458,24 +488,54 @@ export async function removeFromCart(id: string) {
         throw new Error("Cart not found");
       }
 
-      const totalPrice = updatedCart.cartItems.reduce((total, item) => {
-        return (
-          total +
-          (item.inventory.product.tradePrice || 0) * (item.quantity || 0)
-        );
-      }, 0);
+      // Calculate totals
+      let deliveryTotalWithVat = 0;
+      let collectionTotalWithVat = 0;
 
-      // Update cart with new total price
+      updatedCart.cartItems.forEach((item) => {
+        const priceWithVat =
+          item.inventory.product.promotionalPrice ||
+          item.inventory.product.tradePrice ||
+          0;
+        const itemTotalWithVat = priceWithVat * (item.quantity || 0);
+
+        if (item.type === FulFillmentType.FOR_DELIVERY) {
+          deliveryTotalWithVat += itemTotalWithVat;
+        } else {
+          collectionTotalWithVat += itemTotalWithVat;
+        }
+      });
+
+      // Calculate VAT-exclusive prices
+      const deliveryTotalWithoutVat = deliveryTotalWithVat / 1.2;
+      const collectionTotalWithoutVat = collectionTotalWithVat / 1.2;
+      const subTotalWithVat = deliveryTotalWithVat + collectionTotalWithVat;
+      const subTotalWithoutVat =
+        deliveryTotalWithoutVat + collectionTotalWithoutVat;
+      const vat = subTotalWithVat - subTotalWithoutVat;
+      const totalPriceWithVat = subTotalWithVat;
+      const totalPriceWithoutVat = subTotalWithoutVat;
+
+      // Update cart with all calculated values
       const finalCart = await prisma.cart.update({
         where: { id: updatedCart.id },
-        data: { totalPrice },
+        data: {
+          deliveryTotalWithVat,
+          deliveryTotalWithoutVat,
+          collectionTotalWithVat,
+          collectionTotalWithoutVat,
+          subTotalWithVat,
+          subTotalWithoutVat,
+          vat,
+          totalPriceWithVat,
+          totalPriceWithoutVat,
+        },
         include: { cartItems: true },
       });
 
       return finalCart;
     });
 
-    // Revalidate relevant paths
     revalidatePath("/");
     revalidatePath("/products");
     revalidatePath("/basket");
@@ -511,13 +571,12 @@ export async function updateCartItemQuantity(id: string, quantity: number) {
 
     const result = await prisma.$transaction(async (prisma) => {
       // Update the cart item quantity
-      const updatedCartItem = await prisma.cartItem.update({
+      await prisma.cartItem.update({
         where: { id: id },
         data: { quantity: quantity },
-        include: { inventory: true },
       });
 
-      // Recalculate total price
+      // Get updated cart to recalculate
       const cartWhereInput = getCartWhereInput(userId, sessionId);
       const updatedCart = await prisma.cart.findFirst({
         where: cartWhereInput,
@@ -538,17 +597,48 @@ export async function updateCartItemQuantity(id: string, quantity: number) {
         throw new Error("Cart not found");
       }
 
-      const totalPrice = updatedCart.cartItems.reduce((total, item) => {
-        return (
-          total +
-          (item.inventory.product.tradePrice || 0) * (item.quantity || 0)
-        );
-      }, 0);
+      // Calculate totals
+      let deliveryTotalWithVat = 0;
+      let collectionTotalWithVat = 0;
 
-      // Update cart with new total price
+      updatedCart.cartItems.forEach((item) => {
+        const priceWithVat =
+          item.inventory.product.promotionalPrice ||
+          item.inventory.product.tradePrice ||
+          0;
+        const itemTotalWithVat = priceWithVat * (item.quantity || 0);
+
+        if (item.type === FulFillmentType.FOR_DELIVERY) {
+          deliveryTotalWithVat += itemTotalWithVat;
+        } else {
+          collectionTotalWithVat += itemTotalWithVat;
+        }
+      });
+
+      // Calculate VAT-exclusive prices
+      const deliveryTotalWithoutVat = deliveryTotalWithVat / 1.2;
+      const collectionTotalWithoutVat = collectionTotalWithVat / 1.2;
+      const subTotalWithVat = deliveryTotalWithVat + collectionTotalWithVat;
+      const subTotalWithoutVat =
+        deliveryTotalWithoutVat + collectionTotalWithoutVat;
+      const vat = subTotalWithVat - subTotalWithoutVat;
+      const totalPriceWithVat = subTotalWithVat;
+      const totalPriceWithoutVat = subTotalWithoutVat;
+
+      // Update cart with all calculated values
       const finalCart = await prisma.cart.update({
         where: { id: updatedCart.id },
-        data: { totalPrice },
+        data: {
+          deliveryTotalWithVat,
+          deliveryTotalWithoutVat,
+          collectionTotalWithVat,
+          collectionTotalWithoutVat,
+          subTotalWithVat,
+          subTotalWithoutVat,
+          vat,
+          totalPriceWithVat,
+          totalPriceWithoutVat,
+        },
         include: { cartItems: true },
       });
 
@@ -576,35 +666,6 @@ export async function updateCartItemQuantity(id: string, quantity: number) {
       error: error instanceof Error ? error.message : String(error),
       success: false,
     };
-  }
-}
-
-export async function getCart() {
-  try {
-    const session = await getServerAuthSession();
-    const userId = session?.user?.id;
-    const sessionId = userId ? undefined : await getOrCreateSessionId();
-
-    const cartWhereInput = getCartWhereInput(userId, sessionId);
-    const cart = await prisma.cart.findFirst({
-      where: cartWhereInput,
-      include: {
-        cartItems: {
-          include: {
-            inventory: {
-              include: {
-                product: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    return cart;
-  } catch (error) {
-    console.error("Error getting cart:", error);
-    return null;
   }
 }
 

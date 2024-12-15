@@ -89,6 +89,7 @@ model Product {
     tradePrice           Float?           @default(0)
     contractPrice        Float?           @default(0)
     promotionalPrice     Float?           @default(0)
+    retailPrice          Float?           @default(0)
     unit                 String?
     weight               Float?
     color                String?
@@ -152,6 +153,7 @@ model TemplateField {
     fieldType             FieldType
     fieldOptions          String?
     templateId            String
+    orderIndex            Int?
     productTemplateFields ProductTemplateField[]
     template              Template               @relation(fields: [templateId], references: [id], onDelete: Cascade)
     createdAt             DateTime               @default(now())
@@ -275,16 +277,51 @@ model PasswordResetToken {
     createdAt DateTime @default(now())
 }
 
+model PromoCode {
+    id            String            @id @default(cuid())
+    code          String            @unique
+    description   String?
+    discountType  PromoDiscountType // PERCENTAGE or FIXED
+    discountValue Float
+    minOrderValue Float?
+    maxDiscount   Float?
+    startDate     DateTime
+    endDate       DateTime
+    usageLimit    Int? // Total number of times this code can be used
+    usageCount    Int               @default(0)
+    isActive      Boolean           @default(true)
+    carts         Cart[] // Relation to carts using this code
+    createdAt     DateTime          @default(now())
+    updatedAt     DateTime          @updatedAt
+}
+
+enum PromoDiscountType {
+    PERCENTAGE
+    FIXED
+}
+
 model Cart {
-    id         String     @id @default(cuid())
-    userId     String?
-    sessionId  String?
-    user       User?      @relation(fields: [userId], references: [id])
-    cartItems  CartItem[]
-    totalPrice Float?     @default(0)
-    order      Order?
-    createdAt  DateTime   @default(now())
-    updatedAt  DateTime   @updatedAt
+    id                        String     @id @default(cuid())
+    userId                    String?
+    sessionId                 String?
+    user                      User?      @relation(fields: [userId], references: [id])
+    cartItems                 CartItem[]
+    deliveryTotalWithVat      Float?     @default(0)
+    deliveryTotalWithoutVat   Float?     @default(0)
+    collectionTotalWithVat    Float?     @default(0)
+    collectionTotalWithoutVat Float?     @default(0)
+    subTotalWithVat           Float?     @default(0)
+    subTotalWithoutVat        Float?     @default(0)
+    deliveryCharge            Float?     @default(0)
+    vat                       Float?     @default(0)
+    promoCode                 PromoCode? @relation(fields: [promoCodeId], references: [id])
+    promoCodeId               String?
+    promoDiscount             Float?     @default(0) // Renamed from discountAmount for clarity
+    totalPriceWithoutVat      Float?     @default(0)
+    totalPriceWithVat         Float?     @default(0)
+    order                     Order?
+    createdAt                 DateTime   @default(now())
+    updatedAt                 DateTime   @updatedAt
 
     @@unique([userId, sessionId])
 }
