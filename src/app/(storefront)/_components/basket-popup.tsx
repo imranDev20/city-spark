@@ -48,7 +48,7 @@ const CartItemCard = ({
   const price = product.promotionalPrice || product.retailPrice || 0;
 
   return (
-    <div className="flex gap-3 py-3">
+    <div className="flex gap-4 py-3">
       <div className="relative h-16 w-16 rounded-md bg-gray-50">
         <Image
           src={product.images[0] || PlaceholderImage}
@@ -60,21 +60,23 @@ const CartItemCard = ({
         />
       </div>
       <div className="flex flex-1 flex-col">
-        <h4 className="text-sm font-medium text-gray-900 line-clamp-2">
+        <h4 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1.5">
           {product.name}
         </h4>
-        <div className="mt-auto flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Qty: {quantity}</span>
-          <span className="font-medium text-gray-900">
-            <NumericFormat
-              value={price}
-              displayType="text"
-              prefix="£"
-              decimalScale={2}
-              fixedDecimalScale
-              thousandSeparator=","
-            />
-          </span>
+        <p className="text-sm text-gray-500 mb-2">Quantity: {quantity}</p>
+        <div className="flex flex-col items-end gap-1">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-base font-semibold text-gray-900">
+              <NumericFormat
+                value={quantity * price}
+                displayType="text"
+                prefix="£"
+                decimalScale={2}
+                fixedDecimalScale
+                thousandSeparator=","
+              />
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -161,11 +163,7 @@ export default function BasketPopup() {
       {isOpen && (
         <>
           <div className="absolute h-2 w-full top-full" />
-          <div className="absolute top-[calc(100%+0.5rem)] right-0 w-80 bg-white rounded-lg shadow-lg border animate-fadeIn origin-top">
-            <div className="p-4 border-b">
-              <h3 className="font-bold text-lg text-gray-900">Your Basket</h3>
-            </div>
-
+          <div className="absolute top-[calc(100%+0.5rem)] right-0 w-96 bg-white rounded-lg shadow-lg border animate-fadeIn origin-top">
             <ScrollArea className="h-[400px]">
               <div className="p-4">
                 {isLoading ? (
@@ -185,19 +183,6 @@ export default function BasketPopup() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {groupedItems.delivery.length > 0 && (
-                      <div>
-                        <GroupHeader
-                          type="FOR_DELIVERY"
-                          itemCount={groupedItems.delivery.length}
-                        />
-                        <div className="space-y-2 divide-y">
-                          {groupedItems.delivery.map((item) => (
-                            <CartItemCard key={item.id} item={item} />
-                          ))}
-                        </div>
-                      </div>
-                    )}
                     {groupedItems.collection.length > 0 && (
                       <div>
                         <GroupHeader
@@ -211,13 +196,26 @@ export default function BasketPopup() {
                         </div>
                       </div>
                     )}
+                    {groupedItems.delivery.length > 0 && (
+                      <div>
+                        <GroupHeader
+                          type="FOR_DELIVERY"
+                          itemCount={groupedItems.delivery.length}
+                        />
+                        <div className="space-y-2 divide-y">
+                          {groupedItems.delivery.map((item) => (
+                            <CartItemCard key={item.id} item={item} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             </ScrollArea>
 
-            <div className="border-t p-4">
-              <div className="flex justify-between mb-2">
+            <div className="border-t p-4 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]">
+              <div className="flex justify-between mb-1">
                 <span className="font-semibold text-lg text-gray-900">
                   Subtotal (inc. VAT)
                 </span>
@@ -247,12 +245,12 @@ export default function BasketPopup() {
                 </span>
               </div>
 
-              <Link href="/checkout" passHref>
+              <Link href="/basket" passHref>
                 <Button
                   className="w-full"
                   disabled={!cart?.cartItems || cart.cartItems.length === 0}
                 >
-                  Checkout
+                  View Basket
                 </Button>
               </Link>
             </div>
