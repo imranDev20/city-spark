@@ -72,7 +72,7 @@ export default function FixedProductBar({
                   £{inventoryItem.product.tradePrice.toFixed(2)}
                 </span>
               )}
-            <span className="text-sm text-gray-500 ml-1">Inc. VAT</span>
+            <span className="text-sm text-gray-500 ml-1">inc. VAT</span>
           </div>
         </div>
 

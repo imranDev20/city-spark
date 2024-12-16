@@ -6,7 +6,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CategoryNavSkeleton() {
   const pathname = usePathname();
-  const excludedRoutes = ["/login", "/register", "/cart", "/checkout"];
+  const excludedRoutes = [
+    "/login",
+    "/register",
+    "/cart",
+    "/checkout",
+    "/basket",
+  ];
 
   if (excludedRoutes.includes(pathname)) {
     return null;
