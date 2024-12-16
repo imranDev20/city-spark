@@ -41,18 +41,19 @@ export default function TechnicalSpecs({ product }: TechnicalSpecsProps) {
     { label: "Guarantee", value: product.guarantee },
     { label: "Warranty", value: product.warranty },
     { label: "Unit", value: product.unit },
-    { label: "Weight", value: product.weight },
+    { label: "Weight", value: product.weight?.toString() },
     { label: "Color", value: product.color },
-    { label: "Length", value: product.length },
-    { label: "Width", value: product.width },
-    { label: "Height", value: product.height },
+    { label: "Length", value: product.length?.toString() },
+    { label: "Width", value: product.width?.toString() },
+    { label: "Height", value: product.height?.toString() },
     { label: "Material", value: product.material },
     { label: "Volume", value: product.volume },
     { label: "Type", value: product.type },
     { label: "Shape", value: product.shape },
-  ].filter((detail) => detail.value != null);
+  ].filter((detail) => detail.value && detail.value.trim() !== "");
 
-  // Pair up the details for two-column layout (desktop)
+  if (details.length === 0) return null;
+
   const pairedDetails = [];
   for (let i = 0; i < details.length; i += 2) {
     pairedDetails.push(details.slice(i, i + 2));
@@ -66,14 +67,14 @@ export default function TechnicalSpecs({ product }: TechnicalSpecsProps) {
 
       {/* Mobile Layout (single column) */}
       <div className="lg:hidden">
-        <Table className="border-collapse border w-full">
+        <Table className="border-collapse border border-gray-300 w-full">
           <TableBody>
             {details.map((detail, index) => (
-              <TableRow key={index} className="border-b">
-                <TableCell className="font-medium bg-gray-200 border-r p-2 w-1/3 text-sm">
+              <TableRow key={index} className="border-b border-gray-300">
+                <TableCell className="font-medium bg-gray-200 border-r border-gray-300 p-2 w-1/2 text-sm">
                   {detail.label}
                 </TableCell>
-                <TableCell className="bg-white p-2 text-center text-sm">
+                <TableCell className="bg-white p-2 text-center text-sm w-1/2">
                   {detail.value}
                 </TableCell>
               </TableRow>
@@ -83,25 +84,25 @@ export default function TechnicalSpecs({ product }: TechnicalSpecsProps) {
       </div>
 
       {/* Desktop Layout (two columns) */}
-      <div className="hidden lg:block min-w-[600px] lg:min-w-full">
-        <Table className="border-collapse border w-full">
+      <div className="hidden lg:block ">
+        <Table className="border-collapse border border-gray-300 w-full">
           <TableBody>
             {pairedDetails.map((pair, index) => (
-              <TableRow key={index} className="border-b">
+              <TableRow key={index} className="border-b border-gray-300">
                 {pair.map((detail, detailIndex) => (
                   <React.Fragment key={detailIndex}>
-                    <TableCell className="font-medium bg-gray-200 border-r p-2 w-1/6 text-base">
+                    <TableCell className="font-medium bg-gray-200 border-r border-gray-300 p-2 w-1/4 text-base">
                       {detail.label}
                     </TableCell>
-                    <TableCell className="bg-white border-r p-2 text-center w-1/3 text-base">
+                    <TableCell className="bg-white border-r border-gray-300 p-2 text-center w-1/4 text-base">
                       {detail.value}
                     </TableCell>
                   </React.Fragment>
                 ))}
                 {pair.length === 1 && (
                   <>
-                    <TableCell className="bg-gray-200 border-r p-2 w-1/6" />
-                    <TableCell className="bg-white p-2 w-1/3" />
+                    <TableCell className="bg-gray-200 border-r border-gray-300 p-2 w-1/4" />
+                    <TableCell className="bg-white p-2 w-1/4" />
                   </>
                 )}
               </TableRow>
