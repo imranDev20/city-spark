@@ -20,7 +20,7 @@ export default function AcceptedPayments() {
         ].map((payment) => (
           <span
             key={payment.alt}
-            className="border border-gray-350 px-3 py-2 rounded-md flex justify-center items-center"
+            className="border border-gray-300 px-3 py-2 rounded-md flex justify-center items-center"
           >
             <Image
               src={payment.image}
