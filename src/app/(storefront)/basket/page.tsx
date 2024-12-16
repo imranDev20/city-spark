@@ -34,7 +34,7 @@ async function getCart() {
                     id: true,
                     name: true,
                     images: true,
-                    tradePrice: true,
+                    retailPrice: true,
                     promotionalPrice: true,
                   },
                 },
@@ -53,20 +53,29 @@ async function getCart() {
     // Calculate totals with VAT included prices
     let deliveryTotalWithVat = 0;
     let collectionTotalWithVat = 0;
+    let hasDeliveryItems = false;
 
     cart.cartItems.forEach((item) => {
+      // Use promotional price if available, otherwise use retail price
       const priceWithVat =
-        item.inventory.product.promotionalPrice ||
-        item.inventory.product.tradePrice ||
-        0;
+        item.inventory.product.promotionalPrice &&
+        item.inventory.product.promotionalPrice > 0
+          ? item.inventory.product.promotionalPrice
+          : item.inventory.product.retailPrice || 0;
+
       const itemTotalWithVat = priceWithVat * (item.quantity || 0);
 
       if (item.type === FulFillmentType.FOR_DELIVERY) {
         deliveryTotalWithVat += itemTotalWithVat;
+        hasDeliveryItems = true;
       } else {
         collectionTotalWithVat += itemTotalWithVat;
       }
     });
+
+    // Apply delivery charge if there are delivery items
+    const deliveryCharge = hasDeliveryItems ? 5 : 0;
+    const deliveryVat = deliveryCharge * 0.2; // 20% VAT on delivery
 
     // Calculate VAT-exclusive amounts
     const deliveryTotalWithoutVat = deliveryTotalWithVat / 1.2;
@@ -74,9 +83,11 @@ async function getCart() {
     const subTotalWithVat = deliveryTotalWithVat + collectionTotalWithVat;
     const subTotalWithoutVat =
       deliveryTotalWithoutVat + collectionTotalWithoutVat;
-    const vat = subTotalWithVat - subTotalWithoutVat;
-    const totalPriceWithVat = subTotalWithVat;
-    const totalPriceWithoutVat = subTotalWithoutVat;
+    const vat = subTotalWithVat - subTotalWithoutVat + deliveryVat; // VAT from products only
+
+    // Final totals including delivery and its VAT
+    const totalPriceWithVat = subTotalWithVat + deliveryCharge + deliveryVat;
+    const totalPriceWithoutVat = subTotalWithoutVat + deliveryCharge;
 
     // Update cart with all calculated values
     const updatedCart = await prisma.cart.update({
@@ -88,6 +99,7 @@ async function getCart() {
         collectionTotalWithoutVat,
         subTotalWithVat,
         subTotalWithoutVat,
+        deliveryCharge,
         vat,
         totalPriceWithVat,
         totalPriceWithoutVat,
@@ -102,9 +114,8 @@ async function getCart() {
                     id: true,
                     name: true,
                     images: true,
-                    tradePrice: true,
-                    promotionalPrice: true,
                     retailPrice: true,
+                    promotionalPrice: true,
                   },
                 },
               },
@@ -215,12 +226,12 @@ export default async function StorefrontBasketPage() {
                     <span>Subtotal (Ex.VAT)</span>
                     <span>£{cart.subTotalWithoutVat?.toFixed(2)}</span>
                   </div>
-                  {/* {deliveryItems && deliveryItems.length > 0 && (
+                  {deliveryItems && deliveryItems.length > 0 && (
                     <div className="flex justify-between mb-4">
                       <span>Delivery</span>
                       <span>£5.00</span>
                     </div>
-                  )} */}
+                  )}
                   <div className="flex justify-between mb-4">
                     <span>VAT</span>
                     <span>£{cart.vat?.toFixed(2)}</span>

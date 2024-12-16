@@ -6,34 +6,15 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Prisma } from "@prisma/client";
 import { NumericFormat } from "react-number-format";
 import Link from "next/link";
-import { fetchCartItems } from "@/services/cart";
+import { fetchCart, type CartWithRelations } from "@/services/cart";
 import PlaceholderImage from "@/images/placeholder-image.png";
 import { BLUR_DATA_URL } from "@/lib/constants";
 
-type CartItemWithRelations = Prisma.CartItemGetPayload<{
-  include: {
-    inventory: {
-      include: {
-        product: {
-          include: {
-            brand: {
-              select: {
-                name: true;
-              };
-            };
-          };
-        };
-      };
-    };
-  };
-}>;
-
 type GroupedCartItems = {
-  delivery: CartItemWithRelations[];
-  collection: CartItemWithRelations[];
+  delivery: CartWithRelations["cartItems"];
+  collection: CartWithRelations["cartItems"];
 };
 
 const GroupHeader = ({
@@ -56,9 +37,15 @@ const GroupHeader = ({
   </div>
 );
 
-const CartItemCard = ({ item }: { item: CartItemWithRelations }) => {
+const CartItemCard = ({
+  item,
+}: {
+  item: CartWithRelations["cartItems"][0];
+}) => {
   const { inventory, quantity } = item;
   const { product } = inventory;
+
+  const price = product.promotionalPrice || product.retailPrice || 0;
 
   return (
     <div className="flex gap-3 py-3">
@@ -80,7 +67,7 @@ const CartItemCard = ({ item }: { item: CartItemWithRelations }) => {
           <span className="text-sm text-muted-foreground">Qty: {quantity}</span>
           <span className="font-medium text-gray-900">
             <NumericFormat
-              value={product.tradePrice || 0}
+              value={price}
               displayType="text"
               prefix="£"
               decimalScale={2}
@@ -98,7 +85,7 @@ export default function BasketPopup() {
   const [isOpen, setIsOpen] = useState(false);
 
   const {
-    data: cartItems,
+    data: cart,
     isLoading,
     error,
   } = useQuery({
@@ -108,18 +95,18 @@ export default function BasketPopup() {
     refetchOnMount: true,
     retry: 3,
     retryDelay: 1000,
-    queryFn: fetchCartItems,
+    queryFn: fetchCart,
   });
 
   const groupedItems = useMemo<GroupedCartItems>(() => {
-    if (!cartItems) {
+    if (!cart?.cartItems) {
       return {
         delivery: [],
         collection: [],
       };
     }
 
-    return cartItems.reduce(
+    return cart.cartItems.reduce(
       (acc, item) => {
         if (item.type === "FOR_DELIVERY") {
           acc.delivery.push(item);
@@ -128,20 +115,16 @@ export default function BasketPopup() {
         }
         return acc;
       },
+      // Specify the type here for the initial value:
       {
-        delivery: [] as CartItemWithRelations[],
-        collection: [] as CartItemWithRelations[],
+        delivery: [] as CartWithRelations["cartItems"],
+        collection: [] as CartWithRelations["cartItems"],
       }
     );
-  }, [cartItems]);
+  }, [cart]);
 
-  const cartItemCount = cartItems?.length || 0;
-  const total =
-    cartItems?.reduce(
-      (sum, item) =>
-        sum + (item.inventory.product.tradePrice || 0) * (item.quantity || 0),
-      0
-    ) || 0;
+  const cartItemCount = cart?.cartItems?.length || 0;
+  const total = cart?.subTotalWithVat || 0;
 
   return (
     <div
@@ -234,7 +217,9 @@ export default function BasketPopup() {
 
             <div className="border-t p-4">
               <div className="flex justify-between mb-4">
-                <span className="font-medium text-gray-900">Total</span>
+                <span className="font-medium text-gray-900">
+                  Subtotal (inc. VAT)
+                </span>
                 <span className="font-bold text-gray-900">
                   <NumericFormat
                     value={total}
@@ -246,12 +231,14 @@ export default function BasketPopup() {
                   />
                 </span>
               </div>
-              <Button
-                className="w-full"
-                disabled={!cartItems || cartItems.length === 0}
-              >
-                Checkout
-              </Button>
+              <Link href="/basket" passHref>
+                <Button
+                  className="w-full"
+                  disabled={!cart?.cartItems || cart.cartItems.length === 0}
+                >
+                  Checkout
+                </Button>
+              </Link>
             </div>
           </div>
         </>

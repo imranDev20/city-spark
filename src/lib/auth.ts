@@ -210,7 +210,7 @@ async function recalculateCartTotal(userId: string) {
             include: {
               product: {
                 select: {
-                  tradePrice: true,
+                  retailPrice: true,
                   promotionalPrice: true,
                 },
               },
@@ -224,31 +224,41 @@ async function recalculateCartTotal(userId: string) {
   if (cart) {
     let deliveryTotalWithVat = 0;
     let collectionTotalWithVat = 0;
+    let hasDeliveryItems = false;
 
     // Calculate totals with VAT included
     cart.cartItems.forEach((item) => {
       const priceWithVat =
-        item.inventory.product.promotionalPrice ||
-        item.inventory.product.tradePrice ||
-        0;
+        item.inventory.product.promotionalPrice &&
+        item.inventory.product.promotionalPrice > 0
+          ? item.inventory.product.promotionalPrice
+          : item.inventory.product.retailPrice || 0;
+
       const itemTotalWithVat = priceWithVat * (item.quantity || 0);
 
       if (item.type === "FOR_DELIVERY") {
         deliveryTotalWithVat += itemTotalWithVat;
+        hasDeliveryItems = true;
       } else {
         collectionTotalWithVat += itemTotalWithVat;
       }
     });
 
-    // Calculate VAT-exclusive amounts (VAT rate is 20%)
+    // Apply delivery charge if there are delivery items
+    const deliveryCharge = hasDeliveryItems ? 5 : 0;
+    const deliveryVat = deliveryCharge * 0.2; // 20% VAT on delivery
+
+    // Calculate VAT-exclusive amounts
     const deliveryTotalWithoutVat = deliveryTotalWithVat / 1.2;
     const collectionTotalWithoutVat = collectionTotalWithVat / 1.2;
     const subTotalWithVat = deliveryTotalWithVat + collectionTotalWithVat;
     const subTotalWithoutVat =
       deliveryTotalWithoutVat + collectionTotalWithoutVat;
-    const vat = subTotalWithVat - subTotalWithoutVat;
-    const totalPriceWithVat = subTotalWithVat;
-    const totalPriceWithoutVat = subTotalWithoutVat;
+    const vat = subTotalWithVat - subTotalWithoutVat + deliveryVat; // VAT from products plus delivery VAT
+
+    // Final totals including delivery and its VAT
+    const totalPriceWithVat = subTotalWithVat + deliveryCharge + deliveryVat;
+    const totalPriceWithoutVat = subTotalWithoutVat + deliveryCharge;
 
     await prisma.cart.update({
       where: { id: cart.id },
@@ -259,6 +269,7 @@ async function recalculateCartTotal(userId: string) {
         collectionTotalWithoutVat,
         subTotalWithVat,
         subTotalWithoutVat,
+        deliveryCharge,
         vat,
         totalPriceWithVat,
         totalPriceWithoutVat,
