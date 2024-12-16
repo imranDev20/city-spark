@@ -124,7 +124,8 @@ export default function BasketPopup() {
   }, [cart]);
 
   const cartItemCount = cart?.cartItems?.length || 0;
-  const total = cart?.subTotalWithVat || 0;
+  const subTotalWithVat = cart?.subTotalWithVat || 0;
+  const subTotalWithoutVat = cart?.subTotalWithoutVat || 0;
 
   return (
     <div
@@ -216,13 +217,13 @@ export default function BasketPopup() {
             </ScrollArea>
 
             <div className="border-t p-4">
-              <div className="flex justify-between mb-4">
-                <span className="font-medium text-gray-900">
+              <div className="flex justify-between mb-2">
+                <span className="font-semibold text-lg text-gray-900">
                   Subtotal (inc. VAT)
                 </span>
-                <span className="font-bold text-gray-900">
+                <span className="font-bold text-lg text-gray-900">
                   <NumericFormat
-                    value={total}
+                    value={subTotalWithVat}
                     displayType="text"
                     prefix="£"
                     decimalScale={2}
@@ -231,7 +232,22 @@ export default function BasketPopup() {
                   />
                 </span>
               </div>
-              <Link href="/basket" passHref>
+
+              <div className="flex justify-between mb-4 text-sm">
+                <span className="text-gray-500">Subtotal (ex. VAT)</span>
+                <span className="text-gray-500">
+                  <NumericFormat
+                    value={subTotalWithoutVat}
+                    displayType="text"
+                    prefix="£"
+                    decimalScale={2}
+                    fixedDecimalScale
+                    thousandSeparator=","
+                  />
+                </span>
+              </div>
+
+              <Link href="/checkout" passHref>
                 <Button
                   className="w-full"
                   disabled={!cart?.cartItems || cart.cartItems.length === 0}

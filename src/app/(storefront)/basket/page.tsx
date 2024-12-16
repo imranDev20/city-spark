@@ -223,7 +223,7 @@ export default async function StorefrontBasketPage() {
                 </div>
                 <div className="mb-6">
                   <div className="flex justify-between mb-4">
-                    <span>Subtotal (Ex.VAT)</span>
+                    <span>Subtotal (ex. VAT)</span>
                     <span>£{cart.subTotalWithoutVat?.toFixed(2)}</span>
                   </div>
                   {deliveryItems && deliveryItems.length > 0 && (

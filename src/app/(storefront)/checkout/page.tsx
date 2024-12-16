@@ -66,7 +66,7 @@ export default function CheckoutPage() {
               <CardContent>
                 <div className="mb-6">
                   <div className="flex justify-between mb-4">
-                    <span>Subtotal (Ex.VAT)</span>
+                    <span>Subtotal (ex. VAT)</span>
                     <span>£{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between mb-4">
