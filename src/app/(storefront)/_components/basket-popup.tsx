@@ -232,7 +232,7 @@ export default function BasketPopup() {
               </div>
 
               <div className="flex justify-between mb-4 text-sm">
-                <span className="text-gray-500">Subtotal (ex. VAT)</span>
+                <span className="text-gray-500">Subtotal (exc. VAT)</span>
                 <span className="text-gray-500">
                   <NumericFormat
                     value={subTotalWithoutVat}

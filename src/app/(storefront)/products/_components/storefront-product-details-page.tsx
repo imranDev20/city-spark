@@ -45,35 +45,6 @@ export default async function StorefrontProductDetailsPage({
 }: {
   inventoryItem: InventoryItemWithRelation; // Replace 'any' with the actual type of your inventory item
 }) {
-  const product = inventoryItem.product;
-
-  const details = [
-    { label: "Brand Name", value: product.brand?.name },
-    { label: "Model", value: product.model },
-    ...(product.productTemplate?.fields?.map((field) => ({
-      label: field.templateField.fieldName,
-      value: field.fieldValue,
-    })) || []),
-    { label: "Guarantee", value: product.guarantee },
-    { label: "Warranty", value: product.warranty },
-    { label: "Unit", value: product.unit },
-    { label: "Weight", value: product.weight },
-    { label: "Color", value: product.color },
-    { label: "Length", value: product.length },
-    { label: "Width", value: product.width },
-    { label: "Height", value: product.height },
-    { label: "Material", value: product.material },
-    { label: "Volume", value: product.volume },
-    { label: "Type", value: product.type },
-    { label: "Shape", value: product.shape },
-  ].filter((detail) => detail.value != null);
-
-  // Pair up the details for two-column layout
-  const pairedDetails = [];
-  for (let i = 0; i < details.length; i += 2) {
-    pairedDetails.push(details.slice(i, i + 2));
-  }
-
   const generateBreadcrumbItems = (
     product: InventoryItemWithRelation["product"]
   ) => {
@@ -173,7 +144,7 @@ export default async function StorefrontProductDetailsPage({
               </h1>
             </div>
 
-            <Separator />
+            <Separator className="block lg:hidden" />
 
             <article className="prose max-w-none px-4 lg:px-8 mt-5">
               <h2 className="text-lg lg:text-xl font-semibold mb-4">

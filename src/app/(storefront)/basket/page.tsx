@@ -251,7 +251,7 @@ export default async function StorefrontBasketPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between text-[15px]">
                     <span className="font-normal text-gray-700">
-                      Subtotal (ex. VAT)
+                      Subtotal (exc. VAT)
                     </span>
                     <span className="tabular-nums font-semibold">
                       £{cart.subTotalWithoutVat?.toFixed(2)}

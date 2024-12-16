@@ -234,7 +234,7 @@ export default function ProductCard({
               <Button
                 variant="secondary"
                 size="sm"
-                className="w-full px-2 h-7 sm:h-8 text-xs sm:text-sm"
+                className="w-full px-2 h-7 sm:h-10 text-xs sm:text-sm"
                 onClick={(e) => handleAddToCart(e, "FOR_COLLECTION")}
                 disabled={isPending || !inventoryItem.collectionEligibility}
               >
@@ -243,32 +243,13 @@ export default function ProductCard({
               </Button>
               <Button
                 size="sm"
-                className="w-full px-2 h-7 sm:h-8 text-xs sm:text-sm"
+                className="w-full px-2 h-7 sm:h-10 text-xs sm:text-sm"
                 onClick={(e) => handleAddToCart(e, "FOR_DELIVERY")}
                 disabled={isPending || !inventoryItem.deliveryEligibility}
               >
                 <Truck className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4 hidden sm:inline-block" />
                 Deliver
               </Button>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-xs sm:text-sm">
-            <div className="hidden sm:flex items-center text-emerald-600">
-              {availableStock > 0 ? (
-                <>
-                  <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-emerald-600 mr-1 sm:mr-2" />
-                  In Stock
-                </>
-              ) : (
-                <>
-                  <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-gray-300 mr-1 sm:mr-2" />
-                  Out of Stock
-                </>
-              )}
-            </div>
-            <div className="text-gray-600 text-xs hidden lg:block">
-              {availableStock} available
             </div>
           </div>
         </div>

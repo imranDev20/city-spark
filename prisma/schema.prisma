@@ -82,6 +82,7 @@ model Product {
     id                   String           @id @default(cuid())
     name                 String           @unique
     description          String?
+    sku                  String?          @unique
     model                String?
     type                 String?
     warranty             String?

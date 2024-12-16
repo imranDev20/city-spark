@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import { Prisma } from "@prisma/client";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
-import type { EmblaOptionsType } from "embla-carousel";
 
 // Previous type definitions remain the same...
 type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
@@ -193,8 +192,40 @@ export default function ProductImageGallery({
         </div>
       </div>
 
+      {/* Desktop thumbnails */}
+      <div className="mt-5 grid grid-cols-6 gap-3 lg:px-8">
+        {inventoryItem.product.images.map((image, index) => (
+          <div
+            key={index}
+            className="flex-[0_0_23%] min-w-0 md:flex-[0_0_16.666%] border h-16 md:h-24"
+          >
+            <button
+              onClick={() => {
+                setMainImage(image);
+                setCurrentIndex(index);
+              }}
+              className={cn(
+                "relative w-full h-full bg-white overflow-hidden transition-all duration-200",
+                mainImage === image
+                  ? "border-2 border-secondary" // Changed from primary to secondary
+                  : "border border-gray-200"
+              )}
+            >
+              <Image
+                src={image}
+                alt={`${inventoryItem.product.name} - ${index + 1}`}
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 25vw, (max-width: 1200px) 16vw, 12vw"
+                draggable="false"
+              />
+            </button>
+          </div>
+        ))}
+      </div>
+
       {/* Thumbnail Carousel */}
-      <div className="mt-5">
+      <div className="mt-5 block lg:hidden">
         <div className="overflow-hidden" ref={thumbsRef}>
           <div className="flex">
             {inventoryItem.product.images.map((image, index) => (
@@ -304,7 +335,7 @@ export default function ProductImageGallery({
                         "relative w-16 h-full flex-shrink-0 rounded-md overflow-hidden touch-none",
                         "transition-all duration-200",
                         currentIndex === index
-                          ? "ring-2 ring-white opacity-100"
+                          ? "ring-2 ring-secondary opacity-100" // Changed from white to secondary
                           : "opacity-50 hover:opacity-75"
                       )}
                     >
