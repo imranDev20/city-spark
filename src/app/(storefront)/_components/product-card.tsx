@@ -13,6 +13,7 @@ import Link from "next/link";
 import { customSlugify } from "@/lib/functions";
 import { useQueryClient } from "@tanstack/react-query";
 import { BLUR_DATA_URL } from "@/lib/constants";
+import QuantitySelector from "../quantity-selector";
 
 // Types remain the same...
 type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
@@ -114,52 +115,6 @@ const ProductImage = ({ images }: { images: string[] }) => {
   );
 };
 
-const QuantitySelector = ({
-  quantity,
-  onQuantityChange,
-  disabled,
-}: {
-  quantity: number;
-  onQuantityChange: (quantity: number) => void;
-  disabled: boolean;
-}) => (
-  <div className="flex w-full mb-2">
-    <div className="flex w-full bg-gray-100 rounded-lg overflow-hidden">
-      <button
-        onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
-        disabled={disabled || quantity <= 1}
-        className="w-10 md:w-12 h-8 md:h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        aria-label="Decrease quantity"
-      >
-        <span className="text-lg font-medium text-gray-600">−</span>
-      </button>
-
-      <div className="flex-1 relative">
-        <input
-          type="number"
-          value={quantity}
-          onChange={(e) =>
-            onQuantityChange(Math.max(1, parseInt(e.target.value) || 1))
-          }
-          className="w-full h-full text-center bg-transparent border-none spinner-none focus:outline-none text-sm md:text-base font-medium"
-          min="1"
-          disabled={disabled}
-          aria-label="Quantity"
-        />
-      </div>
-
-      <button
-        onClick={() => onQuantityChange(quantity + 1)}
-        disabled={disabled}
-        className="w-10 md:w-12 h-8 md:h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        aria-label="Increase quantity"
-      >
-        <span className="text-lg font-medium text-gray-600">+</span>
-      </button>
-    </div>
-  </div>
-);
-
 export default function ProductCard({
   inventoryItem,
 }: {
@@ -225,47 +180,47 @@ export default function ProductCard({
 
         {/* Rest of the component remains the same */}
         <div className="flex flex-col p-2 sm:p-4">
-          <div className="space-y-1 sm:space-y-2 mb-2 sm:mb-5">
+          <div className="space-y-1 sm:space-y-2 mb-2">
             <StarRating rating={rating} />
 
             <h3 className="font-medium text-gray-900 text-sm sm:text-base line-clamp-3 min-h-[2.5rem]">
               {product.name}
             </h3>
           </div>
-
-          <div className="flex items-baseline gap-2">
-            {product.promotionalPrice ? (
-              // Case 1: Show promotional price with Inc VAT and strikethrough retail price
-              <>
-                <span className="sm:text-2xl font-bold text-gray-900">
-                  £{product.promotionalPrice.toFixed(2)}
-                </span>
-                <div className="text-[10px] text-gray-500 leading-none">
-                  Inc. VAT
-                </div>
-                {product.retailPrice &&
-                  product.retailPrice > product.promotionalPrice && (
-                    <span className="text-xs sm:text-sm text-gray-500 line-through">
-                      £{product.retailPrice.toFixed(2)}
-                    </span>
-                  )}
-              </>
-            ) : (
-              // Case 2: Show retail price with Inc VAT only
-              <>
-                <span className="sm:text-2xl font-bold text-gray-900">
-                  £{product.retailPrice?.toFixed(2)}
-                </span>
-                <div className="text-[10px] text-gray-500 leading-none">
-                  Inc. VAT
-                </div>
-              </>
-            )}
-          </div>
         </div>
       </Link>
 
       <div className="px-2 sm:px-4 pb-2 sm:pb-4 mt-auto">
+        <div className="flex items-baseline gap-2 mb-5">
+          {product.promotionalPrice ? (
+            // Case 1: Show promotional price with Inc VAT and strikethrough retail price
+            <>
+              <span className="sm:text-2xl font-bold text-gray-900">
+                £{product.promotionalPrice.toFixed(2)}
+              </span>
+              <div className="text-[10px] text-gray-500 leading-none font-semibold">
+                inc. VAT
+              </div>
+              {product.retailPrice &&
+                product.retailPrice > product.promotionalPrice && (
+                  <span className="text-xs sm:text-sm text-gray-500 line-through">
+                    £{product.retailPrice.toFixed(2)}
+                  </span>
+                )}
+            </>
+          ) : (
+            // Case 2: Show retail price with Inc VAT only
+            <>
+              <span className="sm:text-2xl font-bold text-gray-900">
+                £{(product.retailPrice || 0)?.toFixed(2)}
+              </span>
+              <div className="text-[10px] text-gray-500 leading-none font-semibold">
+                inc. VAT
+              </div>
+            </>
+          )}
+        </div>
+
         <div className="space-y-2 sm:space-y-4">
           <div className="space-y-2">
             <QuantitySelector

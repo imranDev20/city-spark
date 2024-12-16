@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import AcceptedPayments from "../_components/accepted-payments";
 import { FulFillmentType } from "@prisma/client";
-import { ShoppingCart } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ShoppingCart, User } from "lucide-react";
 import BasketList from "./_components/basket-list";
 import { getServerAuthSession } from "@/lib/auth";
 import { getOrCreateSessionId } from "@/lib/session-id";
@@ -147,16 +147,25 @@ export default async function StorefrontBasketPage() {
 
   if (!cart || cart.cartItems.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-screen-xl">
-        <h1 className="text-5xl font-extrabold mb-8">My Basket</h1>
-        <Card className="p-8 shadow-none border-gray-300 text-center">
-          <ShoppingCart className="mx-auto mb-4 h-16 w-16 text-gray-400" />
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 max-w-screen-xl">
+        <Link
+          href="/products"
+          className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-10 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to shopping
+        </Link>
+        <h1 className="text-4xl sm:text-5xl font-extrabold mb-10">My Basket</h1>
+        <Card className="p-8 sm:p-12 shadow-none border-gray-300 text-center">
+          <ShoppingCart className="mx-auto mb-6 h-16 w-16 text-gray-400" />
           <h2 className="text-2xl font-semibold mb-4">Your basket is empty</h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 mb-8 max-w-md mx-auto">
             Looks like you haven&apos;t added any items to your basket yet.
           </p>
           <Link href="/products">
-            <Button variant="default">Continue Shopping</Button>
+            <Button variant="default" size="lg">
+              Continue Shopping
+            </Button>
           </Link>
         </Card>
       </div>
@@ -164,26 +173,43 @@ export default async function StorefrontBasketPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-screen-xl">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          <h1 className="text-5xl font-extrabold mb-8">My Basket</h1>
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 max-w-screen-xl">
+      <Link
+        href="/products"
+        className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-10 transition-colors"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to shopping
+      </Link>
 
-          <div className="bg-blue-50 p-4 rounded-lg mb-8">
-            <div className="flex items-center">
-              <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-3">
-                i
+      <h1 className="text-4xl sm:text-5xl font-extrabold mb-10">My Basket</h1>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+        <div className="lg:col-span-2">
+          <div className="bg-blue-50 p-5 rounded-lg mb-10">
+            <div className="flex items-center space-x-4">
+              <div className="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                <User className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="font-semibold">Account options</h2>
-                <p className="text-sm">
-                  To receive a range of exclusive benefits{" "}
+                <h2 className="font-semibold text-lg mb-1">
+                  Sign in to your account
+                </h2>
+                <p className="text-sm text-gray-700">
                   <Link
-                    href="/create-account"
-                    className="text-blue-600 underline"
+                    href="/login"
+                    className="text-blue-600 hover:text-blue-700 underline"
                   >
-                    Create an account
-                  </Link>
+                    Sign in
+                  </Link>{" "}
+                  or{" "}
+                  <Link
+                    href="/register"
+                    className="text-blue-600 hover:text-blue-700 underline"
+                  >
+                    create an account
+                  </Link>{" "}
+                  to access exclusive benefits and faster checkout.
                 </p>
               </div>
             </div>
@@ -193,64 +219,78 @@ export default async function StorefrontBasketPage() {
             <BasketList items={collectionItems} title="Items for Collection" />
           )}
 
-          <div className="mt-10">
-            {deliveryItems && deliveryItems.length > 0 && (
-              <BasketList items={deliveryItems} title="Items for Delivery" />
-            )}
-          </div>
+          {deliveryItems && deliveryItems.length > 0 && (
+            <BasketList items={deliveryItems} title="Items for Delivery" />
+          )}
         </div>
 
         <div className="lg:col-span-1">
-          <div className="sticky top-20">
+          <div className="lg:sticky lg:top-24 space-y-6">
             <Card className="shadow-none bg-offWhite border-gray-300">
-              <CardHeader>
+              <CardHeader className="pb-4">
                 <CardTitle className="text-2xl">Order Summary</CardTitle>
               </CardHeader>
-              <CardContent>
-                <h3 className="font-semibold mb-2 text-base">Add Promo Code</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Promotions and coupon codes can not be used in conjunction or
-                  with any other offer.
-                </p>
-                <div className="flex mb-6">
-                  <Input
-                    placeholder="Gift card or promo code"
-                    className="mr-2 border border-gray-300"
-                  />
-                  <Button className="bg-secondary hover:bg-secondary/80">
-                    Apply
-                  </Button>
+              <CardContent className="space-y-6">
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-base">Add Promo Code</h3>
+                  <p className="text-sm text-gray-600">
+                    Promotions and coupon codes can not be used in conjunction
+                    or with any other offer.
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Gift card or promo code"
+                      className="border-gray-300"
+                    />
+                    <Button className="bg-secondary hover:bg-secondary/90 transition-colors">
+                      Apply
+                    </Button>
+                  </div>
                 </div>
-                <div className="mb-6">
-                  <div className="flex justify-between mb-4">
-                    <span>Subtotal (ex. VAT)</span>
-                    <span>£{cart.subTotalWithoutVat?.toFixed(2)}</span>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-[15px]">
+                    <span className="font-normal text-gray-700">
+                      Subtotal (ex. VAT)
+                    </span>
+                    <span className="tabular-nums font-semibold">
+                      £{cart.subTotalWithoutVat?.toFixed(2)}
+                    </span>
                   </div>
                   {deliveryItems && deliveryItems.length > 0 && (
-                    <div className="flex justify-between mb-4">
-                      <span>Delivery</span>
-                      <span>£5.00</span>
+                    <div className="flex items-center justify-between text-[15px]">
+                      <span className="font-normal text-gray-700">
+                        Delivery
+                      </span>
+                      <span className="tabular-nums font-semibold">£5.00</span>
                     </div>
                   )}
-                  <div className="flex justify-between mb-4">
-                    <span>VAT</span>
-                    <span>£{cart.vat?.toFixed(2)}</span>
+                  <div className="flex items-center justify-between text-[15px]">
+                    <span className="font-normal text-gray-700">VAT</span>
+                    <span className="tabular-nums font-semibold">
+                      £{cart.vat?.toFixed(2)}
+                    </span>
                   </div>
-                  <Separator className="my-4 bg-gray-300" />
-                  <div className="flex justify-between font-semibold">
-                    <span>Total</span>
-                    <span>£{cart.totalPriceWithVat?.toFixed(2)}</span>
+                  <Separator className="my-2 bg-gray-300" />
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-base font-medium text-gray-900">
+                      Total
+                    </span>
+                    <span className="text-xl tabular-nums font-bold">
+                      £{cart.totalPriceWithVat?.toFixed(2)}
+                    </span>
                   </div>
                 </div>
-                <Link href="/checkout">
-                  <Button variant="default" className="w-full">
+
+                <Link href="/checkout" className="block">
+                  <Button variant="default" className="w-full h-10 text-base">
                     Checkout
                   </Button>
                 </Link>
 
-                <div className="mt-5">
-                  <h3 className="font-semibold text-sm text-black mb-3">
-                    Accepted Payment
+                <div className="pt-2">
+                  <h3 className="font-semibold text-sm mb-4">
+                    Accepted Payment Methods
                   </h3>
                   <AcceptedPayments />
                 </div>

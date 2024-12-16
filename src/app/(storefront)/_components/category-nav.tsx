@@ -107,7 +107,13 @@ export default function CategoryNav({
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
-  const excludedRoutes = ["/login", "/register", "/cart", "/checkout"];
+  const excludedRoutes = [
+    "/login",
+    "/register",
+    "/cart",
+    "/checkout",
+    "/basket",
+  ];
 
   useEffect(() => {
     setHoveredCategory(null);

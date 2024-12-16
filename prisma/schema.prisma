@@ -333,7 +333,7 @@ model CartItem {
     type        FulFillmentType //delivery or collection
     inventory   Inventory       @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
     inventoryId String
-    quantity    Int?            @default(0)
+    quantity    Int             @default(0)
     createdAt   DateTime        @default(now())
     updatedAt   DateTime        @updatedAt
 }

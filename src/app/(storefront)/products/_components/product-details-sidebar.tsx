@@ -149,7 +149,7 @@ export default function ProductDetailsSidebar({
                 <span className="text-3xl font-semibold text-red-600">
                   £{product.tradePrice.toFixed(2)}
                 </span>
-                <span className="text-xl text-gray-500 ml-2">Inc. VAT</span>
+                <span className="text-xl text-gray-500 ml-2">inc. VAT</span>
               </>
             ) : (
               <span className="text-xl text-gray-500">Price not available</span>

@@ -9,6 +9,7 @@ import { Prisma } from "@prisma/client";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
 
 type CartItemWithRelations = Prisma.CartItemGetPayload<{
   include: {
@@ -67,28 +68,30 @@ const BasketList: React.FC<BasketListProps> = ({ items, title }) => {
     });
   };
 
+  if (!optimisticItems?.length) {
+    return null;
+  }
+
   return (
-    <>
-      {optimisticItems && optimisticItems.length > 0 && (
-        <>
-          <h2 className="text-2xl font-semibold mb-3">{title}</h2>
-          <Card
-            className={`p-5 shadow-none mb-5 border-gray-300 ${
-              isPending ? "opacity-50" : ""
-            }`}
-          >
-            {optimisticItems.map((item, index) => (
-              <React.Fragment key={item.id}>
-                <BasketItem cartItem={item} onRemove={handleRemoveItem} />
-                {index < optimisticItems.length - 1 && (
-                  <Separator className="my-4 bg-gray-300" />
-                )}
-              </React.Fragment>
-            ))}
-          </Card>
-        </>
-      )}
-    </>
+    <section className="mb-16">
+      {/* Added bottom margin here */}
+      <h2 className="text-2xl font-semibold mb-3">{title}</h2>
+      <Card
+        className={cn(
+          "p-5 shadow-none border-gray-300",
+          isPending && "opacity-50"
+        )}
+      >
+        {optimisticItems.map((item, index) => (
+          <React.Fragment key={item.id}>
+            <BasketItem cartItem={item} onRemove={handleRemoveItem} />
+            {index < optimisticItems.length - 1 && (
+              <Separator className="my-4 bg-gray-300" />
+            )}
+          </React.Fragment>
+        ))}
+      </Card>
+    </section>
   );
 };
 
