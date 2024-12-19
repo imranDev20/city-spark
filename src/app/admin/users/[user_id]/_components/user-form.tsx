@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import React, { Fragment, useEffect, useState, useTransition } from "react";
-import { ChevronLeft, Trash } from "lucide-react";
+import { ChevronLeft, HelpCircle, Plus, Trash } from "lucide-react";
 
 import {
   Form,
@@ -26,15 +26,13 @@ import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 
 import { Separator } from "@/components/ui/separator";
 import { LoadingButton } from "@/components/ui/loading-button";
 
 import { useEdgeStore } from "@/lib/edgestore";
-import { ContentLayout } from "@/app/admin/_components/content-layout";
-import DynamicBreadcrumb from "@/app/admin/_components/dynamic-breadcrumb";
+
 import {
   FileState,
   SingleImageDropzone,
@@ -42,6 +40,13 @@ import {
 import { Address, User } from "@prisma/client";
 import { updateUser } from "../../actions";
 import { FromInputType, userSchema } from "../../schema";
+import UserFormHeader from "./user-form-header";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function EditUserFrom({
   userDetails,
@@ -51,10 +56,10 @@ export default function EditUserFrom({
   addresses: Address[] | null;
 }) {
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
   const { toast } = useToast();
   const [fileState, setFileState] = useState<FileState | null>(null);
   const { edgestore } = useEdgeStore();
+
   function updateFileProgress(key: string, progress: FileState["progress"]) {
     setFileState((fileState) => {
       const newFileState = structuredClone(fileState);
@@ -98,6 +103,7 @@ export default function EditUserFrom({
     control,
     name: "address",
   });
+
   useEffect(() => {
     if (userDetails) {
       const { firstName, lastName, email, phone, password } = userDetails;
@@ -130,16 +136,6 @@ export default function EditUserFrom({
     }
   }, [userDetails]);
 
-  const breadcrumbItems = [
-    { label: "Dashboard", href: "/admin" },
-    { label: "Users", href: "/admin/users" },
-    {
-      label: userDetails?.firstName || "",
-      href: "/admin/users/new",
-      isCurrentPage: true,
-    },
-  ];
-
   const onEditUserSubmit: SubmitHandler<FromInputType> = async (data) => {
     if (userDetails?.id) {
       startTransition(async () => {
@@ -162,59 +158,34 @@ export default function EditUserFrom({
   };
 
   return (
-    <ContentLayout title="Edit User">
-      <DynamicBreadcrumb items={breadcrumbItems} />
+    <Form {...form}>
+      <form onSubmit={handleSubmit(onEditUserSubmit)}>
+        <UserFormHeader isPending={isPending} userDetails={userDetails} />
 
-      <Form {...form}>
-        <form onSubmit={handleSubmit(onEditUserSubmit)}>
-          <div className="flex items-center gap-4 mb-5 mt-7">
-            <Link href="/admin/users">
-              <Button variant="outline" size="icon" className="h-7 w-7">
-                <ChevronLeft className="h-4 w-4" />
-                <span className="sr-only">Back</span>
-              </Button>
-            </Link>
-            <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-              Edit Users {userDetails?.firstName}
-            </h1>
-            <Badge variant="outline" className="ml-auto sm:ml-0">
-              Active
-            </Badge>
-            <div className="hidden items-center gap-2 md:ml-auto md:flex">
-              <Button variant="outline" size="sm">
-                Discard
-              </Button>
-              <LoadingButton
-                type="submit"
-                disabled={!isDirty || isPending}
-                size="sm"
-                loading={isPending}
-                className="text-xs font-semibold h-8"
-              >
-                Update User
-              </LoadingButton>
-            </div>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
-            <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
+        <div className="container pt-8 pb-4 px-4 sm:px-8">
+          <div className="grid gap-6 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
+            <div className="lg:col-span-2 space-y-7">
+              {/* Personal Details Card */}
               <Card>
-                <CardHeader>
-                  <CardTitle>User Details</CardTitle>
+                <CardHeader className="space-y-1">
+                  <CardTitle className="text-2xl">Personal Details</CardTitle>
                   <CardDescription>
-                    Please provide the user details.
+                    Please provide the user&apos;s personal information
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <FormField
                       control={form.control}
                       name="firstName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>First Name</FormLabel>
+                          <FormLabel>
+                            First Name{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
                           <FormControl>
-                            <Input placeholder="First Name" {...field} />
+                            <Input placeholder="Enter first name" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -225,9 +196,12 @@ export default function EditUserFrom({
                       name="lastName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Last Name</FormLabel>
+                          <FormLabel>
+                            Last Name{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
                           <FormControl>
-                            <Input placeholder="Last Name" {...field} />
+                            <Input placeholder="Enter last name" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -238,9 +212,15 @@ export default function EditUserFrom({
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel>
+                            Email Address{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter email" {...field} />
+                            <Input
+                              placeholder="Enter email address"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -251,7 +231,7 @@ export default function EditUserFrom({
                       name="phone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Phone</FormLabel>
+                          <FormLabel>Phone Number</FormLabel>
                           <FormControl>
                             <Input
                               placeholder="Enter phone number"
@@ -262,62 +242,83 @@ export default function EditUserFrom({
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder="Enter password"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Confirm Password</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder="Enter confirm password"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Address Card */}
               <Card>
-                <CardHeader>
-                  <CardTitle>Address</CardTitle>
-                  <CardDescription>Provide address details</CardDescription>
+                <CardHeader className="space-y-1">
+                  <CardTitle className="text-2xl">Addresses</CardTitle>
+                  <CardDescription>
+                    Manage user&apos;s addresses
+                  </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid gap-3 space-y-4">
-                    {fields.map((field, index) => (
-                      <Fragment key={field.id}>
-                        <div
-                          key={field.id}
-                          className="grid gap-3 sm:grid-cols-9"
-                        >
-                          <div className="grid gap-3 col-span-4">
+                <CardContent className="space-y-6">
+                  {fields.map((field, index) => (
+                    <Fragment key={field.id}>
+                      <div className="rounded-lg border bg-card p-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-semibold">Address {index + 1}</h3>
+                          <Button
+                            disabled={fields.length === 1}
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => remove(index)}
+                            className="text-destructive hover:text-destructive/90"
+                          >
+                            <Trash className="w-4 h-4 mr-2" />
+                            Remove
+                          </Button>
+                        </div>
+                        <div className="grid gap-4">
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <FormField
+                              name={`address.${index}.addressLine1`}
+                              control={control}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>
+                                    Address Line 1{" "}
+                                    <span className="text-destructive">*</span>
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Street address"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              name={`address.${index}.addressLine2`}
+                              control={control}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Address Line 2</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Apartment, suite, etc."
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div className="grid gap-4 sm:grid-cols-3">
                             <FormField
                               name={`address.${index}.city`}
                               control={control}
                               render={({ field }) => (
                                 <FormItem>
+                                  <FormLabel>
+                                    City{" "}
+                                    <span className="text-destructive">*</span>
+                                  </FormLabel>
                                   <FormControl>
                                     <Input
                                       {...field}
@@ -328,34 +329,38 @@ export default function EditUserFrom({
                                 </FormItem>
                               )}
                             />
-                          </div>
-                          <div className="grid gap-3 col-span-4">
                             <FormField
                               name={`address.${index}.state`}
                               control={control}
                               render={({ field }) => (
                                 <FormItem>
+                                  <FormLabel>
+                                    County/State{" "}
+                                    <span className="text-destructive">*</span>
+                                  </FormLabel>
                                   <FormControl>
                                     <Input
                                       {...field}
-                                      placeholder="Enter state"
+                                      placeholder="Enter county/state"
                                     />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
                               )}
                             />
-                          </div>
-                          <div className="grid gap-3 col-span-4">
                             <FormField
                               name={`address.${index}.postalCode`}
                               control={control}
                               render={({ field }) => (
                                 <FormItem>
+                                  <FormLabel>
+                                    Postal Code{" "}
+                                    <span className="text-destructive">*</span>
+                                  </FormLabel>
                                   <FormControl>
                                     <Input
                                       {...field}
-                                      placeholder="Enter postalcode"
+                                      placeholder="Enter postal code"
                                     />
                                   </FormControl>
                                   <FormMessage />
@@ -363,112 +368,70 @@ export default function EditUserFrom({
                               )}
                             />
                           </div>
-                          <div className="grid gap-3 col-span-4">
-                            <FormField
-                              name={`address.${index}.addressLine1`}
-                              control={control}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      placeholder="Enter address line 1"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          <div className="grid gap-3 col-span-4">
-                            <FormField
-                              name={`address.${index}.addressLine2`}
-                              control={control}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      placeholder="Enter address line 2"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          <div className="grid gap-3 col-span-4">
-                            <FormField
-                              name={`address.${index}.country`}
-                              control={control}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      placeholder="Enter country"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-
-                          <div className="col-span-1 flex justify-end items-center">
-                            <Button
-                              disabled={fields.length === 1}
-                              variant="ghost"
-                              onClick={() => remove(index)}
-                            >
-                              <Trash className="w-4 h-4 text-primary" />
-                            </Button>
-                          </div>
+                          <FormField
+                            name={`address.${index}.country`}
+                            control={control}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>
+                                  Country{" "}
+                                  <span className="text-destructive">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Enter country"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </div>
+                      </div>
+                      {fields.length - 1 !== index && <Separator />}
+                    </Fragment>
+                  ))}
 
-                        {fields.length - 1 !== index && <Separator />}
-                      </Fragment>
-                    ))}
-
-                    <div>
-                      <Button
-                        type="button"
-                        onClick={() =>
-                          append({
-                            city: "",
-                            country: "",
-                            postalCode: "",
-                            state: "",
-                            addressLine1: "",
-                            addressLine2: "",
-                          })
-                        }
-                      >
-                        Add new
-                      </Button>
-                    </div>
-                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() =>
+                      append({
+                        addressLine1: "",
+                        addressLine2: "",
+                        city: "",
+                        state: "",
+                        postalCode: "",
+                        country: "",
+                      })
+                    }
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Another Address
+                  </Button>
                 </CardContent>
               </Card>
             </div>
-            <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-              <Card x-chunk="dashboard-07-chunk-5">
-                <CardHeader>
-                  <CardTitle>Avatar</CardTitle>
-                  <CardDescription>Upload your avatar here.</CardDescription>
+
+            <div>
+              <Card>
+                <CardHeader className="space-y-1">
+                  <CardTitle className="text-2xl">Profile Picture</CardTitle>
+                  <CardDescription>
+                    Upload a profile picture for the user
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <FormField
                     control={control}
                     name="avatar"
                     render={({ field }) => (
-                      <FormItem className="mx-auto">
-                        <FormLabel>
-                          <h2 className="text-xl font-semibold tracking-tight"></h2>
-                        </FormLabel>
-
+                      <FormItem>
                         <FormControl>
                           <SingleImageDropzone
+                            className="w-full"
                             value={fileState}
                             dropzoneOptions={{
                               maxFiles: 1,
@@ -496,22 +459,16 @@ export default function EditUserFrom({
                                     options: {
                                       temporary: true,
                                     },
-
                                     input: { type: "category" },
-
                                     onProgressChange: async (progress) => {
                                       updateFileProgress(
                                         addedFile.key,
                                         progress
                                       );
-
                                       if (progress === 100) {
-                                        // wait 1 second to set it to complete
-                                        // so that the user can see the progress bar at 100%
                                         await new Promise((resolve) =>
                                           setTimeout(resolve, 1000)
                                         );
-
                                         updateFileProgress(
                                           addedFile.key,
                                           "COMPLETE"
@@ -520,7 +477,6 @@ export default function EditUserFrom({
                                     },
                                   }
                                 );
-
                                 field.onChange(res.url);
                               } catch (err) {
                                 updateFileProgress(addedFile.key, "ERROR");
@@ -528,6 +484,10 @@ export default function EditUserFrom({
                             }}
                           />
                         </FormControl>
+                        <FormMessage />
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Maximum file size: 1MB. Supported formats: JPEG, PNG
+                        </p>
                       </FormItem>
                     )}
                   />
@@ -535,22 +495,8 @@ export default function EditUserFrom({
               </Card>
             </div>
           </div>
-          <div className="flex items-center justify-center gap-2 md:hidden">
-            <Button variant="outline" size="sm">
-              Discard
-            </Button>
-            <LoadingButton
-              type="submit"
-              disabled={isPending}
-              size="sm"
-              loading={isPending}
-              className="text-xs font-semibold h-8"
-            >
-              Save Category
-            </LoadingButton>
-          </div>
-        </form>
-      </Form>
-    </ContentLayout>
+        </div>
+      </form>
+    </Form>
   );
 }
