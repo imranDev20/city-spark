@@ -75,7 +75,7 @@ export default function CategoriesSection({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Categories</CardTitle>
+        <CardTitle className="text-2xl">Categories</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-6 sm:grid-cols-2">

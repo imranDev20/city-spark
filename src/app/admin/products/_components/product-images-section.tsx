@@ -62,7 +62,7 @@ export default function ProductImagesSection({
   return (
     <Card className="overflow-hidden">
       <CardHeader>
-        <CardTitle>Images</CardTitle>
+        <CardTitle className="text-2xl">Images</CardTitle>
         <CardDescription>Upload product images here.</CardDescription>
       </CardHeader>
 

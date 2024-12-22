@@ -30,7 +30,7 @@ export default function FeaturesSection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Features & Benefits</CardTitle>
+        <CardTitle className="text-2xl">Features & Benefits</CardTitle>
         <CardDescription>
           List the key features and benefits of your product or service.
         </CardDescription>

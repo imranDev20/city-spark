@@ -25,7 +25,7 @@ export default function ProductDetailsSection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Product Details</CardTitle>
+        <CardTitle className="text-2xl">Product Details</CardTitle>
         <CardDescription>
           Please provide the product name and description.
         </CardDescription>

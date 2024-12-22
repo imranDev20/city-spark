@@ -7,13 +7,10 @@ import { LoadingButton } from "@/components/ui/loading-button";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { OrderWithRelations } from "@/services/admin-orders";
 
 interface OrderHeaderProps {
-  orderDetails: {
-    orderNumber: string;
-    createdAt: string;
-  };
-
+  orderDetails: OrderWithRelations;
   isPending?: boolean;
 }
 
@@ -60,7 +57,7 @@ export default function OrderDetailsHeader({
 
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-semibold tracking-tight truncate">
-              {orderDetails.orderNumber}
+              {orderDetails.id}
             </h1>
             <div className="flex items-center space-x-4 mt-2">
               <span className="text-sm text-muted-foreground">

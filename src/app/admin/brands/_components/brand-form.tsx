@@ -162,7 +162,7 @@ export default function BrandForm({
             <div className="md:col-span-2 space-y-8">
               <Card>
                 <CardHeader>
-                  <CardTitle>Brand Details</CardTitle>
+                  <CardTitle className="text-2xl">Brand Details</CardTitle>
                   <CardDescription>
                     Enter the basic information for this brand.
                   </CardDescription>
@@ -237,7 +237,7 @@ export default function BrandForm({
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
               <Card>
                 <CardHeader>
-                  <CardTitle>Status</CardTitle>
+                  <CardTitle className="text-2xl">Status</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <FormField
@@ -273,7 +273,7 @@ export default function BrandForm({
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Logo</CardTitle>
+                  <CardTitle className="text-2xl">Logo</CardTitle>
                   <CardDescription>
                     Upload your brand logo here.
                   </CardDescription>
