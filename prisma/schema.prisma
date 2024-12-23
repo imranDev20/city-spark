@@ -84,6 +84,7 @@ model Product {
     description          String?
     sku                  String?          @unique
     model                String?
+    productCode          String?
     type                 String?
     warranty             String?
     guarantee            String?
@@ -358,7 +359,7 @@ model Order {
     cartId          String         @unique
     cart            Cart           @relation(fields: [cartId], references: [id])
     orderItems      OrderItem[]
-    totalPrice      Float?         @default(0)
+    totalPrice      Float          @default(0)
     status          Status         @default(DRAFT)
     orderStatus     OrderStatus    @default(PENDING)
     orderNumber     String?        @unique

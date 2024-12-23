@@ -150,6 +150,7 @@ export default function ProductForm({
         },
       ],
       model: "",
+      productCode: "",
       brand: "",
       images: [],
       shape: "",
@@ -196,6 +197,7 @@ export default function ProductForm({
         brand: productDetails.brandId || "",
         manufacturerLink: productDetails.manufacturerLink || "",
         model: productDetails.model || "",
+        productCode: productDetails.productCode || "",
         type: productDetails.type || "",
         warranty: productDetails.warranty || "",
         guarantee: productDetails.guarantee || "",
@@ -228,7 +230,7 @@ export default function ProductForm({
       setSecondaryCategoryId(productDetails.secondaryCategoryId || "");
       setTertiaryCategoryId(productDetails.tertiaryCategoryId || "");
     }
-  }, [productDetails, reset, form]);
+  }, [productDetails, reset]);
 
   const onSubmit = async (data: ProductFormInputType) => {
     startTransition(async () => {

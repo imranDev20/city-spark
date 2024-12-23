@@ -2,7 +2,6 @@ import React from "react";
 import { ContentLayout } from "../_components/content-layout";
 import DynamicBreadcrumb from "../_components/dynamic-breadcrumb";
 import DesktopOrderList from "./_components/desktop-orders-list";
-import { OrdersPagination } from "./_components/orders-pagination";
 import OrderTableHeader from "./_components/order-table-header";
 
 const breadcrumbItems = [
