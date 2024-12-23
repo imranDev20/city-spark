@@ -265,6 +265,21 @@ export default function BrandSpecificationsSection({ productDetails }: Props) {
             <div className="grid gap-3">
               <FormField
                 control={control}
+                name="productCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Product Code</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter product code" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid gap-3">
+              <FormField
+                control={control}
                 name="type"
                 render={({ field }) => (
                   <FormItem>

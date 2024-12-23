@@ -27,6 +27,7 @@ export const createProductSchema = (
     manufacturerLink: z.string().trim().optional(),
     model: z.string().trim().optional(),
     type: z.string().trim().optional(),
+    productCode: z.string().trim().optional(),
     warranty: z.string().trim().optional(),
     guarantee: z.string().trim().optional(),
     tradePrice: z.string().optional(),
