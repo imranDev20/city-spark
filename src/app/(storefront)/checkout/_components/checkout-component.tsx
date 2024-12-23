@@ -300,8 +300,8 @@ export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
                       Order Confirmed
                     </h2>
                     <p className="text-gray-600 max-w-md mx-auto">
-                      Thank you for your order! We've sent a confirmation email
-                      to your inbox with all the details.
+                      Thank you for your order! We&apos;ve sent a confirmation
+                      email to your inbox with all the details.
                     </p>
                   </div>
 

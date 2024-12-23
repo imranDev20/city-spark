@@ -92,7 +92,7 @@ export function FulfillmentForm({
               <CardTitle className="text-2xl">Collection Items</CardTitle>
             </div>
             <p className="text-sm text-gray-600 mt-2">
-              Items you'll collect from our store
+              Items you&apos;ll collect from our store
             </p>
           </CardHeader>
 
