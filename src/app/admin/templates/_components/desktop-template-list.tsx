@@ -257,7 +257,7 @@ export default function DesktopTemplateList() {
         <ReusablePagination
           currentPage={data.pagination.currentPage}
           totalPages={data.pagination.totalPages}
-          totalItems={data.pagination.totalCount}
+          totalCount={data.pagination.totalCount}
           itemsPerPage={data.pagination.pageSize}
         />
       </div>

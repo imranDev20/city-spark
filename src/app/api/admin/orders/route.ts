@@ -128,11 +128,11 @@ export async function GET(req: NextRequest) {
           refundDate: order.refundDate?.toISOString(),
         })),
         pagination: {
-          current_page: pageNumber,
-          page_size: pageSize,
-          total_items: totalCount,
-          total_pages: totalPages,
-          has_more: hasMore,
+          currentPage: pageNumber,
+          pageSize,
+          totalCount: totalCount,
+          totalPages,
+          hasMore,
         },
       },
     };
@@ -148,11 +148,11 @@ export async function GET(req: NextRequest) {
         data: {
           orders: [],
           pagination: {
-            current_page: 1,
-            page_size: 10,
-            total_items: 0,
-            total_pages: 0,
-            has_more: false,
+            currentPage: 1,
+            pageSize: 10,
+            totalCount: 0,
+            totalPages: 0,
+            hasMore: false,
           },
         },
       },

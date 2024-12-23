@@ -138,7 +138,7 @@ export default function PaymentDetailsCard({ order }: PaymentDetailsCardProps) {
   };
 
   return (
-    <Card>
+    <Card className="bg-white">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-2xl">
           <CreditCard className="w-7 h-7" />

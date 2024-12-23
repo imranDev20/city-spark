@@ -1,8 +1,9 @@
 import React from "react";
 import { ContentLayout } from "../_components/content-layout";
 import DynamicBreadcrumb from "../_components/dynamic-breadcrumb";
-import OrderList from "./_components/orders-list";
+import DesktopOrderList from "./_components/desktop-orders-list";
 import { OrdersPagination } from "./_components/orders-pagination";
+import OrderTableHeader from "./_components/order-table-header";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -12,10 +13,13 @@ const breadcrumbItems = [
     isCurrentPage: true,
   },
 ];
+
 export default function AdminOrdersPage() {
-  return<ContentLayout title="Orders">
-  <DynamicBreadcrumb items={breadcrumbItems} />
-  <OrderList />
-  <OrdersPagination />
-</ContentLayout>
+  return (
+    <ContentLayout title="Orders">
+      <DynamicBreadcrumb items={breadcrumbItems} />
+      <OrderTableHeader />
+      <DesktopOrderList />
+    </ContentLayout>
+  );
 }

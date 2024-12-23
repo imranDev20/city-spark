@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
-  totalItems: number;
+  totalCount: number;
   itemsPerPage: number;
   siblings?: number;
 }
@@ -25,7 +25,7 @@ interface PaginationProps {
 export function ReusablePagination({
   currentPage,
   totalPages,
-  totalItems,
+  totalCount,
   itemsPerPage,
   siblings = 2,
 }: PaginationProps) {
@@ -112,10 +112,10 @@ export function ReusablePagination({
         <strong>
           {Math.min(
             itemsPerPage,
-            totalItems - (currentPage - 1) * itemsPerPage
+            totalCount - (currentPage - 1) * itemsPerPage
           )}
         </strong>{" "}
-        of <strong>{totalItems}</strong> items
+        of <strong>{totalCount}</strong> items
       </div>
       <Pagination className="mt-5">
         <PaginationContent>

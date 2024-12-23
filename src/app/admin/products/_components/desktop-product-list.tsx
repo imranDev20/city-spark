@@ -280,8 +280,8 @@ export default function DesktopProductList({
         <ReusablePagination
           currentPage={data.pagination.currentPage}
           totalPages={data.pagination.totalPages}
-          totalItems={data.pagination.totalCount}
-          itemsPerPage={data.pagination.page_size}
+          totalCount={data.pagination.totalCount}
+          itemsPerPage={data.pagination.pageSize}
         />
       </div>
 

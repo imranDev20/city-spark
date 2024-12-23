@@ -8,7 +8,7 @@ interface OrderSummaryCardProps {
   order: OrderWithRelations;
 }
 
-export default function OrderSummaryCard({ order }: OrderSummaryCardProps) {
+export default function OrderSummarySection({ order }: OrderSummaryCardProps) {
   const cart = order.cart;
 
   const subTotalWithoutVat = cart.subTotalWithoutVat || 0;

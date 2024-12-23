@@ -140,7 +140,7 @@ export function CheckoutAuthDialog({
               Checkout Options
             </DialogTitle>
             <p className="text-sm text-gray-600 mt-2">
-              Choose how you'd like to continue with your purchase
+              Choose how you&apos;d like to continue with your purchase
             </p>
             <Button
               className="w-full mt-6 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 shadow-sm h-11 rounded-lg"

@@ -228,7 +228,7 @@ export default function ProductForm({
       setSecondaryCategoryId(productDetails.secondaryCategoryId || "");
       setTertiaryCategoryId(productDetails.tertiaryCategoryId || "");
     }
-  }, [productDetails, reset]);
+  }, [productDetails, reset, form]);
 
   const onSubmit = async (data: ProductFormInputType) => {
     startTransition(async () => {

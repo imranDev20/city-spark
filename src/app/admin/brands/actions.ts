@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { BrandFormInputType } from "./schema";
 import { backendClient } from "@/lib/edgestore-server";
-import { Prisma, Status } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 export async function createBrand(data: BrandFormInputType) {
   try {
@@ -77,15 +77,6 @@ export async function createBrand(data: BrandFormInputType) {
       error: "UNKNOWN_ERROR",
     };
   }
-}
-
-interface GetBrandsParams {
-  page?: number;
-  page_size?: number;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
-  filterStatus?: Status;
-  searchTerm?: string;
 }
 
 export async function deleteBrand(brandId: string) {

@@ -38,7 +38,7 @@ export default function CustomerDetailsSection({
   };
 
   return (
-    <Card>
+    <Card className="bg-white">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-2xl">
           <User className="w-7 h-7" />

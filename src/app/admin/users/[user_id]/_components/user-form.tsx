@@ -160,7 +160,7 @@ export default function EditUserFrom({
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onEditUserSubmit)}>
-        <UserFormHeader isPending={isPending} userDetails={userDetails} />
+        {/* <UserFormHeader isPending={isPending} userDetails={userDetails} /> */}
 
         <div className="container pt-8 pb-4 px-4 sm:px-8">
           <div className="grid gap-6 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">

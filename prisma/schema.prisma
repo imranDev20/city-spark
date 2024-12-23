@@ -339,6 +339,18 @@ model CartItem {
     updatedAt   DateTime        @updatedAt
 }
 
+enum OrderStatus {
+    DRAFT
+    PENDING
+    PROCESSING
+    SHIPPED
+    DELIVERED
+    COMPLETED
+    CANCELLED
+    RETURNED
+    RETURNED_REFUND
+}
+
 model Order {
     id              String         @id @default(cuid())
     userId          String
@@ -348,6 +360,8 @@ model Order {
     orderItems      OrderItem[]
     totalPrice      Float?         @default(0)
     status          Status         @default(DRAFT)
+    orderStatus     OrderStatus    @default(PENDING)
+    orderNumber     String?        @unique
     paymentMethod   String?
     paymentStatus   PaymentStatus  @default(UNPAID)
     trackingNumber  String?

@@ -101,7 +101,7 @@ export default function DesktopCategoryList() {
       <ReusablePagination
         currentPage={pagination.currentPage}
         totalPages={pagination.totalPages}
-        totalItems={pagination.totalCount}
+        totalCount={pagination.totalCount}
         itemsPerPage={pagination.pageSize}
       />
     </div>

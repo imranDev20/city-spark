@@ -77,7 +77,7 @@ export default async function AdminEditUserPage(props: { params: PageParams }) {
       <div className="container pt-8 pb-4 px-4 sm:px-8">
         <DynamicBreadcrumb items={breadcrumbItems} />
       </div>
-      <EditUserForm userDetails={dummyUserDetails} addresses={dummyAddresses} />
+      {/* <EditUserForm userDetails={dummyUserDetails} addresses={dummyAddresses} /> */}
     </ContentLayout>
   );
 }
