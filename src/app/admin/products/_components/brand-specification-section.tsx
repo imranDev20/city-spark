@@ -116,7 +116,7 @@ export default function BrandSpecificationsSection({ productDetails }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Brand Specifications</CardTitle>
+        <CardTitle className="text-2xl">Brand Specifications</CardTitle>
         <CardDescription>
           Please provide the brand specifications.
         </CardDescription>

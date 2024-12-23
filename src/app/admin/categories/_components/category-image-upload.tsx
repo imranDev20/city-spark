@@ -45,7 +45,7 @@ export default function CategoryImageUpload({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Images</CardTitle>
+        <CardTitle className="text-2xl">Images</CardTitle>
         <CardDescription>Upload your category image here.</CardDescription>
       </CardHeader>
       <CardContent>

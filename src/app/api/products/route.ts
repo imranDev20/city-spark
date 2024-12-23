@@ -116,7 +116,7 @@ export async function GET(request: Request) {
       products,
       pagination: {
         currentPage: page,
-        page_size: pageSize,
+        pageSize,
         totalPages,
         totalCount,
       },

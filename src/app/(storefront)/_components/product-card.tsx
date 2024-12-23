@@ -41,7 +41,7 @@ const StarRating = ({ rating }: { rating: number }) => (
       />
     ))}
     <span className="ml-1 sm:ml-2 text-xs sm:text-sm font-medium">
-      {rating.toFixed(1)}/5
+      {rating.toFixed(1)}
     </span>
   </div>
 );
@@ -180,10 +180,10 @@ export default function ProductCard({
 
         {/* Rest of the component remains the same */}
         <div className="flex flex-col p-2 sm:p-4">
-          <div className="space-y-1 sm:space-y-2 mb-2">
+          <div className="mb-3">
             <StarRating rating={rating} />
 
-            <h3 className="font-medium text-gray-900 text-sm sm:text-base line-clamp-3 min-h-[2.5rem]">
+            <h3 className="font-normal text-gray-900 text-sm sm:text-base line-clamp-3 min-h-[2.5rem] mt-3 !leading-[1.3rem]">
               {product.name}
             </h3>
           </div>

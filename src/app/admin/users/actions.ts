@@ -100,33 +100,6 @@ export async function deleteUser(userId: string) {
   }
 }
 
-export async function getUserById(userId: string) {
-  try {
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-      include: {
-        addresses: true,
-        orders: true,
-        carts: true,
-        wishlist: true,
-        accounts: true,
-        sessions: true,
-      },
-    });
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    return user;
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    throw new Error("Failed to fetch user");
-  }
-}
-
 export async function updateUser(userId: string, data: FromInputType) {
   try {
     const existingUser = await prisma.user.findUnique({

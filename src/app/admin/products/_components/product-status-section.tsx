@@ -24,7 +24,7 @@ export default function ProductStatusSection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Status</CardTitle>
+        <CardTitle className="text-2xl">Status</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-6">

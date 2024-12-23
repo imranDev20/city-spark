@@ -35,7 +35,7 @@ export default function PriceSection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Price</CardTitle>
+        <CardTitle className="text-2xl">Price</CardTitle>
         <CardDescription>Please provide the pricing details.</CardDescription>
       </CardHeader>
       <CardContent>

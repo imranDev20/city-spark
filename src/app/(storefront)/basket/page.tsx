@@ -12,6 +12,7 @@ import { getServerAuthSession } from "@/lib/auth";
 import { getOrCreateSessionId } from "@/lib/session-id";
 import { getCartWhereInput } from "@/lib/cart-utils";
 import prisma from "@/lib/prisma";
+import CheckoutButton from "./_components/checkout-button";
 
 export const dynamic = "force-dynamic";
 
@@ -282,12 +283,7 @@ export default async function StorefrontBasketPage() {
                   </div>
                 </div>
 
-                <Link href="/checkout" className="block">
-                  <Button variant="default" className="w-full h-10 text-base">
-                    Checkout
-                  </Button>
-                </Link>
-
+                <CheckoutButton />
                 <div className="pt-2">
                   <h3 className="font-semibold text-sm mb-4">
                     Accepted Payment Methods

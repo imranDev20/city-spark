@@ -6,14 +6,14 @@ import { z } from "zod";
 // Enhanced query schema to include parent category filters
 const querySchema = z.object({
   page: z.coerce.number().min(1).default(1),
-  page_size: z.coerce.number().min(1).default(10),
-  sort_by: z.enum(["name", "createdAt"]).optional().default("createdAt"),
-  sort_order: z.enum(["asc", "desc"]).optional().default("desc"),
-  filter_type: z.nativeEnum(CategoryType).optional().nullable(),
+  pageSize: z.coerce.number().min(1).default(10),
+  sortBy: z.enum(["name", "createdAt"]).optional().default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
+  filterType: z.nativeEnum(CategoryType).optional().nullable(),
   search: z.string().optional().nullable(),
-  primary_category_id: z.string().optional().nullable(),
-  secondary_category_id: z.string().optional().nullable(),
-  tertiary_category_id: z.string().optional().nullable(),
+  primaryCategoryId: z.string().optional().nullable(),
+  secondaryCategoryId: z.string().optional().nullable(),
+  tertiaryCategoryId: z.string().optional().nullable(),
 });
 
 export async function GET(req: NextRequest) {
@@ -23,29 +23,29 @@ export async function GET(req: NextRequest) {
     // Parse and validate query parameters
     const validatedParams = querySchema.parse({
       page: searchParams.get("page"),
-      page_size: searchParams.get("page_size"),
-      sort_by: searchParams.get("sort_by") || undefined,
-      sort_order: searchParams.get("sort_order") || undefined,
-      filter_type: searchParams.get("filter_type"),
+      pageSize: searchParams.get("page_size"),
+      sortBy: searchParams.get("sort_by") || undefined,
+      sortOrder: searchParams.get("sort_order") || undefined,
+      filterType: searchParams.get("filter_type"),
       search: searchParams.get("search"),
-      primary_category_id: searchParams.get("primary_category_id"),
-      secondary_category_id: searchParams.get("secondary_category_id"),
-      tertiary_category_id: searchParams.get("tertiary_category_id"),
+      primaryCategoryId: searchParams.get("primary_category_id"),
+      secondaryCategoryId: searchParams.get("secondary_category_id"),
+      tertiaryCategoryId: searchParams.get("tertiary_category_id"),
     });
 
     const {
       page,
-      page_size,
-      sort_by,
-      sort_order,
-      filter_type,
+      pageSize,
+      sortBy,
+      sortOrder,
+      filterType,
       search,
-      primary_category_id,
-      secondary_category_id,
-      tertiary_category_id,
+      primaryCategoryId,
+      secondaryCategoryId,
+      tertiaryCategoryId,
     } = validatedParams;
 
-    const skip = (page - 1) * page_size;
+    const skip = (page - 1) * pageSize;
 
     // Build the base where clause
     const where: {
@@ -60,21 +60,21 @@ export async function GET(req: NextRequest) {
     const andConditions = [];
 
     // Add type filter if provided
-    if (filter_type) {
-      andConditions.push({ type: filter_type });
+    if (filterType) {
+      andConditions.push({ type: filterType });
     }
 
     // Add parent category filters if provided
-    if (primary_category_id) {
-      andConditions.push({ parentPrimaryCategoryId: primary_category_id });
+    if (primaryCategoryId) {
+      andConditions.push({ parentPrimaryCategoryId: primaryCategoryId });
     }
 
-    if (secondary_category_id) {
-      andConditions.push({ parentSecondaryCategoryId: secondary_category_id });
+    if (secondaryCategoryId) {
+      andConditions.push({ parentSecondaryCategoryId: secondaryCategoryId });
     }
 
-    if (tertiary_category_id) {
-      andConditions.push({ parentTertiaryCategoryId: tertiary_category_id });
+    if (tertiaryCategoryId) {
+      andConditions.push({ parentTertiaryCategoryId: tertiaryCategoryId });
     }
 
     // Add search condition if provided
@@ -145,15 +145,15 @@ export async function GET(req: NextRequest) {
         },
         where,
         orderBy: {
-          [sort_by]: sort_order,
+          [sortBy]: sortOrder,
         },
         skip,
-        take: page_size,
+        take: pageSize,
       }),
       prisma.category.count({ where }),
     ]);
 
-    const totalPages = Math.ceil(totalCount / page_size);
+    const totalPages = Math.ceil(totalCount / pageSize);
 
     return NextResponse.json({
       status: "success",
@@ -162,7 +162,7 @@ export async function GET(req: NextRequest) {
         pagination: {
           currentPage: page,
           totalPages,
-          pageSize: page_size,
+          pageSize,
           totalCount,
         },
       },

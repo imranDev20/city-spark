@@ -105,7 +105,7 @@ export default function ManualsSection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Manuals & Instructions</CardTitle>
+        <CardTitle className="text-2xl">Manuals & Instructions</CardTitle>
         <CardDescription>
           Upload user manuals, technical documents, and installation guides
         </CardDescription>

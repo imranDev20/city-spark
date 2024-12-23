@@ -194,7 +194,7 @@ export default function TemplatesSection({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Templates</CardTitle>
+        <CardTitle className="text-2xl">Templates</CardTitle>
         <CardDescription>
           Please provide the physical specifications.
         </CardDescription>
@@ -302,7 +302,7 @@ export default function TemplatesSection({
 
       {/* Template Fields Section */}
       <CardHeader>
-        <CardTitle>Template Fields</CardTitle>
+        <CardTitle className="text-xl">Template Fields</CardTitle>
         <CardDescription>
           {templateFields.length > 0
             ? "Please provide the physical specifications."

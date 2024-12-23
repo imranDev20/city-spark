@@ -88,8 +88,9 @@ export function Sidebar() {
         <div className="flex-1 overflow-y-auto">
           <Menu isOpen={sidebar?.isOpen} />
         </div>
-        <div className="mt-auto border-t border-gray-300 dark:border-gray-700">
-          <div className="px-3 py-4 flex items-center justify-between">
+
+        <div className="mt-auto relative shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+          <div className="flex items-center justify-between py-3 px-3">
             {sidebar?.isOpen && (
               <div
                 className={cn(
@@ -121,7 +122,7 @@ export function Sidebar() {
                     <LogOut size={18} />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="right">Sign out</TooltipContent>
+                <TooltipContent side="right">Sign Out</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>

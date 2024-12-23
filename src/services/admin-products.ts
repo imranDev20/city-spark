@@ -23,7 +23,7 @@ export interface ProductsResponse {
     currentPage: number;
     totalCount: number;
     totalPages: number;
-    page_size: number;
+    pageSize: number;
   };
 }
 

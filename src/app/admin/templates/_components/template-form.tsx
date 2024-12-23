@@ -147,7 +147,7 @@ export default function TemplateForm({ templateDetails }: TemplateFormProps) {
             <div className="md:col-span-2 space-y-8">
               <Card>
                 <CardHeader>
-                  <CardTitle>Template Details</CardTitle>
+                  <CardTitle className="text-2xl">Template Details</CardTitle>
                   <CardDescription>
                     Enter the basic information for this template.
                   </CardDescription>
@@ -197,7 +197,7 @@ export default function TemplateForm({ templateDetails }: TemplateFormProps) {
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
               <Card>
                 <CardHeader>
-                  <CardTitle>Status</CardTitle>
+                  <CardTitle className="text-2xl">Status</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <FormField

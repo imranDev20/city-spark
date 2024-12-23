@@ -31,7 +31,7 @@ export default function CategoryDetails() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Category Details</CardTitle>
+        <CardTitle className="text-2xl">Category Details</CardTitle>
         <CardDescription>
           Enter the basic information for this category.
         </CardDescription>

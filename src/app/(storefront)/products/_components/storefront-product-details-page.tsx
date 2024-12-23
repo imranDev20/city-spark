@@ -139,6 +139,7 @@ export default async function StorefrontProductDetailsPage({
                 </div>
                 <span className="ml-2 text-sm text-gray-600">4.99</span>
               </div>
+
               <h1 className="text-xl font-semibold text-gray-800 block lg:hidden mt-2">
                 {inventoryItem.product.name}
               </h1>
@@ -169,7 +170,7 @@ export default async function StorefrontProductDetailsPage({
           </section>
 
           {/* Right Column - Product Actions */}
-          <aside className="lg:col-span-5">
+          <aside className="lg:col-span-5 relative">
             <ProductDetailsSidebar inventoryItem={inventoryItem} />
           </aside>
         </div>
