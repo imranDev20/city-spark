@@ -57,6 +57,7 @@ export async function createProduct(data: ProductFormInputType) {
           });
         }
 
+        // First create product with empty arrays for both images and manuals
         const createdProduct = await tx.product.create({
           data: {
             name: data.name,
@@ -116,8 +117,8 @@ export async function createProduct(data: ProductFormInputType) {
               : undefined,
             manufacturerLink: data.manufacturerLink || null,
             status: data.status || "ACTIVE",
-            manuals: data.manuals,
-            images: [], // We'll update this after confirming uploads
+            images: [],
+            manuals: [],
           },
           include: {
             inventory: {
@@ -153,22 +154,48 @@ export async function createProduct(data: ProductFormInputType) {
               confirmedImages.push(imageData.image);
             } else {
               throw new Error(
-                `Failed to confirm upload for ${imageData.image}`
+                `Failed to confirm upload for image: ${imageData.image}`
               );
             }
           } catch (error) {
             console.error(
-              `Failed to confirm upload for ${imageData.image}:`,
+              `Failed to confirm image upload for ${imageData.image}:`,
               error
             );
-            throw new Error(`Failed to upload ${imageData.image}`);
+            throw new Error(`Failed to upload image: ${imageData.image}`);
           }
         }
 
-        // Update product with confirmed images
+        // Confirm manual uploads
+        const confirmedManuals = [];
+        for (const manualUrl of data.manuals || []) {
+          try {
+            const result = await backendClient.publicFiles.confirmUpload({
+              url: manualUrl,
+            });
+            if (result.success) {
+              confirmedManuals.push(manualUrl);
+            } else {
+              throw new Error(
+                `Failed to confirm upload for manual: ${manualUrl}`
+              );
+            }
+          } catch (error) {
+            console.error(
+              `Failed to confirm manual upload for ${manualUrl}:`,
+              error
+            );
+            throw new Error(`Failed to upload manual: ${manualUrl}`);
+          }
+        }
+
+        // Update product with confirmed files
         const updatedProduct = await tx.product.update({
           where: { id: createdProduct.id },
-          data: { images: confirmedImages },
+          data: {
+            images: confirmedImages,
+            manuals: confirmedManuals,
+          },
           include: {
             inventory: {
               select: {
@@ -250,7 +277,7 @@ export async function duplicateProduct(productId: string) {
           });
         }
 
-        // Create the duplicated product
+        // Create the duplicated product with the original files
         const duplicatedProduct = await tx.product.create({
           data: {
             name: `${originalProduct.name} (Copy)`,
@@ -305,8 +332,8 @@ export async function duplicateProduct(productId: string) {
                 }
               : undefined,
             status: "DRAFT", // Always create duplicate as draft
-            manuals: originalProduct.manuals,
-            images: originalProduct.images,
+            images: originalProduct.images, // Simply copy the original URLs
+            manuals: originalProduct.manuals, // Simply copy the original URLs
           },
           include: {
             inventory: {
@@ -380,14 +407,13 @@ export async function updateProduct(
         // Handle product template
         let productTemplateId = null;
         if (data.templateId) {
-          // Get template fields to maintain order
+          // Template handling remains the same...
           const templateFields = await tx.templateField.findMany({
             where: {
               templateId: data.templateId,
             },
           });
 
-          // Create a map of field values including empty strings
           const fieldValuesMap = new Map(
             data.productTemplateFields
               ?.filter(
@@ -398,7 +424,6 @@ export async function updateProduct(
           );
 
           if (existingProduct.productTemplate?.id) {
-            // Update existing product template
             const updatedProductTemplate = await tx.productTemplate.update({
               where: { id: existingProduct.productTemplate.id },
               data: {
@@ -420,7 +445,6 @@ export async function updateProduct(
             });
             productTemplateId = updatedProductTemplate.id;
           } else {
-            // Create new product template
             const newProductTemplate = await tx.productTemplate.create({
               data: {
                 templateId: data.templateId,
@@ -441,7 +465,6 @@ export async function updateProduct(
             productTemplateId = newProductTemplate.id;
           }
         } else if (existingProduct.productTemplate) {
-          // Delete existing product template if it's no longer needed
           await tx.productTemplate.delete({
             where: { id: existingProduct.productTemplate.id },
           });
@@ -460,6 +483,22 @@ export async function updateProduct(
           } catch (error) {
             console.error(`Failed to delete image ${image}:`, error);
             throw new Error(`Failed to delete image ${image}`);
+          }
+        }
+
+        // Handle manual deletions
+        const manualsToDelete = existingProduct.manuals.filter(
+          (manual) => !data.manuals?.includes(manual)
+        );
+
+        for (const manual of manualsToDelete) {
+          try {
+            await backendClient.publicFiles.deleteFile({
+              url: manual,
+            });
+          } catch (error) {
+            console.error(`Failed to delete manual ${manual}:`, error);
+            throw new Error(`Failed to delete manual ${manual}`);
           }
         }
 
@@ -491,6 +530,35 @@ export async function updateProduct(
               }
             } else if (imageData?.image) {
               confirmedImages.push(imageData.image);
+            }
+          }
+        }
+
+        // Handle new manual confirmations
+        const confirmedManuals = [];
+        if (data.manuals) {
+          for (const manualUrl of data.manuals) {
+            if (!existingProduct.manuals.includes(manualUrl)) {
+              try {
+                const result = await backendClient.publicFiles.confirmUpload({
+                  url: manualUrl,
+                });
+                if (result.success) {
+                  confirmedManuals.push(manualUrl);
+                } else {
+                  throw new Error(
+                    `Failed to confirm upload for manual: ${manualUrl}`
+                  );
+                }
+              } catch (error) {
+                console.error(
+                  `Failed to confirm upload for manual: ${manualUrl}`,
+                  error
+                );
+                throw new Error(`Failed to upload manual: ${manualUrl}`);
+              }
+            } else {
+              confirmedManuals.push(manualUrl);
             }
           }
         }
@@ -541,7 +609,6 @@ export async function updateProduct(
               ? { connect: { id: data.brand } }
               : { disconnect: true },
             manufacturerLink: data.manufacturerLink || null,
-            manuals: data.manuals ?? [],
             primaryCategory: data.primaryCategoryId
               ? { connect: { id: data.primaryCategoryId } }
               : { disconnect: true },
@@ -555,6 +622,7 @@ export async function updateProduct(
               ? { connect: { id: data.quaternaryCategoryId } }
               : { disconnect: true },
             images: confirmedImages,
+            manuals: confirmedManuals,
             updatedAt: new Date(),
           },
           include: {
@@ -615,8 +683,9 @@ export async function deleteProducts(productIds: string[]) {
           throw new Error("No products found");
         }
 
-        // Delete images for all products
+        // Delete files (images and manuals) for all products
         for (const product of productsToDelete) {
+          // Delete images
           if (product.images && product.images.length > 0) {
             for (const image of product.images) {
               try {
@@ -625,7 +694,21 @@ export async function deleteProducts(productIds: string[]) {
                 });
               } catch (error) {
                 console.error(`Failed to delete image ${image}:`, error);
-                // Continue with deletion even if image deletion fails
+                // Continue with deletion even if file deletion fails
+              }
+            }
+          }
+
+          // Delete manuals
+          if (product.manuals && product.manuals.length > 0) {
+            for (const manual of product.manuals) {
+              try {
+                await backendClient.publicFiles.deleteFile({
+                  url: manual,
+                });
+              } catch (error) {
+                console.error(`Failed to delete manual ${manual}:`, error);
+                // Continue with deletion even if file deletion fails
               }
             }
           }
