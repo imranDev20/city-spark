@@ -9,7 +9,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProductFormInputType, createProductSchema } from "../schema";
 import { Check, X } from "lucide-react";
-import { Prisma } from "@prisma/client";
 import {
   Card,
   CardContent,
@@ -32,34 +31,13 @@ import ProductImagesSection from "./product-images-section";
 import ProductStatusSection from "./product-status-section";
 import ProductFormHeader from "./product-form-header";
 import ManualsSection from "./manuals-section";
+import { ProductWithDetails } from "@/services/admin-products";
 // import ManualsSection from "./manuals-section";
-
-type ProductWithRelations = Prisma.ProductGetPayload<{
-  include: {
-    images: true;
-    brand: true;
-    features: true;
-    inventory: {
-      select: {
-        id: true;
-      };
-    };
-    productTemplate: {
-      include: {
-        fields: {
-          include: {
-            templateField: true;
-          };
-        };
-      };
-    };
-  };
-}>;
 
 export default function ProductForm({
   productDetails,
 }: {
-  productDetails?: ProductWithRelations | null;
+  productDetails: ProductWithDetails;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -223,7 +201,7 @@ export default function ProductForm({
         status: productDetails.status || "DRAFT",
         shape: productDetails.shape || "",
         volume: productDetails.volume?.toString() || "",
-        manuals: [],
+        manuals: productDetails.manuals.map((item) => item),
       });
 
       setPrimaryCategoryId(productDetails.primaryCategoryId || "");
@@ -235,49 +213,51 @@ export default function ProductForm({
   const onSubmit = async (data: ProductFormInputType) => {
     console.log(data);
     startTransition(async () => {
-      // try {
-      //   let result;
-      //   if (productDetails) {
-      //     // Update existing product
-      //     result = await updateProduct(productDetails.id, data);
-      //   } else {
-      //     // Create new product
-      //     result = await createProduct(data);
-      //   }
-      //   if (result.success) {
-      //     // router.push(`/admin/inventory/${result.data?.inventory?.id}`);
-      //     await Promise.all([
-      //       // Invalidate general product listings
-      //       queryClient.invalidateQueries({ queryKey: ["products"] }),
-      //       // Invalidate the specific product if it was an update
-      //       productDetails?.id &&
-      //         queryClient.invalidateQueries({
-      //           queryKey: ["product", productDetails.id],
-      //         }),
-      //     ]),
-      //       toast({
-      //         title: "Success",
-      //         description: result.message,
-      //         variant: "success",
-      //       });
-      //     // Route to inventory page after creation. Don't route after update
-      //   } else {
-      //     toast({
-      //       title: "Error",
-      //       description: result.message,
-      //       variant: "destructive",
-      //     });
-      //   }
-      // } catch (error) {
-      //   console.error("Error submitting product:", error);
-      //   toast({
-      //     title: "Error",
-      //     description: "An unexpected error occurred. Please try again.",
-      //     variant: "destructive",
-      //   });
-      // }
+      try {
+        let result;
+        if (productDetails) {
+          // Update existing product
+          result = await updateProduct(productDetails.id, data);
+        } else {
+          // Create new product
+          result = await createProduct(data);
+        }
+        if (result.success) {
+          // router.push(`/admin/inventory/${result.data?.inventory?.id}`);
+          await Promise.all([
+            // Invalidate general product listings
+            queryClient.invalidateQueries({ queryKey: ["products"] }),
+            // Invalidate the specific product if it was an update
+            productDetails?.id &&
+              queryClient.invalidateQueries({
+                queryKey: ["product", productDetails.id],
+              }),
+          ]),
+            toast({
+              title: "Success",
+              description: result.message,
+              variant: "success",
+            });
+          // Route to inventory page after creation. Don't route after update
+        } else {
+          toast({
+            title: "Error",
+            description: result.message,
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error submitting product:", error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
     });
   };
+
+  console.log(productDetails);
 
   return (
     <Form {...form}>
@@ -296,6 +276,7 @@ export default function ProductForm({
 
               <FeaturesSection />
               <TemplatesSection productDetails={productDetails} />
+
               <CategoriesSection
                 primaryCategories={primaryCategories}
                 secondaryCategories={secondaryCategories}
@@ -318,7 +299,7 @@ export default function ProductForm({
               <ProductStatusSection />
               <ProductImagesSection initialImages={productDetails?.images} />
 
-              <ManualsSection />
+              <ManualsSection productDetails={productDetails} />
 
               <Card x-chunk="dashboard-07-chunk-5">
                 <CardHeader>
@@ -342,6 +323,7 @@ export default function ProductForm({
               <X className="mr-2 h-4 w-4" />
               Cancel
             </Button>
+
             <LoadingButton
               type="submit"
               disabled={!isDirty || isPending}

@@ -214,6 +214,8 @@ export const getLatestInventoryItems = cache(
         take: limit,
       });
 
+      console.log(inventoryItems);
+
       return inventoryItems;
     } catch (error) {
       console.error("Error fetching latest inventory items:", error);
