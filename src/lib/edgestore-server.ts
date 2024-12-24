@@ -4,13 +4,32 @@ import { createEdgeStoreNextHandler } from "@edgestore/server/adapters/next/app"
 import { z } from "zod";
 
 const es = initEdgeStore.create();
+
 /**
  * This is the main router for the Edge Store buckets.
  */
 const edgeStoreRouter = es.router({
-  publicFiles: es.fileBucket({
-    maxSize: 1024 * 1024 * 50, // 50MB
-  }),
+  publicFiles: es
+    .fileBucket({
+      maxSize: 1024 * 1024 * 50, // 50MB
+    })
+    .input(
+      z.object({
+        type: z.enum(["manual", "instruction", "technical", "specification"]),
+        category: z.enum(["product", "brand", "template"]),
+      })
+    )
+    // e.g. /products/manuals/product-name.pdf
+    .path(({ input }) => [
+      {
+        type: input.category,
+        folder: input.type,
+      },
+    ])
+    .beforeDelete(({ ctx, fileInfo }) => {
+      console.log("beforeDelete document", ctx, fileInfo);
+      return true; // allow delete
+    }),
 
   publicImages: es
     .imageBucket({
@@ -18,7 +37,14 @@ const edgeStoreRouter = es.router({
     })
     .input(
       z.object({
-        type: z.enum(["product", "account", "brand", "template", "category"]),
+        type: z.enum([
+          "product",
+          "account",
+          "brand",
+          "template",
+          "category",
+          "user",
+        ]),
       })
     )
     // e.g. /products/radiator.jpg
@@ -32,6 +58,7 @@ const edgeStoreRouter = es.router({
 export const handler = createEdgeStoreNextHandler({
   router: edgeStoreRouter,
 });
+
 export const backendClient = initEdgeStoreClient({
   router: edgeStoreRouter,
 });

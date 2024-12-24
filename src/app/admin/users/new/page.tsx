@@ -463,7 +463,7 @@ export default function CreateUserPage() {
                                       temporary: true,
                                     },
 
-                                    input: { type: "category" },
+                                    input: { type: "user" },
 
                                     onProgressChange: async (progress) => {
                                       updateFileProgress(

@@ -14,7 +14,7 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { MultiImageDropzone, type FileState } from "./product-image-uploader";
+import { MultiImageDropzone, type FileState } from "./multi-image-dropzone";
 import { useEdgeStore } from "@/lib/edgestore";
 import { useFormContext, useFieldArray } from "react-hook-form";
 
