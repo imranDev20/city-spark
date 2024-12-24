@@ -56,7 +56,7 @@ import { CommandLoading } from "cmdk";
 import { ProductWithDetails } from "@/services/admin-products";
 
 interface TemplatesSectionProps {
-  productDetails: ProductWithDetails;
+  productDetails?: ProductWithDetails;
 }
 
 export default function TemplatesSection({

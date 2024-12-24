@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ProductWithDetails } from "@/services/admin-products";
 
 interface ManualsSectionProps {
-  productDetails: ProductWithDetails;
+  productDetails?: ProductWithDetails;
 }
 
 export default function ManualsSection({

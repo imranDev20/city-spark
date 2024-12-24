@@ -37,7 +37,7 @@ import { ProductWithDetails } from "@/services/admin-products";
 export default function ProductForm({
   productDetails,
 }: {
-  productDetails: ProductWithDetails;
+  productDetails?: ProductWithDetails;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
