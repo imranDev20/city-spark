@@ -233,52 +233,49 @@ export default function ProductForm({
   }, [productDetails, reset]);
 
   const onSubmit = async (data: ProductFormInputType) => {
+    console.log(data);
     startTransition(async () => {
-      try {
-        let result;
-        if (productDetails) {
-          // Update existing product
-          result = await updateProduct(productDetails.id, data);
-        } else {
-          // Create new product
-          result = await createProduct(data);
-        }
-
-        if (result.success) {
-          // router.push(`/admin/inventory/${result.data?.inventory?.id}`);
-
-          await Promise.all([
-            // Invalidate general product listings
-            queryClient.invalidateQueries({ queryKey: ["products"] }),
-
-            // Invalidate the specific product if it was an update
-            productDetails?.id &&
-              queryClient.invalidateQueries({
-                queryKey: ["product", productDetails.id],
-              }),
-          ]),
-            toast({
-              title: "Success",
-              description: result.message,
-              variant: "success",
-            });
-
-          // Route to inventory page after creation. Don't route after update
-        } else {
-          toast({
-            title: "Error",
-            description: result.message,
-            variant: "destructive",
-          });
-        }
-      } catch (error) {
-        console.error("Error submitting product:", error);
-        toast({
-          title: "Error",
-          description: "An unexpected error occurred. Please try again.",
-          variant: "destructive",
-        });
-      }
+      // try {
+      //   let result;
+      //   if (productDetails) {
+      //     // Update existing product
+      //     result = await updateProduct(productDetails.id, data);
+      //   } else {
+      //     // Create new product
+      //     result = await createProduct(data);
+      //   }
+      //   if (result.success) {
+      //     // router.push(`/admin/inventory/${result.data?.inventory?.id}`);
+      //     await Promise.all([
+      //       // Invalidate general product listings
+      //       queryClient.invalidateQueries({ queryKey: ["products"] }),
+      //       // Invalidate the specific product if it was an update
+      //       productDetails?.id &&
+      //         queryClient.invalidateQueries({
+      //           queryKey: ["product", productDetails.id],
+      //         }),
+      //     ]),
+      //       toast({
+      //         title: "Success",
+      //         description: result.message,
+      //         variant: "success",
+      //       });
+      //     // Route to inventory page after creation. Don't route after update
+      //   } else {
+      //     toast({
+      //       title: "Error",
+      //       description: result.message,
+      //       variant: "destructive",
+      //     });
+      //   }
+      // } catch (error) {
+      //   console.error("Error submitting product:", error);
+      //   toast({
+      //     title: "Error",
+      //     description: "An unexpected error occurred. Please try again.",
+      //     variant: "destructive",
+      //   });
+      // }
     });
   };
 
