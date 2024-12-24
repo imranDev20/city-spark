@@ -50,6 +50,7 @@ export default function TechnicalSpecs({ product }: TechnicalSpecsProps) {
     { label: "Volume", value: product.volume },
     { label: "Type", value: product.type },
     { label: "Shape", value: product.shape },
+    { label: "Supplier Part Number", value: product.productCode },
   ].filter((detail) => detail.value && detail.value.trim() !== "");
 
   if (details.length === 0) return null;
