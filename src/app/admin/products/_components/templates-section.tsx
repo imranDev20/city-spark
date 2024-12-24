@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2, X } from "lucide-react";
 
 import {
   FormControl,
@@ -46,7 +46,6 @@ import {
 // Utils and Types
 import { cn } from "@/lib/utils";
 import { ProductFormInputType } from "../schema";
-import { Prisma } from "@prisma/client";
 import {
   fetchTemplateDetails,
   fetchTemplates,
@@ -54,23 +53,10 @@ import {
 } from "@/services/admin-templates";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CommandLoading } from "cmdk";
-
-type ProductWithTemplate = Prisma.ProductGetPayload<{
-  include: {
-    productTemplate: {
-      include: {
-        fields: {
-          include: {
-            templateField: true;
-          };
-        };
-      };
-    };
-  };
-}>;
+import { ProductWithDetails } from "@/services/admin-products";
 
 interface TemplatesSectionProps {
-  productDetails?: ProductWithTemplate | null;
+  productDetails?: ProductWithDetails;
 }
 
 export default function TemplatesSection({
@@ -79,7 +65,8 @@ export default function TemplatesSection({
   const [openTemplates, setOpenTemplates] = useState(false);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
-  const { control, reset, getValues } = useFormContext<ProductFormInputType>();
+  const { control, setValue, reset, getValues } =
+    useFormContext<ProductFormInputType>();
   const templateId = useWatch({ control, name: "templateId" });
 
   // Templates infinite query
@@ -164,7 +151,7 @@ export default function TemplatesSection({
         });
       }
     }
-  }, [reset, getValues, templateDetails, productDetails, templateId]);
+  }, [getValues, templateDetails, productDetails, templateId]);
 
   // Load more pages until we find the selected template
   useEffect(() => {
@@ -223,16 +210,43 @@ export default function TemplatesSection({
                           {isLoading ? (
                             "Loading..."
                           ) : selectedTemplate ? (
-                            selectedTemplate.name
+                            <div className="flex items-center justify-between w-full">
+                              <span>{selectedTemplate.name}</span>
+                              <div className="flex items-center">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-4 w-4 p-0 hover:bg-transparent"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    field.onChange(null);
+
+                                    setValue("productTemplateFields", [], {
+                                      shouldDirty: true,
+                                      shouldValidate: true,
+                                    });
+
+                                    setValue("templateId", "", {
+                                      shouldDirty: true,
+                                      shouldValidate: true,
+                                    });
+                                  }}
+                                >
+                                  <X className="h-4 w-4" />
+                                  <span className="sr-only">
+                                    Clear template selection
+                                  </span>
+                                </Button>
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </div>
+                            </div>
                           ) : (
-                            <p className="text-muted-foreground">
-                              Select a template
-                            </p>
-                          )}
-                          {isLoading ? (
-                            <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            <div className="flex items-center justify-between w-full">
+                              <span className="text-muted-foreground">
+                                Select a template
+                              </span>
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </div>
                           )}
                         </Button>
                       </PopoverTrigger>

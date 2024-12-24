@@ -9,5 +9,7 @@ export default async function ProductCarouselContainer({
 }) {
   const inventoryItems = await getLatestInventoryItems(10);
 
+  console.log(inventoryItems);
+
   return <ProductCarousel title={title} inventoryItems={inventoryItems} />;
 }

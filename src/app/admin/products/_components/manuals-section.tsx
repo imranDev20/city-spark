@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useFormContext } from "react-hook-form";
 import {
   Card,
@@ -15,107 +15,184 @@ import {
   type FileState,
 } from "@/components/multi-file-dropzone";
 import { useEdgeStore } from "@/lib/edgestore";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ProductWithDetails } from "@/services/admin-products";
 
-export default function ManualsSection() {
+interface ManualsSectionProps {
+  productDetails?: ProductWithDetails;
+}
+
+export default function ManualsSection({
+  productDetails,
+}: ManualsSectionProps) {
   const form = useFormContext<ProductFormInputType>();
   const [fileStates, setFileStates] = useState<FileState[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { edgestore } = useEdgeStore();
   const manuals = form.watch("manuals") || [];
+  const uploadInProgress = useRef<boolean>(false);
+  const mountedRef = useRef<boolean>(false);
 
-  // Initialize fileStates from existing manuals
-  useEffect(() => {
-    if (fileStates.length === 0 && manuals.length > 0) {
-      const states = manuals.map((url) => ({
-        file: new File([], url.split("/").pop() || ""),
-        key: Math.random().toString(36).slice(2),
-        progress: "COMPLETE" as const,
-        url: url,
-      }));
-      setFileStates(states);
-    }
-  }, [manuals, fileStates.length]);
+  const getFileDetails = async (url: string): Promise<File> => {
+    try {
+      const response = await fetch(url, { method: "HEAD" });
+      const size = Number(response.headers.get("content-length"));
+      const type =
+        response.headers.get("content-type") || "application/octet-stream";
+      const fileName = url.split("/").pop() || "";
 
-  function updateFileProgress(
-    key: string,
-    progress: FileState["progress"],
-    url?: string
-  ) {
-    setFileStates((currentStates) => {
-      const newFileStates = structuredClone(currentStates);
-      const fileState = newFileStates.find((state) => state.key === key);
-      if (fileState) {
-        fileState.progress = progress;
-        if (url) fileState.url = url;
-      }
-      return newFileStates;
-    });
-
-    // If the file is complete and has a URL, update the form's manuals array
-    if (progress === "COMPLETE" && url) {
-      const updatedManuals = [...manuals, url];
-      form.setValue("manuals", updatedManuals, {
-        shouldValidate: true,
-        shouldDirty: true,
+      // Create a blob with the correct size
+      const buffer = new ArrayBuffer(size || 0); // Fallback to 0 if size is not available
+      const blob = new Blob([buffer], { type });
+      return new File([blob], fileName, { type });
+    } catch (error) {
+      console.error("Error getting file details:", error);
+      // Return a minimal valid File object as fallback
+      return new File([], url.split("/").pop() || "", {
+        type: "application/octet-stream",
       });
     }
-  }
-
-  const handleFilesAdded = async (addedFiles: FileState[]) => {
-    // Keep existing files and add new ones
-    setFileStates((currentStates) => [...currentStates, ...addedFiles]);
-
-    await Promise.all(
-      addedFiles.map(async (addedFileState) => {
-        try {
-          const progressCallback = async (progress: number) => {
-            updateFileProgress(addedFileState.key, progress);
-          };
-
-          const res = await edgestore.publicFiles.upload({
-            file: addedFileState.file,
-            input: {
-              type: "manual",
-              category: "product",
-            },
-            options: {
-              temporary: true,
-            },
-            onProgressChange: progressCallback,
-          });
-
-          // Add a small delay before marking as complete
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          updateFileProgress(addedFileState.key, "COMPLETE", res.url);
-        } catch (err) {
-          console.error("Upload error:", err);
-          updateFileProgress(addedFileState.key, "ERROR");
-
-          // Remove failed upload from fileStates
-          setFileStates((current) =>
-            current.filter((state) => state.key !== addedFileState.key)
-          );
-        }
-      })
-    );
   };
 
-  const handleRemoveFile = (keyToRemove: string) => {
-    const fileState = fileStates.find((state) => state.key === keyToRemove);
+  // Handle initial state setup
+  useEffect(() => {
+    if (mountedRef.current) return;
+    mountedRef.current = true;
 
-    // Remove from fileStates
+    const initializeFiles = async () => {
+      if (productDetails?.manuals?.length || manuals.length) {
+        setIsLoading(true);
+        try {
+          const urlsToInit = productDetails?.manuals?.length
+            ? productDetails.manuals
+            : manuals;
+
+          // Get file details for all URLs in parallel
+          const fileDetailsPromises = urlsToInit.map(async (url) => {
+            const file = await getFileDetails(url);
+            return {
+              file,
+              key: Math.random().toString(36).slice(2),
+              progress: "COMPLETE" as const,
+              url: url,
+            } satisfies FileState;
+          });
+
+          const states = await Promise.all(fileDetailsPromises);
+          setFileStates(states);
+        } catch (error) {
+          console.error("Error initializing files:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    initializeFiles();
+  }, [productDetails, manuals]);
+
+  const handleFilesAdded = async (addedFiles: FileState[]) => {
+    if (uploadInProgress.current) return;
+    uploadInProgress.current = true;
+
+    try {
+      const newFileStates = [...fileStates];
+      addedFiles.forEach((file) => {
+        newFileStates.push({
+          ...file,
+          progress: 0,
+        });
+      });
+      setFileStates(newFileStates);
+
+      const newUrls: string[] = [];
+
+      await Promise.all(
+        addedFiles.map(async (fileState) => {
+          try {
+            const res = await edgestore.publicFiles.upload({
+              file: fileState.file,
+              input: {
+                type: "manual",
+                category: "product",
+              },
+              options: {
+                temporary: true,
+                manualFileName: fileState.file.name,
+              },
+              onProgressChange: (progress) => {
+                setFileStates((current) =>
+                  current.map((state) =>
+                    state.key === fileState.key ? { ...state, progress } : state
+                  )
+                );
+              },
+            });
+
+            newUrls.push(res.url);
+
+            setFileStates((current) =>
+              current.map((state) =>
+                state.key === fileState.key
+                  ? { ...state, progress: "COMPLETE", url: res.url }
+                  : state
+              )
+            );
+          } catch (error) {
+            console.error("File upload error:", error);
+            setFileStates((current) =>
+              current.filter((state) => state.key !== fileState.key)
+            );
+          }
+        })
+      );
+
+      if (newUrls.length > 0) {
+        const updatedManuals = [...manuals, ...newUrls];
+        form.setValue("manuals", updatedManuals, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
+    } finally {
+      uploadInProgress.current = false;
+    }
+  };
+
+  const handleRemoveFile = async (keyToRemove: string) => {
+    const fileToRemove = fileStates.find((state) => state.key === keyToRemove);
+
+    if (!fileToRemove) return;
+
     setFileStates((current) =>
       current.filter((state) => state.key !== keyToRemove)
     );
 
-    // Remove from manuals if URL exists
-    if (fileState?.url) {
-      const updatedManuals = manuals.filter((url) => url !== fileState.url);
+    if (fileToRemove.url && fileToRemove.progress === "COMPLETE") {
+      const updatedManuals = manuals.filter((url) => url !== fileToRemove.url);
       form.setValue("manuals", updatedManuals, {
         shouldValidate: true,
         shouldDirty: true,
       });
     }
   };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">Manuals & Instructions</CardTitle>
+          <CardDescription>Loading existing manuals...</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Skeleton className="h-[100px] w-full" />
+            <Skeleton className="h-[100px] w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -139,14 +216,15 @@ export default function ManualsSection() {
           }}
           onChange={(files) => {
             setFileStates(files);
-            // Update manuals array to match remaining files
-            const updatedManuals = files
+            const completedUrls = files
               .filter((f) => f.progress === "COMPLETE" && f.url)
               .map((f) => f.url!);
-            form.setValue("manuals", updatedManuals, {
-              shouldValidate: true,
-              shouldDirty: true,
-            });
+            if (completedUrls.length > 0) {
+              form.setValue("manuals", completedUrls, {
+                shouldValidate: true,
+                shouldDirty: true,
+              });
+            }
           }}
           onFilesAdded={handleFilesAdded}
           onFileRemove={handleRemoveFile}

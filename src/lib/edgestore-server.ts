@@ -20,12 +20,7 @@ const edgeStoreRouter = es.router({
       })
     )
     // e.g. /products/manuals/product-name.pdf
-    .path(({ input }) => [
-      {
-        type: input.category,
-        folder: input.type,
-      },
-    ])
+    .path(({ input }) => [{ type: input.category }, { folder: input.type }])
     .beforeDelete(({ ctx, fileInfo }) => {
       console.log("beforeDelete document", ctx, fileInfo);
       return true; // allow delete
