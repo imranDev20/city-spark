@@ -35,19 +35,15 @@ export default function ManualsSection({
 
   const getFileDetails = async (url: string): Promise<File> => {
     try {
-      const response = await fetch(url, { method: "HEAD" });
-      const size = Number(response.headers.get("content-length"));
-      const type =
-        response.headers.get("content-type") || "application/octet-stream";
+      // Get the full file content instead of just headers
+      const response = await fetch(url);
+      const blob = await response.blob();
       const fileName = url.split("/").pop() || "";
 
-      // Create a blob with the correct size
-      const buffer = new ArrayBuffer(size || 0); // Fallback to 0 if size is not available
-      const blob = new Blob([buffer], { type });
-      return new File([blob], fileName, { type });
+      // Create File from the actual blob content
+      return new File([blob], fileName, { type: blob.type });
     } catch (error) {
       console.error("Error getting file details:", error);
-      // Return a minimal valid File object as fallback
       return new File([], url.split("/").pop() || "", {
         type: "application/octet-stream",
       });
@@ -70,6 +66,8 @@ export default function ManualsSection({
           // Get file details for all URLs in parallel
           const fileDetailsPromises = urlsToInit.map(async (url) => {
             const file = await getFileDetails(url);
+
+            console.log(file);
             return {
               file,
               key: Math.random().toString(36).slice(2),
