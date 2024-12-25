@@ -9,17 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
 import { cn } from "@/lib/utils";
-import { Prisma } from "@prisma/client";
-
-type UserWithRelations = Prisma.UserGetPayload<{
-  include: {
-    orders: true;
-    addresses: true;
-  };
-}>;
+import { UserDetails } from "@/services/admin-users";
 
 interface UserFormHeaderProps {
-  userDetails?: UserWithRelations | null;
+  userDetails?: UserDetails;
   isPending: boolean;
 }
 

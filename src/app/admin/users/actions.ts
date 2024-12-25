@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { FromInputType } from "./schema";
+
 export type FormState = {
   message: string;
 };
@@ -49,25 +50,6 @@ export async function createUser(data: FromInputType) {
     };
   }
 }
-
-export const getUsers = async () => {
-  try {
-    const users = await prisma.user.findMany({
-      include: {
-        addresses: true,
-        orders: true,
-        carts: true,
-        wishlist: true,
-      },
-    });
-    return users;
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    throw new Error(
-      "An error occurred while fetching users. Please try again later."
-    );
-  }
-};
 
 export async function deleteUser(userId: string) {
   try {
