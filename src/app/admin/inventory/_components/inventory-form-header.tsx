@@ -4,24 +4,28 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/ui/loading-button";
-import { Check, ChevronLeft, X } from "lucide-react";
+import { Box, Check, ChevronLeft, Eye, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
+import { customSlugify } from "@/lib/functions";
+import { Prisma } from "@prisma/client";
 import { cn } from "@/lib/utils";
-import { FileState } from "@/components/custom/single-image-uploader";
-import { BrandWithDetails } from "@/services/admin-brands";
 
-type BrandFormHeaderProps = {
-  brandDetails?: BrandWithDetails | null;
+type InventoryWithRelations = Prisma.InventoryGetPayload<{
+  include: {
+    product: true;
+  };
+}>;
+
+interface InventoryFormHeaderProps {
+  inventoryDetails: InventoryWithRelations;
   isPending: boolean;
-  fileState?: FileState | null;
-};
+}
 
-const BrandFormHeader: React.FC<BrandFormHeaderProps> = ({
-  brandDetails,
+export default function InventoryFormHeader({
+  inventoryDetails,
   isPending,
-  fileState,
-}) => {
+}: InventoryFormHeaderProps) {
   const {
     formState: { isDirty },
   } = useFormContext();
@@ -35,6 +39,10 @@ const BrandFormHeader: React.FC<BrandFormHeaderProps> = ({
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const productStoreUrl = `/products/p/${customSlugify(
+    inventoryDetails.product.name
+  )}/p/${inventoryDetails.id}`;
 
   return (
     <>
@@ -51,7 +59,7 @@ const BrandFormHeader: React.FC<BrandFormHeaderProps> = ({
           )}
         >
           <div className="flex items-center gap-4">
-            <Link href="/admin/brands">
+            <Link href="/admin/inventory">
               <Button variant="outline" size="icon" className="h-9 w-9">
                 <ChevronLeft className="h-5 w-5" />
                 <span className="sr-only">Back</span>
@@ -60,12 +68,32 @@ const BrandFormHeader: React.FC<BrandFormHeaderProps> = ({
 
             <div className="flex-1 min-w-0">
               <h1 className="text-xl font-semibold tracking-tight truncate">
-                {brandDetails ? `Edit ${brandDetails.name}` : "Add New Brand"}
+                Edit {inventoryDetails.product.name}
               </h1>
+
+              <div className="flex items-center space-x-4 mt-2">
+                <Link
+                  href={productStoreUrl}
+                  className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Eye className="h-4 w-4 mr-1.5" />
+                  View in store
+                </Link>
+
+                <Link
+                  href={`/admin/products/${inventoryDetails.productId}`}
+                  className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <Box className="h-4 w-4 mr-1.5" />
+                  View Product
+                </Link>
+              </div>
             </div>
 
             <div className="hidden items-center gap-2 md:flex">
-              <Link href="/admin/brands">
+              <Link href="/admin/inventory">
                 <Button type="button" variant="outline" className="h-9">
                   <X className="mr-2 h-4 w-4" />
                   Cancel
@@ -74,16 +102,11 @@ const BrandFormHeader: React.FC<BrandFormHeaderProps> = ({
               <LoadingButton
                 type="submit"
                 className="h-9"
-                disabled={
-                  !isDirty ||
-                  isPending ||
-                  typeof fileState?.progress === "number" ||
-                  fileState?.progress === "PENDING"
-                }
+                disabled={!isDirty || isPending}
                 loading={isPending}
               >
                 {!isPending && <Check className="mr-2 h-4 w-4" />}
-                {brandDetails ? "Update Brand" : "Save Brand"}
+                Save Changes
               </LoadingButton>
             </div>
           </div>
@@ -104,6 +127,4 @@ const BrandFormHeader: React.FC<BrandFormHeaderProps> = ({
       )}
     </>
   );
-};
-
-export default BrandFormHeader;
+}

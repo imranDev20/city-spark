@@ -1,0 +1,13 @@
+-- CreateEnum
+CREATE TYPE "CartStatus" AS ENUM ('ACTIVE', 'ORDERED', 'ABANDONED', 'EXPIRED');
+
+-- AlterTable
+ALTER TABLE "Cart" ADD COLUMN     "status" "CartStatus" DEFAULT 'ACTIVE';
+
+-- AlterTable
+ALTER TABLE "CartItem" ADD COLUMN     "price" DOUBLE PRECISION DEFAULT 0,
+ADD COLUMN     "totalPrice" DOUBLE PRECISION DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE "OrderItem" ADD COLUMN     "totalPrice" DOUBLE PRECISION DEFAULT 0,
+ALTER COLUMN "price" SET DEFAULT 0;

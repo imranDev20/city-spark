@@ -9,14 +9,14 @@ interface OrderSummaryCardProps {
 }
 
 export default function OrderSummarySection({ order }: OrderSummaryCardProps) {
-  const cart = order.cart;
+  const cart = order?.cart;
 
-  const subTotalWithoutVat = cart.subTotalWithoutVat || 0;
-  const vat = cart.vat || 0;
-  const deliveryCharge = cart.deliveryCharge || 0;
-  const totalWithVat = cart.totalPriceWithVat || 0;
-  const totalWithoutVat = cart.totalPriceWithoutVat || 0;
-  const discountAmount = cart.promoDiscount || 0;
+  const subTotalWithoutVat = cart?.subTotalWithoutVat || 0;
+  const vat = cart?.vat || 0;
+  const deliveryCharge = cart?.deliveryCharge || 0;
+  const totalWithVat = cart?.totalPriceWithVat || 0;
+  const totalWithoutVat = cart?.totalPriceWithoutVat || 0;
+  const discountAmount = cart?.promoDiscount || 0;
 
   return (
     <Card className="bg-white">

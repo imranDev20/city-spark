@@ -19,6 +19,7 @@ enum CategoryType {
 enum Role {
     ADMIN
     USER
+    GUEST
 }
 
 enum Status {
@@ -218,6 +219,7 @@ model User {
     lastName            String?
     avatar              String?
     email               String               @unique
+    contactEmail        String?
     phone               String?
     password            String?
     role                Role                 @default(USER)
@@ -291,7 +293,7 @@ model PromoCode {
     endDate       DateTime
     usageLimit    Int? // Total number of times this code can be used
     usageCount    Int               @default(0)
-    isActive      Boolean           @default(true)
+    status        Status            @default(DRAFT) // Using existing Status enum
     carts         Cart[] // Relation to carts using this code
     createdAt     DateTime          @default(now())
     updatedAt     DateTime          @updatedAt
@@ -302,12 +304,20 @@ enum PromoDiscountType {
     FIXED
 }
 
+enum CartStatus {
+    ACTIVE
+    ORDERED
+    ABANDONED
+    EXPIRED
+}
+
 model Cart {
     id                        String     @id @default(cuid())
     userId                    String?
     sessionId                 String?
     user                      User?      @relation(fields: [userId], references: [id])
     cartItems                 CartItem[]
+    status                    CartStatus @default(ACTIVE)
     deliveryTotalWithVat      Float?     @default(0)
     deliveryTotalWithoutVat   Float?     @default(0)
     collectionTotalWithVat    Float?     @default(0)
@@ -318,7 +328,7 @@ model Cart {
     vat                       Float?     @default(0)
     promoCode                 PromoCode? @relation(fields: [promoCodeId], references: [id])
     promoCodeId               String?
-    promoDiscount             Float?     @default(0) // Renamed from discountAmount for clarity
+    promoDiscount             Float?     @default(0)
     totalPriceWithoutVat      Float?     @default(0)
     totalPriceWithVat         Float?     @default(0)
     order                     Order?
@@ -326,18 +336,6 @@ model Cart {
     updatedAt                 DateTime   @updatedAt
 
     @@unique([userId, sessionId])
-}
-
-model CartItem {
-    id          String          @id @default(cuid())
-    cartId      String
-    cart        Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
-    type        FulFillmentType //delivery or collection
-    inventory   Inventory       @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
-    inventoryId String
-    quantity    Int             @default(0)
-    createdAt   DateTime        @default(now())
-    updatedAt   DateTime        @updatedAt
 }
 
 enum OrderStatus {
@@ -350,14 +348,15 @@ enum OrderStatus {
     CANCELLED
     RETURNED
     RETURNED_REFUND
+    AWAITING_PAYMENT // New status
 }
 
 model Order {
     id              String         @id @default(cuid())
     userId          String
+    cartId          String?        @unique
+    cart            Cart?          @relation(fields: [cartId], references: [id])
     user            User           @relation(fields: [userId], references: [id])
-    cartId          String         @unique
-    cart            Cart           @relation(fields: [cartId], references: [id])
     orderItems      OrderItem[]
     totalPrice      Float          @default(0)
     status          Status         @default(DRAFT)
@@ -385,17 +384,32 @@ model Order {
     updatedAt       DateTime       @updatedAt
 }
 
+model CartItem {
+    id          String          @id @default(cuid())
+    cartId      String
+    cart        Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+    type        FulFillmentType //delivery or collection
+    inventory   Inventory       @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+    inventoryId String
+    price       Float?          @default(0)
+    totalPrice  Float?          @default(0)
+    quantity    Int             @default(0)
+    createdAt   DateTime        @default(now())
+    updatedAt   DateTime        @updatedAt
+}
+
 model OrderItem {
-    id        String          @id @default(cuid())
-    orderId   String
-    order     Order           @relation(fields: [orderId], references: [id])
-    productId String
-    type      FulFillmentType //delivery or collection
-    product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
-    quantity  Int?            @default(0)
-    price     Float
-    createdAt DateTime        @default(now())
-    updatedAt DateTime        @updatedAt
+    id         String          @id @default(cuid())
+    orderId    String
+    order      Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+    productId  String
+    type       FulFillmentType
+    product    Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+    quantity   Int?            @default(0)
+    price      Float           @default(0)
+    totalPrice Float?          @default(0)
+    createdAt  DateTime        @default(now())
+    updatedAt  DateTime        @updatedAt
 }
 
 model Address {

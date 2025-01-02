@@ -22,6 +22,7 @@ import { LoadingButton } from "@/components/ui/loading-button";
 import { InventoryFormInputType, inventorySchema } from "../schema";
 import { useToast } from "@/components/ui/use-toast";
 import { updateInventoryItem } from "../actions";
+import InventoryFormHeader from "./inventory-form-header";
 
 export type InventoryWithRelations = Prisma.InventoryGetPayload<{
   include: { product: true };
@@ -138,40 +139,16 @@ export default function InventoryForm({
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onEditInventorySubmit)}>
-        <div className="flex items-center gap-4 mb-8 mt-7">
-          <Link href="/admin/inventory">
-            <Button variant="outline" size="icon" className="h-9 w-9">
-              <ChevronLeft className="h-5 w-5" />
-              <span className="sr-only">Back</span>
-            </Button>
-          </Link>
-          <h1 className="text-2xl font-bold">
-            Edit {inventoryDetails.product.name}
-          </h1>
-          <div className="hidden items-center gap-4 ml-auto md:flex">
-            <Link href="/admin/inventory">
-              <Button type="button" variant="outline" className="h-9">
-                <X className="mr-2 h-4 w-4" />
-                Cancel
-              </Button>
-            </Link>
-            <LoadingButton
-              type="submit"
-              className="h-9"
-              disabled={!isDirty || isPending}
-              loading={isPending}
-            >
-              {!isPending && <Check className="mr-2 h-4 w-4" />}
-              Save Changes
-            </LoadingButton>
-          </div>
-        </div>
+        <InventoryFormHeader
+          isPending={isPending}
+          inventoryDetails={inventoryDetails}
+        />
 
         <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
+                <CardTitle className="flex items-center justify-between text-2xl">
                   Delivery Information
                   <FormField
                     control={control}
@@ -304,7 +281,7 @@ export default function InventoryForm({
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
+                <CardTitle className="flex items-center justify-between text-2xl">
                   Collection Information
                   <FormField
                     control={control}
@@ -440,7 +417,7 @@ export default function InventoryForm({
           <div>
             <Card>
               <CardHeader>
-                <CardTitle>Stock Information</CardTitle>
+                <CardTitle className="text-2xl">Stock Information</CardTitle>
               </CardHeader>
               <CardContent>
                 <FormField
@@ -459,24 +436,6 @@ export default function InventoryForm({
               </CardContent>
             </Card>
           </div>
-        </div>
-
-        {/* Mobile Save and Close Buttons */}
-        <div className="mt-8 flex justify-end md:hidden">
-          <Link href="/admin/inventory">
-            <Button type="button" variant="outline" className="mr-2">
-              <X className="mr-2 h-4 w-4" />
-              Cancel
-            </Button>
-          </Link>
-          <LoadingButton
-            type="submit"
-            disabled={!isDirty || isPending}
-            loading={isPending}
-          >
-            {!isPending && <Check className="mr-2 h-4 w-4" />}
-            Save Changes
-          </LoadingButton>
         </div>
       </form>
     </Form>

@@ -8,19 +8,16 @@ import { Check, ChevronLeft, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
 import { cn } from "@/lib/utils";
-import { FileState } from "@/components/custom/single-image-uploader";
-import { BrandWithDetails } from "@/services/admin-brands";
+import { PromoCode } from "@prisma/client";
 
-type BrandFormHeaderProps = {
-  brandDetails?: BrandWithDetails | null;
+type PromoFormHeaderProps = {
+  promoDetails?: PromoCode | null;
   isPending: boolean;
-  fileState?: FileState | null;
 };
 
-const BrandFormHeader: React.FC<BrandFormHeaderProps> = ({
-  brandDetails,
+const PromoFormHeader: React.FC<PromoFormHeaderProps> = ({
+  promoDetails,
   isPending,
-  fileState,
 }) => {
   const {
     formState: { isDirty },
@@ -51,21 +48,28 @@ const BrandFormHeader: React.FC<BrandFormHeaderProps> = ({
           )}
         >
           <div className="flex items-center gap-4">
-            <Link href="/admin/brands">
+            <Link href="/admin/promocodes">
               <Button variant="outline" size="icon" className="h-9 w-9">
                 <ChevronLeft className="h-5 w-5" />
-                <span className="sr-only">Back</span>
+                <span className="sr-only">Back to promo codes</span>
               </Button>
             </Link>
 
             <div className="flex-1 min-w-0">
               <h1 className="text-xl font-semibold tracking-tight truncate">
-                {brandDetails ? `Edit ${brandDetails.name}` : "Add New Brand"}
+                {promoDetails
+                  ? `Edit ${promoDetails.code}`
+                  : "Add New Promo Code"}
               </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                {promoDetails
+                  ? "Update existing promotional code"
+                  : "Create a new promotional code"}
+              </p>
             </div>
 
             <div className="hidden items-center gap-2 md:flex">
-              <Link href="/admin/brands">
+              <Link href="/admin/promocodes">
                 <Button type="button" variant="outline" className="h-9">
                   <X className="mr-2 h-4 w-4" />
                   Cancel
@@ -74,16 +78,11 @@ const BrandFormHeader: React.FC<BrandFormHeaderProps> = ({
               <LoadingButton
                 type="submit"
                 className="h-9"
-                disabled={
-                  !isDirty ||
-                  isPending ||
-                  typeof fileState?.progress === "number" ||
-                  fileState?.progress === "PENDING"
-                }
+                disabled={!isDirty || isPending}
                 loading={isPending}
               >
                 {!isPending && <Check className="mr-2 h-4 w-4" />}
-                {brandDetails ? "Update Brand" : "Save Brand"}
+                {promoDetails ? "Update Promo Code" : "Save Promo Code"}
               </LoadingButton>
             </div>
           </div>
@@ -106,4 +105,4 @@ const BrandFormHeader: React.FC<BrandFormHeaderProps> = ({
   );
 };
 
-export default BrandFormHeader;
+export default PromoFormHeader;

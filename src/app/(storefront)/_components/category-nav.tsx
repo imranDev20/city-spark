@@ -113,6 +113,7 @@ export default function CategoryNav({
     "/cart",
     "/checkout",
     "/basket",
+    "/checkout/result",
   ];
 
   useEffect(() => {

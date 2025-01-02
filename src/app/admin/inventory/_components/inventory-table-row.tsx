@@ -83,7 +83,7 @@ export default function InventoryTableRow({
     <TableRow className="group">
       <TableCell className="w-[0%] relative">
         <Link
-          href={`/admin/products/${inventory.product.id}`}
+          href={`/admin/inventory/${inventory.id}`}
           className="absolute inset-0 z-10"
         />
         <div className="relative h-14 w-14 rounded-lg overflow-hidden bg-gray-50">
@@ -99,7 +99,7 @@ export default function InventoryTableRow({
       </TableCell>
       <TableCell className="min-w-[300px] relative">
         <Link
-          href={`/admin/products/${inventory.product.id}`}
+          href={`/admin/inventory/${inventory.id}`}
           className="absolute inset-0 z-10"
         />
         <div className="flex flex-col">

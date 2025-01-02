@@ -6,16 +6,15 @@ import { useQuery } from "@tanstack/react-query";
 import OrderDetailsHeader from "./_components/order-details-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClipboardCopy } from "lucide-react";
-
 import { useParams } from "next/navigation";
 import { fetchOrderDetails } from "@/services/admin-orders";
-
 import OrderItemsSection from "./_components/order-items-section";
 import OrderTimeline from "./_components/order-timeline";
 import OrderSummarySection from "./_components/order-summary-section";
 import PaymentDetailsSection from "./_components/payment-details-section";
 import CustomerDetailsSection from "./_components/customer-details-section";
 import { Button } from "@/components/ui/button";
+import { FulFillmentType } from "@prisma/client";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -40,12 +39,12 @@ export default function AdminOrderDetailsPage() {
     return <div>Order not found</div>;
   }
 
-  const deliveryItems = orderDetails.cart.cartItems.filter(
-    (item) => item.type === "FOR_DELIVERY"
+  const deliveryItems = orderDetails.orderItems.filter(
+    (item) => item.type === FulFillmentType.FOR_DELIVERY
   );
 
-  const collectionItems = orderDetails.cart.cartItems.filter(
-    (item) => item.type === "FOR_COLLECTION"
+  const collectionItems = orderDetails.orderItems.filter(
+    (item) => item.type === FulFillmentType.FOR_COLLECTION
   );
 
   return (
@@ -55,22 +54,25 @@ export default function AdminOrderDetailsPage() {
       </div>
       <OrderDetailsHeader orderDetails={orderDetails} />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 container">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 container px-4 sm:px-8 py-6">
         {/* Main Content - Left Side (2 columns) */}
         <div className="md:col-span-2 space-y-6">
-          <OrderItemsSection
-            items={deliveryItems}
-            title="Delivery Items"
-            type="FOR_DELIVERY"
-            deliveryAddress="IG11 7YA"
-          />
+          {deliveryItems.length > 0 && (
+            <OrderItemsSection
+              items={deliveryItems}
+              title="Delivery Items"
+              type={FulFillmentType.FOR_DELIVERY}
+              deliveryAddress={orderDetails.shippingAddress}
+            />
+          )}
 
-          {/* Collection Items */}
-          <OrderItemsSection
-            items={collectionItems}
-            title="Collection Items"
-            type="FOR_COLLECTION"
-          />
+          {collectionItems.length > 0 && (
+            <OrderItemsSection
+              items={collectionItems}
+              title="Collection Items"
+              type={FulFillmentType.FOR_COLLECTION}
+            />
+          )}
 
           <OrderTimeline order={orderDetails} />
         </div>
@@ -78,10 +80,7 @@ export default function AdminOrderDetailsPage() {
         {/* Sidebar - Right Side (1 column) */}
         <div className="space-y-6">
           <OrderSummarySection order={orderDetails} />
-          {/* Payment Details Card */}
           <PaymentDetailsSection order={orderDetails} />
-
-          {/* Customer Details Card */}
           <CustomerDetailsSection order={orderDetails} />
 
           {/* Quick Actions Card */}
