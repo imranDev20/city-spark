@@ -195,6 +195,7 @@ export async function createPreOrder({
       const newOrder = await tx.order.create({
         data: {
           userId,
+          cartId: cart.id,
           orderNumber,
           orderStatus: "AWAITING_PAYMENT",
           status: "DRAFT",

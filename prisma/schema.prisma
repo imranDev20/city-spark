@@ -318,19 +318,19 @@ model Cart {
     user                      User?      @relation(fields: [userId], references: [id])
     cartItems                 CartItem[]
     status                    CartStatus @default(ACTIVE)
-    deliveryTotalWithVat      Float?     @default(0)
-    deliveryTotalWithoutVat   Float?     @default(0)
-    collectionTotalWithVat    Float?     @default(0)
-    collectionTotalWithoutVat Float?     @default(0)
-    subTotalWithVat           Float?     @default(0)
-    subTotalWithoutVat        Float?     @default(0)
-    deliveryCharge            Float?     @default(0)
-    vat                       Float?     @default(0)
+    deliveryTotalWithVat      Float      @default(0)
+    deliveryTotalWithoutVat   Float      @default(0)
+    collectionTotalWithVat    Float      @default(0)
+    collectionTotalWithoutVat Float      @default(0)
+    subTotalWithVat           Float      @default(0)
+    subTotalWithoutVat        Float      @default(0)
+    deliveryCharge            Float      @default(0)
+    vat                       Float      @default(0)
     promoCode                 PromoCode? @relation(fields: [promoCodeId], references: [id])
     promoCodeId               String?
     promoDiscount             Float?     @default(0)
-    totalPriceWithoutVat      Float?     @default(0)
-    totalPriceWithVat         Float?     @default(0)
+    totalPriceWithoutVat      Float      @default(0)
+    totalPriceWithVat         Float      @default(0)
     order                     Order?
     createdAt                 DateTime   @default(now())
     updatedAt                 DateTime   @updatedAt
@@ -354,14 +354,14 @@ enum OrderStatus {
 model Order {
     id              String         @id @default(cuid())
     userId          String
-    cartId          String?        @unique
-    cart            Cart?          @relation(fields: [cartId], references: [id])
+    cartId          String         @unique
+    cart            Cart           @relation(fields: [cartId], references: [id])
     user            User           @relation(fields: [userId], references: [id])
     orderItems      OrderItem[]
     totalPrice      Float          @default(0)
     status          Status         @default(DRAFT)
     orderStatus     OrderStatus    @default(PENDING)
-    orderNumber     String?        @unique
+    orderNumber     String         @unique
     paymentMethod   String?
     paymentStatus   PaymentStatus  @default(UNPAID)
     trackingNumber  String?
@@ -391,8 +391,8 @@ model CartItem {
     type        FulFillmentType //delivery or collection
     inventory   Inventory       @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
     inventoryId String
-    price       Float?          @default(0)
-    totalPrice  Float?          @default(0)
+    price       Float           @default(0)
+    totalPrice  Float           @default(0)
     quantity    Int             @default(0)
     createdAt   DateTime        @default(now())
     updatedAt   DateTime        @updatedAt
@@ -405,9 +405,9 @@ model OrderItem {
     productId  String
     type       FulFillmentType
     product    Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
-    quantity   Int?            @default(0)
+    quantity   Int             @default(0)
     price      Float           @default(0)
-    totalPrice Float?          @default(0)
+    totalPrice Float           @default(0)
     createdAt  DateTime        @default(now())
     updatedAt  DateTime        @updatedAt
 }
