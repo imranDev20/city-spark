@@ -20,6 +20,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import MobileMenu from "./mobile-menu";
 import FilterDrawer from "./filter-drawer";
 import BasketPopup from "./basket-popup";
+import { usePathname } from "next/navigation";
 
 const BasketDrawer = () => {
   return (
@@ -141,9 +142,12 @@ function DesktopHeader() {
 }
 
 export default function Header() {
+  const pathname = usePathname();
+  const isCheckoutPage = pathname.includes("/checkout");
+
   return (
     <>
-      <DesktopHeader />
+      {!isCheckoutPage && <DesktopHeader />}
       <MobileHeader />
     </>
   );

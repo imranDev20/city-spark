@@ -23,55 +23,34 @@ import {
 
 import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-
 import { Separator } from "@/components/ui/separator";
-import { LoadingButton } from "@/components/ui/loading-button";
-
 import { useEdgeStore } from "@/lib/edgestore";
 
 import {
   FileState,
   SingleImageDropzone,
 } from "@/components/custom/single-image-uploader";
-import { Address, User } from "@prisma/client";
-import { updateUser } from "../../actions";
-import { FromInputType, userSchema } from "../../schema";
+import { updateUser } from "../actions";
+import { FromInputType, userSchema } from "../schema";
 import UserFormHeader from "./user-form-header";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { UserDetails } from "@/services/admin-users";
 
-export default function EditUserFrom({
+export default function UserForm({
   userDetails,
-  addresses,
 }: {
-  userDetails: User | null;
-  addresses: Address[] | null;
+  userDetails?: UserDetails;
 }) {
+  // State management
   const [isPending, startTransition] = useTransition();
-  const { toast } = useToast();
   const [fileState, setFileState] = useState<FileState | null>(null);
+
+  // Hooks
+  const { toast } = useToast();
   const { edgestore } = useEdgeStore();
 
-  function updateFileProgress(key: string, progress: FileState["progress"]) {
-    setFileState((fileState) => {
-      const newFileState = structuredClone(fileState);
-
-      if (newFileState) {
-        newFileState.progress = progress;
-      }
-
-      console.log(newFileState);
-      return newFileState;
-    });
-  }
-
+  // Form setup with react-hook-form
   const form = useForm<FromInputType>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -92,74 +71,94 @@ export default function EditUserFrom({
       ],
     },
   });
+
+  // Destructure form methods
   const {
     control,
     handleSubmit,
     reset,
     formState: { isDirty },
   } = form;
+
+  // Setup field array for addresses
   const { fields, append, remove } = useFieldArray({
     control,
     name: "address",
   });
 
+  // File upload progress handler
+  const updateFileProgress = (key: string, progress: FileState["progress"]) => {
+    setFileState((currentFileState) => {
+      if (!currentFileState) return null;
+      return {
+        ...currentFileState,
+        progress,
+      };
+    });
+  };
+
+  // Initialize form with user details
   useEffect(() => {
     if (userDetails) {
-      const { firstName, lastName, email, phone, password } = userDetails;
+      const { firstName, lastName, email, phone, addresses } = userDetails;
+
       reset({
         firstName: firstName ?? "",
         lastName: lastName ?? "",
         email: email ?? "",
         phone: phone ?? "",
-        password: password ?? "",
-        confirmPassword: password ?? "",
-        address: addresses?.map((address) => ({
-          addressId: address.id,
-          addressLine1: address.addressLine1 ?? "",
-          addressLine2: address.addressLine2 ?? "",
-          city: address.city ?? "",
-
-          country: address.country ?? "",
-        })),
+        address:
+          addresses?.map((address) => ({
+            addressId: address.id,
+            addressLine1: address.addressLine1 ?? "",
+            addressLine2: address.addressLine2 ?? "",
+            city: address.city ?? "",
+            country: address.country ?? "",
+            postalCode: address.postcode ?? "",
+            state: address.county ?? "",
+          })) ?? [],
       });
     }
-  }, [userDetails, reset, addresses]);
+  }, [userDetails, reset]);
 
+  // Initialize avatar if exists
   useEffect(() => {
     if (userDetails?.avatar) {
       setFileState({
-        file: userDetails?.avatar,
-        key: userDetails?.avatar,
+        file: userDetails.avatar,
+        key: userDetails.avatar,
         progress: "COMPLETE",
       });
     }
-  }, [userDetails]);
+  }, [userDetails?.avatar]);
 
+  // Form submission handler
   const onEditUserSubmit: SubmitHandler<FromInputType> = async (data) => {
-    if (userDetails?.id) {
-      startTransition(async () => {
-        const result = await updateUser(userDetails?.id, data);
-        if (result.success) {
-          toast({
-            title: "User Updated",
-            description: result.message,
-            variant: "success",
-          });
-        } else {
-          toast({
-            title: "User Saved failed",
-            description: result.message,
-            variant: "destructive",
-          });
-        }
-      });
-    }
+    if (!userDetails?.id) return;
+
+    startTransition(async () => {
+      const result = await updateUser(userDetails.id, data);
+
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: result.message,
+          variant: "success",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    });
   };
 
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onEditUserSubmit)}>
-        {/* <UserFormHeader isPending={isPending} userDetails={userDetails} /> */}
+        <UserFormHeader isPending={isPending} userDetails={userDetails} />
 
         <div className="container pt-8 pb-4 px-4 sm:px-8">
           <div className="grid gap-6 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">

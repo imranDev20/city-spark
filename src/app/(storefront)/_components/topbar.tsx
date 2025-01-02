@@ -1,5 +1,7 @@
 "use client";
+
 import { HelpCircle, MapPin, Phone, Truck } from "lucide-react";
+import { usePathname } from "next/navigation";
 import React from "react";
 
 function DesktopTopbar() {
@@ -32,5 +34,12 @@ function DesktopTopbar() {
 }
 
 export default function TopBar() {
+  const pathname = usePathname();
+  const isCheckoutPage = pathname.includes("/checkout");
+
+  if (isCheckoutPage) {
+    return null;
+  }
+
   return <DesktopTopbar />;
 }

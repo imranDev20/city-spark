@@ -4,29 +4,28 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/ui/loading-button";
-import { ChevronLeft, X, Check, Mail, Key } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Box, Check, ChevronLeft, Eye, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
-import { cn } from "@/lib/utils";
+import { customSlugify } from "@/lib/functions";
 import { Prisma } from "@prisma/client";
+import { cn } from "@/lib/utils";
 
-type UserWithRelations = Prisma.UserGetPayload<{
+type InventoryWithRelations = Prisma.InventoryGetPayload<{
   include: {
-    orders: true;
-    addresses: true;
+    product: true;
   };
 }>;
 
-interface UserFormHeaderProps {
-  userDetails?: UserWithRelations | null;
+interface InventoryFormHeaderProps {
+  inventoryDetails: InventoryWithRelations;
   isPending: boolean;
 }
 
-const UserFormHeader: React.FC<UserFormHeaderProps> = ({
-  userDetails,
+export default function InventoryFormHeader({
+  inventoryDetails,
   isPending,
-}) => {
+}: InventoryFormHeaderProps) {
   const {
     formState: { isDirty },
   } = useFormContext();
@@ -41,9 +40,9 @@ const UserFormHeader: React.FC<UserFormHeaderProps> = ({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const fullName = userDetails
-    ? `${userDetails.firstName} ${userDetails.lastName}`.trim()
-    : "New User";
+  const productStoreUrl = `/products/p/${customSlugify(
+    inventoryDetails.product.name
+  )}/p/${inventoryDetails.id}`;
 
   return (
     <>
@@ -60,33 +59,41 @@ const UserFormHeader: React.FC<UserFormHeaderProps> = ({
           )}
         >
           <div className="flex items-center gap-4">
-            <Link href="/admin/users">
+            <Link href="/admin/inventory">
               <Button variant="outline" size="icon" className="h-9 w-9">
                 <ChevronLeft className="h-5 w-5" />
-                <span className="sr-only">Back to users</span>
+                <span className="sr-only">Back</span>
               </Button>
             </Link>
 
             <div className="flex-1 min-w-0">
               <h1 className="text-xl font-semibold tracking-tight truncate">
-                {userDetails ? `Edit ${fullName}` : "Add New User"}
+                Edit {inventoryDetails.product.name}
               </h1>
 
               <div className="flex items-center space-x-4 mt-2">
-                {userDetails?.email && (
-                  <span className="inline-flex items-center text-sm text-muted-foreground">
-                    <Mail className="h-4 w-4 mr-1.5" />
-                    {userDetails.email}
-                  </span>
-                )}
-                <Badge variant="outline" className="ml-2">
-                  {userDetails?.role || "USER"}
-                </Badge>
+                <Link
+                  href={productStoreUrl}
+                  className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Eye className="h-4 w-4 mr-1.5" />
+                  View in store
+                </Link>
+
+                <Link
+                  href={`/admin/products/${inventoryDetails.productId}`}
+                  className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <Box className="h-4 w-4 mr-1.5" />
+                  View Product
+                </Link>
               </div>
             </div>
 
             <div className="hidden items-center gap-2 md:flex">
-              <Link href="/admin/users">
+              <Link href="/admin/inventory">
                 <Button type="button" variant="outline" className="h-9">
                   <X className="mr-2 h-4 w-4" />
                   Cancel
@@ -99,7 +106,7 @@ const UserFormHeader: React.FC<UserFormHeaderProps> = ({
                 loading={isPending}
               >
                 {!isPending && <Check className="mr-2 h-4 w-4" />}
-                {userDetails ? "Update User" : "Save User"}
+                Save Changes
               </LoadingButton>
             </div>
           </div>
@@ -120,6 +127,4 @@ const UserFormHeader: React.FC<UserFormHeaderProps> = ({
       )}
     </>
   );
-};
-
-export default UserFormHeader;
+}

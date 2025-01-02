@@ -1,10 +1,8 @@
-import React, { Suspense } from "react";
+import React from "react";
 import { ContentLayout } from "../_components/content-layout";
 import DynamicBreadcrumb from "../_components/dynamic-breadcrumb";
-import UserList from "./_components/users-list";
-import { UserPagination } from "./_components/user-pagination";
+import DesktopUserList from "./_components/desktop-users-list";
 import UserTableHeader from "./_components/users-table-header";
-import UsersLoading from "./_components/users-loading";
 
 const breadcrumbItems = [
   { label: "Dashboard", href: "/admin" },
@@ -15,10 +13,7 @@ export default function AdminUsersPage() {
     <ContentLayout title="Users">
       <DynamicBreadcrumb items={breadcrumbItems} />
       <UserTableHeader />
-      <Suspense fallback={<UsersLoading />}>
-        <UserList />
-      </Suspense>
-      <UserPagination />
+      <DesktopUserList />
     </ContentLayout>
   );
 }

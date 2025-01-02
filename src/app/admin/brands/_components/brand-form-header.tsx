@@ -7,16 +7,9 @@ import { LoadingButton } from "@/components/ui/loading-button";
 import { Check, ChevronLeft, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
-import { Prisma } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import { FileState } from "@/components/custom/single-image-uploader";
 import { BrandWithDetails } from "@/services/admin-brands";
-
-type BrandWithRelations = Prisma.BrandGetPayload<{
-  include: {
-    products: true;
-  };
-}>;
 
 type BrandFormHeaderProps = {
   brandDetails?: BrandWithDetails | null;

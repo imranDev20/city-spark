@@ -10,6 +10,7 @@ import {
   Settings,
   Bell,
   LifeBuoy,
+  Ticket,
 } from "lucide-react";
 
 type Submenu = {
@@ -34,7 +35,7 @@ type Group = {
 export function getMenuList(pathname: string): Group[] {
   return [
     {
-      groupLabel: "Overview",
+      groupLabel: "General",
       menus: [
         {
           href: "/dashboard",
@@ -53,8 +54,15 @@ export function getMenuList(pathname: string): Group[] {
       ],
     },
     {
-      groupLabel: "Catalog Management",
+      groupLabel: "Orders & Inventory",
       menus: [
+        {
+          href: "/orders",
+          label: "Orders",
+          active: pathname.includes("/orders"),
+          icon: ShoppingCart,
+          submenus: [],
+        },
         {
           href: "/inventory",
           label: "Inventory",
@@ -62,19 +70,16 @@ export function getMenuList(pathname: string): Group[] {
           icon: PackagePlus,
           submenus: [],
         },
+      ],
+    },
+    {
+      groupLabel: "Catalog Management",
+      menus: [
         {
           href: "/products",
           label: "Products",
           active: pathname.includes("/products"),
           icon: Package2,
-          submenus: [],
-        },
-
-        {
-          href: "/templates",
-          label: "Templates",
-          active: pathname.includes("/templates"),
-          icon: Blocks,
           submenus: [],
         },
         {
@@ -91,16 +96,23 @@ export function getMenuList(pathname: string): Group[] {
           icon: Award,
           submenus: [],
         },
+        {
+          href: "/templates",
+          label: "Templates",
+          active: pathname.includes("/templates"),
+          icon: Blocks,
+          submenus: [],
+        },
       ],
     },
     {
-      groupLabel: "Customer Operations",
+      groupLabel: "Marketing & Sales",
       menus: [
         {
-          href: "/orders",
-          label: "Orders",
-          active: pathname.includes("/orders"),
-          icon: ShoppingCart,
+          href: "/promocodes",
+          label: "Promo Codes",
+          active: pathname.includes("/promocodes"),
+          icon: Ticket,
           submenus: [],
         },
         {
@@ -120,7 +132,7 @@ export function getMenuList(pathname: string): Group[] {
       ],
     },
     {
-      groupLabel: "System Administration",
+      groupLabel: "Configuration",
       menus: [
         {
           href: "/settings",

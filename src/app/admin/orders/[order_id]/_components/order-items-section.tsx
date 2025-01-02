@@ -4,29 +4,16 @@ import { Clock, MapPin } from "lucide-react";
 import Image from "next/image";
 import PlaceholderImage from "@/images/placeholder-image.png";
 
-type CartItemWithRelations = Prisma.CartItemGetPayload<{
+type OrderItemWithRelations = Prisma.OrderItemGetPayload<{
   include: {
-    inventory: {
-      include: {
-        product: {
-          include: {
-            brand: true;
-            primaryCategory: true;
-            secondaryCategory: true;
-            tertiaryCategory: true;
-            quaternaryCategory: true;
-            images: true;
-          };
-        };
-      };
-    };
+    product: true;
   };
 }>;
 
 interface OrderItemsSectionProps {
-  items: CartItemWithRelations[];
+  items: OrderItemWithRelations[];
   title: string;
-  deliveryAddress?: string;
+  deliveryAddress?: string | null;
   type: FulFillmentType;
 }
 
@@ -38,16 +25,16 @@ export default function OrderItemsSection({
 }: OrderItemsSectionProps) {
   if (items.length === 0) return null;
 
-  const calculateSubtotal = (items: CartItemWithRelations[]) => {
+  const calculateSubtotal = (items: OrderItemWithRelations[]) => {
     return items.reduce((sum, item) => {
-      const price = item.inventory.product.tradePrice || 0;
+      const price = item.price || 0;
       const quantity = item.quantity || 0;
       return sum + price * quantity;
     }, 0);
   };
 
   const subtotal = calculateSubtotal(items);
-  const vatAmount = subtotal * 0.2; // 20% VAT
+  const vatAmount = subtotal * 0.2;
   const total = subtotal + vatAmount;
 
   return (
@@ -62,7 +49,7 @@ export default function OrderItemsSection({
               </p>
             </div>
 
-            {type === "FOR_DELIVERY" && deliveryAddress && (
+            {type === FulFillmentType.FOR_DELIVERY && deliveryAddress && (
               <div className="text-sm text-right">
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-end gap-2">
@@ -89,83 +76,51 @@ export default function OrderItemsSection({
               key={item.id}
               className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg"
             >
-              {/* Product Image */}
-              <div className="relative h-20 w-20 rounded-lg overflow-hidden bg-white flex-shrink-0 border border-gray-200 ">
+              <div className="relative h-20 w-20 rounded-lg overflow-hidden bg-white flex-shrink-0 border border-gray-200">
                 <Image
-                  src={item.inventory.product.images[0] || PlaceholderImage}
-                  alt={item.inventory.product.name}
+                  src={item.product.images[0] || PlaceholderImage}
+                  alt={item.product.name}
                   fill
                   className="object-contain"
                   sizes="80px"
                 />
               </div>
 
-              {/* Product Details */}
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium leading-tight line-clamp-2">
-                  {item.inventory.product.name}
+                  {item.product.name}
                 </h4>
                 <p className="text-sm text-gray-500 mt-1">
                   Quantity: {item.quantity || 0}
                 </p>
-
-                {type === "FOR_COLLECTION" &&
-                  item.inventory.collectionPoints && (
-                    <div className="mt-2 space-y-1.5">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm text-gray-600">
-                          Collection from store:
-                        </span>
-                        <span className="text-sm font-medium">
-                          {item.inventory.collectionPoints[0]}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm text-gray-600">
-                          Ready for collection:{" "}
-                          {item.inventory.collectionAvailabilityTime ||
-                            "1-2 working days"}
-                        </span>
-                      </div>
-                    </div>
-                  )}
               </div>
 
-              {/* Price Details */}
               <div className="text-right flex-shrink-0">
                 <div className="flex items-baseline gap-1 justify-end">
                   <span className="text-lg font-semibold">
-                    £
-                    {(
-                      (item.inventory.product.tradePrice || 0) *
-                      (item.quantity || 0)
-                    ).toFixed(2)}
+                    £{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
                   </span>
                   <span className="text-xs text-gray-500">inc. VAT</span>
                 </div>
                 <div className="text-sm text-gray-500 mt-1">
-                  {item.quantity} x £
-                  {(item.inventory.product.tradePrice || 0).toFixed(2)}
+                  {item.quantity} x £{(item.price || 0).toFixed(2)}
                 </div>
               </div>
             </div>
           ))}
 
-          {/* Totals */}
           <div className="border-t pt-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Subtotal (exc. VAT)</span>
-              <span>£{subtotal?.toFixed(2)}</span>
+              <span>£{subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">VAT (20%)</span>
-              <span>£{vatAmount?.toFixed(2)}</span>
+              <span>£{vatAmount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-medium pt-2 border-t">
               <span>Total (inc. VAT)</span>
-              <span>£{total?.toFixed(2)}</span>
+              <span>£{total.toFixed(2)}</span>
             </div>
           </div>
         </div>

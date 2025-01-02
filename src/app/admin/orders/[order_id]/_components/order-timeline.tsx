@@ -41,7 +41,7 @@ function generateTimelineEvents(order: OrderWithRelations): TimelineEvent[] {
     events.push({
       id: "payment",
       title: "Payment Confirmed",
-      description: `Payment of £${order.cart.totalPriceWithVat?.toFixed(
+      description: `Payment of £${order.cart?.totalPriceWithVat?.toFixed(
         2
       )} was received`,
       timestamp: order.paymentDate,
