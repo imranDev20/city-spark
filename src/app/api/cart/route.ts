@@ -3,27 +3,7 @@ import { getServerAuthSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { getOrCreateSessionId } from "@/lib/session-id";
 import { Prisma } from "@prisma/client";
-
-type CartItemWithRelations = Prisma.CartItemGetPayload<{
-  include: {
-    inventory: {
-      include: {
-        product: {
-          include: {
-            brand: {
-              select: {
-                name: true;
-              };
-            };
-            retailPrice: true;
-            promotionalPrice: true;
-            images: true;
-          };
-        };
-      };
-    };
-  };
-}>;
+import { getCartWhereInput } from "@/lib/cart-utils";
 
 type CartWithRelations = Prisma.CartGetPayload<{
   include: {
@@ -69,7 +49,7 @@ export async function GET(
     ]);
 
     const cart = await prisma.cart.findFirst({
-      where: session?.user?.id ? { userId: session.user.id } : { sessionId },
+      where: getCartWhereInput(session?.user?.id, sessionId),
       include: {
         cartItems: {
           include: {

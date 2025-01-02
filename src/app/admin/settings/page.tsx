@@ -38,6 +38,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { ContentLayout } from "../_components/content-layout";
+import { upsertSettings } from "./actions";
 
 export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState("#basic-settings");
@@ -147,7 +148,7 @@ export default function SettingsPage() {
             >
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold">Basic Settings</h2>
-                <Button>Save Changes</Button>
+                <Button onClick={() => upsertSettings()}>Save Changes</Button>
               </div>
               <Card>
                 <CardHeader>

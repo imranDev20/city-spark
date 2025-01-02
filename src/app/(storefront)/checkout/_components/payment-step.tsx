@@ -26,7 +26,6 @@ export default function PaymentStep({
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

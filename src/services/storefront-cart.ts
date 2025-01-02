@@ -35,6 +35,7 @@ export async function getCart() {
     const sessionId = userId ? undefined : await getOrCreateSessionId();
 
     const cartWhereInput = getCartWhereInput(userId, sessionId);
+
     const cart = await prisma.cart.findFirst({
       where: cartWhereInput,
       include: {

@@ -429,3 +429,59 @@ model Address {
     createdAt         DateTime @default(now())
     updatedAt         DateTime @updatedAt
 }
+
+model Settings {
+    id                            String      @id @default(cuid())
+    // Store Settings
+    storeName                     String      @default("City Spark")
+    storeEmail                    String?
+    storePhone                    String?
+    storeLogo                     String?
+    currency                      String      @default("GBP")
+    timezone                      String      @default("Europe/London")
+    // Tax Settings
+    percentVat                    Float       @default(20.0) // UK standard VAT rate
+    enableVat                     Boolean     @default(true)
+    displayPricesInclusiveVat     Boolean     @default(true)
+    // Delivery Settings
+    defaultDeliveryCharge         Float       @default(0)
+    freeDeliveryThreshold         Float? // Free delivery above this amount
+    minimumOrderValue             Float       @default(0)
+    maximumOrderValue             Float?
+    defaultDeliveryTimeInDays     Int         @default(3)
+    // Collection Settings
+    enableCollectionOption        Boolean     @default(true)
+    collectionPreparationTime     Int         @default(24) // In hours
+    // Inventory Settings
+    lowStockThreshold             Int         @default(5)
+    enableStockManagement         Boolean     @default(true)
+    allowBackorders               Boolean     @default(false)
+    // Order Settings
+    autoConfirmOrders             Boolean     @default(false)
+    orderNumberPrefix             String      @default("ORD")
+    defaultOrderStatus            OrderStatus @default(PENDING)
+    // Contact Information
+    businessAddress               String?
+    businessPhone                 String?
+    supportEmail                  String?
+    // Social Media
+    facebookUrl                   String?
+    twitterUrl                    String?
+    instagramUrl                  String?
+    linkedinUrl                   String?
+    // SEO Settings
+    metaTitle                     String?
+    metaDescription               String?
+    // Email Settings
+    enableOrderConfirmationEmails Boolean     @default(true)
+    enableLowStockAlerts          Boolean     @default(true)
+    enableMarketingEmails         Boolean     @default(true)
+    // Analytics
+    googleAnalyticsId             String?
+    enableAnalytics               Boolean     @default(false)
+    // System Settings
+    maintenanceMode               Boolean     @default(false)
+    allowGuestCheckout            Boolean     @default(true)
+    createdAt                     DateTime    @default(now())
+    updatedAt                     DateTime    @updatedAt
+}

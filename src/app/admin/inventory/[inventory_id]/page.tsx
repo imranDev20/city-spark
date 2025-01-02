@@ -23,8 +23,10 @@ export default async function InventoryDetailsPage(props: {
   ];
 
   return (
-    <ContentLayout title="Edit Inventory">
-      <DynamicBreadcrumb items={breadcrumbItems} />
+    <ContentLayout title="Edit Inventory" isContainer={false}>
+      <div className="container pt-8 pb-4 px-4 sm:px-8">
+        <DynamicBreadcrumb items={breadcrumbItems} />
+      </div>{" "}
       <InventoryForm inventoryDetails={inventoryDetails} />
     </ContentLayout>
   );
