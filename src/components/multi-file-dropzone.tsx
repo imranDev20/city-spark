@@ -6,6 +6,7 @@ import { FileText, Upload, X, AlertCircle, CheckCircle } from "lucide-react";
 import * as React from "react";
 import { useDropzone, type DropzoneOptions } from "react-dropzone";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export type FileState = {
   file: File;
@@ -134,61 +135,62 @@ export const MultiFileDropzone = React.forwardRef<HTMLInputElement, InputProps>(
 
         {/* File List */}
         {value?.map((fileState) => (
-          <div
-            key={fileState.key}
-            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group"
-            onMouseEnter={() => setHoveredFile(fileState.key)}
-            onMouseLeave={() => setHoveredFile(null)}
-          >
-            <div className="flex items-center gap-3">
-              <FileText className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-sm font-medium text-gray-700">
-                  {fileState.file.name}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {formatFileSize(fileState.file.size)}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {typeof fileState.progress === "number" && (
-                <div className="w-20 bg-gray-200 rounded-full h-1.5">
-                  <div
-                    className="bg-primary h-1.5 rounded-full transition-all duration-300"
-                    style={{ width: `${fileState.progress}%` }}
-                  />
+          <Link target="_blank" href={fileState.url || ""} key={fileState.key}>
+            <div
+              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group"
+              onMouseEnter={() => setHoveredFile(fileState.key)}
+              onMouseLeave={() => setHoveredFile(null)}
+            >
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="text-sm font-medium text-gray-700">
+                    {fileState.file.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {formatFileSize(fileState.file.size)}
+                  </p>
                 </div>
-              )}
-              <div className="relative w-5 h-5">
-                {fileState.progress === "COMPLETE" && (
-                  <CheckCircle
-                    className={cn(
-                      "h-5 w-5 text-green-500 absolute",
-                      "transition-opacity duration-200",
-                      hoveredFile === fileState.key && "opacity-0"
-                    )}
-                  />
+              </div>
+              <div className="flex items-center gap-2">
+                {typeof fileState.progress === "number" && (
+                  <div className="w-20 bg-gray-200 rounded-full h-1.5">
+                    <div
+                      className="bg-primary h-1.5 rounded-full transition-all duration-300"
+                      style={{ width: `${fileState.progress}%` }}
+                    />
+                  </div>
                 )}
-                {fileState.progress === "ERROR" && (
-                  <AlertCircle className="h-5 w-5 text-red-500 absolute" />
-                )}
-                <button
-                  onClick={() => onFileRemove?.(fileState.key)}
-                  className={cn(
-                    "text-gray-500 hover:text-red-500 absolute",
-                    "transition-opacity duration-200",
-                    hoveredFile !== fileState.key &&
-                      fileState.progress === "COMPLETE" &&
-                      "opacity-0",
-                    hoveredFile === fileState.key && "opacity-100"
+                <div className="relative w-5 h-5">
+                  {fileState.progress === "COMPLETE" && (
+                    <CheckCircle
+                      className={cn(
+                        "h-5 w-5 text-green-500 absolute",
+                        "transition-opacity duration-200",
+                        hoveredFile === fileState.key && "opacity-0"
+                      )}
+                    />
                   )}
-                >
-                  <X className="h-5 w-5" />
-                </button>
+                  {fileState.progress === "ERROR" && (
+                    <AlertCircle className="h-5 w-5 text-red-500 absolute" />
+                  )}
+                  <button
+                    onClick={() => onFileRemove?.(fileState.key)}
+                    className={cn(
+                      "text-gray-500 hover:text-red-500 absolute",
+                      "transition-opacity duration-200",
+                      hoveredFile !== fileState.key &&
+                        fileState.progress === "COMPLETE" &&
+                        "opacity-0",
+                      hoveredFile === fileState.key && "opacity-100"
+                    )}
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     );

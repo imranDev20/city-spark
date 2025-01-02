@@ -87,7 +87,7 @@ function generateTimelineEvents(order: OrderWithRelations): TimelineEvent[] {
   }
 
   // Sort events by timestamp
-  return events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  return events.sort((a, b) => b.timestamp?.getTime() - a.timestamp?.getTime());
 }
 
 export default function OrderTimeline({ order }: OrderTimelineProps) {

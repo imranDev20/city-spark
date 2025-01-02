@@ -103,7 +103,18 @@ export default async function DynamicCategoryPage({
               </section>
             )}
 
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 auto-rows-fr mt-5">
+            <div className="lg:hidden">
+              <h1 className="my-5 font-semibold text-2xl">
+                {type === "PRIMARY" ? "All Categories" : ""}
+              </h1>
+            </div>
+
+            <div
+              className={cn(
+                "grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4 auto-rows-fr",
+                type !== "PRIMARY" ? "lg:mt-5" : ""
+              )}
+            >
               <Suspense fallback={<CategoryGridSkeleton />}>
                 <DynamicCategoryGrid
                   primaryId={primaryId}
