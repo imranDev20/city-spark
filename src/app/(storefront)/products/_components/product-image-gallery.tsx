@@ -193,7 +193,7 @@ export default function ProductImageGallery({
       </div>
 
       {/* Desktop thumbnails */}
-      <div className="mt-5 grid grid-cols-6 gap-3 lg:px-8">
+      <div className="mt-5 hidden lg:grid grid-cols-6 gap-3  lg:px-8">
         {inventoryItem.product.images.map((image, index) => (
           <div
             key={index}

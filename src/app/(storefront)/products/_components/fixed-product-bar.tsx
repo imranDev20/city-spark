@@ -62,21 +62,38 @@ export default function FixedProductBar({
         {/* Price Row */}
         <div className="flex items-baseline justify-between mb-4">
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-gray-900">
-              £{inventoryItem.product.promotionalPrice?.toFixed(2)}
-            </span>
-            {inventoryItem.product.tradePrice &&
-              inventoryItem.product.tradePrice >
-                (inventoryItem.product.promotionalPrice || 0) && (
-                <span className="text-sm text-gray-500 line-through">
-                  £{inventoryItem.product.tradePrice.toFixed(2)}
+            {inventoryItem.product.promotionalPrice ? (
+              // Case 1: Show promotional price with Inc VAT and strikethrough retail price
+              <>
+                <span className="text-2xl font-bold text-gray-900">
+                  £{inventoryItem.product.promotionalPrice.toFixed(2)}
                 </span>
-              )}
-            <span className="text-sm text-gray-500 ml-1">inc. VAT</span>
+                <div className="text-[10px] text-gray-500 leading-none font-semibold">
+                  inc. VAT
+                </div>
+                {inventoryItem.product.retailPrice &&
+                  inventoryItem.product.retailPrice >
+                    inventoryItem.product.promotionalPrice && (
+                    <span className="text-sm text-gray-500 line-through">
+                      £{inventoryItem.product.retailPrice.toFixed(2)}
+                    </span>
+                  )}
+              </>
+            ) : (
+              // Case 2: Show retail price with Inc VAT only
+              <>
+                <span className="text-2xl font-bold text-gray-900">
+                  £{(inventoryItem.product.retailPrice || 0).toFixed(2)}
+                </span>
+                <div className="text-[10px] text-gray-500 leading-none font-semibold">
+                  inc. VAT
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Quantity Selector */}
+        {/* Rest of the component remains the same */}
         <div className="mb-4">
           <div
             className={cn(
@@ -125,7 +142,6 @@ export default function FixedProductBar({
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-3">
           <Button
             variant="secondary"

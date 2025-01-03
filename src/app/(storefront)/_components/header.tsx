@@ -3,13 +3,7 @@
 import { Search, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import AccountDropdown from "./account-dropdown";
 import SearchInput from "./search-input";
 import { cn } from "@/lib/utils";
@@ -21,31 +15,12 @@ import MobileMenu from "./mobile-menu";
 import FilterDrawer from "./filter-drawer";
 import BasketPopup from "./basket-popup";
 import { usePathname } from "next/navigation";
-
-const BasketDrawer = () => {
-  return (
-    <div className="h-full flex flex-col">
-      <DrawerHeader className="border-b pb-4">
-        <DrawerTitle className="font-bold text-lg">Your Basket</DrawerTitle>
-      </DrawerHeader>
-      <ScrollArea className="flex-1">
-        <div className="p-4">
-          {/* Add basket items here */}
-          <div className="text-center text-muted-foreground py-8">
-            Your basket is empty
-          </div>
-        </div>
-      </ScrollArea>
-      <div className="border-t p-4">
-        <Button className="w-full">Checkout</Button>
-      </div>
-    </div>
-  );
-};
+import BasketDrawer from "./basket-drawer";
 
 const MobileHeader = () => {
   const cartItemCount = 0;
   const [isScrolled, setIsScrolled] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -55,6 +30,21 @@ const MobileHeader = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const excludedRoutes = [
+    "/login",
+    "/register",
+    "/cart",
+    "/checkout",
+    "/basket",
+    "/products/p",
+  ];
+
+  const isExcluded = excludedRoutes.some((route) => pathname.startsWith(route));
+
+  if (isExcluded) {
+    return null;
+  }
 
   return (
     <header className="w-full lg:hidden">
@@ -73,30 +63,7 @@ const MobileHeader = () => {
               <span className="sr-only">City Spark</span>
             </Link>
 
-            <Drawer>
-              <DrawerTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-foreground hover:text-primary relative"
-                >
-                  <ShoppingCart className="w-6 h-6" />
-                  {cartItemCount > 0 && (
-                    <span
-                      className={cn(
-                        "absolute -top-1 -right-1 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center",
-                        cartItemCount > 9 ? "w-5 h-5 text-[10px]" : "w-4 h-4"
-                      )}
-                    >
-                      {cartItemCount}
-                    </span>
-                  )}
-                </Button>
-              </DrawerTrigger>
-              <DrawerContent>
-                <BasketDrawer />
-              </DrawerContent>
-            </Drawer>
+            <BasketDrawer />
           </div>
         </div>
       </div>

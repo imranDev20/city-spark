@@ -104,7 +104,7 @@ const MobileMenu = ({ user = dummyUser }: { user?: User | null }) => {
           size="icon"
           className="text-foreground hover:text-primary"
         >
-          <Menu className="w-6 h-6" />
+          <Menu className="!size-6" />
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-80 p-0">
