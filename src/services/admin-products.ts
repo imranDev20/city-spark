@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Prisma, Status } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 /**
  * Type definition for a product with its related entities

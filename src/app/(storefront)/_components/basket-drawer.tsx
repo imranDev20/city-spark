@@ -200,7 +200,7 @@ const BasketContent = ({
             </div>
           </div>
 
-          <Link href="/basket" passHref>
+          <Link href="/basket" passHref className="block">
             <Button
               className="w-full"
               disabled={!cart?.cartItems || cart.cartItems.length === 0}
@@ -260,7 +260,7 @@ export default function BasketDrawer() {
           size="icon"
           className="text-foreground hover:text-primary relative"
         >
-          <ShoppingCart className="size-6" />
+          <ShoppingCart className="!size-6" />
           {cartItemCount > 0 && (
             <span
               className={cn(

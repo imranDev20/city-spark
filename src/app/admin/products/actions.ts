@@ -788,6 +788,37 @@ export async function deleteProducts(productIds: string[]) {
   }
 }
 
+interface PriceUpdateParams {
+  retailPrice: number;
+  promotionalPrice: number | null;
+}
+
+export async function updateProductPrice(
+  productId: string,
+  data: PriceUpdateParams
+) {
+  try {
+    await prisma.product.update({
+      where: { id: productId },
+      data: {
+        retailPrice: data.retailPrice,
+        promotionalPrice: data.promotionalPrice,
+      },
+    });
+
+    return {
+      success: true,
+      message: "Product prices updated successfully",
+    };
+  } catch (error) {
+    console.error("Error updating product prices:", error);
+    return {
+      success: false,
+      message: "Failed to update product prices",
+    };
+  }
+}
+
 export async function exportProductsToJSON() {
   try {
     const products = await prisma.product.findMany({
