@@ -14,6 +14,7 @@ import DynamicCategoryGrid from "./dynamic-category-grid";
 import DynamicPageHeader from "./dynamic-category-page-header";
 import PageHeaderSkeleton from "../product-list/page-header-skeleton";
 import MobileCategoryNavCarousel from "@/app/(storefront)/_components/mobile-category-nav-carousel";
+import { delay } from "@/lib/server-utils";
 
 interface DynamicCategoryPageProps {
   type?: CategoryType;
@@ -35,8 +36,6 @@ export default async function DynamicCategoryPage({
     secondaryId,
     tertiaryId
   );
-
-  console.log(type);
 
   // Get primary categories for mobile nav (needed for all pages)
   const { categories: mobileNavCategories } = await getCategoriesByType(
@@ -102,16 +101,26 @@ export default async function DynamicCategoryPage({
                 />
               </section>
             )}
+            <Suspense fallback={<CategoryGridSkeleton />}>
+              <div className="lg:hidden">
+                <h1 className="my-5 font-semibold text-2xl">
+                  {type === "PRIMARY" ? "All Categories" : ""}
+                </h1>
+              </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 auto-rows-fr mt-5">
-              <Suspense fallback={<CategoryGridSkeleton />}>
+              <div
+                className={cn(
+                  "grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4 auto-rows-fr",
+                  type !== "PRIMARY" ? "lg:mt-5" : ""
+                )}
+              >
                 <DynamicCategoryGrid
                   primaryId={primaryId}
                   secondaryId={secondaryId}
                   tertiaryId={tertiaryId}
                 />
-              </Suspense>
-            </div>
+              </div>
+            </Suspense>
           </div>
         </div>
       </section>

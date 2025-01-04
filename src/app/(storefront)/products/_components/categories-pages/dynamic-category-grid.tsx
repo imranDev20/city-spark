@@ -98,7 +98,7 @@ export default async function DynamicCategoryGrid({
 
   return (
     <div className="col-span-1 lg:col-span-9">
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 auto-rows-fr mt-5">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 auto-rows-fr">
         {categories.map((category) => (
           <div key={category.id} className="h-full">
             <Link

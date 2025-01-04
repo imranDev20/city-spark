@@ -316,6 +316,12 @@ export async function addToCart(
     const sessionId = userId ? undefined : await getOrCreateSessionId();
 
     const result = await prisma.$transaction(async (prisma) => {
+      // Get settings for delivery charge
+      const settings = await prisma.settings.findFirst();
+      if (!settings) {
+        throw new Error("System settings not found");
+      }
+
       // Check if the inventory item exists
       const inventoryItem = await prisma.inventory.findUnique({
         where: { id: inventoryId },
@@ -336,6 +342,13 @@ export async function addToCart(
         });
       }
 
+      // Calculate item price with VAT
+      const itemPrice =
+        inventoryItem.product.promotionalPrice &&
+        inventoryItem.product.promotionalPrice > 0
+          ? inventoryItem.product.promotionalPrice
+          : inventoryItem.product.retailPrice || 0;
+
       // Find existing cart item
       const existingCartItem = await prisma.cartItem.findFirst({
         where: {
@@ -347,9 +360,14 @@ export async function addToCart(
 
       let cartItem;
       if (existingCartItem) {
+        const newQuantity = existingCartItem.quantity + quantity;
         cartItem = await prisma.cartItem.update({
           where: { id: existingCartItem.id },
-          data: { quantity: { increment: quantity } },
+          data: {
+            quantity: newQuantity,
+            price: itemPrice,
+            totalPrice: itemPrice * newQuantity,
+          },
         });
       } else {
         cartItem = await prisma.cartItem.create({
@@ -358,6 +376,8 @@ export async function addToCart(
             inventoryId,
             quantity,
             type,
+            price: itemPrice,
+            totalPrice: itemPrice * quantity,
           },
         });
       }
@@ -386,24 +406,21 @@ export async function addToCart(
       let hasDeliveryItems = false;
 
       updatedCart.cartItems.forEach((item) => {
-        const priceWithVat =
-          item.inventory.product.promotionalPrice &&
-          item.inventory.product.promotionalPrice > 0
-            ? item.inventory.product.promotionalPrice
-            : item.inventory.product.retailPrice || 0;
-
-        const itemTotalWithVat = priceWithVat * (item.quantity || 0);
-
         if (item.type === FulFillmentType.FOR_DELIVERY) {
-          deliveryTotalWithVat += itemTotalWithVat;
+          deliveryTotalWithVat += item.totalPrice;
           hasDeliveryItems = true;
         } else {
-          collectionTotalWithVat += itemTotalWithVat;
+          collectionTotalWithVat += item.totalPrice;
         }
       });
 
-      // Apply delivery charge if there are delivery items
-      const deliveryCharge = hasDeliveryItems ? 5 : 0;
+      // Apply delivery charge if there are delivery items and total is below free delivery threshold
+      const deliveryCharge =
+        hasDeliveryItems &&
+        (!settings.freeDeliveryThreshold ||
+          deliveryTotalWithVat < settings.freeDeliveryThreshold)
+          ? settings.defaultDeliveryCharge
+          : 0;
       const deliveryVat = deliveryCharge * 0.2; // 20% VAT on delivery
 
       // Calculate VAT-exclusive amounts
@@ -432,6 +449,7 @@ export async function addToCart(
           vat,
           totalPriceWithVat,
           totalPriceWithoutVat,
+          status: "ACTIVE",
         },
         include: { cartItems: true },
       });
@@ -472,12 +490,18 @@ export async function removeFromCart(id: string) {
     }
 
     const result = await prisma.$transaction(async (prisma) => {
+      // Get settings for delivery charge
+      const settings = await prisma.settings.findFirst();
+      if (!settings) {
+        throw new Error("System settings not found");
+      }
+
       // Delete the cart item
       await prisma.cartItem.delete({
         where: { id },
       });
 
-      // Recalculate total price
+      // Get updated cart
       const cartWhereInput = getCartWhereInput(userId, sessionId);
       const updatedCart = await prisma.cart.findFirst({
         where: cartWhereInput,
@@ -504,24 +528,21 @@ export async function removeFromCart(id: string) {
       let hasDeliveryItems = false;
 
       updatedCart.cartItems.forEach((item) => {
-        const priceWithVat =
-          item.inventory.product.promotionalPrice &&
-          item.inventory.product.promotionalPrice > 0
-            ? item.inventory.product.promotionalPrice
-            : item.inventory.product.retailPrice || 0;
-
-        const itemTotalWithVat = priceWithVat * (item.quantity || 0);
-
         if (item.type === FulFillmentType.FOR_DELIVERY) {
-          deliveryTotalWithVat += itemTotalWithVat;
+          deliveryTotalWithVat += item.totalPrice;
           hasDeliveryItems = true;
         } else {
-          collectionTotalWithVat += itemTotalWithVat;
+          collectionTotalWithVat += item.totalPrice;
         }
       });
 
-      // Apply delivery charge if there are delivery items
-      const deliveryCharge = hasDeliveryItems ? 5 : 0;
+      // Apply delivery charge if there are delivery items and below free delivery threshold
+      const deliveryCharge =
+        hasDeliveryItems &&
+        (!settings.freeDeliveryThreshold ||
+          deliveryTotalWithVat < settings.freeDeliveryThreshold)
+          ? settings.defaultDeliveryCharge
+          : 0;
       const deliveryVat = deliveryCharge * 0.2; // 20% VAT on delivery
 
       // Calculate VAT-exclusive amounts
@@ -591,10 +612,41 @@ export async function updateCartItemQuantity(id: string, quantity: number) {
     }
 
     const result = await prisma.$transaction(async (prisma) => {
-      // Update the cart item quantity
+      // Get settings for delivery charge
+      const settings = await prisma.settings.findFirst();
+      if (!settings) {
+        throw new Error("System settings not found");
+      }
+
+      // Get the current cart item to update
+      const currentCartItem = await prisma.cartItem.findUnique({
+        where: { id },
+        include: {
+          inventory: {
+            include: { product: true },
+          },
+        },
+      });
+
+      if (!currentCartItem) {
+        throw new Error("Cart item not found");
+      }
+
+      // Calculate the updated price
+      const itemPrice =
+        currentCartItem.inventory.product.promotionalPrice &&
+        currentCartItem.inventory.product.promotionalPrice > 0
+          ? currentCartItem.inventory.product.promotionalPrice
+          : currentCartItem.inventory.product.retailPrice || 0;
+
+      // Update the cart item quantity and total price
       await prisma.cartItem.update({
-        where: { id: id },
-        data: { quantity: quantity },
+        where: { id },
+        data: {
+          quantity,
+          price: itemPrice,
+          totalPrice: itemPrice * quantity,
+        },
       });
 
       // Get updated cart to recalculate
@@ -624,24 +676,21 @@ export async function updateCartItemQuantity(id: string, quantity: number) {
       let hasDeliveryItems = false;
 
       updatedCart.cartItems.forEach((item) => {
-        const priceWithVat =
-          item.inventory.product.promotionalPrice &&
-          item.inventory.product.promotionalPrice > 0
-            ? item.inventory.product.promotionalPrice
-            : item.inventory.product.retailPrice || 0;
-
-        const itemTotalWithVat = priceWithVat * (item.quantity || 0);
-
         if (item.type === FulFillmentType.FOR_DELIVERY) {
-          deliveryTotalWithVat += itemTotalWithVat;
+          deliveryTotalWithVat += item.totalPrice;
           hasDeliveryItems = true;
         } else {
-          collectionTotalWithVat += itemTotalWithVat;
+          collectionTotalWithVat += item.totalPrice;
         }
       });
 
-      // Apply delivery charge if there are delivery items
-      const deliveryCharge = hasDeliveryItems ? 5 : 0;
+      // Apply delivery charge if there are delivery items and below free delivery threshold
+      const deliveryCharge =
+        hasDeliveryItems &&
+        (!settings.freeDeliveryThreshold ||
+          deliveryTotalWithVat < settings.freeDeliveryThreshold)
+          ? settings.defaultDeliveryCharge
+          : 0;
       const deliveryVat = deliveryCharge * 0.2; // 20% VAT on delivery
 
       // Calculate VAT-exclusive amounts

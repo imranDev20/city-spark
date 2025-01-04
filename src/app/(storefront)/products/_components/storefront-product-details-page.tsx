@@ -120,6 +120,8 @@ export default async function StorefrontProductDetailsPage({
         </div>
       </header>
 
+      <header className="shadow-md">hs</header>
+
       <div className="container mx-auto px-0 max-w-screen-xl">
         {/* Main Product Content */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 my-5 lg:my-10">

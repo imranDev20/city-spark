@@ -150,7 +150,7 @@ export default function OrderTableRow({
           className="absolute inset-0 z-10"
         />
         <div className="flex flex-col">
-          <span className="font-medium text-gray-900">{order.id}</span>
+          <span className="font-medium text-gray-900">{order.orderNumber}</span>
           <span className="text-sm text-gray-500">
             {formatDistance(new Date(order.createdAt), new Date(), {
               addSuffix: true,

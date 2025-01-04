@@ -65,7 +65,7 @@ export async function GET(request: Request) {
           name: true,
           status: true,
           images: true,
-          tradePrice: true,
+          retailPrice: true,
           promotionalPrice: true,
           createdAt: true,
           updatedAt: true,

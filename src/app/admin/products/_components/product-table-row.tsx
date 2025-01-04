@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatDistance } from "date-fns";
 import { cn } from "@/lib/utils";
-import { NumericFormat } from "react-number-format";
 import { Checkbox } from "@/components/ui/checkbox";
 import { statusMap } from "@/app/data";
 import PlaceholderImage from "@/images/placeholder-image.png";
@@ -28,26 +27,17 @@ import {
   Copy,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { useTransition } from "react";
-import { deleteProducts, duplicateProduct } from "../actions";
+import { useEffect, useState, useTransition } from "react";
+import {
+  deleteProducts,
+  duplicateProduct,
+  updateProductPrice,
+} from "../actions";
 import { useQueryClient } from "@tanstack/react-query";
 import { BLUR_DATA_URL } from "@/lib/constants";
 import { useRouter } from "next/navigation";
-
-type ProductWithRelations = Prisma.ProductGetPayload<{
-  include: {
-    brand: true;
-    primaryCategory: true;
-    secondaryCategory: true;
-    tertiaryCategory: true;
-    quaternaryCategory: true;
-    images: true;
-    tradePrice: true;
-    promotionalPrice: true;
-    status: true;
-    updatedAt: true;
-  };
-}>;
+import { ProductWithRelations } from "@/services/admin-products";
+import { Input } from "@/components/ui/input";
 
 interface ProductTableRowProps {
   product: ProductWithRelations;
@@ -67,6 +57,55 @@ export default function ProductTableRow({
   const queryClient = useQueryClient();
   const router = useRouter();
 
+  const [retailPrice, setRetailPrice] = useState(
+    product.retailPrice?.toString() || ""
+  );
+  const [promoPrice, setPromoPrice] = useState(
+    product.promotionalPrice?.toString() || ""
+  );
+
+  const handlePriceBlur = (type: "retail" | "promo") => async () => {
+    const currentRetailPrice = product.retailPrice || 0;
+    const currentPromoPrice = product.promotionalPrice || 0;
+    const newRetailPrice =
+      type === "retail" ? parseFloat(retailPrice) || 0 : currentRetailPrice;
+    const newPromoPrice =
+      type === "promo" ? parseFloat(promoPrice) || 0 : currentPromoPrice;
+
+    // Reset empty inputs to current values
+    if (type === "retail" && !retailPrice) {
+      setRetailPrice(currentRetailPrice.toString());
+      return;
+    }
+    if (type === "promo" && !promoPrice) {
+      setPromoPrice(currentPromoPrice.toString());
+      return;
+    }
+
+    // Only update if prices have changed
+    if (
+      (type === "retail" && newRetailPrice === currentRetailPrice) ||
+      (type === "promo" && newPromoPrice === currentPromoPrice)
+    ) {
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await updateProductPrice(product.id, {
+        retailPrice: newRetailPrice,
+        promotionalPrice: newPromoPrice,
+      });
+
+      if (result.success) {
+        toast({
+          title: "Price Updated",
+          description: "Product prices have been successfully updated.",
+          variant: "success",
+        });
+        await queryClient.invalidateQueries({ queryKey: ["products"] });
+      }
+    });
+  };
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -90,9 +129,7 @@ export default function ProductTableRow({
       } else {
         toast({
           title: "Error Deleting Product",
-          description:
-            result.message ||
-            "There was an error deleting the product. Please try again.",
+          description: result.message || "Failed to delete product.",
           variant: "destructive",
         });
       }
@@ -204,36 +241,34 @@ export default function ProductTableRow({
         </div>
       </TableCell>
       <TableCell className="relative">
-        <Link
-          href={`/admin/products/${product.id}`}
-          className="absolute inset-0 z-10"
-        />
-        <div className="flex flex-col">
-          <span className="font-medium text-base">
-            <NumericFormat
-              value={product.tradePrice}
-              displayType="text"
-              prefix="£"
-              decimalScale={2}
-              fixedDecimalScale
-              thousandSeparator
+        <div className="flex items-center gap-4">
+          <div>
+            <Input
+              type="number"
+              value={retailPrice}
+              onChange={(e) => setRetailPrice(e.target.value)}
+              onBlur={handlePriceBlur("retail")}
+              step="0.01"
+              min="0"
+              className="w-24 [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
-          </span>
-          {product.promotionalPrice && (
-            <span className="text-sm text-emerald-600 font-medium mt-0.5">
-              <NumericFormat
-                value={product.promotionalPrice}
-                displayType="text"
-                prefix="£"
-                decimalScale={2}
-                fixedDecimalScale
-                thousandSeparator
-              />{" "}
-              promo
-            </span>
-          )}
+            <span className="text-xs text-gray-500 mt-1">Retail</span>
+          </div>
+          <div>
+            <Input
+              type="number"
+              value={promoPrice}
+              onChange={(e) => setPromoPrice(e.target.value)}
+              onBlur={handlePriceBlur("promo")}
+              step="0.01"
+              min="0"
+              className="w-24 [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <span className="text-xs text-gray-500 mt-1">Promo</span>
+          </div>
         </div>
       </TableCell>
+
       <TableCell className="text-sm text-gray-500 relative">
         <Link
           href={`/admin/products/${product.id}`}

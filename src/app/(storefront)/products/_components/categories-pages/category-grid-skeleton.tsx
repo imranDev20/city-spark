@@ -7,7 +7,7 @@ export default function CategoryGridSkeleton() {
   const skeletonCards = Array(9).fill(null);
 
   return (
-    <div className="col-span-1 lg:col-span-9">
+    <div className="col-span-1 lg:col-span-9 my-5">
       {/* Title skeleton - only visible on mobile */}
       <Skeleton className="h-7 w-40 mb-4 lg:hidden" />
 
@@ -15,7 +15,7 @@ export default function CategoryGridSkeleton() {
         {skeletonCards.map((_, index) => (
           <Card
             key={index}
-            className="group h-full bg-white border-gray-300 rounded-xl overflow-hidden lg:shadow-md"
+            className="group h-full bg-white border-gray-300 rounded-xl overflow-hidden shadow-none"
           >
             <div className="text-center p-3 pb-1 lg:p-6 lg:pb-2">
               {/* Title skeleton */}

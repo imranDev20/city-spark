@@ -134,7 +134,37 @@ export async function createPreOrder({
   shippingAddress,
 }: CreatePreOrderParams) {
   try {
-    // Verify cart exists and belongs to user
+    // First check if an order already exists for this cart
+    const existingOrder = await prisma.order.findFirst({
+      where: {
+        cartId,
+        userId,
+      },
+      include: {
+        orderItems: true,
+      },
+    });
+
+    // If order exists, just update the shipping address
+    if (existingOrder) {
+      const updatedOrder = await prisma.order.update({
+        where: { id: existingOrder.id },
+        data: {
+          shippingAddress,
+        },
+        include: {
+          orderItems: true,
+        },
+      });
+
+      return {
+        success: true,
+        message: "Order shipping address updated successfully",
+        data: updatedOrder,
+      };
+    }
+
+    // If no existing order, verify cart exists and belongs to user
     const cart = await prisma.cart.findFirst({
       where: {
         id: cartId,
@@ -172,11 +202,11 @@ export async function createPreOrder({
     // Begin transaction
     const order = await prisma.$transaction(async (tx) => {
       // Check for order number collision
-      const existingOrder = await tx.order.findUnique({
+      const orderNumberExists = await tx.order.findUnique({
         where: { orderNumber },
       });
 
-      if (existingOrder) {
+      if (orderNumberExists) {
         throw new Error("Order number already exists - please try again");
       }
 
@@ -185,10 +215,8 @@ export async function createPreOrder({
         productId: item.inventory.product.id,
         type: item.type,
         quantity: item.quantity,
-        price:
-          item.inventory.product.promotionalPrice ||
-          item.inventory.product.retailPrice ||
-          0,
+        price: item.price || 0,
+        totalPrice: item.totalPrice || 0,
       }));
 
       // Create order
@@ -273,9 +301,12 @@ export async function updateOrderPayment({
       },
     });
 
-    await prisma.cart.delete({
+    await prisma.cart.update({
       where: {
         id: cartId,
+      },
+      data: {
+        status: "ORDERED",
       },
     }); // Revalidate the orders page
 

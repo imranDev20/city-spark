@@ -195,7 +195,7 @@ export default function TemplatesSection({
               render={({ field }) => (
                 <FormItem className="w-full flex flex-col gap-1">
                   <FormLabel>Templates</FormLabel>
-                  <FormControl>
+                  <div className="flex gap-2">
                     <Popover
                       open={openTemplates}
                       onOpenChange={setOpenTemplates}
@@ -204,7 +204,7 @@ export default function TemplatesSection({
                         <Button
                           variant="outline"
                           role="combobox"
-                          className="justify-between"
+                          className="justify-between flex-1"
                           disabled={isLoading}
                         >
                           {isLoading ? (
@@ -212,33 +212,7 @@ export default function TemplatesSection({
                           ) : selectedTemplate ? (
                             <div className="flex items-center justify-between w-full">
                               <span>{selectedTemplate.name}</span>
-                              <div className="flex items-center">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-4 w-4 p-0 hover:bg-transparent"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    field.onChange(null);
-
-                                    setValue("productTemplateFields", [], {
-                                      shouldDirty: true,
-                                      shouldValidate: true,
-                                    });
-
-                                    setValue("templateId", "", {
-                                      shouldDirty: true,
-                                      shouldValidate: true,
-                                    });
-                                  }}
-                                >
-                                  <X className="h-4 w-4" />
-                                  <span className="sr-only">
-                                    Clear template selection
-                                  </span>
-                                </Button>
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                              </div>
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </div>
                           ) : (
                             <div className="flex items-center justify-between w-full">
@@ -305,7 +279,30 @@ export default function TemplatesSection({
                         </Command>
                       </PopoverContent>
                     </Popover>
-                  </FormControl>
+                    {selectedTemplate && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 shrink-0"
+                        onClick={() => {
+                          field.onChange(null);
+                          setValue("productTemplateFields", [], {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                          setValue("templateId", "", {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">
+                          Clear template selection
+                        </span>
+                      </Button>
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

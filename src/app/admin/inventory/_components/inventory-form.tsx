@@ -143,298 +143,306 @@ export default function InventoryForm({
           isPending={isPending}
           inventoryDetails={inventoryDetails}
         />
+        <div className="container pt-8 pb-4 px-4 sm:px-8">
+          <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between text-2xl">
+                    Delivery Information
+                    <FormField
+                      control={control}
+                      name="deliveryEligibility"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={control}
+                        name="minDeliveryCount"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Minimum Count</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Minimum count" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={control}
+                        name="maxDeliveryCount"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Maximum Count</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Maximum count" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={control}
+                        name="maxDeliveryTime"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Max Delivery Time</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Estimated delivery time"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={control}
+                        name="maxDeliveryTimeExceedingStock"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Max Time After Exceeding Stock
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Max time after stock exceeded"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">Delivery Areas</h4>
+                      <p className="text-sm text-gray-500 mb-3">
+                        Post codes for delivery areas
+                      </p>
+                      {deliveryAreas.map((field, index) => (
+                        <div
+                          key={field.id}
+                          className="flex items-center gap-2 mb-2"
+                        >
+                          <FormField
+                            name={`deliveryAreas.${index}.deliveryArea`}
+                            control={control}
+                            render={({ field }) => (
+                              <FormItem className="flex-grow">
+                                <FormControl>
+                                  <Input
+                                    placeholder="Enter delivery post code"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeDeliveryArea(index)}
+                          >
+                            <Trash className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => appendDeliveryArea({ deliveryArea: "" })}
+                        className="mt-2"
+                      >
+                        <Plus className="w-4 h-4 mr-2" /> Add Delivery Area
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-        <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between text-2xl">
-                  Delivery Information
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between text-2xl">
+                    Collection Information
+                    <FormField
+                      control={control}
+                      name="collectionEligibility"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={control}
+                        name="minCollectionCount"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Minimum Count</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Minimum count" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={control}
+                        name="maxCollectionCount"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Maximum Count</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Maximum Count" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={control}
+                        name="collectionAvailabilityTime"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Collection Availability Time</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Availability time"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={control}
+                        name="maxCollectionTimeExceedingStock"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Max Time After Exceeding Stock
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Max time after stock exceeded"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">
+                        Collection Points / Branches
+                      </h4>
+                      <p className="text-sm text-gray-500 mb-3">
+                        Post codes for collection points / branches
+                      </p>
+                      {collectionPoints.map((field, index) => (
+                        <div
+                          key={field.id}
+                          className="flex items-center gap-2 mb-2"
+                        >
+                          <FormField
+                            name={`collectionPoints.${index}.collectionPoint`}
+                            control={control}
+                            render={({ field }) => (
+                              <FormItem className="flex-grow">
+                                <FormControl>
+                                  <Input
+                                    placeholder="Enter collection post code"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeCollectionPoint(index)}
+                          >
+                            <Trash className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          appendCollectionPoint({ collectionPoint: "" })
+                        }
+                        className="mt-2"
+                      >
+                        <Plus className="w-4 h-4 mr-2" /> Add Collection Point
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl">Stock Information</CardTitle>
+                </CardHeader>
+                <CardContent>
                   <FormField
                     control={control}
-                    name="deliveryEligibility"
+                    name="stock"
                     render={({ field }) => (
                       <FormItem>
+                        <FormLabel>Stock Count</FormLabel>
                         <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
+                          <Input placeholder="Enter stock value" {...field} />
                         </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                      control={control}
-                      name="minDeliveryCount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Minimum Count</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Minimum count" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={control}
-                      name="maxDeliveryCount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Maximum Count</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Maximum count" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                      control={control}
-                      name="maxDeliveryTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Max Delivery Time</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Estimated delivery time"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={control}
-                      name="maxDeliveryTimeExceedingStock"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Max Time After Exceeding Stock</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Max time after stock exceeded"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Delivery Areas</h4>
-                    <p className="text-sm text-gray-500 mb-3">
-                      Post codes for delivery areas
-                    </p>
-                    {deliveryAreas.map((field, index) => (
-                      <div
-                        key={field.id}
-                        className="flex items-center gap-2 mb-2"
-                      >
-                        <FormField
-                          name={`deliveryAreas.${index}.deliveryArea`}
-                          control={control}
-                          render={({ field }) => (
-                            <FormItem className="flex-grow">
-                              <FormControl>
-                                <Input
-                                  placeholder="Enter delivery post code"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeDeliveryArea(index)}
-                        >
-                          <Trash className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => appendDeliveryArea({ deliveryArea: "" })}
-                      className="mt-2"
-                    >
-                      <Plus className="w-4 h-4 mr-2" /> Add Delivery Area
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between text-2xl">
-                  Collection Information
-                  <FormField
-                    control={control}
-                    name="collectionEligibility"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                      control={control}
-                      name="minCollectionCount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Minimum Count</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Minimum count" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={control}
-                      name="maxCollectionCount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Maximum Count</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Maximum Count" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                      control={control}
-                      name="collectionAvailabilityTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Collection Availability Time</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Availability time" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={control}
-                      name="maxCollectionTimeExceedingStock"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Max Time After Exceeding Stock</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Max time after stock exceeded"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">
-                      Collection Points / Branches
-                    </h4>
-                    <p className="text-sm text-gray-500 mb-3">
-                      Post codes for collection points / branches
-                    </p>
-                    {collectionPoints.map((field, index) => (
-                      <div
-                        key={field.id}
-                        className="flex items-center gap-2 mb-2"
-                      >
-                        <FormField
-                          name={`collectionPoints.${index}.collectionPoint`}
-                          control={control}
-                          render={({ field }) => (
-                            <FormItem className="flex-grow">
-                              <FormControl>
-                                <Input
-                                  placeholder="Enter collection post code"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeCollectionPoint(index)}
-                        >
-                          <Trash className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        appendCollectionPoint({ collectionPoint: "" })
-                      }
-                      className="mt-2"
-                    >
-                      <Plus className="w-4 h-4 mr-2" /> Add Collection Point
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">Stock Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <FormField
-                  control={control}
-                  name="stock"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Stock Count</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter stock value" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </form>
