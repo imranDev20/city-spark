@@ -623,7 +623,6 @@ export async function updateProduct(
               : { disconnect: true },
             images: confirmedImages,
             manuals: confirmedManuals,
-            updatedAt: new Date(),
           },
           include: {
             inventory: {

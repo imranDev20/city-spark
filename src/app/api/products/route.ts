@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("page_size") || "10");
     const search = searchParams.get("search") || "";
-    const sortBy = searchParams.get("sort_by") || "updatedAt";
+    const sortBy = searchParams.get("sort_by") || "createdAt"; // Changed default sort
     const sortOrder = (searchParams.get("sort_order") || "desc") as
       | "asc"
       | "desc";
@@ -87,7 +87,6 @@ export async function GET(request: Request) {
               name: true,
             },
           },
-
           tertiaryCategory: {
             select: {
               id: true,

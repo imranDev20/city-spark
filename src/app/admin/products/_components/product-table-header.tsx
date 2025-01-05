@@ -12,6 +12,7 @@ import Link from "next/link";
 import {
   Download,
   Filter,
+  Folder,
   Loader2,
   Package2,
   Plus,
@@ -28,6 +29,8 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { exportProductsToExcel, exportProductsToJSON } from "../actions";
 import { format } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { fetchCategories } from "@/services/admin-categories";
 
 type BackupFormat = "JSON" | "EXCEL";
 
@@ -55,19 +58,21 @@ export default function ProductTableHeader() {
   const initialSearchValue = searchParams.get("search") ?? "";
   const sortBy = searchParams.get("sort_by") ?? "";
   const sortOrder = searchParams.get("sort_order") ?? "";
-  const filterStatus = searchParams.get("filter_status") ?? "";
   const { toast } = useToast();
 
   const [searchValue, setSearchValue] = useState(initialSearchValue);
   const debouncedSearchValue = useDebounce(searchValue, 300);
 
-  useEffect(() => {
-    router.push(
-      `${pathname}?${createQueryString({
-        search: debouncedSearchValue,
-      })}`
-    );
-  }, [debouncedSearchValue, pathname, router, createQueryString]);
+  const { data: categoriesResponse } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () =>
+      fetchCategories({
+        page: "1",
+        page_size: "100",
+        sort_by: "name",
+        sort_order: "asc",
+      }),
+  });
 
   const handleDownload = async (backupFormat: BackupFormat) => {
     startTransition(async () => {
@@ -138,6 +143,14 @@ export default function ProductTableHeader() {
     });
   };
 
+  useEffect(() => {
+    router.push(
+      `${pathname}?${createQueryString({
+        search: debouncedSearchValue,
+      })}`
+    );
+  }, [debouncedSearchValue, pathname, router, createQueryString]);
+
   return (
     <>
       <div className="flex items-center gap-4 mb-5 mt-7">
@@ -192,28 +205,59 @@ export default function ProductTableHeader() {
 
         <div className="hidden lg:flex items-center space-x-2">
           <Select
-            value={filterStatus}
+            value={
+              searchParams.get("primary_category_id") ||
+              searchParams.get("secondary_category_id") ||
+              "ALL"
+            }
             onValueChange={(value) => {
               if (value) {
-                router.push(
-                  `${pathname}?${createQueryString({
-                    filter_status: value !== "ALL" ? value : "",
-                  })}`
-                );
+                const selectedCategory =
+                  categoriesResponse?.data.categories.find(
+                    (cat) => cat.id === value
+                  );
+                const query =
+                  value !== "ALL"
+                    ? {
+                        // Clear existing
+                        primary_category_id: "",
+                        secondary_category_id: "",
+                        // Set new based on type
+                        ...(selectedCategory?.type === "PRIMARY" && {
+                          primary_category_id: value,
+                        }),
+                        ...(selectedCategory?.type === "SECONDARY" && {
+                          secondary_category_id: value,
+                        }),
+                      }
+                    : {
+                        primary_category_id: "",
+                        secondary_category_id: "",
+                      };
+
+                router.push(`${pathname}?${createQueryString(query)}`);
               }
             }}
           >
-            <SelectTrigger className="w-[160px]">
-              <Filter className="mr-2 h-4 w-4" />
-              <SelectValue placeholder="Filter by Status" />
+            <SelectTrigger className="w-[200px]">
+              <Folder className="mr-2 h-4 w-4" />
+              <SelectValue placeholder="Filter by Category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">ALL</SelectItem>
-              {["ACTIVE", "ARCHIVED", "DRAFT"].map((option) => (
-                <SelectItem value={option} key={option}>
-                  {option}
-                </SelectItem>
-              ))}
+              <SelectItem value="ALL">All Categories</SelectItem>
+              {categoriesResponse?.data.categories
+                .filter(
+                  (cat) =>
+                    (cat.type === "PRIMARY" &&
+                      !["Boilers", "Radiators"].includes(cat.name)) ||
+                    (cat.type === "SECONDARY" &&
+                      ["Boilers", "Radiators"].includes(cat.name))
+                )
+                .map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
 
