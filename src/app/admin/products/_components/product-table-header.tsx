@@ -32,6 +32,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCategories } from "@/services/admin-categories";
 import { fetchBrands } from "@/services/admin-brands";
+import { Split, BadgeDollarSign, ArrowUpDown } from "lucide-react";
 
 type BackupFormat = "JSON" | "EXCEL";
 
@@ -180,7 +181,7 @@ export default function ProductTableHeader() {
               }
             }}
           >
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-[180px]">
               {isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -231,10 +232,8 @@ export default function ProductTableHeader() {
                 const query =
                   value !== "ALL"
                     ? {
-                        // Clear existing
                         primary_category_id: "",
                         secondary_category_id: "",
-                        // Set new based on type
                         ...(selectedCategory?.type === "PRIMARY" && {
                           primary_category_id: value,
                         }),
@@ -251,7 +250,8 @@ export default function ProductTableHeader() {
               }
             }}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-[160px]">
+              <Split className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Filter by Category" />
             </SelectTrigger>
             <SelectContent>
@@ -282,7 +282,8 @@ export default function ProductTableHeader() {
               }
             }}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-[150px]">
+              <BadgeDollarSign className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Filter by Brand" />
             </SelectTrigger>
             <SelectContent>
@@ -307,7 +308,8 @@ export default function ProductTableHeader() {
               }
             }}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-[150px]">
+              <ArrowUpDown className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -331,7 +333,8 @@ export default function ProductTableHeader() {
               }
             }}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-[150px]">
+              <SortAsc className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Sort Order" />
             </SelectTrigger>
             <SelectContent>
