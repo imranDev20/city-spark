@@ -31,6 +31,7 @@ import { format } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCategories } from "@/services/admin-categories";
+import { fetchBrands } from "@/services/admin-brands";
 
 type BackupFormat = "JSON" | "EXCEL";
 
@@ -67,6 +68,17 @@ export default function ProductTableHeader() {
     queryKey: ["categories"],
     queryFn: () =>
       fetchCategories({
+        page: "1",
+        page_size: "100",
+        sort_by: "name",
+        sort_order: "asc",
+      }),
+  });
+
+  const { data: brandsResponse } = useQuery({
+    queryKey: ["brands"],
+    queryFn: () =>
+      fetchBrands({
         page: "1",
         page_size: "100",
         sort_by: "name",
@@ -239,8 +251,7 @@ export default function ProductTableHeader() {
               }
             }}
           >
-            <SelectTrigger className="w-[200px]">
-              <Folder className="mr-2 h-4 w-4" />
+            <SelectTrigger>
               <SelectValue placeholder="Filter by Category" />
             </SelectTrigger>
             <SelectContent>
@@ -262,6 +273,29 @@ export default function ProductTableHeader() {
           </Select>
 
           <Select
+            value={searchParams.get("brand_id") || "ALL"}
+            onValueChange={(value) => {
+              if (value) {
+                const query =
+                  value !== "ALL" ? { brand_id: value } : { brand_id: "" };
+                router.push(`${pathname}?${createQueryString(query)}`);
+              }
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Filter by Brand" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Brands</SelectItem>
+              {brandsResponse?.data.map((brand) => (
+                <SelectItem key={brand.id} value={brand.id}>
+                  {brand.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
             value={sortBy}
             onValueChange={(value) => {
               if (value) {
@@ -273,8 +307,7 @@ export default function ProductTableHeader() {
               }
             }}
           >
-            <SelectTrigger className="w-[160px]">
-              <SortAsc className="mr-2 h-4 w-4" />
+            <SelectTrigger>
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -298,12 +331,7 @@ export default function ProductTableHeader() {
               }
             }}
           >
-            <SelectTrigger className="w-[160px]">
-              {sortOrder === "asc" ? (
-                <SortAsc className="mr-2 h-4 w-4" />
-              ) : (
-                <SortDesc className="mr-2 h-4 w-4" />
-              )}
+            <SelectTrigger>
               <SelectValue placeholder="Sort Order" />
             </SelectTrigger>
             <SelectContent>

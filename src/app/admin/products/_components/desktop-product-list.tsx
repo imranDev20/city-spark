@@ -72,6 +72,7 @@ export default function DesktopProductList({
       (searchParams.get("sort_order") as FetchProductsParams["sort_order"]) ||
       "desc",
     filter_status: searchParams.get("filter_status") || "",
+    brand_id: searchParams.get("brand_id") || "", // Add this line
     ...(primaryCategoryId && { primary_category_id: primaryCategoryId }),
     ...(secondaryCategoryId && { secondary_category_id: secondaryCategoryId }),
     ...(tertiaryCategoryId && { tertiary_category_id: tertiaryCategoryId }),
