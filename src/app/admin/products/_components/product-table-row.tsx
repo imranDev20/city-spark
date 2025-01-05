@@ -1,7 +1,6 @@
 "use client";
 
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Prisma } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { formatDistance } from "date-fns";

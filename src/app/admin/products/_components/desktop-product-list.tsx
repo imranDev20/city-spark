@@ -40,6 +40,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { deleteProducts } from "../actions";
 import { useQueryClient } from "@tanstack/react-query";
 
+// this component is being used in the categories to show products
 interface DesktopProductListProps {
   primaryCategoryId?: string;
   secondaryCategoryId?: string;
@@ -66,11 +67,12 @@ export default function DesktopProductList({
     page: searchParams.get("page") || "1",
     page_size: "10",
     search: searchParams.get("search") || "",
-    sort_by: searchParams.get("sort_by") || "updatedAt",
+    sort_by: searchParams.get("sort_by") || "createdAt",
     sort_order:
       (searchParams.get("sort_order") as FetchProductsParams["sort_order"]) ||
       "desc",
     filter_status: searchParams.get("filter_status") || "",
+    brand_id: searchParams.get("brand_id") || "", // Add this line
     ...(primaryCategoryId && { primary_category_id: primaryCategoryId }),
     ...(secondaryCategoryId && { secondary_category_id: secondaryCategoryId }),
     ...(tertiaryCategoryId && { tertiary_category_id: tertiaryCategoryId }),

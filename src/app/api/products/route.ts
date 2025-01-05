@@ -8,13 +8,14 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("page_size") || "10");
     const search = searchParams.get("search") || "";
-    const sortBy = searchParams.get("sort_by") || "updatedAt";
+    const sortBy = searchParams.get("sort_by") || "createdAt";
     const sortOrder = (searchParams.get("sort_order") || "desc") as
       | "asc"
       | "desc";
     const filterStatus = searchParams.get("filter_status") as Status | null;
 
-    // Get category filters
+    // Get brand and category filters
+    const brandId = searchParams.get("brand_id");
     const primaryCategoryId = searchParams.get("primary_category_id");
     const secondaryCategoryId = searchParams.get("secondary_category_id");
     const tertiaryCategoryId = searchParams.get("tertiary_category_id");
@@ -23,22 +24,20 @@ export async function GET(request: Request) {
     // Calculate pagination
     const skip = (page - 1) * pageSize;
 
-    // Build category filters
-    const categoryFilters = {
+    // Build base filters including categories and brand
+    const baseFilters = {
       ...(primaryCategoryId && { primaryCategoryId }),
       ...(secondaryCategoryId && { secondaryCategoryId }),
       ...(tertiaryCategoryId && { tertiaryCategoryId }),
       ...(quaternaryCategoryId && { quaternaryCategoryId }),
+      ...(brandId && { brandId }),
     };
 
     // Build the where clause for filtering
     const where = {
       AND: [
-        // Category filters - will be combined with AND
-        categoryFilters,
-        // Status filter
+        baseFilters,
         filterStatus ? { status: filterStatus } : {},
-        // Search filter
         search
           ? {
               OR: [
@@ -87,7 +86,6 @@ export async function GET(request: Request) {
               name: true,
             },
           },
-
           tertiaryCategory: {
             select: {
               id: true,

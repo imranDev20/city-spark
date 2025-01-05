@@ -41,6 +41,7 @@ export interface FetchProductsParams {
   secondary_category_id?: string;
   tertiary_category_id?: string;
   quaternary_category_id?: string;
+  brand_id?: string; // Add this line for brand filtering
 }
 
 /**
