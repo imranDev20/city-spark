@@ -190,7 +190,7 @@ export default function ProductCard({
           </div>
         </div>
 
-        {product.promotionalPrice &&
+        {/* {product.promotionalPrice &&
           product.retailPrice &&
           product.promotionalPrice < product.retailPrice && (
             <div className="absolute top-2 sm:top-4 right-2 sm:right-4 z-10">
@@ -206,7 +206,7 @@ export default function ProductCard({
                 % OFF
               </div>
             </div>
-          )}
+          )} */}
 
         <div className="flex flex-col p-2 sm:p-4">
           <div className="mb-3">
