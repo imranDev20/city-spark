@@ -8,6 +8,10 @@ export type BrandWithProducts = Prisma.BrandGetPayload<{
   select: {
     id: true;
     name: true;
+    updatedAt: true;
+    description: true;
+    status: true;
+    image: true;
     _count: {
       select: {
         products: true;

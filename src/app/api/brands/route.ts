@@ -40,6 +40,10 @@ export async function GET(request: Request) {
         select: {
           id: true,
           name: true,
+          updatedAt: true,
+          description: true,
+          status: true,
+          image: true,
           _count: {
             select: {
               products: {
