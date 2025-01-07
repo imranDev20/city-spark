@@ -190,23 +190,23 @@ export default function ProductCard({
           </div>
         </div>
 
-        {/* {product.promotionalPrice &&
-          product.retailPrice &&
-          product.promotionalPrice < product.retailPrice && (
-            <div className="absolute top-2 sm:top-4 right-2 sm:right-4 z-10">
-              <div className="bg-red-600 text-white px-3 py-1 rounded-t-md font-bold text-base">
-                SALE
-              </div>
-              <div className="bg-black text-white px-2 py-0.5 rounded-b-md text-xs font-medium">
-                {Math.round(
-                  ((product.retailPrice - product.promotionalPrice) /
-                    product.retailPrice) *
-                    100
-                )}
-                % OFF
-              </div>
+        {product.promotionalPrice &&
+        product.retailPrice &&
+        product.promotionalPrice < product.retailPrice ? (
+          <div className="absolute top-2 sm:top-4 right-2 sm:right-4 z-10">
+            <div className="bg-red-600 text-white px-3 py-1 rounded-t-md font-bold text-base">
+              SALE
             </div>
-          )} */}
+            <div className="bg-black text-white px-2 py-0.5 rounded-b-md text-xs font-medium">
+              {Math.round(
+                ((product.retailPrice - product.promotionalPrice) /
+                  product.retailPrice) *
+                  100
+              )}
+              % OFF
+            </div>
+          </div>
+        ) : null}
 
         <div className="flex flex-col p-2 sm:p-4">
           <div className="mb-3">
