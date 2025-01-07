@@ -2,7 +2,7 @@
 
 import { TableCell, TableRow } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import { BrandWithProducts } from "@/services/admin-brands";
+import { BrandWithProducts } from "@/services/brands";
 import {
   MoreHorizontal,
   Pencil,

@@ -5,7 +5,9 @@ import axios from "axios";
  * Type definition for a brand with its related product count
  */
 export type BrandWithProducts = Prisma.BrandGetPayload<{
-  include: {
+  select: {
+    id: true;
+    name: true;
     _count: {
       select: {
         products: true;
@@ -21,9 +23,10 @@ export interface BrandsResponse {
   data: BrandWithProducts[];
   pagination: {
     currentPage: number;
+    pageSize: number;
     totalCount: number;
     totalPages: number;
-    pageSize: number;
+    hasMore: boolean;
   };
 }
 
@@ -32,8 +35,12 @@ export interface FetchBrandsParams {
   page_size?: string | number;
   search?: string;
   sort_by?: string;
-  sort_order?: "asc" | "desc";
+  sort_order?: Prisma.SortOrder;
   filter_status?: Status;
+  primary_category_id?: string;
+  secondary_category_id?: string;
+  tertiary_category_id?: string;
+  quaternary_category_id?: string;
 }
 
 export async function fetchBrands(
@@ -54,7 +61,7 @@ export async function fetchBrands(
     const response = await axios.get<BrandsResponse>(
       `/api/brands${queryString}`
     );
-    return response.data; // Return the full response data
+    return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(

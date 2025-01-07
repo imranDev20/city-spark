@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { FileState } from "@/components/custom/single-image-uploader";
-import { BrandWithDetails } from "@/services/admin-brands";
+import { BrandWithDetails } from "@/services/brands";
 
 type BrandFormHeaderProps = {
   brandDetails?: BrandWithDetails | null;

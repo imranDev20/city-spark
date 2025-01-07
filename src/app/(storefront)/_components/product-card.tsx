@@ -162,26 +162,69 @@ export default function ProductCard({
   return (
     <Card className="shadow-none group h-full flex flex-col bg-white border-gray-300 rounded-xl overflow-hidden lg:hover:shadow-lg transition-all duration-300 relative">
       <Link href={productUrl} className="contents">
-        <ProductImage images={product.images || []} />
+        <div className="relative bg-white">
+          <div className="sm:hidden relative h-32 p-4">
+            <Image
+              src={product.images[0] || PlaceholderImage}
+              alt="Product Image"
+              className="object-contain"
+              sizes="100vw"
+              loading="lazy"
+              placeholder="blur"
+              fill
+              blurDataURL={BLUR_DATA_URL}
+            />
+          </div>
+
+          <div className="hidden sm:block relative h-48 md:h-56 lg:h-64 p-6">
+            <Image
+              src={product.images[0] || PlaceholderImage}
+              fill
+              alt="Product Image"
+              className="object-contain transition-all duration-300 group-hover:scale-105"
+              sizes="(min-width: 1024px) 33vw, 50vw"
+              placeholder="blur"
+              blurDataURL={BLUR_DATA_URL}
+              loading="lazy"
+            />
+          </div>
+        </div>
 
         {product.promotionalPrice &&
           product.retailPrice &&
           product.promotionalPrice < product.retailPrice && (
-            <div className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-primary text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium">
-              Save{" "}
-              {Math.round(
-                ((product.retailPrice - product.promotionalPrice) /
-                  product.retailPrice) *
-                  100
-              )}
-              %
+            <div className="absolute top-2 sm:top-4 right-2 sm:right-4 z-10">
+              <div className="bg-red-600 text-white px-3 py-1 rounded-t-md font-bold text-base">
+                SALE
+              </div>
+              <div className="bg-black text-white px-2 py-0.5 rounded-b-md text-xs font-medium">
+                {Math.round(
+                  ((product.retailPrice - product.promotionalPrice) /
+                    product.retailPrice) *
+                    100
+                )}
+                % OFF
+              </div>
             </div>
           )}
 
-        {/* Rest of the component remains the same */}
         <div className="flex flex-col p-2 sm:p-4">
           <div className="mb-3">
-            <StarRating rating={rating} />
+            <div className="flex items-center">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className={`w-3 sm:w-4 h-3 sm:h-4 ${
+                    rating >= star
+                      ? "text-secondary fill-secondary"
+                      : "text-gray-200"
+                  }`}
+                />
+              ))}
+              <span className="ml-1 sm:ml-2 text-xs sm:text-sm font-medium">
+                {rating.toFixed(1)}/5
+              </span>
+            </div>
 
             <h3 className="font-normal text-gray-900 text-sm sm:text-base line-clamp-3 min-h-[2.5rem] mt-3 !leading-[1.3rem]">
               {product.name}
@@ -193,7 +236,6 @@ export default function ProductCard({
       <div className="px-2 sm:px-4 pb-2 sm:pb-4 mt-auto">
         <div className="flex items-baseline gap-2 mb-5">
           {product.promotionalPrice ? (
-            // Case 1: Show promotional price with Inc VAT and strikethrough retail price
             <>
               <span className="sm:text-2xl font-bold text-gray-900">
                 £{product.promotionalPrice.toFixed(2)}
@@ -203,13 +245,12 @@ export default function ProductCard({
               </div>
               {product.retailPrice &&
                 product.retailPrice > product.promotionalPrice && (
-                  <span className="text-xs sm:text-sm text-gray-500 line-through">
+                  <span className="text-xs sm:text-sm text-red-500 line-through">
                     £{product.retailPrice.toFixed(2)}
                   </span>
                 )}
             </>
           ) : (
-            // Case 2: Show retail price with Inc VAT only
             <>
               <span className="sm:text-2xl font-bold text-gray-900">
                 £{(product.retailPrice || 0)?.toFixed(2)}

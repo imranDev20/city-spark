@@ -34,7 +34,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { fetchBrands } from "@/services/admin-brands";
+import { fetchBrands } from "@/services/brands";
 import { ProductFormInputType } from "../schema";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CommandLoading } from "cmdk";

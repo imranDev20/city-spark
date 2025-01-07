@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ContentLayout } from "../../_components/content-layout";
 import DynamicBreadcrumb from "../../_components/dynamic-breadcrumb";
 import BrandForm from "../_components/brand-form";
-import { fetchBrandDetails, BrandWithDetails } from "@/services/admin-brands";
+import { fetchBrandDetails, BrandWithDetails } from "@/services/brands";
 
 type PageParams = Promise<{
   brand_id: string;
