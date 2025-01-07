@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Prisma } from "@prisma/client";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
+import PlaceholderImage from "@/images/placeholder-image.png";
 
 // Previous type definitions remain the same...
 type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
@@ -43,9 +44,12 @@ export default function ProductImageGallery({
 }: {
   inventoryItem: InventoryItemWithRelation;
 }) {
-  const [mainImage, setMainImage] = useState(
-    inventoryItem.product.images[0] || ""
-  );
+  // Filter out any empty strings from images array and provide fallback
+  const validImages = inventoryItem.product.images.filter(Boolean);
+  const defaultImage = validImages[0] || PlaceholderImage;
+
+  // State management
+  const [mainImage, setMainImage] = useState(defaultImage);
   const [transform, setTransform] = useState<Transform>({
     scale: 1,
     x: 0,
@@ -56,26 +60,25 @@ export default function ProductImageGallery({
   const [isMobile, setIsMobile] = useState(false);
   const imageRef = useRef<HTMLDivElement>(null);
 
-  // Main carousel for fullscreen view
+  // Carousel initialization
   const [fullscreenRef, fullscreenApi] = useEmblaCarousel({
     align: "center",
     containScroll: false,
     dragFree: false,
   });
 
-  // Thumbnail carousel for fullscreen
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
     containScroll: "keepSnaps",
     dragFree: true,
   });
 
-  // Thumbnail carousel for normal view
   const [thumbsRef, thumbsApi] = useEmblaCarousel({
     containScroll: "trimSnaps",
     dragFree: true,
   });
 
+  // Mobile detection useEffect
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -86,40 +89,40 @@ export default function ProductImageGallery({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Sync all carousels when main image changes
+  // Carousel synchronization useEffect
   useEffect(() => {
-    if (thumbsApi && emblaApi && fullscreenApi) {
-      const index = inventoryItem.product.images.indexOf(mainImage);
+    if (
+      thumbsApi &&
+      emblaApi &&
+      fullscreenApi &&
+      typeof mainImage === "string"
+    ) {
+      const index = validImages.indexOf(mainImage);
       thumbsApi.scrollTo(index);
       emblaApi.scrollTo(index);
       fullscreenApi.scrollTo(index);
     }
-  }, [
-    mainImage,
-    thumbsApi,
-    emblaApi,
-    fullscreenApi,
-    inventoryItem.product.images,
-  ]);
+  }, [mainImage, thumbsApi, emblaApi, fullscreenApi, validImages]);
 
-  // Handle fullscreen carousel scroll with proper TypeScript typing
+  // Fullscreen carousel selection handler
   const onFullscreenSelect = useCallback(() => {
     if (!fullscreenApi) return;
     const index = fullscreenApi.selectedScrollSnap();
-    setMainImage(inventoryItem.product.images[index]);
+    setMainImage(validImages[index] || defaultImage);
     setCurrentIndex(index);
-  }, [fullscreenApi, inventoryItem.product.images]);
+  }, [fullscreenApi, validImages, defaultImage]);
 
+  // Attach fullscreen carousel event listener
   useEffect(() => {
     if (!fullscreenApi) return;
 
     fullscreenApi.on("select", onFullscreenSelect);
-
     return () => {
       fullscreenApi.off("select", onFullscreenSelect);
     };
   }, [fullscreenApi, onFullscreenSelect]);
 
+  // Mouse event handlers
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>): void => {
     if (isMobile) return;
 
@@ -139,9 +142,9 @@ export default function ProductImageGallery({
   };
 
   const handleImageClick = () => {
-    if (isMobile) {
+    if (isMobile && typeof mainImage === "string") {
       setIsFullscreen(true);
-      setCurrentIndex(inventoryItem.product.images.indexOf(mainImage));
+      setCurrentIndex(validImages.indexOf(mainImage));
       // Ensure the fullscreen carousel is at the right position
       setTimeout(() => {
         fullscreenApi?.scrollTo(currentIndex);
@@ -149,6 +152,7 @@ export default function ProductImageGallery({
     }
   };
 
+  // Navigation handlers
   const handlePrevImage = () => {
     if (fullscreenApi) {
       fullscreenApi.scrollPrev();
@@ -192,46 +196,15 @@ export default function ProductImageGallery({
         </div>
       </div>
 
-      {/* Desktop thumbnails */}
-      <div className="mt-5 hidden lg:grid grid-cols-6 gap-3  lg:px-8">
-        {inventoryItem.product.images.map((image, index) => (
-          <div
-            key={index}
-            className="flex-[0_0_23%] min-w-0 md:flex-[0_0_16.666%] border h-16 md:h-24"
-          >
-            <button
-              onClick={() => {
-                setMainImage(image);
-                setCurrentIndex(index);
-              }}
-              className={cn(
-                "relative w-full h-full bg-white overflow-hidden transition-all duration-200",
-                mainImage === image
-                  ? "border-2 border-secondary" // Changed from primary to secondary
-                  : "border border-gray-200"
-              )}
-            >
-              <Image
-                src={image}
-                alt={`${inventoryItem.product.name} - ${index + 1}`}
-                fill
-                className="object-contain"
-                sizes="(max-width: 768px) 25vw, (max-width: 1200px) 16vw, 12vw"
-                draggable="false"
-              />
-            </button>
-          </div>
-        ))}
-      </div>
-
-      {/* Thumbnail Carousel */}
-      <div className="mt-5 block lg:hidden">
-        <div className="overflow-hidden" ref={thumbsRef}>
-          <div className="flex">
-            {inventoryItem.product.images.map((image, index) => (
+      {/* Only render thumbnails if there are multiple valid images */}
+      {validImages.length > 1 && (
+        <>
+          {/* Desktop thumbnails */}
+          <div className="mt-5 hidden lg:grid grid-cols-6 gap-3 lg:px-8">
+            {validImages.map((image, index) => (
               <div
                 key={index}
-                className="flex-[0_0_23%] min-w-0 md:flex-[0_0_16.666%] first:border-l border-r border-b border-t h-16 md:h-24"
+                className="flex-[0_0_23%] min-w-0 md:flex-[0_0_16.666%] border h-16 md:h-24"
               >
                 <button
                   onClick={() => {
@@ -240,17 +213,16 @@ export default function ProductImageGallery({
                   }}
                   className={cn(
                     "relative w-full h-full bg-white overflow-hidden transition-all duration-200",
-                    "hover:border-primary/50 hover:shadow-sm",
                     mainImage === image
-                      ? "border-primary shadow-sm"
-                      : "border-gray-200"
+                      ? "border-2 border-secondary"
+                      : "border border-gray-200"
                   )}
                 >
                   <Image
                     src={image}
                     alt={`${inventoryItem.product.name} - ${index + 1}`}
                     fill
-                    className="object-contain p-2"
+                    className="object-contain"
                     sizes="(max-width: 768px) 25vw, (max-width: 1200px) 16vw, 12vw"
                     draggable="false"
                   />
@@ -258,8 +230,44 @@ export default function ProductImageGallery({
               </div>
             ))}
           </div>
-        </div>
-      </div>
+
+          {/* Mobile thumbnail carousel */}
+          <div className="mt-5 block lg:hidden">
+            <div className="overflow-hidden" ref={thumbsRef}>
+              <div className="flex">
+                {validImages.map((image, index) => (
+                  <div
+                    key={index}
+                    className="flex-[0_0_23%] min-w-0 md:flex-[0_0_16.666%] first:border-l border-r border-b border-t h-16 md:h-24"
+                  >
+                    <button
+                      onClick={() => {
+                        setMainImage(image);
+                        setCurrentIndex(index);
+                      }}
+                      className={cn(
+                        "relative w-full h-full bg-white overflow-hidden transition-all duration-200",
+                        mainImage === image
+                          ? "border-2 border-secondary"
+                          : "border border-gray-200"
+                      )}
+                    >
+                      <Image
+                        src={image}
+                        alt={`${inventoryItem.product.name} - ${index + 1}`}
+                        fill
+                        className="object-contain p-2"
+                        sizes="(max-width: 768px) 25vw, (max-width: 1200px) 16vw, 12vw"
+                        draggable="false"
+                      />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Fullscreen Gallery Modal */}
       {isFullscreen && (

@@ -167,18 +167,13 @@ export default function ProductCard({
         {product.promotionalPrice &&
           product.retailPrice &&
           product.promotionalPrice < product.retailPrice && (
-            <div className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-primary text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium">
-              Save{" "}
-              {Math.round(
-                ((product.retailPrice - product.promotionalPrice) /
-                  product.retailPrice) *
-                  100
-              )}
-              %
+            <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-10">
+              <div className="bg-red-600 text-white px-3 py-1 rounded-md font-bold text-base transform -rotate-6 shadow-md">
+                SALE
+              </div>
             </div>
           )}
 
-        {/* Rest of the component remains the same */}
         <div className="flex flex-col p-2 sm:p-4">
           <div className="mb-3">
             <StarRating rating={rating} />
@@ -193,7 +188,6 @@ export default function ProductCard({
       <div className="px-2 sm:px-4 pb-2 sm:pb-4 mt-auto">
         <div className="flex items-baseline gap-2 mb-5">
           {product.promotionalPrice ? (
-            // Case 1: Show promotional price with Inc VAT and strikethrough retail price
             <>
               <span className="sm:text-2xl font-bold text-gray-900">
                 £{product.promotionalPrice.toFixed(2)}
@@ -203,13 +197,12 @@ export default function ProductCard({
               </div>
               {product.retailPrice &&
                 product.retailPrice > product.promotionalPrice && (
-                  <span className="text-xs sm:text-sm text-gray-500 line-through">
+                  <span className="text-xs sm:text-sm text-red-500 line-through">
                     £{product.retailPrice.toFixed(2)}
                   </span>
                 )}
             </>
           ) : (
-            // Case 2: Show retail price with Inc VAT only
             <>
               <span className="sm:text-2xl font-bold text-gray-900">
                 £{(product.retailPrice || 0)?.toFixed(2)}
