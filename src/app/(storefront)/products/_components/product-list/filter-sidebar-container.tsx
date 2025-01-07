@@ -27,5 +27,5 @@ export default async function FilterSidebarContainer(
     quaternaryCategoryId
   );
 
-  return <FilterSidebar initialBrands={brands} filterOptions={filterOptions} />;
+  return <FilterSidebar filterOptions={filterOptions} />;
 }
