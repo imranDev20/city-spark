@@ -81,7 +81,7 @@ export default async function DynamicCategoryPage({
           "px-4 md:px-6 lg:px-8"
         )}
       >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 h-full">
           <Suspense fallback={<CategorySidebarSkeleton />}>
             <DynamicCategorySidebar
               primaryCategoryId={primaryId}

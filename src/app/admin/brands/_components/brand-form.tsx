@@ -41,7 +41,7 @@ import {
   SingleImageDropzone,
 } from "@/components/custom/single-image-uploader";
 import BrandFormHeader from "./brand-form-header";
-import { BrandWithDetails } from "@/services/admin-brands";
+import { BrandWithDetails } from "@/services/brands";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function BrandForm({

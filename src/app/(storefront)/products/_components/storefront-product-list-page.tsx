@@ -33,7 +33,7 @@ export default function StorefrontProductListPage(
 
       <section
         className={cn(
-          "flex-grow mx-auto my-5",
+          "flex-grow mx-auto my-5 lg:my-10",
           "container max-w-screen-xl",
           "px-4 md:px-6 lg:px-8"
         )}

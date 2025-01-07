@@ -31,7 +31,7 @@ import { format } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCategories } from "@/services/admin-categories";
-import { fetchBrands } from "@/services/admin-brands";
+import { fetchBrands } from "@/services/brands";
 import { Split, BadgeDollarSign, ArrowUpDown } from "lucide-react";
 
 type BackupFormat = "JSON" | "EXCEL";

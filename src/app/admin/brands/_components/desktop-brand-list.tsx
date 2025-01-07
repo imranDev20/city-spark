@@ -35,7 +35,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import BrandsTableRow from "./brand-table-row";
-import { fetchBrands, type FetchBrandsParams } from "@/services/admin-brands";
+import { fetchBrands, type FetchBrandsParams } from "@/services/brands";
 import { Status } from "@prisma/client";
 import BrandsLoading from "./brands-loading";
 
