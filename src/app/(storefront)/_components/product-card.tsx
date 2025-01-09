@@ -125,7 +125,6 @@ export default function ProductCard({
   const [isPending, startTransition] = useTransition();
   const [quantity, setQuantity] = useState(1);
   const rating = 4.5;
-  const availableStock = inventoryItem.stockCount - inventoryItem.heldCount;
   const queryClient = useQueryClient();
 
   const handleAddToCart = async (
@@ -267,7 +266,7 @@ export default function ProductCard({
             <QuantitySelector
               quantity={quantity}
               onQuantityChange={(newQuantity) => {
-                setQuantity(Math.min(newQuantity, availableStock * 2));
+                setQuantity(Math.min(newQuantity));
               }}
               disabled={isPending}
             />
