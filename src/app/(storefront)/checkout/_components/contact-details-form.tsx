@@ -136,6 +136,8 @@ export function ContactDetailsForm({
     onNext();
   };
 
+  console.log(session);
+
   // Helper component for required field indicator
   const RequiredIndicator = () => (
     <span className="text-red-500 ml-0.5">*</span>
@@ -251,15 +253,7 @@ export function ContactDetailsForm({
           </div>
         </CardContent>
 
-        <div className="px-6 py-4 bg-gray-50/50 border-t flex justify-between items-center">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onBack}
-            disabled={isLoading}
-          >
-            Back
-          </Button>
+        <div className="px-6 py-4 bg-gray-50/50 border-t flex justify-end items-center">
           <Button type="submit" className="min-w-[100px]" disabled={isLoading}>
             {isLoading ? (
               <>

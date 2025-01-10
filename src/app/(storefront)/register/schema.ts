@@ -1,24 +1,32 @@
 import { z } from "zod";
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 
 const nonEmptyString = (fieldName: string) =>
   z.string().min(1, `${fieldName} is required`);
 
+const phoneNumberValidator = (phoneNumber: string) => {
+  const parsed = parsePhoneNumberFromString(phoneNumber, "GB");
+  return parsed?.isValid() || "Please enter a valid UK phone number";
+};
+
 export const registerSchema = z
   .object({
-    firstName: nonEmptyString("First name").min(
-      2,
-      "First name must be at least 2 characters long"
-    ),
-    surname: nonEmptyString("Surname").min(
-      2,
-      "Surname must be at least 2 characters long"
-    ),
-    email: nonEmptyString("Email").email("Please enter a valid email address"),
+    firstName: nonEmptyString("First name").min(2),
+    surname: nonEmptyString("Surname").min(2),
+    email: nonEmptyString("Email").email(),
+    phone: nonEmptyString("Phone number").superRefine((val, ctx) => {
+      const isValid = phoneNumberValidator(val);
+      if (isValid !== true) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: isValid,
+        });
+      }
+    }),
     password: nonEmptyString("Password")
-      .min(8, "Password must be at least 8 characters long")
+      .min(8)
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
       ),
     confirmPassword: nonEmptyString("Confirm password"),
   })

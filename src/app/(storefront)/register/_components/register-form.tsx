@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
@@ -20,6 +20,7 @@ import GoogleIcon from "@/components/icons/google";
 import { createUser } from "../actions";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
+import { AsYouType } from "libphonenumber-js";
 
 export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,16 +29,43 @@ export default function RegisterForm() {
   const { toast } = useToast();
   const router = useRouter();
 
+  // Add this state
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Add validation states
+  const [passwordCriteria, setPasswordCriteria] = useState({
+    length: false,
+    lowercase: false,
+    uppercase: false,
+    number: false,
+    special: false,
+  });
+
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       firstName: "",
       surname: "",
       email: "",
+      phone: "",
       password: "",
       confirmPassword: "",
     },
   });
+
+  // Add this to update validation on password change
+  useEffect(() => {
+    const password = form.getValues("password");
+    setPasswordCriteria({
+      length: password.length >= 8,
+      lowercase: /[a-z]/.test(password),
+      uppercase: /[A-Z]/.test(password),
+      number: /\d/.test(password),
+      special: /[@$!%*?&]/.test(password),
+    });
+  }, [form.watch("password")]);
+
+  console.log(form.formState.errors);
 
   const onSubmit: SubmitHandler<RegisterFormData> = (data) => {
     startTransition(async () => {
@@ -52,7 +80,7 @@ export default function RegisterForm() {
           });
           form.reset();
 
-          router.push("/login");
+          router.push("/login?registered=true");
         } else {
           toast({
             title: "Registration Failed",
@@ -136,16 +164,41 @@ export default function RegisterForm() {
 
           <FormField
             control={form.control}
-            name="password"
+            name="phone"
             render={({ field }) => (
               <FormItem>
+                <FormLabel>Phone Number</FormLabel>
+                <FormControl>
+                  <Input
+                    type="tel"
+                    placeholder="+44 XXXX XXX XXX"
+                    {...field}
+                    onChange={(e) => {
+                      const formatter = new AsYouType("GB");
+                      const formatted = formatter.input(e.target.value);
+                      field.onChange(formatted);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem className="relative">
                 <FormLabel>Password</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your Password"
+                      onFocus={() => setIsFocused(true)}
                       {...field}
+                      onBlur={() => setIsFocused(false)}
                     />
                     <Button
                       type="button"
@@ -160,13 +213,70 @@ export default function RegisterForm() {
                         <EyeIcon className="h-4 w-4" />
                       )}
                     </Button>
+                    {isFocused && (
+                      <div className="absolute left-[calc(100%+12px)] top-0 bg-white p-4 rounded-lg shadow-lg border space-y-2 text-sm w-80 z-10">
+                        {/* Arrow */}
+                        <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-0 h-0 border-8 border-transparent border-r-white z-10" />
+                        <div className="absolute left-0 top-1/2 -translate-x-[calc(50%+1px)] -translate-y-1/2 w-0 h-0 border-8 border-transparent border-r-gray-200" />
+
+                        {/* Criteria list */}
+                        <div
+                          className={`flex items-center gap-2 ${
+                            passwordCriteria.length
+                              ? "text-green-600"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {passwordCriteria.length ? "✓" : "○"} At least 8
+                          characters
+                        </div>
+                        <div
+                          className={`flex items-center gap-2 ${
+                            passwordCriteria.lowercase
+                              ? "text-green-600"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {passwordCriteria.lowercase ? "✓" : "○"} One lowercase
+                          letter
+                        </div>
+                        <div
+                          className={`flex items-center gap-2 ${
+                            passwordCriteria.uppercase
+                              ? "text-green-600"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {passwordCriteria.uppercase ? "✓" : "○"} One uppercase
+                          letter
+                        </div>
+                        <div
+                          className={`flex items-center gap-2 ${
+                            passwordCriteria.number
+                              ? "text-green-600"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {passwordCriteria.number ? "✓" : "○"} One number
+                        </div>
+                        <div
+                          className={`flex items-center gap-2 ${
+                            passwordCriteria.special
+                              ? "text-green-600"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {passwordCriteria.special ? "✓" : "○"} One special
+                          character (@$!%*?&)
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="confirmPassword"

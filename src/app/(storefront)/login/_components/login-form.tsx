@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
@@ -19,13 +19,14 @@ import { LoginFormData, loginSchema } from "../schema";
 import GoogleIcon from "@/components/icons/google";
 import { useToast } from "@/components/ui/use-toast";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -89,15 +90,26 @@ export default function LoginForm() {
   return (
     <main className="container max-w-md mx-auto py-20">
       <h1 className="lg:text-4xl font-extrabold mb-2">Login</h1>
-      <p className="mb-10 text-sm">
-        Not registered yet?{" "}
-        <Link
-          href="/register"
-          className="text-secondary font-semibold hover:underline"
-        >
-          Create an account
-        </Link>
-      </p>
+
+      <div className="mb-10">
+        <p className="mb-5 text-sm">
+          Not registered yet?{" "}
+          <Link
+            href="/register"
+            className="text-secondary font-semibold hover:underline"
+          >
+            Create an account
+          </Link>
+        </p>
+
+        {searchParams.get("registered") === "true" && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-10">
+            <p className="text-green-800 text-sm">
+              Account successfully created! Please log in with your credentials.
+            </p>
+          </div>
+        )}
+      </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
