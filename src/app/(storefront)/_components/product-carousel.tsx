@@ -33,11 +33,12 @@ const OPTIONS: EmblaOptionsType = {
   containScroll: "trimSnaps",
   dragFree: false,
   loop: false,
-  // This ensures it won't get stuck between slides
+  // Updated breakpoints for single item on mobile
   breakpoints: {
     "(min-width: 1024px)": { slidesToScroll: 4 },
     "(min-width: 768px)": { slidesToScroll: 3 },
-    "(max-width: 767px)": { slidesToScroll: 2 },
+    "(min-width: 640px)": { slidesToScroll: 2 },
+    "(max-width: 639px)": { slidesToScroll: 1 },
   },
 };
 
@@ -74,7 +75,6 @@ export default function ProductCarousel({
     emblaApi.on("select", onSelect);
     emblaApi.on("reInit", onSelect);
 
-    // Ensure proper snapping after initialization
     emblaApi.reInit({ ...OPTIONS });
 
     return () => {
@@ -120,9 +120,10 @@ export default function ProductCarousel({
                 className={cn(
                   "pl-4", // Consistent left padding for spacing
                   "min-w-0",
-                  "flex-[0_0_50%]", // 2 columns on mobile
-                  "md:flex-[0_0_33.333333%]", // 3 columns on tablet
-                  "lg:flex-[0_0_25%]" // 4 columns on desktop
+                  "flex-[0_0_100%]", // 1 column on mobile (up to 639px)
+                  "sm:flex-[0_0_50%]", // 2 columns on small devices (640px+)
+                  "md:flex-[0_0_33.333333%]", // 3 columns on tablet (768px+)
+                  "lg:flex-[0_0_25%]" // 4 columns on desktop (1024px+)
                 )}
               >
                 <div className="h-full">

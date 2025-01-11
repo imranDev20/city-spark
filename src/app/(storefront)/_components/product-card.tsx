@@ -8,7 +8,7 @@ import { Prisma } from "@prisma/client";
 import { Card } from "@/components/ui/card";
 import { addToCart } from "../products/actions";
 import { useToast } from "@/components/ui/use-toast";
-import { useTransition, useState, useEffect } from "react";
+import { useTransition, useState } from "react";
 import Link from "next/link";
 import { customSlugify } from "@/lib/functions";
 import { useQueryClient } from "@tanstack/react-query";
@@ -30,91 +30,6 @@ type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
   };
 }>;
 
-const StarRating = ({ rating }: { rating: number }) => (
-  <div className="flex items-center">
-    {[1, 2, 3, 4, 5].map((star) => (
-      <Star
-        key={star}
-        className={`w-3 sm:w-4 h-3 sm:h-4 ${
-          rating >= star ? "text-secondary fill-secondary" : "text-gray-200"
-        }`}
-      />
-    ))}
-    <span className="ml-1 sm:ml-2 text-xs sm:text-sm font-medium">
-      {rating.toFixed(1)}
-    </span>
-  </div>
-);
-
-const ProductImage = ({ images }: { images: string[] }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const validImages = images.filter(Boolean);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isHovered && validImages.length > 1) {
-      interval = setInterval(() => {
-        setCurrentImageIndex((prev) => (prev + 1) % validImages.length);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isHovered, validImages.length]);
-
-  return (
-    <div className="relative bg-white">
-      {/* Mobile: Static image */}
-      <div className="sm:hidden relative h-32 p-4">
-        <Image
-          src={validImages[0] || PlaceholderImage}
-          alt="Product Image"
-          className="object-contain"
-          sizes="100vw"
-          loading="lazy"
-          placeholder="blur"
-          fill
-          blurDataURL={BLUR_DATA_URL}
-        />
-      </div>
-
-      {/* Desktop: Interactive carousel */}
-      <div
-        className="hidden sm:block relative h-48 md:h-56 lg:h-64 p-6"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => {
-          setIsHovered(false);
-          setCurrentImageIndex(0);
-        }}
-      >
-        <Image
-          src={validImages[currentImageIndex] || PlaceholderImage}
-          fill
-          alt="Product Image"
-          className="object-contain transition-all duration-300 group-hover:scale-105"
-          sizes="(min-width: 1024px) 33vw, 50vw"
-          placeholder="blur"
-          blurDataURL={BLUR_DATA_URL}
-          loading="lazy"
-        />
-        {validImages.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-            {validImages.map((_, index) => (
-              <div
-                key={index}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  index === currentImageIndex
-                    ? "w-4 bg-primary"
-                    : "w-1.5 bg-gray-300"
-                }`}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
 export default function ProductCard({
   inventoryItem,
 }: {
@@ -125,7 +40,6 @@ export default function ProductCard({
   const [isPending, startTransition] = useTransition();
   const [quantity, setQuantity] = useState(1);
   const rating = 4.5;
-  const availableStock = inventoryItem.stockCount - inventoryItem.heldCount;
   const queryClient = useQueryClient();
 
   const handleAddToCart = async (
@@ -163,7 +77,7 @@ export default function ProductCard({
     <Card className="shadow-none group h-full flex flex-col bg-white border-gray-300 rounded-xl overflow-hidden lg:hover:shadow-lg transition-all duration-300 relative">
       <Link href={productUrl} className="contents">
         <div className="relative bg-white">
-          <div className="sm:hidden relative h-32 p-4">
+          <div className="sm:hidden relative h-48 p-4">
             <Image
               src={product.images[0] || PlaceholderImage}
               alt="Product Image"
@@ -176,7 +90,7 @@ export default function ProductCard({
             />
           </div>
 
-          <div className="hidden sm:block relative h-48 md:h-56 lg:h-64 p-6">
+          <div className="hidden sm:block relative h-56 lg:h-64 p-6">
             <Image
               src={product.images[0] || PlaceholderImage}
               fill
@@ -267,7 +181,7 @@ export default function ProductCard({
             <QuantitySelector
               quantity={quantity}
               onQuantityChange={(newQuantity) => {
-                setQuantity(Math.min(newQuantity, availableStock * 2));
+                setQuantity(Math.min(newQuantity));
               }}
               disabled={isPending}
             />

@@ -1,100 +1,93 @@
 "use client";
 
-import React from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { Package } from "lucide-react";
 import {
   Card,
-  CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardDescription,
+  CardContent,
 } from "@/components/ui/card";
-import { OrderWithRelations } from "@/services/admin-orders";
-
-interface TimelineEvent {
-  id: string;
-  title: string;
-  description: string;
-  timestamp: Date;
-  status: string;
-}
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
+import { OrderTimeline, OrderTimelineEventType } from "@prisma/client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface OrderTimelineProps {
-  order: OrderWithRelations;
+  timeline: OrderTimeline[];
+  canAddEvents?: boolean;
+  onAddEvent?: (data: {
+    eventType: OrderTimelineEventType;
+    message: string;
+  }) => Promise<void>;
 }
 
-function generateTimelineEvents(order: OrderWithRelations): TimelineEvent[] {
-  const events: TimelineEvent[] = [];
+export default function OrderTimelineSection({
+  timeline,
+  canAddEvents = false,
+  onAddEvent,
+}: OrderTimelineProps) {
+  const [isAddingEvent, setIsAddingEvent] = useState(false);
+  const [message, setMessage] = useState("");
+  const [selectedEventType, setSelectedEventType] = useState<
+    OrderTimelineEventType | ""
+  >("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
-  // Order Created
-  events.push({
-    id: "created",
-    title: "Order Created",
-    description: `Order #${order.id} was created`,
-    timestamp: order.createdAt,
-    status: "Order Placed",
-  });
+  const handleSubmit = async () => {
+    if (!selectedEventType || !message) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  // Payment Event
-  if (order.paymentStatus === "PAID" && order.paymentDate) {
-    events.push({
-      id: "payment",
-      title: "Payment Confirmed",
-      description: `Payment of £${order.cart?.totalPriceWithVat?.toFixed(
-        2
-      )} was received`,
-      timestamp: order.paymentDate,
-      status: "Payment Received",
-    });
-  }
+    setIsSubmitting(true);
+    try {
+      await onAddEvent?.({
+        eventType: selectedEventType as OrderTimelineEventType,
+        message,
+      });
+      setMessage("");
+      setSelectedEventType("");
+      setIsAddingEvent(false);
+      toast({
+        title: "Success",
+        description: "Timeline event added successfully",
+        variant: "success",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add timeline event",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-  // Shipping Event
-  if (order.shippingDate) {
-    events.push({
-      id: "shipping",
-      title: "Order Shipped",
-      description: order.trackingNumber
-        ? `Order shipped with tracking number: ${order.trackingNumber}`
-        : "Order has been shipped",
-      timestamp: order.shippingDate,
-      status: "Shipped",
-    });
-  }
-
-  // Delivery Event
-  if (order.deliveryDate) {
-    events.push({
-      id: "delivery",
-      title: "Order Delivered",
-      description: "Order has been delivered successfully",
-      timestamp: order.deliveryDate,
-      status: "Delivered",
-    });
-  }
-
-  // Refund Event
-  if (order.refundDate && order.refundStatus === "APPROVED") {
-    events.push({
-      id: "refund",
-      title: "Refund Processed",
-      description: order.refundReason
-        ? `Refund processed: ${order.refundReason}`
-        : "Refund has been processed",
-      timestamp: order.refundDate,
-      status: "Refunded",
-    });
-  }
-
-  // Sort events by timestamp
-  return events.sort((a, b) => b.timestamp?.getTime() - a.timestamp?.getTime());
-}
-
-export default function OrderTimeline({ order }: OrderTimelineProps) {
-  const timelineEvents = generateTimelineEvents(order);
+  const getEventTypeLabel = (eventType: OrderTimelineEventType) => {
+    return eventType
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
 
   return (
-    <Card className="bg-white">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-2xl">
           <Package className="h-7 w-7" />
@@ -111,7 +104,7 @@ export default function OrderTimeline({ order }: OrderTimelineProps) {
           />
 
           <div className="space-y-8">
-            {timelineEvents.map((event) => (
+            {timeline.map((event) => (
               <div key={event.id} className="relative">
                 {/* Dot with outline */}
                 <div
@@ -122,27 +115,79 @@ export default function OrderTimeline({ order }: OrderTimelineProps) {
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
                     <h4 className="font-semibold text-gray-900">
-                      {event.title}
+                      {getEventTypeLabel(event.eventType)}
                     </h4>
                     <div
                       className="h-px flex-1 bg-gray-100"
                       aria-hidden="true"
                     />
                     <time className="flex-shrink-0 text-sm text-gray-500">
-                      {format(event.timestamp, "MMM d, yyyy")}
+                      {format(new Date(event.createdAt), "MMM d, yyyy")}
                     </time>
                   </div>
                   <div className="mt-1.5">
                     <time className="text-sm text-gray-500">
-                      {format(event.timestamp, "h:mm a")}
+                      {format(new Date(event.createdAt), "h:mm a")}
                     </time>
                     <p className="mt-1 text-sm text-gray-600 leading-normal">
-                      {event.description}
+                      {event.message}
                     </p>
                   </div>
                 </div>
               </div>
             ))}
+
+            {canAddEvents && isAddingEvent && (
+              <div className="mt-4 space-y-4 bg-gray-50 p-4 rounded-lg">
+                <Select
+                  value={selectedEventType}
+                  onValueChange={(value) =>
+                    setSelectedEventType(value as OrderTimelineEventType)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Event Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(OrderTimelineEventType).map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {getEventTypeLabel(type)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Add a message..."
+                  className="w-full"
+                />
+
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAddingEvent(false)}
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSubmit} disabled={isSubmitting}>
+                    {isSubmitting ? "Adding..." : "Add Event"}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {canAddEvents && !isAddingEvent && (
+              <Button
+                variant="outline"
+                onClick={() => setIsAddingEvent(true)}
+                className="w-full"
+              >
+                Add Timeline Event
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>

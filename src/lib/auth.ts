@@ -27,6 +27,7 @@ export const authOptions: NextAuthOptions = {
           avatar: data.image,
           emailVerified: data.emailVerified,
           role: "USER",
+          phone: (data as any).phone || null, // Added phone
         },
       });
       return user;
@@ -82,16 +83,14 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
         token.userId = user.id;
         token.email = user.email;
         token.role = (user as User).role;
         token.firstName = (user as User).firstName;
         token.lastName = (user as User).lastName;
-      }
-      if (account) {
-        token.accessToken = account.access_token;
+        token.phone = (user as User).phone; // Added phone
       }
       return token;
     },
@@ -105,9 +104,8 @@ export const authOptions: NextAuthOptions = {
           role: token.role as string,
           firstName: token.firstName as string | null | undefined,
           lastName: token.lastName as string | null | undefined,
+          phone: token.phone as string | null | undefined, // Added phone
         },
-        accessToken: token.accessToken as string | undefined,
-        error: token.error as string | undefined,
       };
     },
   },

@@ -9,7 +9,7 @@ import { ClipboardCopy } from "lucide-react";
 import { useParams } from "next/navigation";
 import { fetchOrderDetails } from "@/services/admin-orders";
 import OrderItemsSection from "./_components/order-items-section";
-import OrderTimeline from "./_components/order-timeline";
+import OrderTimelineSection from "./_components/order-timeline";
 import OrderSummarySection from "./_components/order-summary-section";
 import PaymentDetailsSection from "./_components/payment-details-section";
 import CustomerDetailsSection from "./_components/customer-details-section";
@@ -74,7 +74,7 @@ export default function AdminOrderDetailsPage() {
             />
           )}
 
-          <OrderTimeline order={orderDetails} />
+          <OrderTimelineSection timeline={orderDetails.timeline} />
         </div>
 
         {/* Sidebar - Right Side (1 column) */}

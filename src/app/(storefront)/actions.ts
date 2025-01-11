@@ -1,7 +1,6 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { getImageBlurData } from "@/lib/image-blur";
 import { unstable_cache as cache } from "next/cache";
 
 export const getInventoryItemsForStorefront = cache(
@@ -187,42 +186,6 @@ export const getInventoryItem = cache(
     }
   },
   ["inventory-item"],
-  {
-    revalidate: 3600,
-    tags: ["inventory-items"],
-  }
-);
-
-export const getLatestInventoryItems = cache(
-  async (limit: number = 10) => {
-    try {
-      const inventoryItems = await prisma.inventory.findMany({
-        include: {
-          product: {
-            include: {
-              brand: true,
-              primaryCategory: true,
-              secondaryCategory: true,
-              tertiaryCategory: true,
-              quaternaryCategory: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-        take: limit,
-      });
-
-      console.log(inventoryItems);
-
-      return inventoryItems;
-    } catch (error) {
-      console.error("Error fetching latest inventory items:", error);
-      throw new Error("Failed to fetch latest inventory items");
-    }
-  },
-  ["latest-inventory-items"],
   {
     revalidate: 3600,
     tags: ["inventory-items"],

@@ -4,6 +4,7 @@ import axios from "axios";
 // Define types based on Prisma schema for orders
 export type OrderWithRelations = Prisma.OrderGetPayload<{
   include: {
+    timeline: true;
     user: {
       select: {
         id: true;

@@ -10,6 +10,7 @@ declare module "next-auth" {
       firstName?: string | null;
       lastName?: string | null;
       image?: string | null;
+      phone?: string | null;
       email: string; // Add this line to explicitly include email
     } & Omit<DefaultSession["user"], "name">;
   }

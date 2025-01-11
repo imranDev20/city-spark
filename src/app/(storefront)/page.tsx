@@ -19,13 +19,13 @@ export default function HomePage() {
       <PromotionalGrid />
 
       <Suspense fallback={<ProductCarouselSkeleton />}>
-        <ProductCarouselContainer title="Best Selling Products" />
+        <ProductCarouselContainer title="Best Selling Products" isBestSelling />
       </Suspense>
 
       <AdvertisementWideOne />
 
       <Suspense fallback={<ProductCarouselSkeleton />}>
-        <ProductCarouselContainer title="New Products" />
+        <ProductCarouselContainer title="New Products" isLatestProducts />
       </Suspense>
       <AdvertisementTwoColumn />
       <AdvertisementWideTwo />

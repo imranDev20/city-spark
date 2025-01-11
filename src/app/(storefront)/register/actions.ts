@@ -6,7 +6,7 @@ import { hash } from "bcrypt";
 
 export async function createUser(data: RegisterFormData) {
   try {
-    const { firstName, surname, email, password } = data;
+    const { firstName, surname, email, password, phone } = data;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -28,6 +28,7 @@ export async function createUser(data: RegisterFormData) {
         lastName: surname,
         email: email.toLowerCase(),
         password: hashedPassword,
+        phone: phone,
       },
     });
 

@@ -29,6 +29,7 @@ export async function GET(
         id: orderId,
       },
       include: {
+        timeline: true,
         user: {
           select: {
             id: true,

@@ -81,11 +81,6 @@ const BasketList: React.FC<BasketListProps> = ({ items, type }) => {
     return null;
   }
 
-  const title =
-    type === FulFillmentType.FOR_DELIVERY
-      ? "Items for Delivery"
-      : "Items for Collection";
-
   return (
     <>
       <section className="mb-16">

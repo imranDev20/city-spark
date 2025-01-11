@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/form";
 import { ContactDetailsFormInput, contactDetailsSchema } from "../schema";
 import { createGuestUser, updateContactDetails } from "../actions";
+import { AsYouType } from "libphonenumber-js";
 
 const STORAGE_KEY = "checkout_contact_details";
 
@@ -36,13 +37,9 @@ function getGuestUserId() {
 
 interface ContactDetailsFormProps {
   onNext: () => void;
-  onBack: () => void;
 }
 
-export function ContactDetailsForm({
-  onNext,
-  onBack,
-}: ContactDetailsFormProps) {
+export function ContactDetailsForm({ onNext }: ContactDetailsFormProps) {
   const { data: session } = useSession();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -50,14 +47,30 @@ export function ContactDetailsForm({
   const form = useForm<ContactDetailsFormInput>({
     resolver: zodResolver(contactDetailsSchema),
     defaultValues: {
-      firstName:
-        session?.user?.firstName || getStoredContactDetails()?.firstName || "",
-      lastName:
-        session?.user?.lastName || getStoredContactDetails()?.lastName || "",
-      email: session?.user?.email || getStoredContactDetails()?.email || "",
-      phone: session?.user?.lastName || getStoredContactDetails()?.phone || "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
     },
   });
+
+  console.log(session);
+
+  useEffect(() => {
+    if (session?.user || getStoredContactDetails()) {
+      console.log(session?.user.email);
+      form.reset({
+        firstName:
+          session?.user?.firstName ||
+          getStoredContactDetails()?.firstName ||
+          "",
+        lastName:
+          session?.user?.lastName || getStoredContactDetails()?.lastName || "",
+        email: session?.user?.email || getStoredContactDetails()?.email || "",
+        phone: session?.user?.phone || getStoredContactDetails()?.phone || "",
+      });
+    }
+  }, [session?.user]);
 
   // Save form data to session storage as user types
   useEffect(() => {
@@ -73,45 +86,48 @@ export function ContactDetailsForm({
     try {
       setIsLoading(true);
 
-      if (!session?.user) {
-        const existingGuestId = getGuestUserId();
+      const userId = session?.user?.id || getGuestUserId() || null;
 
-        if (existingGuestId) {
-          // Update existing guest user
-          const updateResult = await updateContactDetails({
-            userId: existingGuestId,
-            firstName: values.firstName,
-            lastName: values.lastName,
-            email: values.email,
-            phone: values.phone,
-          });
+      // If no userId and no session, create new guest
+      if (!userId && !session?.user) {
+        const guestResult = await createGuestUser({
+          ...values,
+        });
 
-          if (!updateResult.success) {
-            throw new Error(updateResult.message);
-          }
-        } else {
-          // Create new guest user
-          const guestResult = await createGuestUser({
-            firstName: values.firstName,
-            lastName: values.lastName,
-            email: values.email,
-            phone: values.phone,
-          });
-
-          if (!guestResult.success) {
-            throw new Error(guestResult.message);
-          }
-
-          // Store the new guest user ID
-          sessionStorage.setItem("guest_user_id", guestResult.data?.id || "");
+        if (!guestResult.success) {
+          throw new Error(guestResult.message);
         }
 
-        // Store the contact details
+        const newGuestId = guestResult.data?.id;
+        if (!newGuestId) {
+          throw new Error("Failed to create guest user");
+        }
+
+        sessionStorage.setItem("guest_user_id", newGuestId);
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+
         handleNext();
-      } else {
-        handleNext();
+        return;
       }
+
+      // Update existing user (guest or authenticated)
+      if (userId) {
+        const updateResult = await updateContactDetails({
+          userId,
+          ...values,
+        });
+
+        if (!updateResult.success) {
+          throw new Error(updateResult.message);
+        }
+
+        // Store values for guest users
+        if (!session?.user) {
+          sessionStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+        }
+      }
+
+      handleNext();
     } catch (error) {
       toast({
         title: "Error",
@@ -225,23 +241,22 @@ export function ContactDetailsForm({
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium">
-                    Phone Number
-                    <RequiredIndicator />
-                  </FormLabel>
+                  <FormLabel>Phone Number</FormLabel>
                   <FormControl>
                     <Input
                       type="tel"
-                      placeholder="Enter phone number"
-                      className="border-gray-300"
-                      disabled={isLoading}
+                      placeholder="+44 XXXX XXX XXX"
                       {...field}
+                      onChange={(e) => {
+                        const formatter = new AsYouType("GB");
+                        const formatted = formatter.input(e.target.value);
+                        field.onChange(formatted);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -251,15 +266,7 @@ export function ContactDetailsForm({
           </div>
         </CardContent>
 
-        <div className="px-6 py-4 bg-gray-50/50 border-t flex justify-between items-center">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onBack}
-            disabled={isLoading}
-          >
-            Back
-          </Button>
+        <div className="px-6 py-4 bg-gray-50/50 border-t flex justify-end items-center">
           <Button type="submit" className="min-w-[100px]" disabled={isLoading}>
             {isLoading ? (
               <>
