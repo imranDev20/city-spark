@@ -93,7 +93,7 @@ export default function OrderTimelineSection({
           <Package className="h-7 w-7" />
           Order Timeline
         </CardTitle>
-        <CardDescription>Track the order's journey</CardDescription>
+        <CardDescription>Track the order&apos;s journey</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="relative pl-6">
