@@ -57,6 +57,32 @@ enum FulFillmentType {
     FOR_COLLECTION
 }
 
+enum OrderTimelineEventType {
+    ORDER_PLACED
+    PAYMENT_RECEIVED
+    ORDER_PROCESSING
+    ORDER_SHIPPED
+    ORDER_DELIVERED
+    ORDER_CANCELLED
+    REFUND_INITIATED
+    REFUND_COMPLETED
+    NOTE_ADDED // For general notes/comments
+    STATUS_CHANGED // For any status changes
+}
+
+// Add the OrderTimeline model
+model OrderTimeline {
+    id        String                 @id @default(cuid())
+    orderId   String
+    order     Order                  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+    eventType OrderTimelineEventType
+    message   String // Human readable description of what happened
+    metadata  Json? // Additional data like old/new status, tracking numbers, etc
+    createdAt DateTime               @default(now())
+
+    @@index([orderId])
+}
+
 model Category {
     id                        String       @id @default(cuid())
     name                      String
@@ -352,23 +378,23 @@ enum OrderStatus {
 }
 
 model Order {
-    id              String         @id @default(cuid())
+    id              String          @id @default(cuid())
     userId          String
-    cartId          String         @unique
-    cart            Cart           @relation(fields: [cartId], references: [id])
-    user            User           @relation(fields: [userId], references: [id])
+    cartId          String          @unique
+    cart            Cart            @relation(fields: [cartId], references: [id])
+    user            User            @relation(fields: [userId], references: [id])
     orderItems      OrderItem[]
-    totalPrice      Float          @default(0)
-    status          Status         @default(DRAFT)
-    orderStatus     OrderStatus    @default(PENDING)
-    orderNumber     String         @unique
+    totalPrice      Float           @default(0)
+    status          Status          @default(DRAFT)
+    orderStatus     OrderStatus     @default(PENDING)
+    orderNumber     String          @unique
     paymentMethod   String?
-    paymentStatus   PaymentStatus  @default(UNPAID)
+    paymentStatus   PaymentStatus   @default(UNPAID)
     trackingNumber  String?
     trackingUrl     String?
     shippingAddress String?
     shippingMethod  String?
-    shippingStatus  ShippingStatus @default(NOT_SHIPPED)
+    shippingStatus  ShippingStatus  @default(NOT_SHIPPED)
     shippingPrice   Float?
     shippingDate    DateTime?
     deliveryDate    DateTime?
@@ -376,12 +402,13 @@ model Order {
     invoiceUrl      String?
     paymentDate     DateTime?
     refundDate      DateTime?
-    refundStatus    RefundStatus   @default(NOT_REFUND)
+    refundStatus    RefundStatus    @default(NOT_REFUND)
     refundAmount    Float?
     refundReason    String?
     refundNote      String?
-    createdAt       DateTime       @default(now())
-    updatedAt       DateTime       @updatedAt
+    timeline        OrderTimeline[]
+    createdAt       DateTime        @default(now())
+    updatedAt       DateTime        @updatedAt
 }
 
 model CartItem {

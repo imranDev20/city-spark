@@ -10,7 +10,6 @@ import PaypalIcon from "@/components/icons/paypal";
 import { useState } from "react";
 import { updateOrderPayment } from "../actions"; // Create this action
 import { CartWithItems } from "@/services/storefront-cart";
-import { useRouter } from "next/navigation";
 
 interface PaymentStepProps {
   onNext: () => void;

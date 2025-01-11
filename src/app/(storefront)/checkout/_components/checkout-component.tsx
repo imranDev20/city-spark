@@ -131,10 +131,7 @@ export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
           <div className="lg:col-span-8 space-y-6">
             <Card className="shadow-none bg-offWhite border-gray-300">
               {currentStep === "contact" && (
-                <ContactDetailsForm
-                  onNext={() => goToStep("fulfillment")}
-                  onBack={() => goToStep("contact")}
-                />
+                <ContactDetailsForm onNext={() => goToStep("fulfillment")} />
               )}
 
               {currentStep === "fulfillment" && (

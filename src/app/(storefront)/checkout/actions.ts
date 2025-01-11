@@ -70,6 +70,9 @@ interface UpdateContactDetailsParams extends ContactDetailsFormInput {
   userId: string;
 }
 
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+
 export async function updateContactDetails(
   params: UpdateContactDetailsParams
 ): Promise<{
@@ -79,8 +82,28 @@ export async function updateContactDetails(
   errors?: any;
 }> {
   try {
+    // Get the session using getServerSession
+    const session = await getServerSession(authOptions);
+
+    // If there's a session, verify the user is updating their own account
+    if (session?.user) {
+      if (session.user.id !== params.userId) {
+        return {
+          success: false,
+          message: "Unauthorized: You can only update your own account",
+        };
+      }
+    }
+
     const validatedData = contactDetailsSchema.parse(params);
-    const guestEmail = generateGuestEmail(validatedData.email);
+
+    // If there's a session, use the actual email, otherwise generate guest email
+    const email = session?.user
+      ? validatedData.email
+      : generateGuestEmail(validatedData.email);
+
+    // If there's a session, keep existing role, otherwise set as GUEST
+    const role = session?.user ? undefined : ("GUEST" as const);
 
     const updatedUser = await prisma.user.update({
       where: {
@@ -89,10 +112,10 @@ export async function updateContactDetails(
       data: {
         firstName: validatedData.firstName,
         lastName: validatedData.lastName,
-        email: guestEmail,
+        email: email,
         contactEmail: validatedData.email,
         phone: validatedData.phone,
-        role: "GUEST",
+        ...(role && { role }), // Only include role if it's defined (for guests)
       },
     });
 
@@ -287,28 +310,66 @@ export async function updateOrderPayment({
   orderStatus,
 }: UpdateOrderPaymentParams) {
   try {
-    // Update the order with payment information
-    await prisma.order.update({
-      where: {
-        id: orderId,
-      },
-      data: {
-        paymentMethod,
-        paymentStatus,
-        orderStatus,
-        // Set payment date if status is PAID
-        paymentDate: paymentStatus === "PAID" ? new Date() : null,
-      },
-    });
+    // Use transaction to ensure all updates happen together
+    await prisma.$transaction(async (tx) => {
+      // Get the current order to compare status changes
+      const currentOrder = await tx.order.findUniqueOrThrow({
+        where: { id: orderId },
+      });
 
-    await prisma.cart.update({
-      where: {
-        id: cartId,
-      },
-      data: {
-        status: "ORDERED",
-      },
-    }); // Revalidate the orders page
+      // Update the order with payment information
+      await tx.order.update({
+        where: { id: orderId },
+        data: {
+          paymentMethod,
+          paymentStatus,
+          orderStatus,
+          paymentDate: paymentStatus === "PAID" ? new Date() : null,
+        },
+      });
+
+      // Update cart status
+      await tx.cart.update({
+        where: { id: cartId },
+        data: {
+          status: "ORDERED",
+        },
+      });
+
+      // Add timeline entry for payment status change
+      if (paymentStatus === "PAID") {
+        await tx.orderTimeline.create({
+          data: {
+            orderId,
+            eventType: "PAYMENT_RECEIVED",
+            message: `Payment received via ${paymentMethod.toLowerCase()}`,
+            metadata: {
+              previousPaymentStatus: currentOrder.paymentStatus,
+              newPaymentStatus: paymentStatus,
+              paymentMethod,
+            },
+          },
+        });
+      }
+
+      // Add timeline entry if order status has changed
+      if (currentOrder.orderStatus !== orderStatus) {
+        await tx.orderTimeline.create({
+          data: {
+            orderId,
+            eventType: "STATUS_CHANGED",
+            message: `Order status changed from ${currentOrder.orderStatus.replaceAll(
+              "_",
+              " "
+            )} to ${orderStatus.replaceAll("_", " ")}`,
+            metadata: {
+              previousStatus: currentOrder.orderStatus,
+              newStatus: orderStatus,
+            },
+          },
+        });
+      }
+    });
 
     revalidatePath("/", "layout");
 

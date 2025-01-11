@@ -13,6 +13,7 @@ import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { createPreOrder } from "../actions";
 import { LoadingButton } from "@/components/ui/loading-button";
+import { useSession } from "next-auth/react";
 
 interface FulfillmentFormProps {
   onNext: () => void;
@@ -136,6 +137,7 @@ export function FulfillmentForm({
 }: FulfillmentFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { data: session } = useSession();
 
   const deliveryItems = cart.cartItems
     .filter((item) => item.type === "FOR_DELIVERY")
@@ -150,7 +152,15 @@ export function FulfillmentForm({
     setIsLoading(true);
 
     try {
-      const userId = sessionStorage.getItem("guest_user_id");
+      // First check session storage for guest user
+      let userId = sessionStorage.getItem("guest_user_id");
+
+      // If no guest user ID, check for authenticated user
+      if (!userId && session?.user?.id) {
+        userId = session.user.id;
+      }
+
+      // If still no user ID, throw error
       if (!userId) {
         throw new Error("User information not found");
       }
@@ -210,7 +220,11 @@ export function FulfillmentForm({
         >
           Back
         </Button>
-        <LoadingButton type="submit" className="min-w-[100px]">
+        <LoadingButton
+          type="submit"
+          className="min-w-[100px]"
+          loading={isLoading}
+        >
           Continue
         </LoadingButton>
       </div>
