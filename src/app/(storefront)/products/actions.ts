@@ -5,7 +5,7 @@ import { getCartWhereInput } from "@/lib/cart-utils";
 import prisma from "@/lib/prisma";
 import { getOrCreateSessionId } from "@/lib/session-id";
 import { CategoryType, FulFillmentType, Prisma } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache as cache } from "next/cache";
 
 export async function getCategoriesByType(
   type: CategoryType,
@@ -163,122 +163,127 @@ type FilterOption = {
   options: string[];
 };
 
-export async function getProductFilterOptions(
-  primaryCategoryId?: string,
-  secondaryCategoryId?: string,
-  tertiaryCategoryId?: string,
-  quaternaryCategoryId?: string
-): Promise<FilterOption[]> {
-  // Build where conditions array
-  const conditions: Prisma.ProductWhereInput[] = [];
+export const getProductFilterOptions = cache(
+  async (
+    primaryCategoryId?: string,
+    secondaryCategoryId?: string,
+    tertiaryCategoryId?: string,
+    quaternaryCategoryId?: string
+  ): Promise<FilterOption[]> => {
+    // Build where conditions array
+    const conditions: Prisma.ProductWhereInput[] = [];
 
-  if (primaryCategoryId) {
-    conditions.push({ primaryCategoryId });
-  }
-  if (secondaryCategoryId) {
-    conditions.push({ secondaryCategoryId });
-  }
-  if (tertiaryCategoryId) {
-    conditions.push({ tertiaryCategoryId });
-  }
-  if (quaternaryCategoryId) {
-    conditions.push({ quaternaryCategoryId });
-  }
+    if (primaryCategoryId) {
+      conditions.push({ primaryCategoryId });
+    }
+    if (secondaryCategoryId) {
+      conditions.push({ secondaryCategoryId });
+    }
+    if (tertiaryCategoryId) {
+      conditions.push({ tertiaryCategoryId });
+    }
+    if (quaternaryCategoryId) {
+      conditions.push({ quaternaryCategoryId });
+    }
 
-  // Create the where clause with properly typed AND condition
-  const whereClause: Prisma.ProductWhereInput =
-    conditions.length > 0 ? { AND: conditions } : {};
+    // Create the where clause with properly typed AND condition
+    const whereClause: Prisma.ProductWhereInput =
+      conditions.length > 0 ? { AND: conditions } : {};
 
-  // Fetch only products that match the category hierarchy
-  const products = await prisma.product.findMany({
-    where: whereClause,
-    include: {
-      productTemplate: {
-        include: {
-          fields: {
-            include: {
-              templateField: true,
+    // Fetch only products that match the category hierarchy
+    const products = await prisma.product.findMany({
+      where: whereClause,
+      include: {
+        productTemplate: {
+          include: {
+            fields: {
+              include: {
+                templateField: true,
+              },
             },
           },
         },
       },
-    },
-  });
-
-  const filterOptions: Record<string, Set<string>> = {};
-
-  // Only process if we have matching products
-  if (products.length > 0) {
-    // Process standard fields
-    const standardFields = [
-      "material",
-      "color",
-      "shape",
-      "unit",
-      "warranty",
-      "guarantee",
-    ];
-
-    products.forEach((product) => {
-      // Standard string fields
-      standardFields.forEach((field) => {
-        const value = product[field as keyof typeof product];
-        if (typeof value === "string" && value.trim() !== "") {
-          if (!filterOptions[field]) {
-            filterOptions[field] = new Set();
-          }
-          filterOptions[field].add(value);
-        }
-      });
-
-      // Numeric fields with range handling
-      ["width", "height", "length", "weight", "volume"].forEach((field) => {
-        const value = product[field as keyof typeof product];
-        if (typeof value === "number") {
-          const roundedValue = Math.round(value * 100) / 100;
-          if (!filterOptions[field]) {
-            filterOptions[field] = new Set();
-          }
-          filterOptions[field].add(roundedValue.toString());
-        }
-      });
-
-      // Product template fields
-      product.productTemplate?.fields.forEach((field) => {
-        const fieldName = field.templateField.fieldName;
-        const fieldValue = field.fieldValue;
-        if (fieldValue && fieldValue.trim() !== "") {
-          if (!filterOptions[fieldName]) {
-            filterOptions[fieldName] = new Set();
-          }
-          filterOptions[fieldName].add(fieldValue);
-        }
-      });
     });
+
+    const filterOptions: Record<string, Set<string>> = {};
+
+    // Only process if we have matching products
+    if (products.length > 0) {
+      // Process standard fields
+      const standardFields = [
+        "material",
+        "color",
+        "shape",
+        "unit",
+        "warranty",
+        "guarantee",
+      ];
+
+      products.forEach((product) => {
+        // Standard string fields
+        standardFields.forEach((field) => {
+          const value = product[field as keyof typeof product];
+          if (typeof value === "string" && value.trim() !== "") {
+            if (!filterOptions[field]) {
+              filterOptions[field] = new Set();
+            }
+            filterOptions[field].add(value);
+          }
+        });
+
+        // Numeric fields with range handling
+        ["width", "height", "length", "weight", "volume"].forEach((field) => {
+          const value = product[field as keyof typeof product];
+          if (typeof value === "number") {
+            const roundedValue = Math.round(value * 100) / 100;
+            if (!filterOptions[field]) {
+              filterOptions[field] = new Set();
+            }
+            filterOptions[field].add(roundedValue.toString());
+          }
+        });
+
+        // Product template fields
+        product.productTemplate?.fields.forEach((field) => {
+          const fieldName = field.templateField.fieldName;
+          const fieldValue = field.fieldValue;
+          if (fieldValue && fieldValue.trim() !== "") {
+            if (!filterOptions[fieldName]) {
+              filterOptions[fieldName] = new Set();
+            }
+            filterOptions[fieldName].add(fieldValue);
+          }
+        });
+      });
+    }
+
+    // Convert to array format and sort options
+    const result: FilterOption[] = Object.entries(filterOptions)
+      .filter(([_, options]) => options.size > 0) // Only include filters with options
+      .map(([name, options]) => ({
+        id: name,
+        name: name,
+        options: Array.from(options).sort((a, b) => {
+          // Try to sort numerically if possible
+          const numA = parseFloat(a);
+          const numB = parseFloat(b);
+          if (!isNaN(numA) && !isNaN(numB)) {
+            return numA - numB;
+          }
+          // Fall back to string comparison
+          return a.localeCompare(b);
+        }),
+      }));
+
+    return result;
+  },
+  ["getProductFilterOptions"],
+  {
+    revalidate: 3600, // Cache for 1 hour
+    tags: ["products", "filters"],
   }
-
-  // Convert to array format and sort options
-  const result: FilterOption[] = Object.entries(filterOptions)
-    .filter(([_, options]) => options.size > 0) // Only include filters with options
-    .map(([name, options]) => ({
-      id: name,
-      name: name, // Capitalize first letter
-      options: Array.from(options).sort((a, b) => {
-        // Try to sort numerically if possible
-        const numA = parseFloat(a);
-        const numB = parseFloat(b);
-        if (!isNaN(numA) && !isNaN(numB)) {
-          return numA - numB;
-        }
-        // Fall back to string comparison
-        return a.localeCompare(b);
-      }),
-    }));
-
-  console.log(result, "FILTER RESULTS");
-
-  return result;
-}
+);
 
 export async function addToCart(
   inventoryId: string,

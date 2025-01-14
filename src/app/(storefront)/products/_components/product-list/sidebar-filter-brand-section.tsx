@@ -9,13 +9,25 @@ import { ChevronDown, Loader2, Search } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
+function BrandSkeleton() {
+  return (
+    <div className="flex items-center p-1.5">
+      <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
+      <div className="flex justify-between items-center flex-1 ml-3">
+        <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+        <div className="h-3 w-8 bg-gray-200 rounded animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
 export default function SidebarFilterBrandSection() {
   const [brandSearch, setBrandSearch] = useState("");
   const [isBrandsExpanded, setIsBrandsExpanded] = useState(true);
   const debouncedBrandSearch = useDebounce(brandSearch, 300);
   const params = useSearchParams();
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } =
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =
     useInfiniteQuery({
       queryKey: ["brands", debouncedBrandSearch, params.toString()],
       queryFn: ({ pageParam = 1 }) =>
@@ -33,6 +45,8 @@ export default function SidebarFilterBrandSection() {
           ? lastPage.pagination.currentPage + 1
           : undefined,
       initialPageParam: 1,
+      staleTime: 1000 * 60 * 5, // Data remains fresh for 5 minutes
+      gcTime: 1000 * 60 * 10, // Keep unused data in cache for 10 minutes
     });
 
   const brands = data?.pages.flatMap((page) => page.data) || [];
@@ -71,9 +85,9 @@ export default function SidebarFilterBrandSection() {
               onChange={(e) => setBrandSearch(e.target.value)}
               className={`pl-9 h-10 bg-white border-gray-300 hover:border-secondary transition-colors
                  focus-visible:ring-1 focus-visible:ring-secondary/20 focus-visible:border-secondary
-                 ${isFetching ? "pr-9" : ""}`}
+                 ${isPending ? "pr-9" : ""}`}
             />
-            {isFetching && (
+            {isPending && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
                 <Loader2 className="animate-spin" size={16} />
               </div>
@@ -81,30 +95,39 @@ export default function SidebarFilterBrandSection() {
           </div>
 
           <div className="space-y-1.5 max-h-[280px] overflow-y-auto pr-1">
-            {brands.map((brand) => (
-              <div
-                key={brand.id}
-                className="flex items-center group/item hover:bg-secondary/5 rounded-md transition-colors p-1.5"
-              >
-                <Checkbox
-                  id={brand.id}
-                  className="h-4 w-4 rounded border-gray-300 text-secondary focus:ring-secondary/20 data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
-                />
-                <label
-                  htmlFor={brand.id}
-                  className="ml-3 text-sm text-gray-700 flex-1 flex items-center justify-between cursor-pointer"
+            {isPending ? (
+              // Show loading skeletons during initial load
+              <>
+                <BrandSkeleton />
+                <BrandSkeleton />
+                <BrandSkeleton />
+                <BrandSkeleton />
+                <BrandSkeleton />
+              </>
+            ) : brands.length > 0 ? (
+              brands.map((brand) => (
+                <div
+                  key={brand.id}
+                  className="flex items-center group/item hover:bg-secondary/5 rounded-md transition-colors p-1.5"
                 >
-                  <span className="truncate group-hover/item:text-gray-900">
-                    {brand.name}
-                  </span>
-                  <span className="text-gray-400 text-xs">
-                    ({brand._count.products})
-                  </span>
-                </label>
-              </div>
-            ))}
-
-            {!isFetching && brands.length === 0 && (
+                  <Checkbox
+                    id={brand.id}
+                    className="h-4 w-4 rounded border-gray-300 text-secondary focus:ring-secondary/20 data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
+                  />
+                  <label
+                    htmlFor={brand.id}
+                    className="ml-3 text-sm text-gray-700 flex-1 flex items-center justify-between cursor-pointer"
+                  >
+                    <span className="truncate group-hover/item:text-gray-900">
+                      {brand.name}
+                    </span>
+                    <span className="text-gray-400 text-xs">
+                      ({brand._count.products})
+                    </span>
+                  </label>
+                </div>
+              ))
+            ) : (
               <p className="text-sm text-gray-500 py-2 text-center">
                 No brands found
               </p>
