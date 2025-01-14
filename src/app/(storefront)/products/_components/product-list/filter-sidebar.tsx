@@ -1,10 +1,11 @@
 "use client";
 
 import React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import SidebarFilterBrandSection from "./sidebar-filter-brand-section";
 import SidebarFilterOptionsSection from "./sidebar-filter-options-section";
+import useQueryString from "@/hooks/use-query-string";
 
 type FilterOption = {
   id: string;
@@ -18,9 +19,26 @@ export default function FilterSidebar({
   filterOptions: FilterOption[];
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { removeQueryString } = useQueryString();
 
   const resetFilters = () => {
-    router.push("/products", { scroll: false });
+    let currentParams = new URLSearchParams(searchParams.toString());
+
+    // Keep only these parameters
+    const preserveParams = new Set(["p_id", "s_id", "t_id", "q_id", "search"]);
+
+    // Remove all parameters except those in preserveParams
+    let queryString = searchParams.toString();
+    for (const param of currentParams.keys()) {
+      if (!preserveParams.has(param)) {
+        queryString = removeQueryString(param);
+      }
+    }
+
+    const newPath = queryString ? `${pathname}?${queryString}` : pathname;
+    router.push(newPath, { scroll: false });
   };
 
   return (

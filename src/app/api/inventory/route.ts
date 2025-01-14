@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     console.log("Received search params:", Object.fromEntries(searchParams));
 
-    // Parse base query parameters
+    // Parse base query parameters (existing code remains the same)
     const search = searchParams.get("search");
     const limit = parseInt(searchParams.get("limit") || "12", 10);
     const page = parseInt(searchParams.get("page") || "1", 10);
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    // Check if any required category is missing (only if not searching)
+    // Check required categories (existing code remains the same)
     if (
       !search &&
       ((isPrimaryRequired && !primaryCategoryId) ||
@@ -52,11 +52,11 @@ export async function GET(req: NextRequest) {
     // Base where clause
     const whereClause: any = {
       product: {
-        AND: [], // Initialize AND array
+        AND: [],
       },
     };
 
-    // Add category conditions
+    // Add category conditions (existing code remains the same)
     if (!search) {
       const categoryConditions: any = {};
       if (primaryCategoryId)
@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Add search conditions
+    // Add search conditions (existing code remains the same)
     if (search) {
       whereClause.product.AND.push({
         OR: [
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Handle filter parameters
+    // Handle filter parameters with modified template field handling
     const filterParams = Array.from(searchParams.entries()).filter(
       ([key]) =>
         ![
@@ -119,11 +119,12 @@ export async function GET(req: NextRequest) {
       } else if (fieldName === "brand") {
         whereClause.product.AND.push({
           brand: {
-            name: { in: [value] },
+            name: { in: value.split(",") },
           },
         });
       } else {
-        // Handle template fields (like Barcode)
+        // Handle template fields with multiple values
+        const values = value.split(",").map((v) => v.trim());
         whereClause.product.AND.push({
           productTemplate: {
             fields: {
@@ -135,7 +136,9 @@ export async function GET(req: NextRequest) {
                     },
                   },
                   {
-                    fieldValue: value,
+                    fieldValue: {
+                      in: values,
+                    },
                   },
                 ],
               },
@@ -145,14 +148,13 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Remove empty AND array if no conditions were added
+    // Rest of the code remains the same
     if (whereClause.product.AND.length === 0) {
       delete whereClause.product.AND;
     }
 
     console.log("Final where clause:", JSON.stringify(whereClause, null, 2));
 
-    // Get items and total count
     const [items, total] = await Promise.all([
       prisma.inventory.findMany({
         where: whereClause,
@@ -185,7 +187,6 @@ export async function GET(req: NextRequest) {
       prisma.inventory.count({ where: whereClause }),
     ]);
 
-    // Calculate pagination
     const totalPages = Math.ceil(total / limit);
     const hasMore = page * limit < total;
 
