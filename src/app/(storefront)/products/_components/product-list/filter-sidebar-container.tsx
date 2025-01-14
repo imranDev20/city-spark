@@ -1,6 +1,6 @@
 import React from "react";
 import FilterSidebar from "./filter-sidebar";
-import { getBrands, getProductFilterOptions } from "../../actions";
+import { getProductFilterOptions } from "../../actions";
 
 type ProductCardsContainerProps = {
   primaryCategoryId?: string;
@@ -19,7 +19,6 @@ export default async function FilterSidebarContainer(
     quaternaryCategoryId,
   } = props;
 
-  const brands = await getBrands();
   const filterOptions = await getProductFilterOptions(
     primaryCategoryId,
     secondaryCategoryId,
