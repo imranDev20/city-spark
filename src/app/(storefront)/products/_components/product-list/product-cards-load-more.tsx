@@ -7,6 +7,7 @@ import ProductCard from "@/app/(storefront)/_components/product-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, PackageX } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -44,39 +45,87 @@ interface ProductCardsLoadMoreProps extends ProductCardsContainerProps {
 
 async function fetchInventoryProducts(
   page: number,
-  queryParams: ProductCardsContainerProps
+  queryParams: ProductCardsContainerProps & Record<string, any>
 ) {
-  const params = new URLSearchParams({
-    page: page.toString(),
-    limit: ITEMS_PER_PAGE.toString(),
-    ...(queryParams.primaryCategoryId && {
-      primaryCategoryId: queryParams.primaryCategoryId,
-    }),
-    ...(queryParams.secondaryCategoryId && {
-      secondaryCategoryId: queryParams.secondaryCategoryId,
-    }),
-    ...(queryParams.tertiaryCategoryId && {
-      tertiaryCategoryId: queryParams.tertiaryCategoryId,
-    }),
-    ...(queryParams.quaternaryCategoryId && {
-      quaternaryCategoryId: queryParams.quaternaryCategoryId,
-    }),
-    ...(queryParams.isPrimaryRequired && {
-      isPrimaryRequired: queryParams.isPrimaryRequired.toString(),
-    }),
-    ...(queryParams.isSecondaryRequired && {
-      isSecondaryRequired: queryParams.isSecondaryRequired.toString(),
-    }),
-    ...(queryParams.isTertiaryRequired && {
-      isTertiaryRequired: queryParams.isTertiaryRequired.toString(),
-    }),
-    ...(queryParams.isQuaternaryRequired && {
-      isQuaternaryRequired: queryParams.isQuaternaryRequired.toString(),
-    }),
-    ...(queryParams.search && { search: queryParams.search }),
+  // Create base URLSearchParams
+  const params = new URLSearchParams();
+
+  // Add pagination
+  params.set("page", page.toString());
+  params.set("limit", ITEMS_PER_PAGE.toString());
+
+  // Add category params
+  if (queryParams.primaryCategoryId) {
+    params.set("primaryCategoryId", queryParams.primaryCategoryId);
+  }
+  if (queryParams.secondaryCategoryId) {
+    params.set("secondaryCategoryId", queryParams.secondaryCategoryId);
+  }
+  if (queryParams.tertiaryCategoryId) {
+    params.set("tertiaryCategoryId", queryParams.tertiaryCategoryId);
+  }
+  if (queryParams.quaternaryCategoryId) {
+    params.set("quaternaryCategoryId", queryParams.quaternaryCategoryId);
+  }
+
+  // Add required flags
+  if (queryParams.isPrimaryRequired) {
+    params.set("isPrimaryRequired", queryParams.isPrimaryRequired.toString());
+  }
+  if (queryParams.isSecondaryRequired) {
+    params.set(
+      "isSecondaryRequired",
+      queryParams.isSecondaryRequired.toString()
+    );
+  }
+  if (queryParams.isTertiaryRequired) {
+    params.set("isTertiaryRequired", queryParams.isTertiaryRequired.toString());
+  }
+  if (queryParams.isQuaternaryRequired) {
+    params.set(
+      "isQuaternaryRequired",
+      queryParams.isQuaternaryRequired.toString()
+    );
+  }
+
+  // Add search
+  if (queryParams.search) {
+    params.set("search", queryParams.search);
+  }
+
+  // Add any additional filter params
+  Object.entries(queryParams).forEach(([key, value]) => {
+    if (
+      ![
+        "primaryCategoryId",
+        "secondaryCategoryId",
+        "tertiaryCategoryId",
+        "quaternaryCategoryId",
+        "isPrimaryRequired",
+        "isSecondaryRequired",
+        "isTertiaryRequired",
+        "isQuaternaryRequired",
+        "search",
+        "page",
+        "limit",
+      ].includes(key) &&
+      value !== undefined &&
+      value !== null &&
+      value !== ""
+    ) {
+      if (typeof value === "string") {
+        // For comma-separated values, keep them as is
+        params.set(key, value);
+      } else {
+        params.set(key, value.toString());
+      }
+    }
   });
 
-  const response = await fetch(`/api/inventory?${params.toString()}`);
+  const queryString = params.toString();
+  console.log("Fetching with query:", queryString);
+
+  const response = await fetch(`/api/inventory?${queryString}`);
   const data = await response.json();
 
   if (!data.success) {
@@ -94,11 +143,31 @@ export default function ProductCardsLoadMore({
   initialTotalCount,
   ...queryParams
 }: ProductCardsLoadMoreProps) {
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+  const searchParams = useSearchParams();
+
+  // Check if we have any filter params other than category/search
+  const hasAdditionalFilters = Array.from(searchParams.keys()).some(
+    (key) =>
+      ![
+        "primaryCategoryId",
+        "secondaryCategoryId",
+        "tertiaryCategoryId",
+        "quaternaryCategoryId",
+        "search",
+        "page",
+        "limit",
+      ].includes(key)
+  );
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
-      queryKey: ["products", queryParams],
+      queryKey: ["products", queryParams, Array.from(searchParams.entries())],
       queryFn: async ({ pageParam }) => {
-        return fetchInventoryProducts(pageParam, queryParams);
+        // Include all search params in the fetch
+        return fetchInventoryProducts(pageParam, {
+          ...queryParams,
+          ...Object.fromEntries(searchParams.entries()),
+        });
       },
       getNextPageParam: (lastPage) => {
         if (lastPage.pagination.hasMore) {
@@ -106,30 +175,47 @@ export default function ProductCardsLoadMore({
         }
         return undefined;
       },
-      initialPageParam: 2,
-      initialData: {
-        pages: [
-          {
-            items: initialData,
-            pagination: {
-              page: 1,
-              limit: ITEMS_PER_PAGE,
-              totalCount: initialTotalCount,
-              totalPages: Math.ceil(initialTotalCount / ITEMS_PER_PAGE),
-              hasMore: initialTotalCount > ITEMS_PER_PAGE,
-            },
+      initialPageParam: hasAdditionalFilters ? 1 : 2,
+      // Only provide initial data if we don't have additional filters
+      initialData: hasAdditionalFilters
+        ? undefined
+        : {
+            pages: [
+              {
+                items: initialData,
+                pagination: {
+                  page: 1,
+                  limit: ITEMS_PER_PAGE,
+                  totalCount: initialTotalCount,
+                  totalPages: Math.ceil(initialTotalCount / ITEMS_PER_PAGE),
+                  hasMore: initialTotalCount > ITEMS_PER_PAGE,
+                },
+              },
+            ],
+            pageParams: [1],
           },
-        ],
-        pageParams: [1],
-      },
     });
 
-  const allItems = [
-    ...initialData,
-    ...(data?.pages.slice(1).flatMap((page) => page.items) ?? []),
-  ];
+  // Use CSR data when we have additional filters, otherwise combine SSR + CSR
+  const allItems = hasAdditionalFilters
+    ? data?.pages.flatMap((page) => page.items) || []
+    : [
+        ...initialData,
+        ...(data?.pages.slice(1).flatMap((page) => page.items) ?? []),
+      ];
 
-  const shouldShowLoadMore = initialTotalCount > ITEMS_PER_PAGE && hasNextPage;
+  const shouldShowLoadMore = hasAdditionalFilters
+    ? (data?.pages[0]?.pagination.totalCount || 0) > ITEMS_PER_PAGE &&
+      hasNextPage
+    : initialTotalCount > ITEMS_PER_PAGE && hasNextPage;
+
+  if (isLoading) {
+    return (
+      <div className="w-full flex justify-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div>

@@ -1,14 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { DualRangeSlider } from "@/components/ui/dual-range-slider";
-
 import SidebarFilterBrandSection from "./sidebar-filter-brand-section";
+import useQueryString from "@/hooks/use-query-string";
 
 type FilterOption = {
   id: string;
@@ -21,32 +22,89 @@ export default function FilterSidebar({
 }: {
   filterOptions: FilterOption[];
 }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { createQueryString, removeQueryString } = useQueryString();
+
   const [isPriceExpanded, setIsPriceExpanded] = useState(true);
   const [expandedFilters, setExpandedFilters] = useState<
     Record<string, boolean>
   >({});
-  const [priceRange, setPriceRange] = useState([99, 546]);
+
+  // Initialize price range from URL or defaults
+  const [priceRange, setPriceRange] = useState([
+    Number(searchParams.get("minPrice")) || 0,
+    Number(searchParams.get("maxPrice")) || 1000,
+  ]);
 
   const toggleFilter = (filterId: string) => {
     setExpandedFilters((prev) => ({ ...prev, [filterId]: !prev[filterId] }));
   };
 
+  const updateFilter = (key: string, value: string, checked: boolean) => {
+    const currentParam = searchParams.get(key);
+    let currentValues = currentParam ? currentParam.split(",") : [];
+
+    if (checked) {
+      // Add value if it's not already included
+      if (!currentValues.includes(value)) {
+        currentValues.push(value);
+      }
+    } else {
+      // Remove value
+      currentValues = currentValues.filter((v) => v !== value);
+    }
+
+    // If there are values, update them; otherwise, remove the parameter
+    if (currentValues.length > 0) {
+      const queryString = createQueryString({ [key]: currentValues.join(",") });
+      router.push(`?${queryString}`, { scroll: false });
+    } else {
+      const queryString = removeQueryString(key);
+      router.push(queryString ? `?${queryString}` : "/products", {
+        scroll: false,
+      });
+    }
+  };
+
+  const applyPriceRange = () => {
+    const queryString = createQueryString({
+      minPrice: priceRange[0].toString(),
+      maxPrice: priceRange[1].toString(),
+    });
+    router.push(`?${queryString}`, { scroll: false });
+  };
+
+  const resetFilters = () => {
+    router.push("/products", { scroll: false });
+  };
+
+  const isOptionChecked = (key: string, value: string) => {
+    const param = searchParams.get(key);
+    if (!param) return false;
+
+    // Split the comma-separated values and check if our value is included
+    return param.split(",").includes(value);
+  };
+
   return (
     <aside className="w-full max-w-xs flex flex-col gap-6">
-      {/* Header - Improved clarity and alignment */}
       <div className="flex justify-between items-center">
         <h4 className="text-lg font-semibold text-gray-900">Filter Products</h4>
-        <button className="text-sm text-primary hover:text-primary/90 font-medium transition-colors">
+        <button
+          onClick={resetFilters}
+          className="text-sm text-primary hover:text-primary/90 font-medium transition-colors"
+        >
           Reset All
         </button>
       </div>
 
       <Card className="border-gray-300 overflow-hidden transition-all duration-300 hover:shadow-md">
         <div className="divide-y divide-gray-200">
-          {/* Brands Section */}
+          {/* Brand Section */}
           <SidebarFilterBrandSection />
 
-          {/* Filter Options with matching style */}
+          {/* Filter Options */}
           {filterOptions.map((option) => (
             <div key={option.id} className="p-5">
               <button
@@ -78,12 +136,16 @@ export default function FilterSidebar({
                         className="flex items-center hover:bg-secondary/5 rounded-md transition-colors p-1.5"
                       >
                         <Checkbox
-                          id={`${option.id}-${value}`}
+                          id={`${option.id}_${value}`}
+                          checked={isOptionChecked(option.id, value)}
+                          onCheckedChange={(checked) =>
+                            updateFilter(option.id, value, checked as boolean)
+                          }
                           className="h-4 w-4 rounded border-gray-300 text-secondary 
-                      focus:ring-secondary/20 data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
+                            focus:ring-secondary/20 data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
                         />
                         <label
-                          htmlFor={`${option.id}-${value}`}
+                          htmlFor={`${option.id}_${value}`}
                           className="ml-3 text-sm text-gray-700 hover:text-gray-900 cursor-pointer"
                         >
                           {value}
@@ -96,7 +158,7 @@ export default function FilterSidebar({
             </div>
           ))}
 
-          {/* Price Range matching product card style */}
+          {/* Price Range */}
           <div className="p-5">
             <button
               className="w-full flex justify-between items-center group"
@@ -136,7 +198,7 @@ export default function FilterSidebar({
                         setPriceRange([Number(e.target.value), priceRange[1]])
                       }
                       className="h-10 bg-white border-gray-300 hover:border-secondary transition-colors
-                  focus-visible:ring-1 focus-visible:ring-secondary/20 focus-visible:border-secondary"
+                        focus-visible:ring-1 focus-visible:ring-secondary/20 focus-visible:border-secondary"
                       placeholder="£ Min"
                     />
                     <span className="text-gray-400">-</span>
@@ -147,12 +209,15 @@ export default function FilterSidebar({
                         setPriceRange([priceRange[0], Number(e.target.value)])
                       }
                       className="h-10 bg-white border-gray-300 hover:border-secondary transition-colors
-                  focus-visible:ring-1 focus-visible:ring-secondary/20 focus-visible:border-secondary"
+                        focus-visible:ring-1 focus-visible:ring-secondary/20 focus-visible:border-secondary"
                       placeholder="£ Max"
                     />
                   </div>
 
-                  <Button className="w-full bg-secondary hover:bg-secondary/90 transition-colors">
+                  <Button
+                    onClick={applyPriceRange}
+                    className="w-full bg-secondary hover:bg-secondary/90 transition-colors"
+                  >
                     Apply Filter
                   </Button>
                 </div>

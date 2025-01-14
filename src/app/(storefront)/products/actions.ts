@@ -261,8 +261,8 @@ export async function getProductFilterOptions(
   const result: FilterOption[] = Object.entries(filterOptions)
     .filter(([_, options]) => options.size > 0) // Only include filters with options
     .map(([name, options]) => ({
-      id: name.toLowerCase().replace(/\s+/g, "-"),
-      name: name.charAt(0).toUpperCase() + name.slice(1), // Capitalize first letter
+      id: name,
+      name: name, // Capitalize first letter
       options: Array.from(options).sort((a, b) => {
         // Try to sort numerically if possible
         const numA = parseFloat(a);
@@ -275,34 +275,9 @@ export async function getProductFilterOptions(
       }),
     }));
 
+  console.log(result, "FILTER RESULTS");
+
   return result;
-}
-
-export async function getBrands() {
-  try {
-    const brands = await prisma.brand.findMany({
-      take: 5,
-      orderBy: {
-        name: "asc",
-      },
-      select: {
-        id: true,
-        name: true,
-        _count: {
-          select: { products: true },
-        },
-      },
-    });
-
-    return brands.map((brand) => ({
-      id: brand.id,
-      name: brand.name,
-      count: brand._count.products,
-    }));
-  } catch (error) {
-    console.error("Error fetching brands:", error);
-    return [];
-  }
 }
 
 export async function addToCart(

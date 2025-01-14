@@ -4,8 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
+    console.log("Received search params:", Object.fromEntries(searchParams));
 
-    // Parse query parameters
+    // Parse base query parameters
     const search = searchParams.get("search");
     const limit = parseInt(searchParams.get("limit") || "12", 10);
     const page = parseInt(searchParams.get("page") || "1", 10);
@@ -48,85 +49,108 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const whereClause: {
-      product?: {
-        AND?: any[];
-        primaryCategoryId?: string;
-        secondaryCategoryId?: string;
-        tertiaryCategoryId?: string;
-        quaternaryCategoryId?: string;
-      };
-    } = {};
+    // Base where clause
+    const whereClause: any = {
+      product: {
+        AND: [], // Initialize AND array
+      },
+    };
 
-    // Build the where clause for categories
-    if (
-      !search &&
-      (primaryCategoryId ||
-        secondaryCategoryId ||
-        tertiaryCategoryId ||
-        quaternaryCategoryId)
-    ) {
-      whereClause.product = {};
+    // Add category conditions
+    if (!search) {
+      const categoryConditions: any = {};
       if (primaryCategoryId)
-        whereClause.product.primaryCategoryId = primaryCategoryId;
+        categoryConditions.primaryCategoryId = primaryCategoryId;
       if (secondaryCategoryId)
-        whereClause.product.secondaryCategoryId = secondaryCategoryId;
+        categoryConditions.secondaryCategoryId = secondaryCategoryId;
       if (tertiaryCategoryId)
-        whereClause.product.tertiaryCategoryId = tertiaryCategoryId;
+        categoryConditions.tertiaryCategoryId = tertiaryCategoryId;
       if (quaternaryCategoryId)
-        whereClause.product.quaternaryCategoryId = quaternaryCategoryId;
+        categoryConditions.quaternaryCategoryId = quaternaryCategoryId;
+
+      if (Object.keys(categoryConditions).length > 0) {
+        whereClause.product.AND.push(categoryConditions);
+      }
     }
 
-    // Add search condition
+    // Add search conditions
     if (search) {
-      whereClause.product = {
-        ...whereClause.product,
-        AND: [
-          {
-            OR: [
-              { name: { contains: search, mode: "insensitive" } },
-              { description: { contains: search, mode: "insensitive" } },
-              { model: { contains: search, mode: "insensitive" } },
-              { brand: { name: { contains: search, mode: "insensitive" } } },
-            ],
-          },
+      whereClause.product.AND.push({
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { description: { contains: search, mode: "insensitive" } },
+          { model: { contains: search, mode: "insensitive" } },
+          { brand: { name: { contains: search, mode: "insensitive" } } },
         ],
-      };
+      });
     }
 
-    // Check if any of the provided category IDs exist (only if not searching)
-    if (
-      !search &&
-      (primaryCategoryId ||
-        secondaryCategoryId ||
-        tertiaryCategoryId ||
-        quaternaryCategoryId)
-    ) {
-      const categoryExists = await prisma.category.findFirst({
-        where: {
-          OR: [
-            { id: primaryCategoryId },
-            { id: secondaryCategoryId },
-            { id: tertiaryCategoryId },
-            { id: quaternaryCategoryId },
-          ].filter(Boolean),
-        },
-      });
+    // Handle filter parameters
+    const filterParams = Array.from(searchParams.entries()).filter(
+      ([key]) =>
+        ![
+          "search",
+          "limit",
+          "page",
+          "primaryCategoryId",
+          "secondaryCategoryId",
+          "tertiaryCategoryId",
+          "quaternaryCategoryId",
+          "isPrimaryRequired",
+          "isSecondaryRequired",
+          "isTertiaryRequired",
+          "isQuaternaryRequired",
+          "p_id",
+          "s_id",
+          "t_id",
+          "q_id",
+        ].includes(key)
+    );
 
-      if (!categoryExists) {
-        return NextResponse.json({
-          success: true,
-          data: [],
-          pagination: {
-            page,
-            limit,
-            totalCount: 0,
-            totalPages: 0,
-            hasMore: false,
+    for (const [fieldName, value] of filterParams) {
+      if (fieldName === "minPrice") {
+        whereClause.product.AND.push({
+          tradePrice: { gte: parseFloat(value) },
+        });
+      } else if (fieldName === "maxPrice") {
+        whereClause.product.AND.push({
+          tradePrice: { lte: parseFloat(value) },
+        });
+      } else if (fieldName === "brand") {
+        whereClause.product.AND.push({
+          brand: {
+            name: { in: [value] },
+          },
+        });
+      } else {
+        // Handle template fields (like Barcode)
+        whereClause.product.AND.push({
+          productTemplate: {
+            fields: {
+              some: {
+                AND: [
+                  {
+                    templateField: {
+                      fieldName,
+                    },
+                  },
+                  {
+                    fieldValue: value,
+                  },
+                ],
+              },
+            },
           },
         });
       }
     }
+
+    // Remove empty AND array if no conditions were added
+    if (whereClause.product.AND.length === 0) {
+      delete whereClause.product.AND;
+    }
+
+    console.log("Final where clause:", JSON.stringify(whereClause, null, 2));
 
     // Get items and total count
     const [items, total] = await Promise.all([
@@ -140,6 +164,15 @@ export async function GET(req: NextRequest) {
               tertiaryCategory: true,
               quaternaryCategory: true,
               brand: true,
+              productTemplate: {
+                include: {
+                  fields: {
+                    include: {
+                      templateField: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },
