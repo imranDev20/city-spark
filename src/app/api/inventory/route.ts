@@ -1,5 +1,42 @@
 import prisma from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+
+type SortOption = {
+  field: string;
+  direction: "asc" | "desc";
+};
+
+const getSortOptions = (
+  sortValue: string
+): Prisma.InventoryOrderByWithRelationInput => {
+  switch (sortValue) {
+    case "price_low_to_high":
+      return {
+        product: {
+          retailPrice: "asc",
+        },
+      };
+    case "price_high_to_low":
+      return {
+        product: {
+          retailPrice: "desc",
+        },
+      };
+    case "newest":
+      return {
+        createdAt: "desc",
+      };
+    case "bestselling":
+      return {
+        soldCount: "desc",
+      };
+    default: // 'relevance' or any other value
+      return {
+        createdAt: "desc",
+      };
+  }
+};
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,6 +47,7 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get("search");
     const limit = parseInt(searchParams.get("limit") || "12", 10);
     const page = parseInt(searchParams.get("page") || "1", 10);
+    const sortBy = searchParams.get("sort_by") || "relevance";
     const primaryCategoryId =
       searchParams.get("primaryCategoryId") || undefined;
     const secondaryCategoryId =
@@ -27,6 +65,9 @@ export async function GET(req: NextRequest) {
       searchParams.get("isQuaternaryRequired") === "true";
 
     const skip = (page - 1) * limit;
+
+    // Get sort options
+    const orderBy = getSortOptions(sortBy);
 
     // Check required categories (existing code remains the same)
     if (
@@ -104,17 +145,18 @@ export async function GET(req: NextRequest) {
           "s_id",
           "t_id",
           "q_id",
+          "sort_by",
         ].includes(key)
     );
 
     for (const [fieldName, value] of filterParams) {
       if (fieldName === "minPrice") {
         whereClause.product.AND.push({
-          tradePrice: { gte: parseFloat(value) },
+          retailPrice: { gte: parseFloat(value) },
         });
       } else if (fieldName === "maxPrice") {
         whereClause.product.AND.push({
-          tradePrice: { lte: parseFloat(value) },
+          retailPrice: { lte: parseFloat(value) },
         });
       } else if (fieldName === "brand") {
         whereClause.product.AND.push({
@@ -178,9 +220,7 @@ export async function GET(req: NextRequest) {
             },
           },
         },
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy,
         skip,
         take: limit,
       }),

@@ -3,14 +3,9 @@ import { getCategoryById } from "../../actions";
 import { getInventoryItemsForStorefront } from "@/app/(storefront)/actions";
 import BannerImage from "@/images/category-banner.png";
 import Image from "next/image";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import ProductCardsLoadMore from "./product-cards-load-more";
+import SortProducts from "./sort-products";
 
 type ProductCardsContainerProps = {
   primaryCategoryId?: string;
@@ -94,30 +89,7 @@ export default async function ProductCardsContainer(
         </p>
 
         <div className="items-center gap-2 hidden lg:flex">
-          <div className="flex items-center">
-            <label
-              htmlFor="sort-select"
-              className="text-sm text-gray-600 mr-2 hidden sm:inline"
-            >
-              Sort by:
-            </label>
-            <Select defaultValue="relevance">
-              <SelectTrigger className="w-[140px] sm:w-[180px]">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="relevance">Relevance</SelectItem>
-                <SelectItem value="price-low-to-high">
-                  Price: Low to High
-                </SelectItem>
-                <SelectItem value="price-high-to-low">
-                  Price: High to Low
-                </SelectItem>
-                <SelectItem value="newest">Newest Arrivals</SelectItem>
-                <SelectItem value="bestselling">Best Selling</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <SortProducts />
         </div>
       </div>
 

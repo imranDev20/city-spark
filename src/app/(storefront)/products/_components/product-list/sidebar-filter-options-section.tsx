@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { DualRangeSlider } from "@/components/ui/dual-range-slider";
 import useQueryString from "@/hooks/use-query-string";
@@ -34,7 +33,7 @@ export default function SidebarFilterOptionsSection({
   // Initialize price range from URL or defaults
   const [priceRange, setPriceRange] = useState([
     Number(searchParams.get("minPrice")) || 0,
-    Number(searchParams.get("maxPrice")) || 1000,
+    Number(searchParams.get("maxPrice")) || 50000,
   ]);
 
   const toggleFilter = (filterId: string) => {
@@ -64,12 +63,20 @@ export default function SidebarFilterOptionsSection({
     }
   };
 
-  const applyPriceRange = () => {
+  const handlePriceRangeChange = (newRange: number[]) => {
+    setPriceRange(newRange);
     const queryString = createQueryString({
-      minPrice: priceRange[0].toString(),
-      maxPrice: priceRange[1].toString(),
+      minPrice: newRange[0].toString(),
+      maxPrice: newRange[1].toString(),
     });
+
     router.push(`?${queryString}`, { scroll: false });
+  };
+
+  const handleInputChange = (index: 0 | 1, value: number) => {
+    const newRange = [...priceRange];
+    newRange[index] = value;
+    handlePriceRangeChange(newRange);
   };
 
   const isOptionChecked = (key: string, value: string) => {
@@ -158,10 +165,10 @@ export default function SidebarFilterOptionsSection({
             <div className="space-y-4 mt-5">
               <DualRangeSlider
                 min={0}
-                max={1000}
+                max={50000}
                 step={1}
                 value={priceRange}
-                onValueChange={setPriceRange}
+                onValueChange={handlePriceRangeChange}
                 className="w-full"
               />
 
@@ -169,9 +176,7 @@ export default function SidebarFilterOptionsSection({
                 <Input
                   type="number"
                   value={priceRange[0]}
-                  onChange={(e) =>
-                    setPriceRange([Number(e.target.value), priceRange[1]])
-                  }
+                  onChange={(e) => handleInputChange(0, Number(e.target.value))}
                   className="h-10 bg-white border-gray-300 hover:border-secondary transition-colors
                     focus-visible:ring-1 focus-visible:ring-secondary/20 focus-visible:border-secondary"
                   placeholder="£ Min"
@@ -180,21 +185,12 @@ export default function SidebarFilterOptionsSection({
                 <Input
                   type="number"
                   value={priceRange[1]}
-                  onChange={(e) =>
-                    setPriceRange([priceRange[0], Number(e.target.value)])
-                  }
+                  onChange={(e) => handleInputChange(1, Number(e.target.value))}
                   className="h-10 bg-white border-gray-300 hover:border-secondary transition-colors
                     focus-visible:ring-1 focus-visible:ring-secondary/20 focus-visible:border-secondary"
                   placeholder="£ Max"
                 />
               </div>
-
-              <Button
-                onClick={applyPriceRange}
-                className="w-full bg-secondary hover:bg-secondary/90 transition-colors"
-              >
-                Apply Filter
-              </Button>
             </div>
           </div>
         </div>
