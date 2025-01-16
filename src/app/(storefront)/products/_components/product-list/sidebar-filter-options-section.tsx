@@ -32,8 +32,8 @@ export default function SidebarFilterOptionsSection({
 
   // Initialize price range from URL or defaults
   const [priceRange, setPriceRange] = useState([
-    Number(searchParams.get("minPrice")) || 0,
-    Number(searchParams.get("maxPrice")) || 50000,
+    Number(searchParams.get("min_price")) || 0,
+    Number(searchParams.get("max_price")) || 50000,
   ]);
 
   const toggleFilter = (filterId: string) => {
@@ -66,8 +66,8 @@ export default function SidebarFilterOptionsSection({
   const handlePriceRangeChange = (newRange: number[]) => {
     setPriceRange(newRange);
     const queryString = createQueryString({
-      minPrice: newRange[0].toString(),
-      maxPrice: newRange[1].toString(),
+      min_price: newRange[0].toString(),
+      max_price: newRange[1].toString(),
     });
 
     router.push(`?${queryString}`, { scroll: false });

@@ -159,7 +159,7 @@ export default function ProductCardsLoadMore({
       ].includes(key)
   );
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =
     useInfiniteQuery({
       queryKey: ["products", queryParams, Array.from(searchParams.entries())],
       queryFn: async ({ pageParam }) => {
@@ -209,7 +209,7 @@ export default function ProductCardsLoadMore({
       hasNextPage
     : initialTotalCount > ITEMS_PER_PAGE && hasNextPage;
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <div className="w-full flex justify-center py-8">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

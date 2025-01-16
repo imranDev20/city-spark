@@ -3,10 +3,11 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
+import useQueryString from "@/hooks/use-query-string";
 import { fetchBrands } from "@/services/brands";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { ChevronDown, Loader2, Search } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 function BrandSkeleton() {
@@ -26,10 +27,19 @@ export default function SidebarFilterBrandSection() {
   const [isBrandsExpanded, setIsBrandsExpanded] = useState(true);
   const debouncedBrandSearch = useDebounce(brandSearch, 300);
   const params = useSearchParams();
+  const { createQueryString, removeQueryString } = useQueryString();
+  const router = useRouter();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =
     useInfiniteQuery({
-      queryKey: ["brands", debouncedBrandSearch, params.toString()],
+      queryKey: [
+        "brands",
+        debouncedBrandSearch,
+        params.get("p_id"),
+        params.get("s_id"),
+        params.get("t_id"),
+        params.get("q_id"),
+      ],
       queryFn: ({ pageParam = 1 }) =>
         fetchBrands({
           search: debouncedBrandSearch,
@@ -47,10 +57,41 @@ export default function SidebarFilterBrandSection() {
       initialPageParam: 1,
       staleTime: 1000 * 60 * 5, // Data remains fresh for 5 minutes
       gcTime: 1000 * 60 * 10, // Keep unused data in cache for 10 minutes
+      refetchOnWindowFocus: false, // Prevent refetching when window regains focus
     });
 
   const brands = data?.pages.flatMap((page) => page.data) || [];
   const shouldShowMore = hasNextPage && brands.length >= 5;
+
+  const updateBrandFilter = (brandId: string, checked: boolean) => {
+    const currentParam = params.get("brand_id");
+    let currentBrands = currentParam ? currentParam.split(",") : [];
+
+    if (checked) {
+      if (!currentBrands.includes(brandId)) {
+        currentBrands.push(brandId);
+      }
+    } else {
+      currentBrands = currentBrands.filter((id) => id !== brandId);
+    }
+
+    if (currentBrands.length > 0) {
+      const queryString = createQueryString({
+        brand_id: currentBrands.join(","),
+      });
+      router.push(`?${queryString}`, { scroll: false });
+    } else {
+      const queryString = removeQueryString("brand_id");
+      router.push(queryString ? `?${queryString}` : window.location.pathname, {
+        scroll: false,
+      });
+    }
+  };
+
+  const isBrandChecked = (brandId: string) => {
+    const param = params.get("brand_id");
+    return param ? param.split(",").includes(brandId) : false;
+  };
 
   return (
     <div className="p-5">
@@ -87,7 +128,7 @@ export default function SidebarFilterBrandSection() {
                  focus-visible:ring-1 focus-visible:ring-secondary/20 focus-visible:border-secondary
                  ${isPending ? "pr-9" : ""}`}
             />
-            {isPending && (
+            {isFetchingNextPage && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
                 <Loader2 className="animate-spin" size={16} />
               </div>
@@ -112,6 +153,10 @@ export default function SidebarFilterBrandSection() {
                 >
                   <Checkbox
                     id={brand.id}
+                    checked={isBrandChecked(brand.id)}
+                    onCheckedChange={(checked) =>
+                      updateBrandFilter(brand.id, checked as boolean)
+                    }
                     className="h-4 w-4 rounded border-gray-300 text-secondary focus:ring-secondary/20 data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
                   />
                   <label
