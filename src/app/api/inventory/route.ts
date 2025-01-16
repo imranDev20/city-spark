@@ -2,11 +2,6 @@ import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
-type SortOption = {
-  field: string;
-  direction: "asc" | "desc";
-};
-
 const getSortOptions = (
   sortValue: string
 ): Prisma.InventoryOrderByWithRelationInput => {
@@ -43,19 +38,20 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     console.log("Received search params:", Object.fromEntries(searchParams));
 
-    // Parse base query parameters (existing code remains the same)
+    // Parse base query parameters
     const search = searchParams.get("search");
     const limit = parseInt(searchParams.get("limit") || "12", 10);
     const page = parseInt(searchParams.get("page") || "1", 10);
     const sortBy = searchParams.get("sort_by") || "relevance";
-    const primaryCategoryId =
-      searchParams.get("primaryCategoryId") || undefined;
-    const secondaryCategoryId =
-      searchParams.get("secondaryCategoryId") || undefined;
-    const tertiaryCategoryId =
-      searchParams.get("tertiaryCategoryId") || undefined;
-    const quaternaryCategoryId =
-      searchParams.get("quaternaryCategoryId") || undefined;
+    const minPrice = parseFloat(searchParams.get("minPrice") || "0");
+    const maxPrice = parseFloat(searchParams.get("maxPrice") || "999999999");
+    const brandIds = searchParams.get("brand_id")?.split(",");
+
+    // Category parameters
+    const primaryCategoryId = searchParams.get("p_id") || undefined;
+    const secondaryCategoryId = searchParams.get("s_id") || undefined;
+    const tertiaryCategoryId = searchParams.get("t_id") || undefined;
+    const quaternaryCategoryId = searchParams.get("q_id") || undefined;
     const isPrimaryRequired = searchParams.get("isPrimaryRequired") === "true";
     const isSecondaryRequired =
       searchParams.get("isSecondaryRequired") === "true";
@@ -65,11 +61,9 @@ export async function GET(req: NextRequest) {
       searchParams.get("isQuaternaryRequired") === "true";
 
     const skip = (page - 1) * limit;
-
-    // Get sort options
     const orderBy = getSortOptions(sortBy);
 
-    // Check required categories (existing code remains the same)
+    // Check required categories
     if (
       !search &&
       ((isPrimaryRequired && !primaryCategoryId) ||
@@ -93,28 +87,48 @@ export async function GET(req: NextRequest) {
     // Base where clause
     const whereClause: any = {
       product: {
-        AND: [],
+        AND: [
+          {
+            retailPrice: {
+              gte: minPrice,
+              lte: maxPrice === Infinity ? 999999999 : maxPrice,
+            },
+          },
+        ],
       },
     };
 
-    // Add category conditions (existing code remains the same)
+    // Add brand filter
+    if (brandIds && brandIds.length > 0) {
+      whereClause.product.AND.push({
+        brandId: {
+          in: brandIds,
+        },
+      });
+    }
+
+    // Add category conditions
     if (!search) {
       const categoryConditions: any = {};
-      if (primaryCategoryId)
+      if (primaryCategoryId) {
         categoryConditions.primaryCategoryId = primaryCategoryId;
-      if (secondaryCategoryId)
+      }
+      if (secondaryCategoryId) {
         categoryConditions.secondaryCategoryId = secondaryCategoryId;
-      if (tertiaryCategoryId)
+      }
+      if (tertiaryCategoryId) {
         categoryConditions.tertiaryCategoryId = tertiaryCategoryId;
-      if (quaternaryCategoryId)
+      }
+      if (quaternaryCategoryId) {
         categoryConditions.quaternaryCategoryId = quaternaryCategoryId;
+      }
 
       if (Object.keys(categoryConditions).length > 0) {
         whereClause.product.AND.push(categoryConditions);
       }
     }
 
-    // Add search conditions (existing code remains the same)
+    // Add search conditions
     if (search) {
       whereClause.product.AND.push({
         OR: [
@@ -146,68 +160,54 @@ export async function GET(req: NextRequest) {
           "t_id",
           "q_id",
           "sort_by",
+          "brand_id",
         ].includes(key)
     );
 
+    // Handle template fields
     for (const [fieldName, value] of filterParams) {
-      if (fieldName === "minPrice") {
-        whereClause.product.AND.push({
-          retailPrice: { gte: parseFloat(value) },
-        });
-      } else if (fieldName === "maxPrice") {
-        whereClause.product.AND.push({
-          retailPrice: { lte: parseFloat(value) },
-        });
-      } else if (fieldName === "brand") {
-        whereClause.product.AND.push({
-          brand: {
-            name: { in: value.split(",") },
-          },
-        });
-      } else {
-        // Handle template fields with multiple values
-        const values = value.split(",").map((v) => v.trim());
-        whereClause.product.AND.push({
-          productTemplate: {
-            fields: {
-              some: {
-                AND: [
-                  {
-                    templateField: {
-                      fieldName,
-                    },
+      const values = value.split(",").map((v) => v.trim());
+      whereClause.product.AND.push({
+        productTemplate: {
+          fields: {
+            some: {
+              AND: [
+                {
+                  templateField: {
+                    fieldName,
                   },
-                  {
-                    fieldValue: {
-                      in: values,
-                    },
+                },
+                {
+                  fieldValue: {
+                    in: values,
                   },
-                ],
-              },
+                },
+              ],
             },
           },
-        });
-      }
+        },
+      });
     }
 
-    // Rest of the code remains the same
+    // Clean up empty AND arrays
     if (whereClause.product.AND.length === 0) {
       delete whereClause.product.AND;
     }
 
     console.log("Final where clause:", JSON.stringify(whereClause, null, 2));
 
-    const [items, total] = await Promise.all([
+    // Execute queries
+    const [items, total] = await prisma.$transaction([
       prisma.inventory.findMany({
         where: whereClause,
         include: {
           product: {
             include: {
+              brand: true,
               primaryCategory: true,
               secondaryCategory: true,
               tertiaryCategory: true,
               quaternaryCategory: true,
-              brand: true,
               productTemplate: {
                 include: {
                   fields: {
@@ -227,6 +227,7 @@ export async function GET(req: NextRequest) {
       prisma.inventory.count({ where: whereClause }),
     ]);
 
+    // Calculate pagination
     const totalPages = Math.ceil(total / limit);
     const hasMore = page * limit < total;
 
