@@ -39,7 +39,6 @@ export default function ProductForm({
 }: {
   productDetails?: ProductWithDetails;
 }) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [primaryCategoryId, setPrimaryCategoryId] = useState<string>();
   const [secondaryCategoryId, setSecondaryCategoryId] = useState<string>();

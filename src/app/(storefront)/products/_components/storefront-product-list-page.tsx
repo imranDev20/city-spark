@@ -8,6 +8,8 @@ import FilterSidebarContainer from "./product-list/filter-sidebar-container";
 import FilterSidebarSkeleton from "./product-list/filter-sidebar-skeleton";
 import ProductCardsContainer from "./product-list/product-cards-container";
 import ProductCardsContainerSkeleton from "./product-list/product-cards-container-skeleton";
+import ProductActionBarSkeleton from "./product-action-bar-skeleton";
+import ProductActionBarContainer from "./product-action-bar-container";
 
 type PageHeaderContainerProps = {
   primaryCategoryId?: string;
@@ -54,7 +56,9 @@ export default function StorefrontProductListPage(
         </div>
       </section>
 
-      <ProductActionBar />
+      <Suspense fallback={<ProductActionBarSkeleton />}>
+        <ProductActionBarContainer {...props} />
+      </Suspense>
     </main>
   );
 }

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { CategoryType } from "@prisma/client";
 import { customSlugify } from "@/lib/functions";
+import { usePathname, useSearchParams } from "next/navigation";
 import BoilerIcon from "@/components/icons/boiler";
 import RadiatorIcon from "@/components/icons/radiator";
 import HeatingIcon from "@/components/icons/heating";
@@ -39,6 +40,19 @@ type CategoryWithIcon = NavCategory & {
   ariaLabel: string;
 };
 
+const categoryOrder = [
+  "boilers",
+  "radiators",
+  "heating",
+  "plumbing",
+  "bathrooms",
+  "kitchens",
+  "spares",
+  "renewables",
+  "tools",
+  "electrical",
+];
+
 const categoryIcons: Record<
   string,
   { Icon: React.ComponentType<IconProps>; ariaLabel: string }
@@ -48,7 +62,7 @@ const categoryIcons: Record<
   heating: { Icon: HeatingIcon, ariaLabel: "Browse heating products" },
   plumbing: { Icon: PlumbingIcon, ariaLabel: "Browse plumbing products" },
   bathrooms: { Icon: BathroomIcon, ariaLabel: "Browse bathroom products" },
-  kitchen: { Icon: KitchenTilesIcon, ariaLabel: "Browse kitchen products" },
+  kitchens: { Icon: KitchenTilesIcon, ariaLabel: "Browse kitchen products" },
   spares: { Icon: SparesIcon, ariaLabel: "Browse spare parts" },
   renewables: { Icon: RenewablesIcon, ariaLabel: "Browse renewable products" },
   tools: { Icon: ToolsIcon, ariaLabel: "Browse tools" },
@@ -88,9 +102,36 @@ export default function MobileCategoryNavCarousel({
     containScroll: "trimSnaps",
   });
 
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const primaryId = searchParams.get("p_id");
+  const secondaryId = searchParams.get("s_id");
+
   const processedCategories = categories
     .map(createCategory)
-    .filter((category): category is CategoryWithIcon => category !== null);
+    .filter((category): category is CategoryWithIcon => category !== null)
+    .sort((a, b) => {
+      const aIndex = categoryOrder.indexOf(a.name.toLowerCase());
+      const bIndex = categoryOrder.indexOf(b.name.toLowerCase());
+      return aIndex - bIndex;
+    });
+
+  const isCategorySelected = (category: CategoryWithIcon) => {
+    if (category.type === CategoryType.SECONDARY) {
+      return secondaryId === category.id;
+    }
+    return primaryId === category.id;
+  };
+
+  const isParentSelected = (category: CategoryWithIcon) => {
+    if (
+      category.type === CategoryType.SECONDARY &&
+      category.parentPrimaryCategory
+    ) {
+      return primaryId === category.parentPrimaryCategory.id;
+    }
+    return false;
+  };
 
   return (
     <nav
@@ -118,13 +159,19 @@ export default function MobileCategoryNavCarousel({
                   "hover:bg-primary/5 group rounded-xl",
                   "border border-border hover:border-primary/20",
                   "bg-white",
-                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                  (isCategorySelected(item) || isParentSelected(item)) &&
+                    "bg-primary/5 border-primary"
                 )}
                 aria-label={item.ariaLabel}
+                aria-current={isCategorySelected(item) ? "page" : undefined}
               >
                 <item.Icon
                   className={cn(
-                    "transition-all duration-200 text-gray-600",
+                    "transition-all duration-200",
+                    isCategorySelected(item) || isParentSelected(item)
+                      ? "text-primary scale-110"
+                      : "text-gray-600",
                     "group-hover:text-primary group-hover:scale-110"
                   )}
                   height={32}
@@ -134,6 +181,8 @@ export default function MobileCategoryNavCarousel({
                 <h2
                   className={cn(
                     "text-xs mt-3 text-center font-medium",
+                    (isCategorySelected(item) || isParentSelected(item)) &&
+                      "text-primary",
                     "group-hover:text-primary transition-colors duration-200"
                   )}
                 >
