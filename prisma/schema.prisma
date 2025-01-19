@@ -85,7 +85,7 @@ model OrderTimeline {
 
 model Category {
     id                        String       @id @default(cuid())
-    name                      String
+    name                      String       @unique
     type                      CategoryType
     parentPrimaryCategory     Category?    @relation("PrimaryChildCategories", fields: [parentPrimaryCategoryId], references: [id])
     parentPrimaryCategoryId   String?

@@ -18,11 +18,10 @@ export const createProductSchema = (
 
     description: z
       .string({
-        required_error: "Product description is required.",
         invalid_type_error: "Product description must be a string.",
       })
       .trim()
-      .min(1, "Product description is required and can't be left blank."),
+      .optional(),
     brand: z.string().trim().optional(),
     manufacturerLink: z.string().trim().optional(),
     model: z.string().trim().optional(),

@@ -8,7 +8,6 @@ export default async function CategoryNavContainer() {
     ""
   );
   const navCategories = mobileNavCategories as CategoryWithChildParent[];
-
   const topBrands = await getTopBrands();
 
   return <CategoryNav categories={navCategories} topBrands={topBrands} />;
