@@ -1,16 +1,13 @@
 "use client";
 
-import { Search, ShoppingCart } from "lucide-react";
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import AccountDropdown from "./account-dropdown";
 import SearchInput from "./search-input";
 import { cn } from "@/lib/utils";
 import CitySparkLogo from "./city-spark-logo";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import MobileMenu from "./mobile-menu";
 import FilterDrawer from "./filter-drawer";
 import BasketPopup from "./basket-popup";
@@ -18,7 +15,6 @@ import { usePathname } from "next/navigation";
 import BasketDrawer from "./basket-drawer";
 
 const MobileHeader = () => {
-  const cartItemCount = 0;
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
 
@@ -38,6 +34,7 @@ const MobileHeader = () => {
     "/checkout",
     "/basket",
     "/products/p",
+    "/products/c",
   ];
 
   const isExcluded = excludedRoutes.some((route) => pathname.startsWith(route));

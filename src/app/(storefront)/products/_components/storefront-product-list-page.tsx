@@ -1,7 +1,6 @@
 import React, { Suspense } from "react";
 
 import { cn } from "@/lib/utils";
-import ProductActionBar from "./product-action-bar";
 import PageHeaderContainer from "./product-list/page-header-container";
 import PageHeaderSkeleton from "./product-list/page-header-skeleton";
 import FilterSidebarContainer from "./product-list/filter-sidebar-container";
@@ -10,6 +9,7 @@ import ProductCardsContainer from "./product-list/product-cards-container";
 import ProductCardsContainerSkeleton from "./product-list/product-cards-container-skeleton";
 import ProductActionBarSkeleton from "./product-action-bar-skeleton";
 import ProductActionBarContainer from "./product-action-bar-container";
+import MobileProductHeader from "./product-list/mobile-product-header";
 
 type PageHeaderContainerProps = {
   primaryCategoryId?: string;
@@ -29,6 +29,8 @@ export default function StorefrontProductListPage(
 ) {
   return (
     <main>
+      <MobileProductHeader />
+
       <Suspense fallback={<PageHeaderSkeleton />}>
         <PageHeaderContainer {...props} />
       </Suspense>
