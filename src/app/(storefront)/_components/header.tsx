@@ -13,6 +13,7 @@ import FilterDrawer from "./filter-drawer";
 import BasketPopup from "./basket-popup";
 import { usePathname } from "next/navigation";
 import BasketDrawer from "./basket-drawer";
+import CitySparkLogoBlack from "./city-spark-logo-black";
 
 const MobileHeader = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -56,7 +57,7 @@ const MobileHeader = () => {
             <MobileMenu />
 
             <Link href="/" className="flex items-center">
-              <CitySparkLogo />
+              <CitySparkLogoBlack height={50} width={100} />
               <span className="sr-only">City Spark</span>
             </Link>
 
@@ -89,7 +90,7 @@ function DesktopHeader() {
           href="/"
           className="flex items-center transition-colors duration-200 group"
         >
-          <CitySparkLogo />
+          <CitySparkLogo width={100} height={70} />
           <span className="sr-only">City Spark</span>
         </Link>
 
