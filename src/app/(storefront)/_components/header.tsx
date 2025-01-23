@@ -85,12 +85,12 @@ const MobileHeader = () => {
 function DesktopHeader() {
   return (
     <header className="w-full bg-primary py-2 hidden lg:block">
-      <div className="container h-16 flex items-center justify-between mx-auto max-w-screen-xl">
+      <div className="container h-24 flex items-center justify-between mx-auto max-w-screen-xl gap-10">
         <Link
           href="/"
           className="flex items-center transition-colors duration-200 group"
         >
-          <CitySparkLogo width={100} height={70} />
+          <CitySparkLogo width={180} height={90} />
           <span className="sr-only">City Spark</span>
         </Link>
 

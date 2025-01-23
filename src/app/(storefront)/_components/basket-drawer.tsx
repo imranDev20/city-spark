@@ -112,7 +112,6 @@ const BasketContent = ({
     <div className="flex flex-col max-h-[85vh]">
       <DrawerHeader className="border-b pb-4">
         <DrawerTitle className="font-bold text-lg flex items-center gap-2">
-          <ShoppingCart className="w-5 h-5" />
           Your Basket {cartItemCount > 0 && `(${cartItemCount})`}
         </DrawerTitle>
       </DrawerHeader>
