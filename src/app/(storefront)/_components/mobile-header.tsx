@@ -36,7 +36,7 @@ export default function MobileHeader({
     "/checkout",
     "/basket",
     "/products/p",
-    ...(isCategoriesPage ? [] : ["/products/c"]),
+    ...(isCategoriesPage ? [] : ["/products/c", "/products"]),
   ];
 
   const isExcluded = excludedRoutes.some((route) => pathname.startsWith(route));
