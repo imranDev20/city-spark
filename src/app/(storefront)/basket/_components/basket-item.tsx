@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { Prisma } from "@prisma/client";
 import PlaceholderImage from "@/images/placeholder-image.png";
 import { BLUR_DATA_URL } from "@/lib/constants";
+import { NumericFormat } from "react-number-format";
 
 type CartItemWithRelations = Prisma.CartItemGetPayload<{
   include: {
@@ -116,15 +117,27 @@ const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
   const quantity = parseInt(inputValue) || 1;
   const totalPrice = unitPrice * quantity;
 
+  const PriceDisplay = ({ amount }: { amount: number }) => (
+    <NumericFormat
+      value={amount}
+      displayType="text"
+      prefix="£"
+      decimalScale={2}
+      fixedDecimalScale
+      thousandSeparator=","
+    />
+  );
+
   return (
     <div
       className={cn(
-        "grid grid-cols-[auto_1fr_auto_auto] items-center gap-6 py-4 last:border-b-0 transition-opacity duration-200",
+        "grid gap-4 py-4 last:border-b-0 transition-opacity duration-200",
+        "grid-cols-[80px_1fr_auto] md:grid-cols-[auto_1fr_auto_auto] md:gap-6",
         isPending && "opacity-30 pointer-events-none"
       )}
     >
       {/* Product Image */}
-      <div className="relative w-24 h-24 rounded-md bg-gray-50">
+      <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-md bg-gray-50">
         <Image
           src={cartItem.inventory.product.images[0] || PlaceholderImage}
           alt={cartItem.inventory.product.name}
@@ -135,19 +148,31 @@ const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
         />
       </div>
 
-      {/* Product Details and Quantity */}
-      <div className="space-y-3">
+      {/* Mobile & Desktop Layout Container */}
+      <div className="flex flex-col justify-between gap-2">
         <h3
-          className="font-semibold text-lg text-gray-800 line-clamp-2"
+          className="font-medium text-base md:text-lg text-gray-800 line-clamp-2 mb-2 lg:mb-0"
           title={cartItem.inventory.product.name}
         >
           {cartItem.inventory.product.name}
         </h3>
 
-        <div className="flex justify-between bg-gray-100 rounded-md text-lg relative overflow-hidden w-32 h-9">
+        {/* Price - Mobile Only */}
+        <div className="flex flex-col md:hidden">
+          <div className="text-base font-semibold text-gray-800">
+            <PriceDisplay amount={totalPrice} />
+            <span className="text-xs text-gray-500 ml-1">inc. VAT</span>
+          </div>
+          <div className="text-sm text-gray-500">
+            {quantity} × <PriceDisplay amount={unitPrice} />
+          </div>
+        </div>
+
+        {/* Quantity Control */}
+        <div className="flex justify-between bg-gray-100 rounded-md text-lg relative overflow-hidden w-28 md:w-32 h-8 md:h-9">
           <button
             onClick={() => handleButtonClick(false)}
-            className="absolute top-0 left-0 h-full w-10 flex items-center justify-center transition-colors duration-200 ease-in-out hover:bg-gray-200 active:bg-gray-400"
+            className="absolute top-0 left-0 h-full w-8 md:w-10 flex items-center justify-center transition-colors duration-200 ease-in-out hover:bg-gray-200 active:bg-gray-400"
           >
             <span className="text-gray-600 font-medium select-none">-</span>
           </button>
@@ -160,34 +185,35 @@ const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
           />
           <button
             onClick={() => handleButtonClick(true)}
-            className="absolute top-0 right-0 h-full w-10 flex items-center justify-center transition-colors duration-200 ease-in-out hover:bg-gray-200 active:bg-gray-400"
+            className="absolute top-0 right-0 h-full w-8 md:w-10 flex items-center justify-center transition-colors duration-200 ease-in-out hover:bg-gray-200 active:bg-gray-400"
           >
             <span className="text-gray-600 font-medium select-none">+</span>
           </button>
         </div>
       </div>
 
-      {/* Price Information */}
-      <div className="text-right">
+      {/* Price - Desktop Only */}
+      <div className="hidden md:block text-right">
         <div className="text-xl font-semibold text-gray-800">
           £{totalPrice.toFixed(2)}{" "}
           <span className="text-xs text-gray-500">inc. VAT</span>
         </div>
         <div className="text-sm text-gray-500">
-          {quantity} × £{unitPrice.toFixed(2)}{" "}
-          <span className="text-xs">inc. VAT</span>
+          {quantity} × £{unitPrice.toFixed(2)}
         </div>
       </div>
 
       {/* Delete Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => onRemove(cartItem.id)}
-        className="text-red-500 hover:text-red-600 hover:bg-red-50"
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
+      <div className="flex items-center">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onRemove(cartItem.id)}
+          className="text-red-500 hover:text-red-600 hover:bg-red-50 h-10 w-10 md:h-10 md:w-10"
+        >
+          <Trash2 className="!size-5" />
+        </Button>
+      </div>
     </div>
   );
 };
