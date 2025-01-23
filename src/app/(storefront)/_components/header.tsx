@@ -1,24 +1,21 @@
 "use client";
 
-import { Search, ShoppingCart } from "lucide-react";
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import AccountDropdown from "./account-dropdown";
 import SearchInput from "./search-input";
 import { cn } from "@/lib/utils";
 import CitySparkLogo from "./city-spark-logo";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import MobileMenu from "./mobile-menu";
 import FilterDrawer from "./filter-drawer";
 import BasketPopup from "./basket-popup";
 import { usePathname } from "next/navigation";
 import BasketDrawer from "./basket-drawer";
+import CitySparkLogoBlack from "./city-spark-logo-black";
 
 const MobileHeader = () => {
-  const cartItemCount = 0;
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
 
@@ -38,6 +35,7 @@ const MobileHeader = () => {
     "/checkout",
     "/basket",
     "/products/p",
+    "/products/c",
   ];
 
   const isExcluded = excludedRoutes.some((route) => pathname.startsWith(route));
@@ -59,7 +57,7 @@ const MobileHeader = () => {
             <MobileMenu />
 
             <Link href="/" className="flex items-center">
-              <CitySparkLogo />
+              <CitySparkLogoBlack height={50} width={100} />
               <span className="sr-only">City Spark</span>
             </Link>
 
@@ -87,12 +85,12 @@ const MobileHeader = () => {
 function DesktopHeader() {
   return (
     <header className="w-full bg-primary py-2 hidden lg:block">
-      <div className="container h-16 flex items-center justify-between mx-auto max-w-screen-xl">
+      <div className="container h-24 flex items-center justify-between mx-auto max-w-screen-xl gap-10">
         <Link
           href="/"
           className="flex items-center transition-colors duration-200 group"
         >
-          <CitySparkLogo />
+          <CitySparkLogo width={180} height={90} />
           <span className="sr-only">City Spark</span>
         </Link>
 

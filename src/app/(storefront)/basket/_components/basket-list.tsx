@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { ChevronRight, MapPin, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -84,27 +84,23 @@ const BasketList: React.FC<BasketListProps> = ({ items, type }) => {
   return (
     <>
       <section className="mb-16">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-2xl font-semibold">
-            {type === FulFillmentType.FOR_DELIVERY ? (
-              <>
-                Items for delivery to{" "}
-                <span className="text-primary">IG11 7YA</span>
-              </>
-            ) : (
-              "Items for Collection"
-            )}
-          </h2>
-          {type === FulFillmentType.FOR_DELIVERY && (
-            <button
-              onClick={() => setIsDialogOpen(true)}
-              className="inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 bg-gray-100/50 hover:bg-gray-100 px-3 py-1.5 rounded-md transition-colors"
-            >
-              <Pencil className="h-3.5 w-3.5 mr-1.5" />
-              Change
-            </button>
+        <h2 className="text-2xl font-semibold mb-3 md:hidden">
+          {type === FulFillmentType.FOR_DELIVERY
+            ? "Items for Delivery"
+            : "Items for Collection"}
+        </h2>
+
+        <h2 className="text-2xl font-semibold mb-3 hidden md:block">
+          {type === FulFillmentType.FOR_DELIVERY ? (
+            <>
+              Items for Delivery to{" "}
+              <span className="text-primary">IG11 7YA</span>
+            </>
+          ) : (
+            "Items for Collection"
           )}
-        </div>
+        </h2>
+
         <Card
           className={cn(
             "p-5 shadow-none border-gray-300",

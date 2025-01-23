@@ -6,6 +6,8 @@ import Image from "next/image";
 
 import ProductCardsLoadMore from "./product-cards-load-more";
 import SortProducts from "./sort-products";
+import { Card } from "@/components/ui/card";
+import DeliveryLocation from "./delivery-location";
 
 type ProductCardsContainerProps = {
   primaryCategoryId?: string;
@@ -92,6 +94,7 @@ export default async function ProductCardsContainer(
           <SortProducts />
         </div>
       </div>
+      <DeliveryLocation />
 
       <ProductCardsLoadMore
         initialData={inventoryItems}

@@ -8,6 +8,7 @@ import ProductDetailsSidebar from "./product-details-sidebar";
 import TechnicalSpecs from "./product-technical-specs";
 import ProductImageGallery from "./product-image-gallery";
 import FixedProductBar from "./fixed-product-bar";
+import MobileProductHeader from "./product-list/mobile-product-header";
 
 type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
   include: {
@@ -113,6 +114,8 @@ export default async function StorefrontProductDetailsPage({
 
   return (
     <main className="min-h-screen">
+      <MobileProductHeader isProductDetailsPage />
+
       {/* Breadcrumb Section */}
       <header className="bg-primary py-4 lg:py-8 hidden lg:block">
         <div className="container mx-auto px-4 lg:px-8 max-w-screen-xl">
