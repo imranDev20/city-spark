@@ -11,6 +11,7 @@ import {
   Bell,
   LifeBuoy,
   Ticket,
+  Megaphone,
 } from "lucide-react";
 
 type Submenu = {
@@ -108,6 +109,13 @@ export function getMenuList(pathname: string): Group[] {
     {
       groupLabel: "Marketing & Sales",
       menus: [
+        {
+          href: "/campaigns",
+          label: "Campaigns",
+          active: pathname.includes("/campaigns"),
+          icon: Megaphone,
+          submenus: [],
+        },
         {
           href: "/promocodes",
           label: "Promo Codes",

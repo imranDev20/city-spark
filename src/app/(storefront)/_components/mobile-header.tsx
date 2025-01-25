@@ -54,11 +54,11 @@ export default function MobileHeader({
         )}
       >
         <div className="container mx-auto px-4">
-          <div className="h-20 flex items-center justify-between">
+          <div className="h-16 flex items-center justify-between">
             <MobileMenu />
 
             <Link href="/" className="flex items-center">
-              <CitySparkLogoBlack height={65} width={110} />
+              <CitySparkLogoBlack height={55} width={95} />
               <span className="sr-only">City Spark</span>
             </Link>
 
@@ -67,7 +67,7 @@ export default function MobileHeader({
         </div>
       </div>
 
-      <div className="pt-20 bg-white mt-1">
+      <div className="pt-16 bg-white mt-1">
         <div className="container mx-auto px-4">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />

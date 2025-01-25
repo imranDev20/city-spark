@@ -18,6 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FaUser } from "react-icons/fa";
 
 type MenuItemProps = {
   icon: LucideIcon;
@@ -118,19 +119,19 @@ export default function AccountDropdown() {
     );
   }
 
-  // Not signed in state
   if (!session) {
     return (
       <Link
         href="/login"
         className={cn(
-          "flex items-center gap-2 px-3 py-2 text-white rounded-md transition-colors duration-200",
+          "flex flex-col items-center gap-1 px-3 py-2 text-white rounded-md transition-colors duration-200",
           "hover:bg-white/10",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 min-w-[125px]"
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
         )}
       >
-        <LogIn className="h-5 w-5" />
-        Sign In
+        <FaUser className="h-8 w-8" />
+        <span className="text-base font-semibold">Account</span>
+        <span className="text-xs font-light -mt-1">Sign In</span>
       </Link>
     );
   }

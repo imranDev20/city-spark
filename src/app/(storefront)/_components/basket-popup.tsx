@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ShoppingCart, Loader2, AlertCircle, Store, Truck } from "lucide-react";
+import { Loader2, AlertCircle, Store, Truck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
@@ -11,6 +11,7 @@ import Link from "next/link";
 import { fetchCart, type CartWithRelations } from "@/services/cart";
 import PlaceholderImage from "@/images/placeholder-image.png";
 import { BLUR_DATA_URL } from "@/lib/constants";
+import { FaShoppingCart } from "react-icons/fa";
 
 type GroupedCartItems = {
   delivery: CartWithRelations["cartItems"];
@@ -138,25 +139,39 @@ export default function BasketPopup() {
       <Link href="/basket">
         <button
           className={cn(
-            "flex items-center gap-2 px-3 py-2 text-white rounded-md transition-colors duration-200",
+            "flex flex-col items-center gap-1 px-3 py-2 text-white rounded-md transition-colors duration-200",
             "hover:bg-white/10",
             "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
           )}
         >
           <div className="relative">
-            <ShoppingCart className="w-5 h-5" />
+            <FaShoppingCart className="h-8 w-8" />
             {cartItemCount > 0 && (
               <span
                 className={cn(
-                  "absolute -top-2 -right-2 bg-secondary text-white text-xs font-bold rounded-full flex items-center justify-center",
-                  cartItemCount > 9 ? "w-5 h-5 text-[10px]" : "w-4 h-4"
+                  "absolute -top-2 -right-2 bg-secondary text-white text-xs font-medium rounded-full flex items-center justify-center",
+                  cartItemCount > 9 ? "w-6 h-6 text-[10px]" : "w-5 h-5"
                 )}
               >
                 {cartItemCount}
               </span>
             )}
           </div>
-          <span className="text-base font-medium">Basket</span>
+          <span className="text-base font-semibold">Basket</span>
+          <span className="text-xs font-light -mt-1">
+            {cartItemCount > 0 ? (
+              <NumericFormat
+                value={cart?.totalPriceWithVat}
+                displayType="text"
+                prefix="£"
+                decimalScale={2}
+                fixedDecimalScale
+                thousandSeparator
+              />
+            ) : (
+              "Empty"
+            )}
+          </span>
         </button>
       </Link>
 
