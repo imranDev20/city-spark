@@ -21,7 +21,7 @@ export default function BasketHeader() {
 
   return (
     <>
-      <header className="w-full lg:hidden">
+      <header className="w-full lg:hidden relative">
         <div
           className={cn(
             "fixed top-0 left-0 right-0 bg-white z-50 transition-shadow duration-200",
@@ -44,9 +44,15 @@ export default function BasketHeader() {
               </Button>
             </div>
           </div>
+          <div
+            className="absolute bottom-0 translate-y-full w-full h-4 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(0,0,0,0.05), transparent)",
+            }}
+          />
         </div>
         <div className="h-16" />
-        <div className="h-4 bg-gradient-to-b from-black/5 to-transparent" />
       </header>
 
       <DeliveryDrawer

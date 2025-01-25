@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,7 +10,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MapPin } from "lucide-react";
 
 const DeliveryDrawer = ({
@@ -19,18 +21,44 @@ const DeliveryDrawer = ({
   onClose: () => void;
 }) => {
   const [postcode, setPostcode] = useState("");
+  const [viewportHeight, setViewportHeight] = useState<number>(0);
+
+  useEffect(() => {
+    const updateViewportHeight = () => {
+      setViewportHeight(window.visualViewport?.height || window.innerHeight);
+    };
+
+    window.visualViewport?.addEventListener("resize", updateViewportHeight);
+    updateViewportHeight();
+
+    return () => {
+      window.visualViewport?.removeEventListener(
+        "resize",
+        updateViewportHeight
+      );
+    };
+  }, []);
 
   return (
     <Drawer open={isOpen} onOpenChange={onClose}>
-      <DrawerContent>
+      <DrawerContent
+        className="p-0 overflow-y-auto overscroll-none min-h-[150px] max-h-[90vh]"
+        style={{
+          height: viewportHeight ? `${viewportHeight}px` : "auto",
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+        }}
+      >
         <div className="mx-auto w-full max-w-sm">
-          <DrawerHeader>
+          <DrawerHeader className="p-4 sticky top-0 bg-white z-10">
             <DrawerTitle>Delivery Options</DrawerTitle>
             <DrawerDescription>
               Enter your postcode to find delivery options in your area
             </DrawerDescription>
           </DrawerHeader>
-          <div className="p-4 pb-8">
+          <div className="px-4 pb-8">
             <div className="space-y-4">
               <div>
                 <label
@@ -45,7 +73,8 @@ const DeliveryDrawer = ({
                     placeholder="e.g. SW1A 1AA"
                     value={postcode}
                     onChange={(e) => setPostcode(e.target.value)}
-                    className="flex-1"
+                    className="flex-1 text-base"
+                    style={{ fontSize: "16px" }}
                   />
                   <Button>Check</Button>
                 </div>

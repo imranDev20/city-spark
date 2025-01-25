@@ -109,14 +109,15 @@ const BasketContent = ({
   const subTotalWithoutVat = cart?.subTotalWithoutVat || 0;
 
   return (
-    <div className="flex flex-col max-h-[85vh]">
-      <DrawerHeader className="border-b pb-4">
+    <div className="flex flex-col h-full">
+      <DrawerHeader className="flex-shrink-0 border-b pb-4">
         <DrawerTitle className="font-bold text-lg flex items-center gap-2">
+          <ShoppingCart className="w-5 h-5" />
           Your Basket {cartItemCount > 0 && `(${cartItemCount})`}
         </DrawerTitle>
       </DrawerHeader>
 
-      <ScrollArea className="flex-1 overflow-y-auto h-full max-h-[calc(85vh-180px)]">
+      <ScrollArea className="flex-1 min-h-0">
         <div className="p-4">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
@@ -166,7 +167,7 @@ const BasketContent = ({
         </div>
       </ScrollArea>
 
-      <DrawerFooter className="border-t">
+      <DrawerFooter className="flex-shrink-0 border-t shadow-[0_-2px_10px_rgba(0,0,0,0.1)] pb-6 px-4">
         <div className="space-y-4 w-full">
           <div className="space-y-1">
             <div className="flex justify-between">
@@ -272,7 +273,8 @@ export default function BasketDrawer() {
           )}
         </Button>
       </DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent className="h-[80vh] md:h-[95vh] mt-24 md:mt-28 pb-6">
+        <div className="mx-auto w-20 h-1.5 flex-shrink-0 rounded-full bg-muted mb-2" />
         <BasketContent
           isLoading={isLoading}
           error={error}

@@ -221,7 +221,7 @@ export default function ProductCardsLoadMore({
     <div>
       {allItems.length > 0 ? (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {allItems.map((item) => (
               <ProductCard key={item.id} inventoryItem={item} />
             ))}
