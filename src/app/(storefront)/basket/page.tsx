@@ -8,6 +8,7 @@ import BasketList from "./_components/basket-list";
 import { getCart } from "@/services/storefront-cart";
 import OrderSummaryCard from "./_components/order-summary-card";
 import BasketHeader from "./_components/basket-header";
+import MobileOrderSummary from "./_components/mobile-order-summary";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,7 @@ export default async function StorefrontBasketPage() {
   return (
     <>
       <BasketHeader />
+      <MobileOrderSummary cart={cart} />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-5 lg:py-12 max-w-screen-xl">
         <Link
