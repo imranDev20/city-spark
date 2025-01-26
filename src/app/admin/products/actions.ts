@@ -348,8 +348,8 @@ export async function duplicateProduct(productId: string) {
         await tx.inventory.create({
           data: {
             productId: duplicatedProduct.id,
-            deliveryEligibility: false,
-            collectionEligibility: false,
+            deliveryEligibility: true,
+            collectionEligibility: true,
             stockCount: 0,
             collectionPoints: [],
             deliveryAreas: [],

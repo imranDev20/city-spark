@@ -275,7 +275,7 @@ export default function SearchInput() {
         <div
           className="fixed inset-0 bg-black/40 transition-opacity duration-200"
           onClick={() => setIsFocused(false)}
-          style={{ zIndex: 45 }}
+          style={{ zIndex: 55 }}
         />
       )}
 

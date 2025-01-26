@@ -149,91 +149,93 @@ export default function AccountDropdown() {
   }`.toUpperCase();
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        className={cn(
-          "flex flex-col items-center gap-1 px-3 py-2 text-white rounded-md transition-colors duration-200",
-          "hover:bg-white/10",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
-        )}
-        onMouseEnter={handleOpen}
-        onMouseLeave={handleClose}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <Avatar className="h-8 w-8 border border-white bg-white">
-          <AvatarImage
-            src={session.user?.image || undefined}
-            alt={session.user?.firstName || ""}
-            className="object-cover"
-          />
-          <AvatarFallback className="bg-white/10 text-primary">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-        <span className="text-base font-semibold">Account</span>
-        <span className="text-xs font-light -mt-1">
-          {session.user?.firstName || "Account"}
-        </span>
-      </button>
-
-      {isOpen && (
-        <div
+    <>
+      <div className="relative" ref={dropdownRef}>
+        <button
           className={cn(
-            "absolute right-1/2 transform translate-x-1/2 mt-2 w-64",
-            "bg-card text-card-foreground rounded-md shadow-lg",
-            "border border-border py-1 z-50 animate-fadeIn"
+            "flex flex-col items-center gap-1 px-3 py-2 text-white rounded-md transition-colors duration-200",
+            "hover:bg-white/10",
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
           )}
           onMouseEnter={handleOpen}
           onMouseLeave={handleClose}
+          onClick={() => setIsOpen(!isOpen)}
         >
-          <div className="p-1">
-            <Link
-              href="/profile"
-              className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-accent/60 transition-colors rounded-md hover:text-accent-foreground focus:outline-none focus:bg-accent/60"
-            >
-              <div className="flex items-center">
-                <Avatar className="h-10 w-10 border border-border mr-3 shrink-0">
-                  <AvatarImage
-                    src={session.user?.image || undefined}
-                    alt={session.user?.firstName || ""}
-                    className="object-cover"
-                  />
-                  <AvatarFallback className="bg-muted text-muted-foreground">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className="text-base font-medium truncate">
-                    {`${session.user.firstName} ${session.user.lastName}`}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {session.user.email}
-                  </p>
-                </div>
-              </div>
-            </Link>
-          </div>
-
-          <Separator />
-
-          <div className="py-1 px-2">
-            {menuItems.map((item) => (
-              <MenuItem key={item.label} {...item} />
-            ))}
-          </div>
-
-          <Separator />
-
-          <div className="px-2 py-1">
-            <MenuItem
-              icon={LogOut}
-              label="Log out"
-              onClick={handleSignOut}
-              loading={isPending}
+          <Avatar className="h-8 w-8 border border-white bg-white">
+            <AvatarImage
+              src={session.user?.image || undefined}
+              alt={session.user?.firstName || ""}
+              className="object-cover"
             />
+            <AvatarFallback className="bg-white/10 text-primary">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-base font-semibold">Account</span>
+          <span className="text-xs font-light -mt-1">
+            {session.user?.firstName || "Account"}
+          </span>
+        </button>
+
+        {isOpen && (
+          <div
+            className={cn(
+              "absolute right-1/2 transform translate-x-1/2 mt-2 w-64",
+              "bg-card text-card-foreground rounded-md shadow-lg",
+              "border border-border py-1 z-50 animate-fadeIn"
+            )}
+            onMouseEnter={handleOpen}
+            onMouseLeave={handleClose}
+          >
+            <div className="p-1">
+              <Link
+                href="/profile"
+                className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-accent/60 transition-colors rounded-md hover:text-accent-foreground focus:outline-none focus:bg-accent/60"
+              >
+                <div className="flex items-center">
+                  <Avatar className="h-10 w-10 border border-border mr-3 shrink-0">
+                    <AvatarImage
+                      src={session.user?.image || undefined}
+                      alt={session.user?.firstName || ""}
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="bg-muted text-muted-foreground">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="text-base font-medium truncate">
+                      {`${session.user.firstName} ${session.user.lastName}`}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {session.user.email}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            </div>
+
+            <Separator />
+
+            <div className="py-1 px-2">
+              {menuItems.map((item) => (
+                <MenuItem key={item.label} {...item} />
+              ))}
+            </div>
+
+            <Separator />
+
+            <div className="px-2 py-1">
+              <MenuItem
+                icon={LogOut}
+                label="Log out"
+                onClick={handleSignOut}
+                loading={isPending}
+              />
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 }
