@@ -99,7 +99,7 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
   }
 
   return (
-    <Card className="absolute z-20 w-full mt-1 shadow-lg overflow-hidden">
+    <Card className="absolute z-20 w-full mt-1 shadow-lg overflow-hidden rounded-md">
       <CardContent className="p-0 max-h-[600px] overflow-y-auto divide-y divide-gray-100">
         <Section title="Brands" show={brands.length > 0}>
           {brands.map((brand) => (

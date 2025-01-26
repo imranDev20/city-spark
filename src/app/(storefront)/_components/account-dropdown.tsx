@@ -112,9 +112,10 @@ export default function AccountDropdown() {
   // Loading state
   if (status === "loading") {
     return (
-      <div className="h-[48px] flex items-center gap-2 px-3 min-w-[125px]">
-        <Skeleton className="h-8 w-8 rounded-full" />
-        <Skeleton className="h-4 w-14" />
+      <div className="flex flex-col items-center gap-1 px-3 py-2">
+        <Skeleton className="h-8 w-8 rounded-full mb-1" />
+        <Skeleton className="h-4 w-[70px] mb-1" /> {/* For "Account" text */}
+        <Skeleton className="h-3 w-16" /> {/* For secondary text */}
       </div>
     );
   }
@@ -151,25 +152,28 @@ export default function AccountDropdown() {
     <div className="relative" ref={dropdownRef}>
       <button
         className={cn(
-          "flex items-center gap-2 px-3 py-2 text-white rounded-md transition-colors duration-200",
+          "flex flex-col items-center gap-1 px-3 py-2 text-white rounded-md transition-colors duration-200",
           "hover:bg-white/10",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 min-w-[125px]"
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
         )}
         onMouseEnter={handleOpen}
         onMouseLeave={handleClose}
         onClick={() => setIsOpen(!isOpen)}
       >
-        <Avatar className="h-8 w-8 border border-white/20 shrink-0">
+        <Avatar className="h-8 w-8 border border-white bg-white">
           <AvatarImage
             src={session.user?.image || undefined}
             alt={session.user?.firstName || ""}
             className="object-cover"
           />
-          <AvatarFallback className="bg-white/10 text-white">
+          <AvatarFallback className="bg-white/10 text-primary">
             {initials}
           </AvatarFallback>
         </Avatar>
-        <span>Account</span>
+        <span className="text-base font-semibold">Account</span>
+        <span className="text-xs font-light -mt-1">
+          {session.user?.firstName || "Account"}
+        </span>
       </button>
 
       {isOpen && (
@@ -182,27 +186,32 @@ export default function AccountDropdown() {
           onMouseEnter={handleOpen}
           onMouseLeave={handleClose}
         >
-          <div className="px-4 py-3">
-            <div className="flex items-center">
-              <Avatar className="h-10 w-10 border border-border mr-3 shrink-0">
-                <AvatarImage
-                  src={session.user?.image || undefined}
-                  alt={session.user?.firstName || ""}
-                  className="object-cover"
-                />
-                <AvatarFallback className="bg-muted text-muted-foreground">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <p className="text-base font-medium truncate">
-                  {`${session.user.firstName} ${session.user.lastName}`}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {session.user.email}
-                </p>
+          <div className="p-1">
+            <Link
+              href="/profile"
+              className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-accent/60 transition-colors rounded-md hover:text-accent-foreground focus:outline-none focus:bg-accent/60"
+            >
+              <div className="flex items-center">
+                <Avatar className="h-10 w-10 border border-border mr-3 shrink-0">
+                  <AvatarImage
+                    src={session.user?.image || undefined}
+                    alt={session.user?.firstName || ""}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-muted text-muted-foreground">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="text-base font-medium truncate">
+                    {`${session.user.firstName} ${session.user.lastName}`}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {session.user.email}
+                  </p>
+                </div>
               </div>
-            </div>
+            </Link>
           </div>
 
           <Separator />
