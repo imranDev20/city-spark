@@ -148,7 +148,7 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
 
       {hasProducts && (
         <Section title="Products" show={true}>
-          <div className="space-y-3">
+          <div className="space-y-5">
             {products.map((suggestion) => (
               <React.Fragment key={suggestion.id}>
                 <div
@@ -179,7 +179,7 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
                         {suggestion.product.promotionalPrice ? (
                           <div className="flex flex-col lg:items-end">
                             <div className="flex items-baseline gap-1">
-                              <span className="text-sm font-semibold text-primary">
+                              <span className="text-normal font-semibold text-primary">
                                 <NumericFormat
                                   value={suggestion.product.promotionalPrice}
                                   displayType="text"
@@ -194,7 +194,7 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
                               </span>
                             </div>
                             {suggestion.product.retailPrice && (
-                              <span className="text-xs text-gray-400 line-through">
+                              <span className="text-normal text-gray-400 line-through">
                                 <NumericFormat
                                   value={suggestion.product.retailPrice}
                                   displayType="text"
