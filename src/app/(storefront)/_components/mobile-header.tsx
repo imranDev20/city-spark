@@ -2,13 +2,14 @@
 
 import { Search } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import CitySparkLogoBlack from "./city-spark-logo-black";
 import MobileMenu from "./mobile-menu";
 import FilterDrawer from "./filter-drawer";
 import BasketDrawer from "./basket-drawer";
+import SearchOverlay from "./search-overlay";
 
 interface MobileHeaderProps {
   isCategoriesPage?: boolean;
@@ -18,6 +19,8 @@ export default function MobileHeader({
   isCategoriesPage = false,
 }: MobileHeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -28,6 +31,18 @@ export default function MobileHeader({
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (isSearchOpen) {
+      document.body.style.overflow = "hidden";
+      searchInputRef.current?.focus();
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isSearchOpen]);
 
   const excludedRoutes = [
     "/login",
@@ -66,17 +81,10 @@ export default function MobileHeader({
           </div>
         </div>
       </div>
-
+      // Replace the search input section with:
       <div className="pt-16 bg-white mt-1">
         <div className="container mx-auto px-4">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <input
-              placeholder="Search for products"
-              className="w-full pl-12 pr-12 h-12 rounded-full border bg-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-            />
-            <FilterDrawer />
-          </div>
+          <SearchOverlay />
         </div>
       </div>
     </header>

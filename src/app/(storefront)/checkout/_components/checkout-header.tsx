@@ -23,7 +23,7 @@ export default function CheckoutHeader() {
     <header className="bg-primary">
       <div className="container max-w-screen-xl mx-auto h-16 flex items-center justify-between px-4 lg:px-8">
         <Link href="/" className="flex items-center">
-          <CitySparkLogo />
+          <CitySparkLogo width={100} height={50} />
           <span className="sr-only">City Spark</span>
         </Link>
 
