@@ -9,6 +9,7 @@ import {
 } from "@/services/suggestions";
 import { NumericFormat } from "react-number-format";
 import { Separator } from "@/components/ui/separator";
+import PlaceholderImage from "@/images/placeholder-image.png";
 
 type SearchSuggestionsProps = {
   brands: BrandWithCount[];
@@ -159,10 +160,7 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
                   <div className="flex lg:items-center lg:space-x-4">
                     <div className="flex-shrink-0 w-16 h-16 relative">
                       <Image
-                        src={
-                          suggestion.product.images[0] ||
-                          "/placeholder-image.png"
-                        }
+                        src={suggestion.product.images[0] || PlaceholderImage}
                         alt={suggestion.product.name}
                         fill
                         sizes="64px"

@@ -151,7 +151,7 @@ const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
       {/* Mobile & Desktop Layout Container */}
       <div className="flex flex-col justify-between gap-2">
         <h3
-          className="font-medium text-base md:text-lg text-gray-800 line-clamp-2 mb-2 lg:mb-0"
+          className="font-medium text-base md:text-lg text-gray-800 mb-2 lg:mb-0"
           title={cartItem.inventory.product.name}
         >
           {cartItem.inventory.product.name}

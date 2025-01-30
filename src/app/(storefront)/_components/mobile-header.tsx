@@ -1,13 +1,11 @@
 "use client";
 
-import { Search } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import CitySparkLogoBlack from "./city-spark-logo-black";
 import MobileMenu from "./mobile-menu";
-import FilterDrawer from "./filter-drawer";
 import BasketDrawer from "./basket-drawer";
 import SearchOverlay from "./search-overlay";
 
@@ -19,8 +17,6 @@ export default function MobileHeader({
   isCategoriesPage = false,
 }: MobileHeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -31,18 +27,6 @@ export default function MobileHeader({
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  useEffect(() => {
-    if (isSearchOpen) {
-      document.body.style.overflow = "hidden";
-      searchInputRef.current?.focus();
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isSearchOpen]);
 
   const excludedRoutes = [
     "/login",
@@ -81,7 +65,7 @@ export default function MobileHeader({
           </div>
         </div>
       </div>
-      // Replace the search input section with:
+
       <div className="pt-10 bg-white mt-1">
         <div className="container mx-auto px-4">
           <SearchOverlay />
