@@ -1,10 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { fetchCart, type CartWithRelations } from "@/services/cart";
-import { ShoppingCart, Loader2, AlertCircle, Store, Truck } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import Image from "next/image";
 import Link from "next/link";
 import PlaceholderImage from "@/images/placeholder-image.png";
 import { BLUR_DATA_URL } from "@/lib/constants";
+import { FaShoppingCart, FaStore, FaTruck } from "react-icons/fa";
 
 type GroupedCartItems = {
   delivery: CartWithRelations["cartItems"];
@@ -34,13 +35,13 @@ const GroupHeader = ({
   type: "FOR_DELIVERY" | "FOR_COLLECTION";
   itemCount: number;
 }) => (
-  <div className="flex items-center gap-2 py-2 px-1 border-b">
+  <div className="flex items-center gap-2 py-3">
     {type === "FOR_DELIVERY" ? (
-      <Truck className="w-4 h-4 text-primary" />
+      <FaTruck className="w-5 h-5 text-secondary" />
     ) : (
-      <Store className="w-4 h-4 text-primary" />
+      <FaStore className="w-5 h-5 text-secondary" />
     )}
-    <h4 className="text-sm font-medium text-gray-900">
+    <h4 className="text-base font-medium text-gray-900">
       {type === "FOR_DELIVERY" ? "Delivery" : "Collection"}{" "}
       <span className="text-muted-foreground">({itemCount} items)</span>
     </h4>
@@ -111,8 +112,7 @@ const BasketContent = ({
   return (
     <div className="flex flex-col h-full">
       <DrawerHeader className="flex-shrink-0 border-b pb-4">
-        <DrawerTitle className="font-bold text-lg flex items-center gap-2">
-          <ShoppingCart className="w-5 h-5" />
+        <DrawerTitle className="font-bold text-lg">
           Your Basket {cartItemCount > 0 && `(${cartItemCount})`}
         </DrawerTitle>
       </DrawerHeader>
@@ -142,7 +142,7 @@ const BasketContent = ({
                     type="FOR_COLLECTION"
                     itemCount={groupedItems.collection.length}
                   />
-                  <div className="space-y-2 divide-y">
+                  <div className="divide-y divide-gray-100">
                     {groupedItems.collection.map((item) => (
                       <CartItemCard key={item.id} item={item} />
                     ))}
@@ -155,7 +155,7 @@ const BasketContent = ({
                     type="FOR_DELIVERY"
                     itemCount={groupedItems.delivery.length}
                   />
-                  <div className="space-y-2 divide-y">
+                  <div className="divide-y divide-gray-100">
                     {groupedItems.delivery.map((item) => (
                       <CartItemCard key={item.id} item={item} />
                     ))}
@@ -167,10 +167,10 @@ const BasketContent = ({
         </div>
       </ScrollArea>
 
-      <DrawerFooter className="flex-shrink-0 border-t shadow-[0_-2px_10px_rgba(0,0,0,0.1)] pb-6 px-4">
+      <DrawerFooter className="flex-shrink-0 border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] pb-6 px-4">
         <div className="space-y-4 w-full">
           <div className="space-y-1">
-            <div className="flex justify-between">
+            <div className="flex justify-between mb-1">
               <span className="font-semibold text-lg text-gray-900">
                 Subtotal (inc. VAT)
               </span>
@@ -231,7 +231,7 @@ export default function BasketDrawer() {
 
   const cartItemCount = cart?.cartItems?.length ?? 0;
 
-  const groupedItems = React.useMemo<GroupedCartItems>(() => {
+  const groupedItems = useMemo<GroupedCartItems>(() => {
     if (!cart?.cartItems) {
       return { delivery: [], collection: [] };
     }
@@ -260,11 +260,11 @@ export default function BasketDrawer() {
           size="icon"
           className="text-foreground hover:text-primary relative"
         >
-          <ShoppingCart className="!size-6" />
+          <FaShoppingCart className="h-6 w-6" />
           {cartItemCount > 0 && (
             <span
               className={cn(
-                "absolute -top-1 -right-1 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center",
+                "absolute -top-1 -right-1 bg-secondary text-white text-xs font-bold rounded-full flex items-center justify-center",
                 cartItemCount > 9 ? "w-5 h-5 text-[10px]" : "w-4 h-4"
               )}
             >

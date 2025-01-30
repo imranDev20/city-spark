@@ -1,64 +1,15 @@
 "use client";
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
-import { Prisma } from "@prisma/client";
-
-type BrandWithCount = Prisma.BrandGetPayload<{
-  select: {
-    name: true;
-    image: true;
-    countryOfOrigin: true;
-    _count: {
-      select: {
-        products: true;
-      };
-    };
-  };
-}>;
-
-type CategoryWithCount = Prisma.CategoryGetPayload<{
-  select: {
-    name: true;
-    image: true;
-    _count: {
-      select: {
-        primaryProducts: true;
-        secondaryProducts: true;
-        tertiaryProducts: true;
-        quaternaryProducts: true;
-      };
-    };
-  };
-}>;
-
-type InventoryWithProduct = Prisma.InventoryGetPayload<{
-  select: {
-    id: true;
-    product: {
-      select: {
-        name: true;
-        images: true;
-        tradePrice: true;
-        features: true;
-        model: true;
-        type: true;
-        brand: {
-          select: {
-            name: true;
-            image: true;
-            countryOfOrigin: true;
-          };
-        };
-        primaryCategory: { select: { name: true } };
-        secondaryCategory: { select: { name: true } };
-        tertiaryCategory: { select: { name: true } };
-        quaternaryCategory: { select: { name: true } };
-      };
-    };
-  };
-}>;
+import {
+  BrandWithCount,
+  CategoryWithCount,
+  InventoryWithProduct,
+} from "@/services/suggestions";
+import { NumericFormat } from "react-number-format";
+import { Separator } from "@/components/ui/separator";
+import PlaceholderImage from "@/images/placeholder-image.png";
 
 type SearchSuggestionsProps = {
   brands: BrandWithCount[];
@@ -98,135 +49,188 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
     return null;
   }
 
+  // Calculate which sections are visible
+  const hasBrands = brands.length > 0;
+  const hasCategories = categories.length > 0;
+  const hasProducts = products.length > 0;
+
   return (
-    <Card className="absolute z-20 w-full mt-1 shadow-lg overflow-hidden rounded-md">
-      <CardContent className="p-0 max-h-[600px] overflow-y-auto divide-y divide-gray-100">
-        <Section title="Brands" show={brands.length > 0}>
-          {brands.map((brand) => (
-            <div
-              key={brand.name}
-              className="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 ease-in-out cursor-pointer"
-              onClick={() => onSelectBrand(brand)}
-            >
-              <div className="flex items-center space-x-4">
-                {brand.image && (
-                  <div className="flex-shrink-0 w-12 h-12 relative">
-                    <Image
-                      src={brand.image}
-                      alt={brand.name}
-                      layout="fill"
-                      objectFit="contain"
-                      className="rounded-md"
-                    />
+    <div className="overflow-y-auto overscroll-contain lg:max-h-[60vh] max-h-[calc(100vh-127px)]">
+      {hasBrands && (
+        <>
+          <Section title="Brands" show={true}>
+            <div className="space-y-1">
+              {brands.map((brand) => (
+                <div
+                  key={brand.name}
+                  className="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 ease-in-out cursor-pointer"
+                  onClick={() => onSelectBrand(brand)}
+                >
+                  <div className="flex items-center space-x-4">
+                    {brand.image && (
+                      <div className="flex-shrink-0 w-12 h-12 relative">
+                        <Image
+                          src={brand.image}
+                          alt={brand.name}
+                          fill
+                          sizes="48px"
+                          className="rounded-md object-contain"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-grow">
+                      <h3 className="text-sm font-medium text-gray-900">
+                        {brand.name}
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        {brand._count.products} products
+                        {brand.countryOfOrigin && ` • ${brand.countryOfOrigin}`}
+                      </p>
+                    </div>
                   </div>
-                )}
-                <div className="flex-grow">
-                  <h3 className="text-sm font-medium text-gray-900">
-                    {brand.name}
-                  </h3>
-                  <p className="text-xs text-gray-500">
-                    {brand._count.products} products
-                    {brand.countryOfOrigin && ` • ${brand.countryOfOrigin}`}
-                  </p>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </Section>
+          </Section>
+          {(hasCategories || hasProducts) && (
+            <div className="px-4">
+              <Separator className="my-2" />
+            </div>
+          )}
+        </>
+      )}
 
-        <Section title="Categories" show={categories.length > 0}>
-          {categories.map((category) => (
-            <div
-              key={category.name}
-              className="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 ease-in-out cursor-pointer"
-              onClick={() => onSelectCategory(category)}
-            >
-              <div className="flex items-center space-x-4">
-                {category.image && (
-                  <div className="flex-shrink-0 w-12 h-12 relative">
-                    <Image
-                      src={category.image}
-                      alt={category.name}
-                      layout="fill"
-                      objectFit="cover"
-                      className="rounded-md"
-                    />
+      {hasCategories && (
+        <>
+          <Section title="Categories" show={true}>
+            <div className="space-y-1">
+              {categories.map((category) => (
+                <div
+                  key={category.name}
+                  className="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 ease-in-out cursor-pointer"
+                  onClick={() => onSelectCategory(category)}
+                >
+                  <div className="flex items-center space-x-4">
+                    {category.image && (
+                      <div className="flex-shrink-0 w-12 h-12 relative">
+                        <Image
+                          src={category.image}
+                          alt={category.name}
+                          fill
+                          sizes="48px"
+                          className="rounded-md object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-grow">
+                      <h3 className="text-sm font-medium text-gray-900">
+                        {category.name}
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        {category._count.primaryProducts +
+                          category._count.secondaryProducts +
+                          category._count.tertiaryProducts +
+                          category._count.quaternaryProducts}{" "}
+                        products
+                      </p>
+                    </div>
                   </div>
-                )}
-                <div className="flex-grow">
-                  <h3 className="text-sm font-medium text-gray-900">
-                    {category.name}
-                  </h3>
-                  <p className="text-xs text-gray-500">
-                    {category._count.primaryProducts +
-                      category._count.secondaryProducts +
-                      category._count.tertiaryProducts +
-                      category._count.quaternaryProducts}{" "}
-                    products
-                  </p>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </Section>
+          </Section>
+          {hasProducts && (
+            <div className="px-4">
+              <Separator className="my-2" />
+            </div>
+          )}
+        </>
+      )}
 
-        <Section title="Products" show={products.length > 0}>
-          {products.map((suggestion) => (
-            <div
-              key={suggestion.id}
-              className="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 ease-in-out cursor-pointer"
-              onClick={() => onSelectProduct(suggestion)}
-            >
-              <div className="flex items-center space-x-4">
-                <div className="flex-shrink-0 w-16 h-16 relative">
-                  <Image
-                    src={
-                      suggestion.product.images[0] || "/placeholder-image.png"
-                    }
-                    alt={suggestion.product.name}
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded-md"
-                  />
-                </div>
-                <div className="flex-grow">
-                  <h3 className="text-sm font-medium text-gray-900 line-clamp-1">
-                    {suggestion.product.name}
-                  </h3>
-                  {suggestion.product.brand && (
-                    <p className="text-xs font-medium text-gray-700 mt-0.5">
-                      {suggestion.product.brand.name}
-                    </p>
-                  )}
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {[
-                      suggestion.product.primaryCategory?.name,
-                      suggestion.product.secondaryCategory?.name,
-                      suggestion.product.tertiaryCategory?.name,
-                      suggestion.product.quaternaryCategory?.name,
-                    ]
-                      .filter(Boolean)
-                      .join(" > ")}
-                  </p>
-                  {suggestion.product.features.length > 0 && (
-                    <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">
-                      {suggestion.product.features.join(", ")}
-                    </p>
-                  )}
-                </div>
-                {suggestion.product.tradePrice && (
-                  <div className="flex-shrink-0 text-right">
-                    <span className="text-sm font-semibold text-primary">
-                      £{suggestion.product.tradePrice.toFixed(2)}
-                    </span>
+      {hasProducts && (
+        <Section title="Products" show={true}>
+          <div className="space-y-5">
+            {products.map((suggestion) => (
+              <React.Fragment key={suggestion.id}>
+                <div
+                  key={suggestion.id}
+                  className="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 ease-in-out cursor-pointer"
+                  onClick={() => onSelectProduct(suggestion)}
+                >
+                  <div className="flex lg:items-center lg:space-x-4">
+                    <div className="flex-shrink-0 w-16 h-16 relative">
+                      <Image
+                        src={suggestion.product.images[0] || PlaceholderImage}
+                        alt={suggestion.product.name}
+                        fill
+                        sizes="64px"
+                        className="rounded-md object-cover"
+                      />
+                    </div>
+                    <div className="flex flex-col lg:flex-row lg:items-center flex-1 min-w-0 ml-4 lg:ml-0">
+                      <div className="flex-grow min-w-0">
+                        <h3 className="text-sm font-medium text-gray-900 break-words">
+                          {suggestion.product.name}
+                        </h3>
+                      </div>
+                      <div className="mt-3 lg:mt-0 lg:flex-shrink-0 lg:text-right">
+                        {suggestion.product.promotionalPrice ? (
+                          <div className="flex flex-col lg:items-end">
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-normal font-semibold text-primary">
+                                <NumericFormat
+                                  value={suggestion.product.promotionalPrice}
+                                  displayType="text"
+                                  prefix="£"
+                                  decimalScale={2}
+                                  fixedDecimalScale
+                                  thousandSeparator
+                                />
+                              </span>
+                              <span className="text-[10px] text-gray-500 leading-none font-semibold">
+                                inc. VAT
+                              </span>
+                            </div>
+                            {suggestion.product.retailPrice && (
+                              <span className="text-normal text-gray-400 line-through">
+                                <NumericFormat
+                                  value={suggestion.product.retailPrice}
+                                  displayType="text"
+                                  prefix="£"
+                                  decimalScale={2}
+                                  fixedDecimalScale
+                                  thousandSeparator
+                                />
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-sm font-semibold text-primary">
+                              <NumericFormat
+                                value={suggestion.product.retailPrice || 0}
+                                displayType="text"
+                                prefix="£"
+                                decimalScale={2}
+                                fixedDecimalScale
+                                thousandSeparator
+                              />
+                            </span>
+                            <span className="text-[10px] text-gray-500 leading-none font-semibold">
+                              inc. VAT
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                )}
-              </div>
-            </div>
-          ))}
+                </div>
+              </React.Fragment>
+            ))}
+          </div>
         </Section>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };
 

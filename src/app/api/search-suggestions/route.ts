@@ -36,10 +36,17 @@ export async function GET(request: NextRequest) {
     const brands = await prisma.brand.findMany({
       where: {
         OR: [
+          // Prioritize name matches first
+          { name: { equals: validTerm, mode: "insensitive" } },
+          { name: { startsWith: validTerm, mode: "insensitive" } },
           { name: { contains: validTerm, mode: "insensitive" } },
+          // Then other fields
           { description: { contains: validTerm, mode: "insensitive" } },
           { countryOfOrigin: { contains: validTerm, mode: "insensitive" } },
         ],
+      },
+      orderBy: {
+        name: "asc",
       },
       select: {
         name: true,
@@ -57,7 +64,14 @@ export async function GET(request: NextRequest) {
     // Search categories
     const categories = await prisma.category.findMany({
       where: {
-        name: { contains: validTerm, mode: "insensitive" },
+        OR: [
+          { name: { equals: validTerm, mode: "insensitive" } },
+          { name: { startsWith: validTerm, mode: "insensitive" } },
+          { name: { contains: validTerm, mode: "insensitive" } },
+        ],
+      },
+      orderBy: {
+        name: "asc",
       },
       select: {
         name: true,
@@ -74,59 +88,79 @@ export async function GET(request: NextRequest) {
       take: 3,
     });
 
-    // Search products
-    let where: Prisma.InventoryWhereInput = {
-      product: {
+    // Search products with prioritized name matches
+    const products = await prisma.inventory.findMany({
+      where: {
         OR: [
-          { name: { contains: validTerm, mode: "insensitive" } },
-          { description: { contains: validTerm, mode: "insensitive" } },
-          { features: { has: validTerm } },
-          { model: { contains: validTerm, mode: "insensitive" } },
-          { type: { contains: validTerm, mode: "insensitive" } },
+          // Exact product name match
           {
-            brand: {
+            product: {
+              name: { equals: validTerm, mode: "insensitive" },
+            },
+          },
+          // Starts with search term
+          {
+            product: {
+              name: { startsWith: validTerm, mode: "insensitive" },
+            },
+          },
+          // Contains search term
+          {
+            product: {
+              name: { contains: validTerm, mode: "insensitive" },
+            },
+          },
+          // Then search in other fields
+          {
+            product: {
               OR: [
-                { name: { contains: validTerm, mode: "insensitive" } },
+                { model: { contains: validTerm, mode: "insensitive" } },
+                { type: { contains: validTerm, mode: "insensitive" } },
                 { description: { contains: validTerm, mode: "insensitive" } },
+                { features: { has: validTerm } },
                 {
-                  countryOfOrigin: { contains: validTerm, mode: "insensitive" },
+                  brand: {
+                    name: { contains: validTerm, mode: "insensitive" },
+                  },
+                },
+                {
+                  primaryCategory: {
+                    name: { contains: validTerm, mode: "insensitive" },
+                  },
+                },
+                {
+                  secondaryCategory: {
+                    name: { contains: validTerm, mode: "insensitive" },
+                  },
+                },
+                {
+                  tertiaryCategory: {
+                    name: { contains: validTerm, mode: "insensitive" },
+                  },
+                },
+                {
+                  quaternaryCategory: {
+                    name: { contains: validTerm, mode: "insensitive" },
+                  },
                 },
               ],
             },
           },
-          {
-            primaryCategory: {
-              name: { contains: validTerm, mode: "insensitive" },
-            },
-          },
-          {
-            secondaryCategory: {
-              name: { contains: validTerm, mode: "insensitive" },
-            },
-          },
-          {
-            tertiaryCategory: {
-              name: { contains: validTerm, mode: "insensitive" },
-            },
-          },
-          {
-            quaternaryCategory: {
-              name: { contains: validTerm, mode: "insensitive" },
-            },
-          },
         ],
       },
-    };
-
-    const products = await prisma.inventory.findMany({
-      where,
+      orderBy: {
+        product: {
+          name: "asc",
+        },
+      },
       select: {
         id: true,
         product: {
           select: {
             name: true,
             images: true,
-            tradePrice: true,
+            promotionalPrice: true,
+            retailPrice: true,
             features: true,
             model: true,
             type: true,

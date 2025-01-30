@@ -1,78 +1,21 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Search, Loader2, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import SearchSuggestions from "./search-suggestions";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { Prisma } from "@prisma/client";
 import { useForm, Controller } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
-
-type BrandWithCount = Prisma.BrandGetPayload<{
-  select: {
-    name: true;
-    image: true;
-    countryOfOrigin: true;
-    _count: {
-      select: {
-        products: true;
-      };
-    };
-  };
-}>;
-
-type CategoryWithCount = Prisma.CategoryGetPayload<{
-  select: {
-    name: true;
-    image: true;
-    _count: {
-      select: {
-        primaryProducts: true;
-        secondaryProducts: true;
-        tertiaryProducts: true;
-        quaternaryProducts: true;
-      };
-    };
-  };
-}>;
-
-type InventoryWithProduct = Prisma.InventoryGetPayload<{
-  select: {
-    id: true;
-    product: {
-      select: {
-        name: true;
-        images: true;
-        tradePrice: true;
-        features: true;
-        model: true;
-        type: true;
-        brand: {
-          select: {
-            name: true;
-            image: true;
-            countryOfOrigin: true;
-          };
-        };
-        primaryCategory: { select: { name: true } };
-        secondaryCategory: { select: { name: true } };
-        tertiaryCategory: { select: { name: true } };
-        quaternaryCategory: { select: { name: true } };
-      };
-    };
-  };
-}>;
-
-type SearchResults = {
-  brands: BrandWithCount[];
-  categories: CategoryWithCount[];
-  products: InventoryWithProduct[];
-};
+import {
+  BrandWithCount,
+  CategoryWithCount,
+  fetchSuggestions,
+  InventoryWithProduct,
+} from "@/services/suggestions";
 
 type FormData = {
   searchTerm: string;
@@ -88,13 +31,6 @@ const messages = [
   "electrical & lighting items",
   "clearance",
 ];
-
-const fetchSuggestions = async (term: string): Promise<SearchResults> => {
-  const { data } = await axios.get(
-    `/api/search-suggestions?term=${encodeURIComponent(term)}`
-  );
-  return data;
-};
 
 type RecentSearch = {
   term: string;
@@ -380,14 +316,18 @@ export default function SearchInput() {
             )}
 
             {showSuggestions && searchResults && (
-              <SearchSuggestions
-                brands={searchResults.brands}
-                categories={searchResults.categories}
-                products={searchResults.products}
-                onSelectBrand={handleBrandSelect}
-                onSelectCategory={handleCategorySelect}
-                onSelectProduct={handleProductSelect}
-              />
+              <Card className="absolute z-20 w-full mt-1 shadow-lg overflow-hidden rounded-md">
+                <CardContent className="p-0 max-h-[600px] overflow-y-auto divide-y divide-gray-100">
+                  <SearchSuggestions
+                    brands={searchResults.brands}
+                    categories={searchResults.categories}
+                    products={searchResults.products}
+                    onSelectBrand={handleBrandSelect}
+                    onSelectCategory={handleCategorySelect}
+                    onSelectProduct={handleProductSelect}
+                  />
+                </CardContent>
+              </Card>
             )}
           </div>
         )}

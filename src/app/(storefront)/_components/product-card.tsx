@@ -14,6 +14,7 @@ import { customSlugify } from "@/lib/functions";
 import { useQueryClient } from "@tanstack/react-query";
 import { BLUR_DATA_URL } from "@/lib/constants";
 import QuantitySelector from "../quantity-selector";
+import { FaStore, FaTruck } from "react-icons/fa";
 
 // Types remain the same...
 type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
@@ -193,7 +194,7 @@ export default function ProductCard({
                 onClick={(e) => handleAddToCart(e, "FOR_COLLECTION")}
                 disabled={isPending || !inventoryItem.collectionEligibility}
               >
-                <Store className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4 hidden sm:inline-block" />
+                <FaStore className="mr-1" />
                 Collect
               </Button>
               <Button
@@ -202,7 +203,7 @@ export default function ProductCard({
                 onClick={(e) => handleAddToCart(e, "FOR_DELIVERY")}
                 disabled={isPending || !inventoryItem.deliveryEligibility}
               >
-                <Truck className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4 hidden sm:inline-block" />
+                <FaTruck className="mr-1" />
                 Deliver
               </Button>
             </div>
