@@ -196,7 +196,7 @@ export default function ProductCard({
               <Button
                 variant="secondary"
                 size="lg"
-                className="w-full text-sm h-12 sm:h-10"
+                className="w-full text-sm h-10"
                 onClick={(e) => handleAddToCart(e, "FOR_COLLECTION")}
                 disabled={isPending || !inventoryItem.collectionEligibility}
               >
@@ -205,7 +205,7 @@ export default function ProductCard({
               </Button>
               <Button
                 size="lg"
-                className="w-full text-sm h-12 sm:h-10"
+                className="w-full text-sm h-10"
                 onClick={(e) => handleAddToCart(e, "FOR_DELIVERY")}
                 disabled={isPending || !inventoryItem.deliveryEligibility}
               >

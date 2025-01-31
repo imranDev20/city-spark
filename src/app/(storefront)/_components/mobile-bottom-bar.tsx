@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Home, Store, ShoppingCart, Search, MapPin } from "lucide-react";
+import { Home, Store, ShoppingCart, MapPin, User } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import DeliveryDrawer from "./delivery-drawer";
@@ -26,7 +26,7 @@ const MobileBottomBar = ({
       icon: MapPin,
     },
     { name: "Basket", href: "/basket", icon: ShoppingCart },
-    { name: "Search", href: "/products?search=''", icon: Search },
+    { name: "Account", href: "/profile", icon: User },
   ];
 
   const isActive = (path?: string) => {

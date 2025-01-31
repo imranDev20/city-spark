@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import { Search, X, ExternalLink, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -16,20 +16,29 @@ import {
   InventoryWithProduct,
 } from "@/services/suggestions";
 import { useForm, Controller } from "react-hook-form";
+import { useSearchStore } from "@/hooks/use-search-store";
 
 type FormData = {
   searchTerm: string;
 };
 
-type RecentSearch = {
-  term: string;
-  timestamp: number;
-};
+interface SearchOverlayProps {
+  showInitialSearch?: boolean;
+}
 
-export default function SearchOverlay() {
-  const [isOpen, setIsOpen] = useState(false);
+export default function SearchOverlay({
+  showInitialSearch = true,
+}: SearchOverlayProps) {
+  const {
+    isOpen,
+    recentSearches,
+    setIsOpen,
+    addRecentSearch,
+    clearHistory,
+    loadRecentSearches,
+  } = useSearchStore();
+
   const inputRef = useRef<HTMLInputElement>(null);
-  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
   const router = useRouter();
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
@@ -58,17 +67,14 @@ export default function SearchOverlay() {
     if (isOpen) {
       document.body.style.overflow = "hidden";
       inputRef.current?.focus();
-      const searches = localStorage.getItem("recentSearches");
-      if (searches) {
-        setRecentSearches(JSON.parse(searches));
-      }
+      loadRecentSearches();
     } else {
       document.body.style.overflow = "unset";
     }
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [isOpen]);
+  }, [isOpen, loadRecentSearches]);
 
   const handleBrandSelect = (brand: BrandWithCount) => {
     setIsOpen(false);
@@ -88,17 +94,6 @@ export default function SearchOverlay() {
     router.push(`/products/p/${product.product.name}/p/${product.id}`);
   };
 
-  const addRecentSearch = (term: string) => {
-    const newSearch = { term, timestamp: Date.now() };
-    const updatedSearches = [
-      newSearch,
-      ...recentSearches.filter((s) => s.term !== term),
-    ].slice(0, 5);
-
-    setRecentSearches(updatedSearches);
-    localStorage.setItem("recentSearches", JSON.stringify(updatedSearches));
-  };
-
   const onSubmit = (data: FormData) => {
     if (data.searchTerm.trim()) {
       addRecentSearch(data.searchTerm.trim());
@@ -114,26 +109,27 @@ export default function SearchOverlay() {
     resetField("searchTerm");
   };
 
-  const clearHistory = () => {
-    localStorage.removeItem("recentSearches");
-    setRecentSearches([]);
-  };
-
   return (
     <>
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-        <input
-          placeholder="Search for products"
-          className="w-full pl-12 pr-12 h-12 rounded-full border bg-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-          onFocus={() => setIsOpen(true)}
-        />
-        <FilterDrawer />
-      </div>
+      {/* Search Input Trigger */}
+      {showInitialSearch && (
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <input
+            placeholder="Search for products"
+            className="w-full pl-12 pr-12 h-12 rounded-full border bg-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            onFocus={() => setIsOpen(true)}
+            readOnly
+          />
+          <FilterDrawer />
+        </div>
+      )}
 
+      {/* Search Overlay */}
       {isOpen && (
         <div className="fixed inset-0 bg-white z-50">
           <div className="container mx-auto px-4">
+            {/* Header */}
             <div className="h-16 flex items-center gap-3">
               <Button
                 onClick={handleClose}
@@ -142,7 +138,7 @@ export default function SearchOverlay() {
                 className="h-10 w-10 rounded-full hover:bg-gray-100"
                 aria-label="Go back"
               >
-                <ArrowLeft className="!size-6" />
+                <ArrowLeft className="h-6 w-6" />
               </Button>
 
               <form
@@ -160,6 +156,7 @@ export default function SearchOverlay() {
                         ref={inputRef}
                         placeholder="Search for products"
                         className="w-full pl-12 pr-12 h-12 rounded-full border bg-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        autoComplete="off"
                       />
                       {searchTerm && (
                         <button
@@ -176,8 +173,10 @@ export default function SearchOverlay() {
               </form>
             </div>
 
+            {/* Search Content */}
             <div className="mt-2" ref={searchContainerRef}>
               {searchTerm ? (
+                // Search Results
                 searchResults && (
                   <SearchSuggestions
                     brands={searchResults.brands}
@@ -189,6 +188,7 @@ export default function SearchOverlay() {
                   />
                 )
               ) : recentSearches.length > 0 ? (
+                // Recent Searches
                 <div className="py-2">
                   <div className="px-4 flex items-center justify-between mb-2">
                     <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -224,7 +224,8 @@ export default function SearchOverlay() {
                   ))}
                 </div>
               ) : (
-                <div className="text-muted-foreground text-sm">
+                // Empty State
+                <div className="text-center py-8 text-muted-foreground text-sm">
                   Start typing to search...
                 </div>
               )}
