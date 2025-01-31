@@ -138,7 +138,7 @@ export default function AccountDropdown() {
   }
 
   const menuItems = [
-    { icon: UserCircle, label: "Profile", href: "/profile" },
+    { icon: UserCircle, label: "Profile", href: "/account" },
     { icon: Heart, label: "Wishlist", href: "/wishlist" },
     { icon: Package, label: "Orders", href: "/orders" },
     { icon: MapPin, label: "Notifications", href: "/notifications" },
@@ -189,7 +189,7 @@ export default function AccountDropdown() {
           >
             <div className="p-1">
               <Link
-                href="/profile"
+                href="/account"
                 className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-accent/60 transition-colors rounded-md hover:text-accent-foreground focus:outline-none focus:bg-accent/60"
               >
                 <div className="flex items-center">

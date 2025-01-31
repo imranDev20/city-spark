@@ -1,7 +1,9 @@
 "use client";
 
 import BasketDrawer from "@/app/(storefront)/_components/basket-drawer";
+import SearchOverlay from "@/app/(storefront)/_components/search-overlay";
 import { Button } from "@/components/ui/button";
+import { useSearchStore } from "@/hooks/use-search-store";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -16,6 +18,7 @@ export default function MobileProductHeader({
 }: MobileNavigationHeaderProps) {
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
+  const { setIsOpen } = useSearchStore(); // Get the setIsOpen function from our store
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,6 +56,8 @@ export default function MobileProductHeader({
                   <input
                     placeholder="Search for products..."
                     className="w-full pl-10 pr-4 h-11 rounded-full border bg-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-base"
+                    onFocus={() => setIsOpen(true)}
+                    readOnly // Make input readonly since we're using the overlay
                   />
                 </div>
               ) : (
@@ -76,6 +81,9 @@ export default function MobileProductHeader({
         <div className="h-16" />
         <div className="h-4 bg-gradient-to-b from-black/5 to-transparent" />
       </header>
+
+      {/* Include the SearchOverlay component */}
+      <SearchOverlay showInitialSearch={false} />
     </>
   );
 }
