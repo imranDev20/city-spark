@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { fetchCart, type CartWithRelations } from "@/services/cart";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, ShoppingCart } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -260,7 +260,7 @@ export default function BasketDrawer() {
           size="icon"
           className="text-foreground hover:text-primary relative"
         >
-          <FaShoppingCart className="h-6 w-6" />
+          <ShoppingCart className="!size-6" />
           {cartItemCount > 0 && (
             <span
               className={cn(
@@ -274,7 +274,6 @@ export default function BasketDrawer() {
         </Button>
       </DrawerTrigger>
       <DrawerContent className="h-[80vh] md:h-[95vh] mt-24 md:mt-28 pb-6">
-        <div className="mx-auto w-20 h-1.5 flex-shrink-0 rounded-full bg-muted mb-2" />
         <BasketContent
           isLoading={isLoading}
           error={error}
