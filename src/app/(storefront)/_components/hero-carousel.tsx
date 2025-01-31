@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import VaillantEcoFitPlus832Combi from "@/images/advertisements/vaillant-ecofit-plus-832-combi.jpg";
 import IdealAtlantic30CombiFlue from "@/images/advertisements/ideal-atlantic-30-combi-flue.jpg";
+import FebruarySale from "@/images/hero/hero-banner-new.jpeg";
 
 const CarouselContent = ({
   content,
@@ -26,7 +27,9 @@ const CarouselContent = ({
   // Initialize carousel without autoplay
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true },
-    autoplayEnabled ? [Autoplay({ delay: 5000, stopOnInteraction: false })] : []
+    autoplayEnabled
+      ? [Autoplay({ delay: 15000, stopOnInteraction: false })]
+      : []
   );
 
   useEffect(() => {
@@ -37,7 +40,7 @@ const CarouselContent = ({
         window.requestIdleCallback || ((cb) => setTimeout(cb, 1));
 
       const enableAutoplayWithDelay = () => {
-        // Set a 10 second timeout before enabling autoplay
+        // Set a 5 second timeout before enabling autoplay
         setTimeout(() => {
           setAutoplayEnabled(true);
         }, 5000);
@@ -85,38 +88,23 @@ const CarouselContent = ({
   );
 
   return (
-    <div className={cn("relative group", className)}>
+    <div className={cn("relative group mt-5 lg:mt-0", className)}>
       <div ref={emblaRef} className="overflow-hidden">
         <div className="flex">
           {content.map((item, index) => (
-            <div
-              key={index}
-              className={cn(
-                "flex-[0_0_100%] min-w-0 relative",
-                isDesktop && "flex justify-center items-center px-4"
-              )}
-            >
-              <div
-                className={cn(
-                  "relative h-[200px] lg:h-[400px]",
-                  isDesktop && "max-w-screen-xl w-full"
-                )}
-              >
+            <div key={index} className="flex-[0_0_100%] min-w-0 relative">
+              <div className="relative h-[150px] md:h-[200px] lg:h-[350px] w-full">
                 <Image
                   src={item.image}
                   alt={`Banner ${index + 1}`}
-                  className={cn("w-full h-auto")}
+                  className="w-full"
                   fill
                   priority={index === 0}
                   quality={75}
                   loading={index === 0 ? "eager" : "lazy"}
-                  sizes={
-                    isDesktop
-                      ? "(min-width: 1280px) 1280px, 100vw"
-                      : "(max-width: 640px) 92vw, (max-width: 768px) 95vw, (max-width: 1024px) 96vw, 1280px"
-                  }
+                  sizes="100vw"
                   style={{
-                    objectFit: "contain",
+                    objectFit: "cover",
                   }}
                   placeholder="blur"
                 />
@@ -164,19 +152,20 @@ const CarouselContent = ({
 
 export default function HeroCarousel() {
   const content = [
+    { image: FebruarySale },
     { image: VaillantEcoFitPlus832Combi },
     { image: IdealAtlantic30CombiFlue },
   ];
 
   return (
-    <section className="bg-primary w-full">
+    <section className="w-full">
       <CarouselContent
         content={content}
-        className="hidden lg:block py-4"
+        className="hidden lg:block"
         showNavButtons={true}
         isDesktop={true}
       />
-      <CarouselContent content={content} className="lg:hidden mt-5" />
+      <CarouselContent content={content} className="lg:hidden" />
     </section>
   );
 }

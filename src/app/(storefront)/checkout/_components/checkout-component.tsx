@@ -12,6 +12,7 @@ import PaymentStep from "./payment-step";
 import { CheckoutStep } from "../page";
 import OrderSummaryCard from "../../basket/_components/order-summary-card";
 import MobileStepper from "./mobile-stepper";
+import CheckoutBottomBar from "./checkout-bottom-bar";
 
 export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
   const router = useRouter();
@@ -136,7 +137,7 @@ export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
       <main className="container max-w-screen-xl mx-auto px-4 py-8 lg:py-12">
         <div className="grid lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
           <div className="lg:col-span-8 space-y-6">
-            <Card className="shadow-none bg-offWhite border-gray-300">
+            <Card className="shadow-none bg-white">
               {currentStep === "contact" && (
                 <ContactDetailsForm onNext={() => goToStep("fulfillment")} />
               )}
@@ -166,6 +167,8 @@ export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
           </div>
         </div>
       </main>
+
+      <CheckoutBottomBar cart={cart} />
     </div>
   );
 }

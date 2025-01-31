@@ -195,11 +195,11 @@ const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
       {/* Price - Desktop Only */}
       <div className="hidden md:block text-right">
         <div className="text-xl font-semibold text-gray-800">
-          £{totalPrice.toFixed(2)}{" "}
-          <span className="text-xs text-gray-500">inc. VAT</span>
+          <PriceDisplay amount={totalPrice} />
+          <span className="text-xs text-gray-500 ml-1">inc. VAT</span>
         </div>
         <div className="text-sm text-gray-500">
-          {quantity} × £{unitPrice.toFixed(2)}
+          {quantity} × <PriceDisplay amount={unitPrice} />
         </div>
       </div>
 

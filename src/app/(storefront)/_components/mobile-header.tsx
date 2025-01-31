@@ -66,7 +66,7 @@ export default function MobileHeader({
         </div>
       </div>
 
-      <div className="pt-10 bg-white mt-1">
+      <div className="pt-16 bg-white mt-1">
         <div className="container mx-auto px-4">
           <SearchOverlay />
         </div>
