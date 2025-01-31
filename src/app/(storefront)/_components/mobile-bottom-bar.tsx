@@ -26,7 +26,7 @@ const MobileBottomBar = ({
       icon: MapPin,
     },
     { name: "Basket", href: "/basket", icon: ShoppingCart },
-    { name: "Account", href: "/profile", icon: User },
+    { name: "Account", href: "/account", icon: User },
   ];
 
   const isActive = (path?: string) => {

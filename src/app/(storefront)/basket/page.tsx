@@ -28,11 +28,6 @@ export default async function StorefrontBasketPage() {
       <>
         <BasketHeader />
 
-        {/* Mobile Title */}
-        <div className="lg:hidden container mx-auto px-4 sm:px-6 mt-5">
-          <h1 className="text-2xl font-semibold">My Basket</h1>
-        </div>
-
         {/* Main Container */}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-12 max-w-screen-xl">
           {/* Desktop Title */}

@@ -138,7 +138,7 @@ export default function SearchOverlay({
                 className="h-10 w-10 rounded-full hover:bg-gray-100"
                 aria-label="Go back"
               >
-                <ArrowLeft className="h-6 w-6" />
+                <ArrowLeft className="!size-6" />
               </Button>
 
               <form

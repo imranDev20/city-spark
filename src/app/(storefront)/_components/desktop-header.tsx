@@ -8,6 +8,7 @@ import CitySparkLogo from "./city-spark-logo";
 import BasketPopup from "./basket-popup";
 import { cn } from "@/lib/utils";
 import { FaTruck } from "react-icons/fa";
+import DeliveryDialog from "./delivery-dialog";
 
 export default function DesktopHeader() {
   return (
@@ -26,17 +27,9 @@ export default function DesktopHeader() {
         <div className="flex items-center space-x-5 text-white">
           <AccountDropdown />
           <Separator orientation="vertical" className="h-12 w-px bg-white" />
-          <button
-            className={cn(
-              "flex flex-col items-center gap-1 px-3 py-2 text-white rounded-md transition-colors duration-200",
-              "hover:bg-white/10",
-              "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
-            )}
-          >
-            <FaTruck className="h-8 w-8" />
-            <span className="text-base font-semibold">Delivery</span>
-            <span className="text-xs font-light -mt-1">IG11 7YA</span>
-          </button>
+
+          <DeliveryDialog />
+
           <Separator orientation="vertical" className="h-12 w-px bg-white" />
           <BasketPopup />
         </div>
