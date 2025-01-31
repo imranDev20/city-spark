@@ -36,7 +36,7 @@ const MobileBottomBar = ({
   };
 
   const shouldHideBottomBar = () => {
-    const excludedPaths = ["/login", "/register"];
+    const excludedPaths = ["/login", "/register", "/checkout"];
     const productPaths = ["/products", "/products/c/", "/products/p/"];
 
     if (excludedPaths.some((path) => pathname === path)) return true;

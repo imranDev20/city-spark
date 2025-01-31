@@ -16,7 +16,6 @@ import { BLUR_DATA_URL } from "@/lib/constants";
 import QuantitySelector from "../quantity-selector";
 import { FaStore, FaTruck } from "react-icons/fa";
 
-// Types remain the same...
 type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
   include: {
     product: {
@@ -78,7 +77,8 @@ export default function ProductCard({
     <Card className="shadow-none group h-full flex flex-col bg-white border-gray-300 rounded-xl overflow-hidden lg:hover:shadow-lg transition-all duration-300 relative">
       <Link href={productUrl} className="contents">
         <div className="relative bg-white">
-          <div className="sm:hidden relative h-48 p-4">
+          {/* Mobile image */}
+          <div className="sm:hidden relative h-52 p-6">
             <Image
               src={product.images[0] || PlaceholderImage}
               alt="Product Image"
@@ -91,6 +91,7 @@ export default function ProductCard({
             />
           </div>
 
+          {/* Desktop image */}
           <div className="hidden sm:block relative h-56 lg:h-64 p-6">
             <Image
               src={product.images[0] || PlaceholderImage}
@@ -105,14 +106,15 @@ export default function ProductCard({
           </div>
         </div>
 
+        {/* Sale badge */}
         {product.promotionalPrice &&
         product.retailPrice &&
         product.promotionalPrice < product.retailPrice ? (
-          <div className="absolute top-2 sm:top-4 right-2 sm:right-4 z-10">
-            <div className="bg-red-600 text-white px-3 py-1 rounded-t-md font-bold text-base">
+          <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-10">
+            <div className="bg-red-600 text-white px-4 py-1.5 rounded-t-md font-bold text-sm">
               SALE
             </div>
-            <div className="bg-black text-white px-2 py-0.5 rounded-b-md text-xs font-medium">
+            <div className="bg-black text-white px-3 py-1 rounded-b-md text-xs font-medium">
               {Math.round(
                 ((product.retailPrice - product.promotionalPrice) /
                   product.retailPrice) *
@@ -123,62 +125,66 @@ export default function ProductCard({
           </div>
         ) : null}
 
-        <div className="flex flex-col p-2 sm:p-4">
-          <div className="mb-3">
+        <div className="flex flex-col p-4 sm:p-4">
+          <div className="mb-4">
+            {/* Rating stars */}
             <div className="flex items-center">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
-                  className={`w-3 sm:w-4 h-3 sm:h-4 ${
+                  className={`w-4 sm:w-4 h-4 sm:h-4 ${
                     rating >= star
                       ? "text-secondary fill-secondary"
                       : "text-gray-200"
                   }`}
                 />
               ))}
-              <span className="ml-1 sm:ml-2 text-xs sm:text-sm font-medium">
+              <span className="ml-2 text-sm font-medium">
                 {rating.toFixed(1)}/5
               </span>
             </div>
 
-            <h3 className="font-normal text-gray-900 text-sm sm:text-base line-clamp-3 min-h-[2.5rem] mt-3 !leading-[1.3rem]">
+            {/* Product name */}
+            <h3 className="font-normal text-gray-900 text-base sm:text-base line-clamp-3 min-h-[3rem] mt-3 leading-[1.4]">
               {product.name}
             </h3>
           </div>
         </div>
       </Link>
 
-      <div className="px-2 sm:px-4 pb-2 sm:pb-4 mt-auto">
-        <div className="flex items-baseline gap-2 mb-5">
+      <div className="px-4 sm:px-4 pb-4 sm:pb-4 mt-auto">
+        {/* Price section */}
+        <div className="flex items-baseline gap-2 mb-6">
           {product.promotionalPrice ? (
             <>
-              <span className="sm:text-2xl font-bold text-gray-900">
+              <span className="text-2xl sm:text-2xl font-bold text-gray-900">
                 £{product.promotionalPrice.toFixed(2)}
               </span>
-              <div className="text-[10px] text-gray-500 leading-none font-semibold">
+              <div className="text-xs text-gray-500 leading-none font-semibold">
                 inc. VAT
               </div>
               {product.retailPrice &&
                 product.retailPrice > product.promotionalPrice && (
-                  <span className="text-xs sm:text-sm text-red-500 line-through">
+                  <span className="text-sm text-red-500 line-through">
                     £{product.retailPrice.toFixed(2)}
                   </span>
                 )}
             </>
           ) : (
             <>
-              <span className="sm:text-2xl font-bold text-gray-900">
+              <span className="text-2xl sm:text-2xl font-bold text-gray-900">
                 £{(product.retailPrice || 0)?.toFixed(2)}
               </span>
-              <div className="text-[10px] text-gray-500 leading-none font-semibold">
+              <div className="text-xs text-gray-500 leading-none font-semibold">
                 inc. VAT
               </div>
             </>
           )}
         </div>
 
-        <div className="space-y-2 sm:space-y-4">
-          <div className="space-y-2">
+        <div className="space-y-3 sm:space-y-4">
+          {/* Quantity selector and buttons */}
+          <div className="space-y-3">
             <QuantitySelector
               quantity={quantity}
               onQuantityChange={(newQuantity) => {
@@ -186,24 +192,24 @@ export default function ProductCard({
               }}
               disabled={isPending}
             />
-            <div className="grid grid-cols-2 gap-1 sm:gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:gap-2">
               <Button
                 variant="secondary"
-                size="sm"
-                className="w-full px-2 h-7 sm:h-10 text-xs sm:text-sm"
+                size="lg"
+                className="w-full text-sm h-12 sm:h-10"
                 onClick={(e) => handleAddToCart(e, "FOR_COLLECTION")}
                 disabled={isPending || !inventoryItem.collectionEligibility}
               >
-                <FaStore className="mr-1" />
+                <FaStore className="mr-2 text-lg" />
                 Collect
               </Button>
               <Button
-                size="sm"
-                className="w-full px-2 h-7 sm:h-10 text-xs sm:text-sm"
+                size="lg"
+                className="w-full text-sm h-12 sm:h-10"
                 onClick={(e) => handleAddToCart(e, "FOR_DELIVERY")}
                 disabled={isPending || !inventoryItem.deliveryEligibility}
               >
-                <FaTruck className="mr-1" />
+                <FaTruck className="mr-2 text-lg" />
                 Deliver
               </Button>
             </div>

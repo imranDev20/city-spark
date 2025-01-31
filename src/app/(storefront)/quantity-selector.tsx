@@ -35,7 +35,7 @@ const QuantitySelector = ({
         <button
           onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
           disabled={disabled || quantity <= 1}
-          className="w-10 md:w-12 h-8 md:h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-12 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Decrease quantity"
         >
           <span className="text-lg font-medium text-gray-600">−</span>
@@ -47,7 +47,7 @@ const QuantitySelector = ({
             value={inputValue}
             onChange={handleInputChange}
             onBlur={handleBlur}
-            className="w-full h-full text-center bg-transparent border-none focus:outline-none text-sm md:text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className="w-full h-10 text-center bg-transparent border-none focus:outline-none text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             disabled={disabled}
             aria-label="Quantity"
           />
@@ -56,7 +56,7 @@ const QuantitySelector = ({
         <button
           onClick={() => onQuantityChange(quantity + 1)}
           disabled={disabled}
-          className="w-10 md:w-12 h-8 md:h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-12 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Increase quantity"
         >
           <span className="text-lg font-medium text-gray-600">+</span>
