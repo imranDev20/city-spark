@@ -246,8 +246,8 @@ export default function CategoryNav({
             <li
               key={item.id}
               className={cn(
-                "flex-1 relative group border-r last:border-r-0 border-gray-100 uppercase font-semibold",
-                hoveredCategory === item.id && "bg-primary/5"
+                "flex-1 relative group border-r last:border-r-0 border-gray-100",
+                hoveredCategory === item.id && "bg-gray-50"
               )}
               onMouseEnter={() => handleMouseEnter(item.id)}
               onMouseLeave={handleMouseLeave}
@@ -261,38 +261,37 @@ export default function CategoryNav({
                 href={item.route}
                 onClick={() => setHoveredCategory(null)}
                 className={cn(
-                  "flex flex-col items-center p-3 w-full transition-all duration-200 hover:bg-primary/5",
+                  "flex flex-col items-center justify-center gap-1 p-3 w-full hover:bg-muted ",
                   "relative overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm"
                 )}
                 aria-label={item.ariaLabel}
               >
-                <div className="relative flex flex-col items-center w-full">
-                  <item.Icon
-                    className={cn(
-                      "transition-all duration-200 text-gray-600",
-                      "group-hover:text-primary group-hover:scale-110",
-                      hoveredCategory === item.id && "text-primary scale-110"
-                    )}
-                    height={26}
-                    width={26}
-                    aria-hidden="true"
-                    focusable="false"
-                  />
-                  <h2
-                    className={cn(
-                      "text-xs mt-2 text-center font-medium px-1",
-                      "group-hover:text-primary transition-colors duration-200",
-                      hoveredCategory === item.id && "text-primary"
-                    )}
-                  >
-                    {item.name}
-                  </h2>
-                </div>
+                <item.Icon
+                  className={cn(
+                    "fill-gray-600",
+                    "group-hover:fill-primary transition-colors",
+                    hoveredCategory === item.id && "fill-primary"
+                  )}
+                  height={28}
+                  width={28}
+                  aria-hidden="true"
+                  focusable="false"
+                />
+                <h5
+                  className={cn(
+                    "text-xs font-semibold text-gray-700 uppercase tracking-wide",
+                    "group-hover:text-primary transition-colors",
+                    hoveredCategory === item.id && "text-primary"
+                  )}
+                >
+                  {item.name}
+                </h5>
               </Link>
             </li>
           ))}
         </ul>
       </div>
+
       {hoveredCategory && (
         <MegaMenu
           category={

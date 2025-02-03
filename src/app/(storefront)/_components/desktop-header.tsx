@@ -6,8 +6,6 @@ import AccountDropdown from "./account-dropdown";
 import SearchInput from "./search-input";
 import CitySparkLogo from "./city-spark-logo";
 import BasketPopup from "./basket-popup";
-import { cn } from "@/lib/utils";
-import { FaTruck } from "react-icons/fa";
 import DeliveryDialog from "./delivery-dialog";
 
 export default function DesktopHeader() {

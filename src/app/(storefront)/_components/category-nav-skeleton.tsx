@@ -29,14 +29,12 @@ export default function CategoryNavSkeleton() {
             >
               <div
                 className={cn(
-                  "flex flex-col items-center p-3 w-full",
+                  "flex items-center justify-center gap-2 p-3 w-full",
                   "relative overflow-hidden"
                 )}
               >
-                <div className="relative flex flex-col items-center w-full">
-                  <Skeleton className="w-[26px] h-[26px] rounded-md" />
-                  <Skeleton className="w-16 h-4 mt-2 rounded-md" />
-                </div>
+                <Skeleton className="h-5 w-5 rounded-md flex-shrink-0" />
+                <Skeleton className="h-4 w-16 rounded-md" />
               </div>
             </div>
           ))}

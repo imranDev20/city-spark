@@ -211,14 +211,14 @@ export default function SearchInput() {
         <div
           className="fixed inset-0 bg-black/40 transition-opacity duration-200"
           onClick={() => setIsFocused(false)}
-          style={{ zIndex: 55 }}
+          style={{ zIndex: 40 }}
         />
       )}
 
       <div
         ref={searchContainerRef}
         className="flex-1 relative max-w-2xl mx-auto"
-        style={{ zIndex: 101 }}
+        style={{ zIndex: 50 }}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="relative">
           <div
