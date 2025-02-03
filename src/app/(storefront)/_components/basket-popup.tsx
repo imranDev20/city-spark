@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -128,7 +130,7 @@ export default function BasketPopup() {
 
   return (
     <div
-      className="relative z-50"
+      className="relative"
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
     >
@@ -173,8 +175,8 @@ export default function BasketPopup() {
 
       {isOpen && (
         <>
-          <div className="absolute h-2 w-full top-full" />
-          <div className="absolute top-[calc(100%+0.5rem)] right-0 w-96 bg-white rounded-lg shadow-lg animate-fadeIn origin-top">
+          <div className="absolute h-2 w-full top-full z-50" />
+          <div className="absolute top-[calc(100%+0.5rem)] right-0 w-96 bg-white rounded-lg shadow-lg animate-fadeIn origin-top z-50">
             <ScrollArea className="h-[400px]">
               <div className="p-4">
                 {isLoading ? (

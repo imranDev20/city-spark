@@ -10,7 +10,7 @@ type DeliveryStore = {
 export const useDeliveryStore = create<DeliveryStore>()(
   persist(
     (set) => ({
-      postcode: "IG11 7YA",
+      postcode: "",
       setPostcode: (postcode: string) => set({ postcode }),
       clearPostcode: () => set({ postcode: "" }),
     }),

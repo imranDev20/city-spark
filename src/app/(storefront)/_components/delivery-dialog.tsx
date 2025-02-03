@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { JSX, useState } from "react";
 import { FaTruck } from "react-icons/fa";
 import { Search, X } from "lucide-react";
 import axios from "axios";
@@ -18,17 +18,29 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useDeliveryStore } from "@/hooks/use-delivery-store";
-import { useToast } from "@/components/ui/use-toast";
 
-interface WoosmapLocality {
-  description: string;
-  id: string;
-  matched_substrings: { length: number; offset: number }[];
-  postal_code: { main_text: string; secondary_text: string };
-  types: string[];
+// API Response Types
+interface MatchedSubstring {
+  offset: number;
+  length: number;
 }
 
-async function fetchPostcodes(input: string) {
+interface WoosmapLocality {
+  public_id: string;
+  type: string;
+  types: string[];
+  description: string;
+  matched_substrings: {
+    description: MatchedSubstring[];
+  };
+  has_addresses: boolean;
+}
+
+interface WoosmapResponse {
+  localities: WoosmapLocality[];
+}
+
+async function fetchPostcodes(input: string): Promise<WoosmapResponse> {
   if (!input) return { localities: [] };
 
   try {
@@ -42,7 +54,7 @@ async function fetchPostcodes(input: string) {
       },
     };
 
-    const { data } = await axios(config);
+    const { data } = await axios<WoosmapResponse>(config);
     return data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -54,30 +66,71 @@ async function fetchPostcodes(input: string) {
   }
 }
 
-export default function DeliveryDialog() {
+export default function DeliveryDialog(): JSX.Element {
   const { postcode, setPostcode } = useDeliveryStore();
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
-  const { toast } = useToast();
+  const [open, setOpen] = useState<boolean>(false);
+  const [search, setSearch] = useState<string>("");
+  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+  const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
   const debouncedSearch = useDebounce(search, 300);
 
-  const { data: postcodeResults, error } = useQuery({
+  const { data: postcodeResults } = useQuery<WoosmapResponse, Error>({
     queryKey: ["postcodes", debouncedSearch],
     queryFn: () => fetchPostcodes(debouncedSearch),
     enabled: debouncedSearch.length > 2,
   });
 
-  const handleApply = () => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Remove the trim() to allow spaces while typing
+    const value = e.target.value.toUpperCase();
+    setSearch(value);
+    setShowSuggestions(true);
+    setSelectedIndex(-1);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const suggestions = postcodeResults?.localities ?? [];
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setSelectedIndex((prev) =>
+          prev < suggestions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+        break;
+      case "Enter":
+        e.preventDefault();
+        if (selectedIndex >= 0 && suggestions[selectedIndex]) {
+          selectPostcode(suggestions[selectedIndex].description.split(",")[0]);
+        }
+        break;
+      case "Escape":
+        setShowSuggestions(false);
+        break;
+    }
+  };
+
+  const selectPostcode = (selectedPostcode: string) => {
+    setSearch(selectedPostcode);
+    setShowSuggestions(false);
+    setSelectedIndex(-1);
+  };
+
+  const handleApply = (): void => {
     setPostcode(search);
     setOpen(false);
   };
 
-  const handleClear = () => {
+  const handleClear = (): void => {
     setSearch("");
     setShowSuggestions(false);
+    setSelectedIndex(-1);
   };
 
   return (
@@ -93,12 +146,12 @@ export default function DeliveryDialog() {
           <FaTruck className="h-8 w-8" />
           <span className="text-base font-semibold">Delivery</span>
           <span className="text-xs font-light -mt-1">
-            {postcode || "Set Postcode"}
+            {postcode || "Postcode"}
           </span>
         </button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-xl" style={{ zIndex: 100 }}>
         <DialogHeader>
           <DialogTitle>Set Delivery Postcode</DialogTitle>
           <DialogDescription>
@@ -121,20 +174,31 @@ export default function DeliveryDialog() {
               </div>
 
               <input
-                className="flex-1 h-full border-0 bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 w-full py-2 outline-none"
+                className={cn(
+                  "flex-1 h-full border-0 bg-transparent px-0",
+                  "focus-visible:ring-0 focus-visible:ring-offset-0",
+                  "w-full py-2 outline-none",
+                  "placeholder:normal-case", // Make placeholder normal case
+                  "uppercase" // Only text typed will be uppercase
+                )}
                 placeholder="Enter your postcode..."
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setShowSuggestions(true);
-                }}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
                 onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                autoComplete="postal-code"
+                type="text"
+                aria-label="Postcode search"
+                aria-expanded={showSuggestions}
+                role="combobox"
               />
 
               {search && (
                 <button
                   onClick={handleClear}
                   className="px-4 text-muted-foreground hover:text-foreground"
+                  aria-label="Clear search"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -143,26 +207,41 @@ export default function DeliveryDialog() {
 
             {showSuggestions &&
               search &&
-              postcodeResults?.localities?.length > 0 && (
-                <Card className="absolute z-20 w-full mt-1 shadow-lg overflow-hidden rounded-md">
+              (postcodeResults?.localities ?? []).length > 0 && (
+                <Card
+                  style={{ zIndex: 101 }}
+                  className="absolute w-full mt-1 shadow-lg overflow-hidden rounded-md"
+                >
                   <CardContent className="p-0 max-h-[300px] overflow-y-auto">
-                    <div className="py-2">
-                      {postcodeResults.localities.map(
-                        (item: WoosmapLocality) => (
+                    <div className="py-2" role="listbox">
+                      {(postcodeResults?.localities ?? []).map(
+                        (item, index) => (
                           <div
-                            key={item.id}
-                            onClick={() => {
-                              setSearch(item.postal_code.main_text);
-                              setShowSuggestions(false);
-                            }}
-                            className="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 ease-in-out cursor-pointer"
+                            key={item.public_id}
+                            onClick={() =>
+                              selectPostcode(item.description.split(",")[0])
+                            }
+                            className={cn(
+                              "px-4 py-3 transition-colors duration-150 cursor-pointer",
+                              "hover:bg-secondary/10",
+                              "focus:bg-secondary/10 focus:outline-none",
+                              "active:bg-secondary/20",
+                              index === selectedIndex && "bg-secondary/10"
+                            )}
+                            role="option"
+                            aria-selected={index === selectedIndex}
+                            tabIndex={0}
                           >
                             <div className="flex flex-col">
                               <span className="font-medium">
-                                {item.postal_code.main_text}
+                                {item.description.split(",")[0]}
                               </span>
                               <span className="text-sm text-muted-foreground">
-                                {item.postal_code.secondary_text}
+                                {item.description
+                                  .split(",")
+                                  .slice(1)
+                                  .join(",")
+                                  .trim()}
                               </span>
                             </div>
                           </div>

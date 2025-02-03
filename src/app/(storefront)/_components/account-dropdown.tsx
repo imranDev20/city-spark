@@ -113,9 +113,9 @@ export default function AccountDropdown() {
   if (status === "loading") {
     return (
       <div className="flex flex-col items-center gap-1 px-3 py-2">
-        <Skeleton className="h-8 w-8 rounded-full mb-1" />
-        <Skeleton className="h-4 w-[70px] mb-1" /> {/* For "Account" text */}
-        <Skeleton className="h-3 w-16" /> {/* For secondary text */}
+        <Skeleton className="h-7 w-7 rounded-full mb-1" />
+        <Skeleton className="h-4 w-[65px] mb-1" /> {/* For "Account" text */}
+        <Skeleton className="h-3 w-14" /> {/* For secondary text */}
       </div>
     );
   }

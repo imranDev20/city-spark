@@ -8,16 +8,22 @@ import { Suspense } from "react";
 import MobileCategoryNavSkeleton from "./_components/homepage/mobile-category-nav-skeleton";
 import ProductCarouselSkeleton from "./_components/homepage/product-carousel-skeleton";
 import PromotionalGrid from "./_components/homepage/promotional-grid";
+import ConstructionDialog from "./_components/homepage/construction-dialog";
+import ConstructionAlert from "./_components/homepage/construction-alert";
 
 export default function HomePage() {
   return (
     <main>
       <HeroCarousel />
+
+      <ConstructionAlert />
       <Suspense fallback={<MobileCategoryNavSkeleton />}>
         <MobileCategoryNavContainer />
       </Suspense>
 
       <PromotionalGrid />
+
+      <ConstructionDialog />
     </main>
   );
 }
