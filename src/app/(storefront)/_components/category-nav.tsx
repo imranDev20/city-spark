@@ -246,7 +246,7 @@ export default function CategoryNav({
             <li
               key={item.id}
               className={cn(
-                "flex-1 relative group border-r last:border-r-0 border-gray-100",
+                "flex-1 relative group border-r last:border-r-0 border-gray-100 uppercase font-semibold",
                 hoveredCategory === item.id && "bg-primary/5"
               )}
               onMouseEnter={() => handleMouseEnter(item.id)}
