@@ -128,9 +128,9 @@ export default function SearchOverlay({
       {/* Search Overlay */}
       {isOpen && (
         <div className="fixed inset-0 bg-white z-50">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 h-full overflow-auto pb-[63px]">
             {/* Header */}
-            <div className="h-16 flex items-center gap-3">
+            <div className="h-16 flex items-center gap-3 sticky top-0 bg-white z-10">
               <Button
                 onClick={handleClose}
                 variant="ghost"
@@ -189,7 +189,7 @@ export default function SearchOverlay({
                 )
               ) : recentSearches.length > 0 ? (
                 // Recent Searches
-                <div className="py-2">
+                <div className="py-2 mb-4">
                   <div className="px-4 flex items-center justify-between mb-2">
                     <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       Recent Searches
@@ -225,7 +225,7 @@ export default function SearchOverlay({
                 </div>
               ) : (
                 // Empty State
-                <div className="text-center py-8 text-muted-foreground text-sm">
+                <div className="text-center py-8 mb-4 text-muted-foreground text-sm">
                   Start typing to search...
                 </div>
               )}

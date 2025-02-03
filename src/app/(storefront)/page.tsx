@@ -6,8 +6,8 @@ import ProductCarouselContainer from "./_components/product-carousel-container";
 import MobileCategoryNavContainer from "./_components/mobile-category-nav-container";
 import { Suspense } from "react";
 import MobileCategoryNavSkeleton from "./_components/homepage/mobile-category-nav-skeleton";
-import PromotionalGrid from "./_components/promotional-grid";
 import ProductCarouselSkeleton from "./_components/homepage/product-carousel-skeleton";
+import PromotionalGrid from "./_components/homepage/promotional-grid";
 
 export default function HomePage() {
   return (
@@ -16,19 +16,8 @@ export default function HomePage() {
       <Suspense fallback={<MobileCategoryNavSkeleton />}>
         <MobileCategoryNavContainer />
       </Suspense>
+
       <PromotionalGrid />
-
-      <Suspense fallback={<ProductCarouselSkeleton />}>
-        <ProductCarouselContainer title="Best Selling Products" isBestSelling />
-      </Suspense>
-
-      <AdvertisementWideOne />
-
-      <Suspense fallback={<ProductCarouselSkeleton />}>
-        <ProductCarouselContainer title="New Products" isLatestProducts />
-      </Suspense>
-      <AdvertisementTwoColumn />
-      <AdvertisementWideTwo />
     </main>
   );
 }

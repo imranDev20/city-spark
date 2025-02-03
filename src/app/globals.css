@@ -5,6 +5,7 @@
   :root {
     /* 🔵 Core Brand Colors */
     --primary: 220 80% 26%;
+    /* --primary: 226 53% 30%; */
     --primary-hover: 220 80% 21%;
     --primary-active: 220 80% 16%;
     --primary-foreground: 0 0% 100%;

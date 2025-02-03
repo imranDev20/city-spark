@@ -32,17 +32,17 @@ async function fetchPostcodes(input: string) {
   if (!input) return { localities: [] };
 
   try {
-    const { data } = await axios.get(
-      `https://api.woosemap.com/localities/autocomplete`,
-      {
-        params: {
-          input,
-          components: "country:gb",
-          no_deprecated_fields: true,
-          key: "woos-86debf53-3ace-3484-927d-9434918c93a9",
-        },
-      }
-    );
+    const config = {
+      method: "get",
+      url: `https://api.woosmap.com/localities/autocomplete/?input=${encodeURIComponent(
+        input
+      )}&components=country%3Agb&no_deprecated_fields=true&key=woos-e77092fe-0b39-3f5a-85ce-33aaabbba621`,
+      headers: {
+        Referer: "http://localhost",
+      },
+    };
+
+    const { data } = await axios(config);
     return data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
