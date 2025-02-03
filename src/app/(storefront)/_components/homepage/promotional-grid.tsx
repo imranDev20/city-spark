@@ -45,7 +45,7 @@ export default function PromotionalGrid() {
             <Image
               src={image.src}
               alt={image.alt}
-              width={300}
+              width={700}
               height={420}
               className="object-contain h-full rounded-lg overflow-hidden"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
@@ -55,16 +55,16 @@ export default function PromotionalGrid() {
       </div>
 
       {/* Second row - 2 images */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
-        <div className="aspect-[6/3] bg-gray-100 rounded-lg"></div>
-        <div className="aspect-[6/3] bg-gray-100 rounded-lg"></div>
-      </div>
-
-      {/* Third row - 3 images */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
         <div className="aspect-[4/3] bg-gray-100 rounded-lg"></div>
         <div className="aspect-[4/3] bg-gray-100 rounded-lg"></div>
         <div className="aspect-[4/3] bg-gray-100 rounded-lg"></div>
+      </div>
+
+      {/* Third row - 3 images */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
+        <div className="aspect-[6/3] bg-gray-100 rounded-lg"></div>
+        <div className="aspect-[6/3] bg-gray-100 rounded-lg"></div>
       </div>
 
       {/* Fourth row - 1 wide banner */}
@@ -79,7 +79,7 @@ export default function PromotionalGrid() {
             <Image
               src={image.src}
               alt={image.alt}
-              width={300}
+              width={700}
               height={420}
               className="object-contain h-full rounded-lg overflow-hidden"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
@@ -100,7 +100,7 @@ export default function PromotionalGrid() {
             <Image
               src={image.src}
               alt={image.alt}
-              width={300}
+              width={700}
               height={420}
               className="object-contain h-full rounded-lg overflow-hidden"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
