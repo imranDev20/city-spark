@@ -83,7 +83,7 @@ const CarouselContent = ({
   );
 
   return (
-    <div className={cn("relative group mt-5 lg:mt-0 bg-primary", className)}>
+    <div className={cn("relative group lg:mt-0 bg-primary", className)}>
       <div ref={emblaRef} className="overflow-hidden">
         <div className="flex">
           {content.map((item, index) => (
