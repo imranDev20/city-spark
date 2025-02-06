@@ -102,7 +102,6 @@ export default function MobileCategoryNavCarousel({
     containScroll: "trimSnaps",
   });
 
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const primaryId = searchParams.get("p_id");
   const secondaryId = searchParams.get("s_id");
@@ -155,39 +154,41 @@ export default function MobileCategoryNavCarousel({
               <Link
                 href={item.route}
                 className={cn(
-                  "flex flex-col items-center p-4 w-full transition-all duration-200",
-                  "hover:bg-primary/5 group rounded-xl",
-                  "border border-border hover:border-primary/20",
+                  "flex flex-col items-center p-4 w-full",
+                  "hover:bg-muted group rounded-xl",
+                  "border border-border",
                   "bg-white",
                   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                  "transition-colors duration-200",
                   (isCategorySelected(item) || isParentSelected(item)) &&
-                    "bg-primary/5 border-primary"
+                    "bg-muted border-primary"
                 )}
                 aria-label={item.ariaLabel}
                 aria-current={isCategorySelected(item) ? "page" : undefined}
               >
                 <item.Icon
                   className={cn(
-                    "transition-all duration-200",
+                    "fill-muted-foreground transition-colors duration-200",
                     isCategorySelected(item) || isParentSelected(item)
-                      ? "text-primary scale-110"
-                      : "text-gray-600",
-                    "group-hover:text-primary group-hover:scale-110"
+                      ? "fill-primary"
+                      : "",
+                    "group-hover:fill-primary"
                   )}
                   height={32}
                   width={32}
                   aria-hidden="true"
                 />
-                <h2
+                <h5
                   className={cn(
-                    "text-xs mt-3 text-center font-medium",
+                    "text-xs mt-3 text-center font-semibold uppercase tracking-wide",
+                    "text-muted-foreground transition-colors duration-200",
                     (isCategorySelected(item) || isParentSelected(item)) &&
                       "text-primary",
-                    "group-hover:text-primary transition-colors duration-200"
+                    "group-hover:text-primary"
                   )}
                 >
                   {item.name}
-                </h2>
+                </h5>
               </Link>
             </li>
           ))}

@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import useEmblaCarousel from "embla-carousel-react";
+import LogoutDialog from "./_components/logout-dialog";
 
 const navigation = [
   {
@@ -137,13 +138,7 @@ export default function AccountLayout({
                   <NavLink key={item.name} item={item} isMobile={false} />
                 ))}
 
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start gap-3 px-4 mt-4 hover:bg-red-50 hover:text-red-600"
-                >
-                  <FaSignOutAlt className="h-5 w-5 flex-shrink-0" />
-                  Logout
-                </Button>
+                <LogoutDialog />
               </nav>
             </Card>
           </aside>
