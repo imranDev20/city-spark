@@ -246,8 +246,8 @@ export default function CategoryNav({
             <li
               key={item.id}
               className={cn(
-                "flex-1 relative group border-r last:border-r-0 border-gray-100",
-                hoveredCategory === item.id && "bg-gray-50"
+                "flex-1 relative group border-r last:border-r-0 border-border",
+                hoveredCategory === item.id && "bg-muted"
               )}
               onMouseEnter={() => handleMouseEnter(item.id)}
               onMouseLeave={handleMouseLeave}
@@ -261,15 +261,16 @@ export default function CategoryNav({
                 href={item.route}
                 onClick={() => setHoveredCategory(null)}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 p-3 w-full hover:bg-muted ",
-                  "relative overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm"
+                  "flex flex-col items-center justify-center gap-1 p-3 w-full",
+                  "relative overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm",
+                  "hover:bg-muted transition-colors duration-200"
                 )}
                 aria-label={item.ariaLabel}
               >
                 <item.Icon
                   className={cn(
-                    "fill-gray-600",
-                    "group-hover:fill-primary transition-colors",
+                    "fill-muted-foreground transition-colors duration-200",
+                    "group-hover:fill-primary",
                     hoveredCategory === item.id && "fill-primary"
                   )}
                   height={32}
@@ -279,8 +280,8 @@ export default function CategoryNav({
                 />
                 <h5
                   className={cn(
-                    "text-xs font-semibold text-gray-700 uppercase tracking-wide",
-                    "group-hover:text-primary transition-colors mt-1",
+                    "text-xs font-semibold text-muted-foreground uppercase tracking-wide transition-colors duration-200",
+                    "group-hover:text-primary",
                     hoveredCategory === item.id && "text-primary"
                   )}
                 >
@@ -291,7 +292,6 @@ export default function CategoryNav({
           ))}
         </ul>
       </div>
-
       {hoveredCategory && (
         <MegaMenu
           category={
