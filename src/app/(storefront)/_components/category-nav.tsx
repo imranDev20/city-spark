@@ -272,15 +272,15 @@ export default function CategoryNav({
                     "group-hover:fill-primary transition-colors",
                     hoveredCategory === item.id && "fill-primary"
                   )}
-                  height={28}
-                  width={28}
+                  height={32}
+                  width={32}
                   aria-hidden="true"
                   focusable="false"
                 />
                 <h5
                   className={cn(
                     "text-xs font-semibold text-gray-700 uppercase tracking-wide",
-                    "group-hover:text-primary transition-colors",
+                    "group-hover:text-primary transition-colors mt-1",
                     hoveredCategory === item.id && "text-primary"
                   )}
                 >

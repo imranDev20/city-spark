@@ -45,32 +45,34 @@ export default function MobileHeader({
   }
 
   return (
-    <header className="w-full lg:hidden">
-      <div
-        className={cn(
-          "fixed top-0 left-0 right-0 bg-white z-50 transition-shadow duration-200",
-          isScrolled && "shadow-md"
-        )}
-      >
-        <div className="container mx-auto px-4">
-          <div className="h-16 flex items-center justify-between">
-            <MobileMenu />
+    <>
+      <header className="w-full lg:hidden">
+        <div
+          className={cn(
+            "fixed top-0 left-0 right-0 bg-white z-50 transition-shadow duration-200",
+            isScrolled && "shadow-md"
+          )}
+        >
+          <div className="container mx-auto px-4">
+            <div className="h-16 flex items-center justify-between">
+              <MobileMenu />
 
-            <Link href="/" className="flex items-center">
-              <CitySparkLogoBlack height={55} width={95} />
-              <span className="sr-only">City Spark</span>
-            </Link>
+              <Link href="/" className="flex items-center">
+                <CitySparkLogoBlack height={55} width={95} />
+                <span className="sr-only">City Spark</span>
+              </Link>
 
-            <BasketDrawer />
+              <BasketDrawer />
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="pt-16 bg-white mt-1">
-        <div className="container mx-auto px-4">
-          <SearchOverlay />
+        <div className="pt-16 bg-white mt-1">
+          <div className="container mx-auto px-4">
+            <SearchOverlay />
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }
