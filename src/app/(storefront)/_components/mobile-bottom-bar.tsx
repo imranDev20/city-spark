@@ -2,10 +2,16 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Home, Store, ShoppingCart, MapPin, User } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import DeliveryDrawer from "./delivery-drawer";
+import {
+  FaHome,
+  FaStore,
+  FaShoppingCart,
+  FaMapMarkerAlt,
+  FaUser,
+} from "react-icons/fa";
 
 type MobileBottomBarProps = {
   isShowInProductPage?: boolean;
@@ -18,15 +24,15 @@ const MobileBottomBar = ({
   const [isDeliveryOpen, setIsDeliveryOpen] = useState(false);
 
   const navigation = [
-    { name: "Home", href: "/", icon: Home },
-    { name: "Products", href: "/products", icon: Store },
+    { name: "Home", href: "/", Icon: FaHome },
+    { name: "Products", href: "/products", Icon: FaStore },
     {
       name: "Delivery",
       onClick: () => setIsDeliveryOpen(true),
-      icon: MapPin,
+      Icon: FaMapMarkerAlt,
     },
-    { name: "Basket", href: "/basket", icon: ShoppingCart },
-    { name: "Account", href: "/account", icon: User },
+    { name: "Basket", href: "/basket", Icon: FaShoppingCart },
+    { name: "Account", href: "/account", Icon: FaUser },
   ];
 
   const isActive = (path?: string) => {
@@ -67,7 +73,7 @@ const MobileBottomBar = ({
                           : "text-gray-500 hover:text-secondary"
                       )}
                     >
-                      <item.icon className="h-5 w-5" />
+                      <item.Icon className="h-5 w-5" />
                       <span className="text-xs font-medium">{item.name}</span>
                     </Link>
                   ) : (
@@ -75,7 +81,7 @@ const MobileBottomBar = ({
                       onClick={item.onClick}
                       className="flex flex-col items-center justify-center w-full h-full space-y-1 text-gray-500 hover:text-secondary"
                     >
-                      <item.icon className="h-5 w-5" />
+                      <item.Icon className="h-5 w-5" />
                       <span className="text-xs font-medium">{item.name}</span>
                     </button>
                   )}

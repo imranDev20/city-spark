@@ -33,7 +33,7 @@ const GroupHeader = ({
     ) : (
       <FaStore className="w-5 h-5 text-secondary" />
     )}
-    <h4 className="text-base font-medium text-gray-900">
+    <h4 className="text-base font-semibold text-gray-900">
       {type === "FOR_DELIVERY" ? "Delivery" : "Collection"}{" "}
       <span className="text-muted-foreground">({itemCount} items)</span>
     </h4>
