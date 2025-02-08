@@ -87,7 +87,7 @@ export default function PaymentStep({
             className={`flex items-center p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors ${
               paymentMethod === "card"
                 ? "border-primary bg-primary/5"
-                : "border-gray-200"
+                : "border-border"
             }`}
           >
             <RadioGroupItem value="card" className="mr-4" />
@@ -104,7 +104,7 @@ export default function PaymentStep({
             className={`flex items-center p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors ${
               paymentMethod === "paypal"
                 ? "border-primary bg-primary/5"
-                : "border-gray-200"
+                : "border-border"
             }`}
           >
             <RadioGroupItem value="paypal" className="mr-4" />
@@ -123,7 +123,7 @@ export default function PaymentStep({
             className={`flex items-center p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors ${
               paymentMethod === "cash"
                 ? "border-primary bg-primary/5"
-                : "border-gray-200"
+                : "border-border"
             }`}
           >
             <RadioGroupItem value="cash" className="mr-4" />
@@ -138,7 +138,7 @@ export default function PaymentStep({
         </RadioGroup>
 
         {paymentMethod === "card" && (
-          <Card className="p-4 mt-4 border-gray-200">
+          <Card className="p-4 mt-4 border-border">
             <div className="grid gap-4">
               <p className="text-sm text-gray-500">
                 Card payment form implementation needed
@@ -148,13 +148,13 @@ export default function PaymentStep({
         )}
       </div>
 
-      <div className="mt-6 px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+      <div className="mt-6 px-6 py-4 border-t border-border flex justify-between items-center">
         <Button
           type="button"
           variant="outline"
           onClick={onBack}
           disabled={isLoading}
-          className="border-gray-200"
+          className="border-border"
         >
           Back
         </Button>

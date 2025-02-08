@@ -12,7 +12,7 @@ export default function FilterSidebarSkeleton() {
         <Skeleton className="h-5 w-16" />
       </div>
 
-      <Card className="border-gray-300">
+      <Card className="border-border">
         <div className="divide-y divide-gray-200">
           {/* Brands Section */}
           <div className="p-5">

@@ -186,7 +186,7 @@ export function ContactDetailsForm({ onNext }: ContactDetailsFormProps) {
                     <FormControl>
                       <Input
                         placeholder="Enter first name"
-                        className="border-gray-300"
+                        className="border-border"
                         disabled={isLoading}
                         {...field}
                       />
@@ -208,7 +208,7 @@ export function ContactDetailsForm({ onNext }: ContactDetailsFormProps) {
                     <FormControl>
                       <Input
                         placeholder="Enter last name"
-                        className="border-gray-300"
+                        className="border-border"
                         disabled={isLoading}
                         {...field}
                       />
@@ -232,7 +232,7 @@ export function ContactDetailsForm({ onNext }: ContactDetailsFormProps) {
                     <Input
                       type="email"
                       placeholder="Enter email address"
-                      className="border-gray-300"
+                      className="border-border"
                       disabled={isLoading || !!session?.user}
                       {...field}
                     />

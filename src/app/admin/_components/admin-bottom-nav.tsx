@@ -69,7 +69,7 @@ export default function AdminBottomNav() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-white border-t border-gray-200 md:hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+    <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-white border-t border-border md:hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
       <div className="grid h-full max-w-lg grid-cols-5 mx-auto">
         {navigation.map((item) => {
           const isActive =

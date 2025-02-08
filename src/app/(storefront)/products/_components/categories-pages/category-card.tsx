@@ -33,7 +33,7 @@ export default function CategoryCard({
   const productCount = getProductCount(category);
 
   return (
-    <Card className="group h-full bg-white border-gray-300 rounded-xl overflow-hidden lg:hover:shadow-lg transition-all duration-300 shadow-none">
+    <Card className="group h-full bg-white border-border rounded-xl overflow-hidden lg:hover:shadow-lg transition-all duration-300 shadow-none">
       <CardHeader className="text-center p-3 pb-1 lg:p-6 lg:pb-2">
         <CardTitle className="font-semibold text-lg lg:text-2xl 2xl:text-3xl text-gray-900">
           {category.name}

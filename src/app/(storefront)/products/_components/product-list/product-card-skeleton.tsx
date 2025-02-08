@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const ProductCardSkeleton = () => {
   return (
-    <Card className="shadow-none lg:shadow-md group h-full flex flex-col bg-white border-gray-300 rounded-xl overflow-hidden lg:hover:shadow-lg transition-all duration-300">
+    <Card className="shadow-none lg:shadow-md group h-full flex flex-col bg-white border-border rounded-xl overflow-hidden lg:hover:shadow-lg transition-all duration-300">
       {/* Product image skeleton */}
       <div className="relative">
         <Skeleton className="h-32 sm:h-48 md:h-56 lg:h-64 w-full" />

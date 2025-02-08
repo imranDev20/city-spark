@@ -15,7 +15,7 @@ export default function CategoryGridSkeleton() {
         {skeletonCards.map((_, index) => (
           <Card
             key={index}
-            className="group h-full bg-white border-gray-300 rounded-xl overflow-hidden shadow-none"
+            className="group h-full bg-white border-border rounded-xl overflow-hidden shadow-none"
           >
             <div className="text-center p-3 pb-1 lg:p-6 lg:pb-2">
               {/* Title skeleton */}

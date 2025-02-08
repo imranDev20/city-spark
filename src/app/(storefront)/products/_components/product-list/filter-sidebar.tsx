@@ -53,7 +53,7 @@ export default function FilterSidebar({
         </button>
       </div>
 
-      <Card className="border-gray-300 overflow-hidden transition-all duration-300 hover:shadow-md shadow-none">
+      <Card className="border overflow-hidden transition-all duration-300 hover:shadow-md bg-white shadow">
         <div className="divide-y divide-gray-200">
           {/* Brand Section */}
           <SidebarFilterBrandSection />

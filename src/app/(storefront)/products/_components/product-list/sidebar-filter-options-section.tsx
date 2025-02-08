@@ -123,7 +123,7 @@ export default function SidebarFilterOptionsSection({
                       onCheckedChange={(checked) =>
                         updateFilter(option.id, value, checked as boolean)
                       }
-                      className="h-4 w-4 rounded border-gray-300 text-secondary 
+                      className="h-4 w-4 rounded border-border text-secondary 
                         focus:ring-secondary/20 data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
                     />
                     <label
@@ -177,7 +177,7 @@ export default function SidebarFilterOptionsSection({
                   type="number"
                   value={priceRange[0]}
                   onChange={(e) => handleInputChange(0, Number(e.target.value))}
-                  className="h-10 bg-white border-gray-300 hover:border-secondary transition-colors
+                  className="h-10 bg-white border-border hover:border-secondary transition-colors
                     focus-visible:ring-1 focus-visible:ring-secondary/20 focus-visible:border-secondary"
                   placeholder="£ Min"
                 />
@@ -186,7 +186,7 @@ export default function SidebarFilterOptionsSection({
                   type="number"
                   value={priceRange[1]}
                   onChange={(e) => handleInputChange(1, Number(e.target.value))}
-                  className="h-10 bg-white border-gray-300 hover:border-secondary transition-colors
+                  className="h-10 bg-white border-border hover:border-secondary transition-colors
                     focus-visible:ring-1 focus-visible:ring-secondary/20 focus-visible:border-secondary"
                   placeholder="£ Max"
                 />

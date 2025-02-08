@@ -12,11 +12,11 @@ import { ProductFormInputType } from "../schema";
 import { Button } from "@/components/ui/button";
 
 const variants = {
-  base: "relative rounded-md aspect-square flex justify-center items-center flex-col cursor-pointer border border-dashed border-input hover:border-primary dark:border-gray-300 transition-all duration-200 ease-in-out hover:bg-gray-500/15 bg-gray-500/10",
+  base: "relative rounded-md aspect-square flex justify-center items-center flex-col cursor-pointer border border-dashed border-input hover:border-primary dark:border-border transition-all duration-200 ease-in-out hover:bg-gray-500/15 bg-gray-500/10",
   image: "p-0 relative  bg-slate-200 dark:bg-slate-900 rounded-md ",
   active: "border",
   disabled:
-    "bg-gray-200 border-gray-300 cursor-default pointer-events-none bg-opacity-30 dark:bg-gray-700",
+    "bg-gray-200 border-border cursor-default pointer-events-none bg-opacity-30 dark:bg-gray-700",
   accept: "border border-blue-500 bg-blue-500 bg-opacity-10",
   reject: "border border-red-700 bg-red-700 bg-opacity-10",
 };

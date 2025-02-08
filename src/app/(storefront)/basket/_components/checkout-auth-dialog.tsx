@@ -77,7 +77,7 @@ const SocialLoginButton = ({
     variant="outline"
     onClick={() => signIn(provider, { callbackUrl })}
     disabled={isLoading}
-    className="relative h-11 rounded-lg border-gray-300 hover:bg-gray-50"
+    className="relative h-11 rounded-lg border-border hover:bg-gray-50"
   >
     <div className="mr-2">
       <Icon width={20} height={20} />
@@ -134,7 +134,7 @@ export function CheckoutAuthDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 bg-white overflow-hidden sm:max-w-[400px] gap-0 rounded-xl border-gray-300">
+      <DialogContent className="p-0 bg-white overflow-hidden sm:max-w-[400px] gap-0 rounded-xl border-border">
         <div className="bg-primary/5">
           <DialogHeader className="p-6 text-left">
             <DialogTitle className="text-xl font-semibold text-gray-900">
@@ -144,7 +144,7 @@ export function CheckoutAuthDialog({
               Choose how you&apos;d like to continue with your purchase
             </p>
             <Button
-              className="w-full mt-6 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 shadow-sm h-11 rounded-lg"
+              className="w-full mt-6 bg-white hover:bg-gray-50 text-gray-900 border border-border shadow-sm h-11 rounded-lg"
               onClick={onGuestCheckout}
               disabled={isLoading}
             >
@@ -177,7 +177,7 @@ export function CheckoutAuthDialog({
                             <Input
                               type={field.type}
                               placeholder={field.placeholder}
-                              className="pl-10 h-11 rounded-lg border-gray-300"
+                              className="pl-10 h-11 rounded-lg border-border"
                               {...fieldProps}
                             />
                           </div>
@@ -206,7 +206,7 @@ export function CheckoutAuthDialog({
           <div className="space-y-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-gray-300" />
+                <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-white px-4 text-gray-500 text-[11px]">

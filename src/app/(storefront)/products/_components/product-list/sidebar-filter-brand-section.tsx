@@ -124,7 +124,7 @@ export default function SidebarFilterBrandSection() {
               placeholder="Search brands"
               value={brandSearch}
               onChange={(e) => setBrandSearch(e.target.value)}
-              className={`pl-9 h-10 bg-white border-gray-300 hover:border-secondary transition-colors
+              className={`pl-9 h-10 bg-white border-border hover:border-secondary transition-colors
                  focus-visible:ring-1 focus-visible:ring-secondary/20 focus-visible:border-secondary
                  ${isPending ? "pr-9" : ""}`}
             />
@@ -157,7 +157,7 @@ export default function SidebarFilterBrandSection() {
                     onCheckedChange={(checked) =>
                       updateBrandFilter(brand.id, checked as boolean)
                     }
-                    className="h-4 w-4 rounded border-gray-300 text-secondary focus:ring-secondary/20 data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
+                    className="h-4 w-4 rounded border-border text-secondary focus:ring-secondary/20 data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
                   />
                   <label
                     htmlFor={brand.id}
@@ -183,7 +183,7 @@ export default function SidebarFilterBrandSection() {
             <button
               onClick={() => fetchNextPage()}
               disabled={isFetchingNextPage}
-              className="w-full text-sm font-medium text-secondary hover:text-secondary/90 disabled:opacity-50 flex items-center justify-center gap-2 py-2 transition-colors border-t border-gray-100"
+              className="w-full text-sm font-medium text-secondary hover:text-secondary/90 disabled:opacity-50 flex items-center justify-center gap-2 py-2 transition-colors border-t border-border"
             >
               {isFetchingNextPage ? (
                 <>

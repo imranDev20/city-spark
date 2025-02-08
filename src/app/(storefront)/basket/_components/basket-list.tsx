@@ -10,7 +10,8 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { Pencil } from "lucide-react";
+import { FaStore, FaTruck, FaMapMarkerAlt } from "react-icons/fa";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -58,7 +59,6 @@ const BasketList: React.FC<BasketListProps> = ({ items, type }) => {
     startTransition(async () => {
       try {
         addOptimisticItem(itemId);
-
         const result = await removeFromCart(itemId);
         await queryClient.invalidateQueries({ queryKey: ["cart"] });
 
@@ -84,29 +84,48 @@ const BasketList: React.FC<BasketListProps> = ({ items, type }) => {
   return (
     <>
       <section className="mb-16">
-        <h2 className="text-2xl font-semibold mb-3 md:hidden">
-          {type === FulFillmentType.FOR_DELIVERY
-            ? "Items for Delivery"
-            : "Items for Collection"}
-        </h2>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            {type === FulFillmentType.FOR_DELIVERY ? (
+              <FaTruck className="h-5 w-5 text-secondary" />
+            ) : (
+              <FaStore className="h-5 w-5 text-secondary" />
+            )}
+            <h2 className="text-2xl font-semibold">
+              {type === FulFillmentType.FOR_DELIVERY
+                ? "Delivery"
+                : "Collection"}{" "}
+              <span className="text-muted-foreground text-lg font-normal">
+                ({optimisticItems.length}{" "}
+                {optimisticItems.length === 1 ? "item" : "items"})
+              </span>
+            </h2>
+          </div>
 
-        <h2 className="text-2xl font-semibold mb-3 hidden md:block">
-          {type === FulFillmentType.FOR_DELIVERY ? (
-            <>
-              Items for Delivery to{" "}
-              <span className="text-primary">IG11 7YA</span>
-            </>
-          ) : (
-            "Items for Collection"
+          {type === FulFillmentType.FOR_DELIVERY && (
+            <div className="flex items-center bg-gray-50 rounded-lg px-4 py-2">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <FaMapMarkerAlt className="h-4 w-4 text-primary" />
+                  <span className="text-gray-500">Delivery to:</span>
+                </div>
+                <span className="text-lg font-semibold text-gray-900">
+                  IG11 7YA
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsDialogOpen(true)}
+                  className="text-primary hover:text-primary/90 font-medium ml-2"
+                >
+                  Change
+                </Button>
+              </div>
+            </div>
           )}
-        </h2>
+        </div>
 
-        <Card
-          className={cn(
-            "p-5 shadow-none border-gray-300",
-            isPending && "opacity-50"
-          )}
-        >
+        <Card className={cn("p-5 bg-white", isPending && "opacity-50")}>
           {optimisticItems.map((item, index) => (
             <React.Fragment key={item.id}>
               <BasketItem cartItem={item} onRemove={handleRemoveItem} />
@@ -121,16 +140,15 @@ const BasketList: React.FC<BasketListProps> = ({ items, type }) => {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Change Delivery Address</DialogTitle>
+            <DialogTitle>Change Delivery Postcode</DialogTitle>
             <DialogDescription>
-              Update your delivery address for this order.
+              Enter your postcode to check delivery availability and options.
             </DialogDescription>
           </DialogHeader>
           <div className="mt-4">
-            {/* Add your address change form or content here */}
-            {/* This is a placeholder for the actual address change functionality */}
+            {/* Postcode change functionality will go here */}
             <p className="text-sm text-gray-500">
-              Address change functionality will be implemented here.
+              Postcode change functionality will be implemented here.
             </p>
           </div>
         </DialogContent>

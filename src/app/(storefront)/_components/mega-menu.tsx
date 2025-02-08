@@ -160,7 +160,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
 
   return (
     <div
-      className="absolute top-full left-0 w-full bg-muted border-b border-gray-300 shadow-lg z-10 border-t"
+      className="absolute top-full left-0 w-full bg-muted border-b border-border shadow-lg z-10 border-t"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >

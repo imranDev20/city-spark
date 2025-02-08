@@ -22,7 +22,7 @@ export default function OrderSummaryCard({
 
   return (
     <div className="hidden lg:block">
-      <Card className="shadow-none bg-offWhite border-gray-300">
+      <Card className="bg-white">
         <CardHeader className="pb-4">
           <CardTitle className="text-2xl">Order Summary</CardTitle>
         </CardHeader>
@@ -36,7 +36,7 @@ export default function OrderSummaryCard({
             <div className="flex gap-2">
               <Input
                 placeholder="Gift card or promo code"
-                className="border-gray-300"
+                className="border-border"
               />
               <Button className="bg-secondary hover:bg-secondary/90 transition-colors">
                 Apply

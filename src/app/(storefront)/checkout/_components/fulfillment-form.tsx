@@ -117,7 +117,7 @@ const CollectionSection = ({ items }: { items: CartItemProps[] }) => (
         <ItemList items={items} />
       </div>
 
-      <div className="bg-gray-50 rounded-lg border-gray-200 border p-4">
+      <div className="bg-gray-50 rounded-lg border-border border p-4">
         <div className="flex items-center gap-3 mb-1">
           <Store className="h-4 w-4 text-gray-500" />
           <h3 className="font-medium text-gray-900">Collection Point</h3>
@@ -211,12 +211,12 @@ export function FulfillmentForm({
         <CollectionSection items={collectionItems} />
       )}
 
-      <div className="mt-6 px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+      <div className="mt-6 px-6 py-4 border-t border-border flex justify-between items-center">
         <Button
           type="button"
           variant="outline"
           onClick={onBack}
-          className="border-gray-200"
+          className="border-border"
         >
           Back
         </Button>

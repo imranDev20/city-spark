@@ -28,7 +28,7 @@ const toastVariants = cva(
   {
     variants: {
       variant: {
-        default: "border border-gray-300 bg-white text-gray-900",
+        default: "border border-border bg-white text-gray-900",
         info: "border-blue-100 bg-blue-50 text-blue-900",
         success: "border-green-100 bg-green-50 text-green-900",
         warning: "border-yellow-100 bg-yellow-50 text-yellow-900",
@@ -158,7 +158,7 @@ const ToastAction = React.forwardRef<
     ref={ref}
     className={cn(
       "inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-1 disabled:pointer-events-none disabled:opacity-50",
-      "border border-gray-300 hover:bg-gray-100 text-gray-900",
+      "border border-border hover:bg-gray-100 text-gray-900",
       "group-[.info]:border-blue-100 group-[.info]:hover:bg-blue-100",
       "group-[.success]:border-green-100 group-[.success]:hover:bg-green-100",
       "group-[.warning]:border-yellow-100 group-[.warning]:hover:bg-yellow-100",

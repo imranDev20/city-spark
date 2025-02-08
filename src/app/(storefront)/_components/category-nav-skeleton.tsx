@@ -21,24 +21,26 @@ export default function CategoryNavSkeleton() {
   return (
     <div className="relative bg-white border-b hidden lg:block">
       <div className="container mx-auto max-w-screen-xl px-0">
-        <div className="flex w-full">
+        <ul className="flex w-full" role="menubar">
           {Array.from({ length: 10 }).map((_, index) => (
-            <div
+            <li
               key={index}
-              className="flex-1 relative border-r last:border-r-0 border-gray-100"
+              className="flex-1 relative border-r last:border-r-0 border-border"
             >
               <div
                 className={cn(
-                  "flex items-center justify-center gap-2 p-3 w-full",
+                  "flex flex-col items-center justify-center gap-1 p-3 w-full",
                   "relative overflow-hidden"
                 )}
               >
-                <Skeleton className="h-5 w-5 rounded-md flex-shrink-0" />
-                <Skeleton className="h-4 w-16 rounded-md" />
+                <Skeleton className="h-8 w-8 rounded-md" />{" "}
+                {/* Icon skeleton */}
+                <Skeleton className="h-3 w-16 mt-1 rounded-md" />{" "}
+                {/* Text skeleton */}
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </div>
   );

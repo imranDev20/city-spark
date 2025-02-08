@@ -57,7 +57,7 @@ export default function FixedProductBar({
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20 lg:hidden">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20 lg:hidden">
       <div className="container mx-auto px-4 py-4">
         {/* Price Row */}
         <div className="flex items-baseline justify-between mb-4">
@@ -98,7 +98,7 @@ export default function FixedProductBar({
           <div
             className={cn(
               "flex h-[42px] items-center rounded-md",
-              "bg-gray-50 border border-gray-200"
+              "bg-gray-50 border border-border"
             )}
           >
             <button
@@ -107,7 +107,7 @@ export default function FixedProductBar({
               className={cn(
                 "w-14 h-full flex items-center justify-center",
                 "hover:bg-gray-100 transition-colors",
-                "border-r border-gray-200",
+                "border-r border-border",
                 "disabled:opacity-50 disabled:cursor-not-allowed"
               )}
             >
@@ -133,7 +133,7 @@ export default function FixedProductBar({
               className={cn(
                 "w-14 h-full flex items-center justify-center",
                 "hover:bg-gray-100 transition-colors",
-                "border-l border-gray-200",
+                "border-l border-border",
                 "disabled:opacity-50 disabled:cursor-not-allowed"
               )}
             >

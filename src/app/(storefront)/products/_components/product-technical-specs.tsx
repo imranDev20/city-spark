@@ -68,11 +68,11 @@ export default function TechnicalSpecs({ product }: TechnicalSpecsProps) {
 
       {/* Mobile Layout (single column) */}
       <div className="lg:hidden">
-        <Table className="border-collapse border border-gray-300 w-full">
+        <Table className="border-collapse border border-border w-full">
           <TableBody>
             {details.map((detail, index) => (
-              <TableRow key={index} className="border-b border-gray-300">
-                <TableCell className="font-medium bg-gray-200 border-r border-gray-300 p-2 w-1/2 text-sm">
+              <TableRow key={index} className="border-b border-border">
+                <TableCell className="font-medium bg-gray-200 border-r border-border p-2 w-1/2 text-sm">
                   {detail.label}
                 </TableCell>
                 <TableCell className="bg-white p-2 text-center text-sm w-1/2">
@@ -86,23 +86,23 @@ export default function TechnicalSpecs({ product }: TechnicalSpecsProps) {
 
       {/* Desktop Layout (two columns) */}
       <div className="hidden lg:block ">
-        <Table className="border-collapse border border-gray-300 w-full">
+        <Table className="border-collapse border border-border w-full">
           <TableBody>
             {pairedDetails.map((pair, index) => (
-              <TableRow key={index} className="border-b border-gray-300">
+              <TableRow key={index} className="border-b border-border">
                 {pair.map((detail, detailIndex) => (
                   <React.Fragment key={detailIndex}>
-                    <TableCell className="font-medium bg-gray-200 border-r border-gray-300 p-2 w-1/4 text-base">
+                    <TableCell className="font-medium bg-gray-200 border-r border-border p-2 w-1/4 text-base">
                       {detail.label}
                     </TableCell>
-                    <TableCell className="bg-white border-r border-gray-300 p-2 text-center w-1/4 text-base">
+                    <TableCell className="bg-white border-r border-border p-2 text-center w-1/4 text-base">
                       {detail.value}
                     </TableCell>
                   </React.Fragment>
                 ))}
                 {pair.length === 1 && (
                   <>
-                    <TableCell className="bg-gray-200 border-r border-gray-300 p-2 w-1/4" />
+                    <TableCell className="bg-gray-200 border-r border-border p-2 w-1/4" />
                     <TableCell className="bg-white p-2 w-1/4" />
                   </>
                 )}

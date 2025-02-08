@@ -99,7 +99,7 @@ export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
                           ? "border-emerald-600 bg-emerald-600 text-white"
                           : isCurrent
                           ? "border-primary bg-primary text-white"
-                          : "border-gray-200 bg-white"
+                          : "border-border bg-white"
                       }
                     `}
                     >
