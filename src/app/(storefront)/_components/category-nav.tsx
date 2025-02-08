@@ -292,6 +292,7 @@ export default function CategoryNav({
           ))}
         </ul>
       </div>
+
       {hoveredCategory && (
         <MegaMenu
           category={

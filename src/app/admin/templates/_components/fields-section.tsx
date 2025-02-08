@@ -198,7 +198,7 @@ function FieldItem({ id, index, control, watch, onRemove }: FieldItemProps) {
       <div
         ref={ref}
         className={cn(
-          "relative border border-gray-200 rounded-lg p-6 bg-white mb-4",
+          "relative border border-border rounded-lg p-6 bg-white mb-4",
           isDragging && "opacity-50"
         )}
       >

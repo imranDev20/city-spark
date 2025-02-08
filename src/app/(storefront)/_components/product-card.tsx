@@ -74,7 +74,7 @@ export default function ProductCard({
   const productUrl = `/products/p/${customSlugify(product.name)}/p/${id}`;
 
   return (
-    <Card className="shadow-none group h-full flex flex-col bg-white border-gray-300 rounded-xl overflow-hidden lg:hover:shadow-lg transition-all duration-300 relative">
+    <Card className="shadow group h-full flex flex-col bg-white border rounded-xl overflow-hidden lg:hover:shadow-lg transition-all duration-300 relative">
       <Link href={productUrl} className="contents">
         <div className="relative bg-white">
           {/* Mobile image */}

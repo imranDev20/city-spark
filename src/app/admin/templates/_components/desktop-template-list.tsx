@@ -151,7 +151,7 @@ export default function DesktopTemplateList() {
   return (
     <>
       <div className="space-y-4 hidden lg:block">
-        <Card className="shadow-sm border-gray-200 overflow-hidden">
+        <Card className="shadow-sm border-border overflow-hidden">
           <CardContent className="p-0 relative">
             {/* Floating Selection Header */}
             <div

@@ -216,7 +216,7 @@ export default async function DynamicCategorySidebar(
   return (
     <aside className="hidden lg:block lg:col-span-3">
       <div className="sticky top-20">
-        <Card className="border-gray-300 rounded-xl shadow-none transition-all duration-300">
+        <Card className="border-border rounded-xl shadow-none transition-all duration-300 bg-white">
           <CardHeader className="pb-3">
             <CardTitle>{title}</CardTitle>
           </CardHeader>

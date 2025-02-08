@@ -40,7 +40,7 @@ export default function CheckoutResultPage() {
 
           <div className="flex justify-center gap-4">
             <Link href="/account/orders">
-              <Button variant="outline" className="border-gray-200">
+              <Button variant="outline" className="border-border">
                 View Order
               </Button>
             </Link>

@@ -36,7 +36,7 @@ export default async function StorefrontBasketPage() {
           </h1>
 
           {/* Empty State Card */}
-          <Card className="shadow-none border-gray-300 p-6 lg:p-12 text-center">
+          <Card className="shadow-none border-border p-6 lg:p-12 text-center">
             <ShoppingCart className="mx-auto mb-4 lg:mb-6 h-12 w-12 lg:h-16 lg:w-16 text-gray-400" />
             <h2 className="text-xl lg:text-2xl font-semibold mb-3 lg:mb-4">
               Your basket is empty
@@ -71,7 +71,7 @@ export default async function StorefrontBasketPage() {
             <div className="flex gap-2">
               <Input
                 placeholder="Gift card or promo code"
-                className="flex-1 border-gray-300 bg-white"
+                className="flex-1 border-border bg-white"
               />
               <Button className="bg-secondary hover:bg-secondary/90">
                 Apply

@@ -87,7 +87,7 @@ export default function ProductDetailsSidebar({
   };
 
   return (
-    <Card className="border-gray-300 shadow-none sticky top-10 hidden lg:block">
+    <Card className="border-border shadow-none sticky top-10 hidden lg:block">
       <CardContent className="p-6">
         {product.brand?.image ? (
           <div className="flex items-center mb-4">

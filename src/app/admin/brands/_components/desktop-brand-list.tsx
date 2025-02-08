@@ -111,7 +111,7 @@ export default function DesktopBrandList() {
 
   return (
     <>
-      <Card className="shadow-sm border-gray-200 overflow-hidden">
+      <Card className="shadow-sm border-border overflow-hidden">
         <CardContent className="p-0 relative">
           {/* Floating Selection Header */}
           <div

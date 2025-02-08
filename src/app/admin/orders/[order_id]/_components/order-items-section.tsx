@@ -76,7 +76,7 @@ export default function OrderItemsSection({
               key={item.id}
               className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg"
             >
-              <div className="relative h-20 w-20 rounded-lg overflow-hidden bg-white flex-shrink-0 border border-gray-200">
+              <div className="relative h-20 w-20 rounded-lg overflow-hidden bg-white flex-shrink-0 border border-border">
                 <Image
                   src={item.product.images[0] || PlaceholderImage}
                   alt={item.product.name}

@@ -140,7 +140,7 @@ export default function FilterDrawer({ filterOptions }: FilterDrawerProps) {
                               "w-5 h-5 border rounded-md flex items-center justify-center",
                               selectedFilters[category.id]?.includes(option)
                                 ? "bg-primary border-primary"
-                                : "border-gray-300"
+                                : "border-border"
                             )}
                           >
                             {selectedFilters[category.id]?.includes(option) && (

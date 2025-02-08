@@ -6,7 +6,7 @@ export default function CategorySidebarSkeleton() {
   return (
     <aside className="hidden lg:block lg:col-span-3">
       <div className="sticky top-20">
-        <Card className="border-gray-300 rounded-xl overflow-hidden hover:shadow-sm transition-all duration-300">
+        <Card className="border-border rounded-xl overflow-hidden hover:shadow-sm transition-all duration-300">
           <CardHeader className="pb-3">
             <div className="h-6 w-24 bg-gray-200 rounded-md animate-pulse" />
           </CardHeader>

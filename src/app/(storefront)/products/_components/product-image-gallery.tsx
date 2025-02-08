@@ -215,7 +215,7 @@ export default function ProductImageGallery({
                     "relative w-full h-full bg-white overflow-hidden transition-all duration-200",
                     mainImage === image
                       ? "border-2 border-secondary"
-                      : "border border-gray-200"
+                      : "border border-border"
                   )}
                 >
                   <Image
@@ -249,7 +249,7 @@ export default function ProductImageGallery({
                         "relative w-full h-full bg-white overflow-hidden transition-all duration-200",
                         mainImage === image
                           ? "border-2 border-secondary"
-                          : "border border-gray-200"
+                          : "border border-border"
                       )}
                     >
                       <Image

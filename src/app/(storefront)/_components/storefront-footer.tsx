@@ -200,31 +200,6 @@ const StorefrontFooter = () => {
               </nav>
             </div>
           </div>
-
-          {/* Copyright Section */}
-          <div className="text-primary-foreground/60">
-            <hr className="my-8 md:my-10 border-primary-foreground/20" />
-            <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs">
-              <p>Copyright © City Spark 2024</p>
-              <p className="text-primary-foreground/40 flex items-center gap-3">
-                Developed by{" "}
-                <Link
-                  href="https://www.growriva.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-secondary transition-colors duration-200"
-                >
-                  <Image
-                    src={GrowrivaIcon}
-                    alt="Icon"
-                    width={30}
-                    height={30}
-                    className="rounded-full"
-                  />
-                </Link>
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </footer>

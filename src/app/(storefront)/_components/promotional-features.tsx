@@ -44,7 +44,7 @@ export default function PromotionalFeatures() {
   }
 
   return (
-    <div className="w-full bg-white border-b border-gray-200">
+    <div className="w-full bg-white border-b border-border">
       {/* Mobile/Tablet Slider */}
       <div className="lg:hidden">
         <div className="overflow-hidden" ref={emblaRef}>
@@ -74,7 +74,7 @@ export default function PromotionalFeatures() {
               key={index}
               className={`flex items-center gap-2 py-2 ${
                 index === 1
-                  ? "justify-center border-x border-gray-200"
+                  ? "justify-center border-x border-border"
                   : index === 0
                   ? "justify-start"
                   : "justify-end"

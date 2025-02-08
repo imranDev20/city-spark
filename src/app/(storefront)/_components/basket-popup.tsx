@@ -176,7 +176,7 @@ export default function BasketPopup() {
       {isOpen && (
         <>
           <div className="absolute h-2 w-full top-full z-50" />
-          <div className="absolute top-[calc(100%+0.5rem)] right-0 w-96 bg-white rounded-lg shadow-lg animate-fadeIn origin-top z-50">
+          <div className="absolute top-[calc(100%+0.5rem)] right-0 w-96 bg-white rounded-lg shadow-lg animate-fadeIn origin-top z-50 border">
             <ScrollArea className="h-[400px]">
               <div className="p-4">
                 {isLoading ? (
@@ -227,7 +227,7 @@ export default function BasketPopup() {
               </div>
             </ScrollArea>
 
-            <div className="bg-gray-50/80 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+            <div className="bg-gray-50/80 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] rounded-b-md">
               <div className="flex justify-between mb-1">
                 <span className="font-semibold text-lg text-gray-900">
                   Subtotal (inc. VAT)
