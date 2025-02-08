@@ -223,7 +223,7 @@ export default function AccountOrdersPage() {
                 No orders found
               </h3>
               <p className="text-gray-500 mt-1 max-w-sm mx-auto">
-                We couldn't find any orders matching your criteria
+                We couldn&apos;t find any orders matching your criteria
               </p>
             </div>
           ) : (

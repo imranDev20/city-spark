@@ -128,7 +128,7 @@ export default function AccountProfilePage() {
                     className="bg-gray-50/50"
                   />
                   <p className="text-xs text-gray-500">
-                    This is how you'll appear on invoices and order details
+                    This is how you&apos;ll appear on invoices and order details
                   </p>
                 </div>
               </div>
