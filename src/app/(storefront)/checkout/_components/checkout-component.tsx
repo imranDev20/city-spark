@@ -134,10 +134,10 @@ export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
         </div>
       </div>
 
-      <main className="container max-w-screen-xl mx-auto px-4 py-8 lg:py-12">
+      <main className="container max-w-screen-xl mx-auto px-4">
         <div className="grid lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
-          <div className="lg:col-span-8 space-y-6">
-            <Card className="shadow-none bg-white">
+          <div className="lg:col-span-8">
+            <Card className="bg-white">
               {currentStep === "contact" && (
                 <ContactDetailsForm onNext={() => goToStep("fulfillment")} />
               )}
@@ -161,7 +161,7 @@ export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
           </div>
 
           <div className="lg:col-span-4">
-            <div className="lg:sticky lg:top-28 space-y-6">
+            <div className="lg:sticky lg:top-28">
               <OrderSummaryCard isCheckout cart={cart} />
             </div>
           </div>
