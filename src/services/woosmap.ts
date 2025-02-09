@@ -47,7 +47,6 @@ export async function fetchPostcodes(input: string): Promise<WoosmapResponse> {
   }
 }
 
-// API Response Types for Details
 interface AddressComponent {
   long_name: string;
   short_name: string;
@@ -59,31 +58,18 @@ interface Geometry {
     lat: number;
     lng: number;
   };
-  viewport?: {
-    northeast: {
-      lat: number;
-      lng: number;
-    };
-    southwest: {
-      lat: number;
-      lng: number;
-    };
-  };
 }
 
 export interface WoosmapDetailsResponse {
   result: {
-    address_components: AddressComponent[];
+    public_id: string;
+    types: string[];
     formatted_address: string;
     geometry: Geometry;
-    types: string[];
-    postal_code?: string;
-    locality?: string;
-    country?: string;
-    public_id: string;
+    name: string; // Adding this as it's present in the response
+    address_components: AddressComponent[];
   };
 }
-
 export async function fetchPostcodeDetails(
   publicId: string
 ): Promise<WoosmapDetailsResponse> {

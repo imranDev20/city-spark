@@ -1,7 +1,7 @@
 "use client";
 
 import React, { JSX, useState } from "react";
-import { FaMapMarkerAlt, FaTruck } from "react-icons/fa";
+import { FaTruck } from "react-icons/fa";
 import { Search, X } from "lucide-react";
 import axios from "axios";
 import {

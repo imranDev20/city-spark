@@ -210,6 +210,7 @@ export function FulfillmentForm({
   return (
     <form onSubmit={handleSubmit}>
       {deliveryItems.length > 0 && <DeliverySection items={deliveryItems} />}
+
       {collectionItems.length > 0 && (
         <CollectionSection items={collectionItems} />
       )}

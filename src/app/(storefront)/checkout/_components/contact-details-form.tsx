@@ -246,7 +246,10 @@ export function ContactDetailsForm({ onNext }: ContactDetailsFormProps) {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
+                  <FormLabel className="text-sm font-medium">
+                    Phone Number
+                    <RequiredIndicator />
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type="tel"

@@ -8,15 +8,15 @@ import {
   FaUser,
   FaHeart,
   FaTachometerAlt,
-  FaSignOutAlt,
   FaMapMarkerAlt,
   FaCog,
   FaShoppingCart,
 } from "react-icons/fa";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import useEmblaCarousel from "embla-carousel-react";
 import LogoutDialog from "./_components/logout-dialog";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
 
 const navigation = [
   {
@@ -51,68 +51,79 @@ const navigation = [
   },
 ];
 
+const NavLink = ({
+  item,
+  className,
+  isMobile = false,
+}: {
+  item: (typeof navigation)[0];
+  className?: string;
+  isMobile?: boolean;
+}) => {
+  const pathname = usePathname();
+  const isActive = pathname === item.href;
+
+  return (
+    <Link
+      href={item.href}
+      className={cn(
+        "flex items-center rounded-lg group relative",
+        "transition-colors duration-200",
+        isActive
+          ? "bg-primary text-primary-foreground"
+          : "hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+        isMobile ? "flex-col p-3 gap-2" : "px-4 py-2.5 gap-3",
+        className
+      )}
+    >
+      <item.icon
+        className={cn(
+          "flex-shrink-0",
+          isMobile ? "h-6 w-6" : "h-5 w-5",
+          !isActive &&
+            cn(
+              "text-muted-foreground transition-colors duration-200",
+              "group-hover:text-primary"
+            )
+        )}
+      />
+      <span
+        className={cn(
+          isMobile ? "text-xs" : "text-sm",
+          "font-medium",
+          !isActive &&
+            cn(
+              "text-muted-foreground transition-colors duration-200",
+              "group-hover:text-primary"
+            )
+        )}
+      >
+        {item.name}
+      </span>
+    </Link>
+  );
+};
+
 export default function AccountLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
+  const { data: session, status } = useSession();
   const [emblaRef] = useEmblaCarousel({
     align: "start",
     dragFree: true,
   });
 
-  const NavLink = ({
-    item,
-    className,
-    isMobile = false,
-  }: {
-    item: (typeof navigation)[0];
-    className?: string;
-    isMobile?: boolean;
-  }) => {
-    const isActive = pathname === item.href;
+  // Redirect to login if not authenticated
+  if (status === "unauthenticated") {
+    redirect("/login");
+  }
 
-    return (
-      <Link
-        href={item.href}
-        className={cn(
-          "flex items-center rounded-lg group relative",
-          "transition-colors duration-200",
-          isActive
-            ? "bg-primary text-primary-foreground"
-            : "hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
-          isMobile ? "flex-col p-3 gap-2" : "px-4 py-2.5 gap-3",
-          className
-        )}
-      >
-        <item.icon
-          className={cn(
-            "flex-shrink-0",
-            isMobile ? "h-6 w-6" : "h-5 w-5",
-            !isActive &&
-              cn(
-                "text-muted-foreground transition-colors duration-200",
-                "group-hover:text-primary"
-              )
-          )}
-        />
-        <span
-          className={cn(
-            isMobile ? "text-xs" : "text-sm",
-            "font-medium",
-            !isActive &&
-              cn(
-                "text-muted-foreground transition-colors duration-200",
-                "group-hover:text-primary"
-              )
-          )}
-        >
-          {item.name}
-        </span>
-      </Link>
-    );
-  };
+  // Show loading state while checking authentication
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen">
@@ -146,9 +157,11 @@ export default function AccountLayout({
                   <FaUser className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">John Doe</p>
+                  <p className="font-medium truncate">
+                    {session?.user.firstName} {session?.user.lastName}
+                  </p>
                   <p className="text-sm text-muted-foreground truncate">
-                    john.doe@example.com
+                    {session?.user?.email}
                   </p>
                 </div>
               </div>

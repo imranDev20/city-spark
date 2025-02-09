@@ -14,6 +14,9 @@ import {
 } from "react-icons/fa";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { fetchAccountData } from "@/services/account";
+import { Loader2 } from "lucide-react";
 
 type DashboardCardProps = {
   title: string;
@@ -113,6 +116,42 @@ const QuickActionCard = ({
 );
 
 export default function AccountPage() {
+  const {
+    data: userData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["account"],
+    queryFn: fetchAccountData,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8" />
+      </div>
+    );
+  }
+
+  if (error || !userData) {
+    return (
+      <Card className="p-6 text-center">
+        <p className="text-red-500">
+          {error instanceof Error
+            ? error.message
+            : "Failed to load account data"}
+        </p>
+        <Button
+          variant="outline"
+          onClick={() => window.location.reload()}
+          className="mt-4"
+        >
+          Try Again
+        </Button>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
@@ -124,7 +163,7 @@ export default function AccountPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold">
-                Welcome back, {userData.firstName}!
+                Welcome back, {userData.firstName || "User"}!
               </h1>
               <p className="text-primary-foreground/90 mt-1">
                 Manage your account and view your orders
@@ -145,7 +184,12 @@ export default function AccountPage() {
         />
         <DashboardCard
           title="Active Orders"
-          value="2"
+          value={
+            userData.recentOrders.filter(
+              (order) =>
+                order.status === "PENDING" || order.status === "PROCESSING"
+            ).length
+          }
           description="Currently in progress"
           icon={FaBox}
           href="/account/orders"
@@ -221,7 +265,11 @@ export default function AccountPage() {
               <div className="grid gap-4">
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Full Name</p>
-                  <p className="font-medium">{`${userData.firstName} ${userData.lastName}`}</p>
+                  <p className="font-medium">
+                    {`${userData.firstName || ""} ${
+                      userData.lastName || ""
+                    }`.trim() || "Not set"}
+                  </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Email</p>
@@ -229,7 +277,7 @@ export default function AccountPage() {
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Phone</p>
-                  <p className="font-medium">{userData.phone}</p>
+                  <p className="font-medium">{userData.phone || "Not set"}</p>
                 </div>
               </div>
             </div>
@@ -237,7 +285,7 @@ export default function AccountPage() {
         </Card>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions section remains the same */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold px-1">Quick Actions</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

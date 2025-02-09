@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -11,99 +11,112 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Search,
-  Package,
-  ArrowRight,
-  CalendarDays,
-  Clock,
-  Store,
-  Truck,
-} from "lucide-react";
-import Link from "next/link";
+import { Package, Search } from "lucide-react";
 import { FaBox } from "react-icons/fa";
-import { NumericFormat } from "react-number-format";
+import { useQuery } from "@tanstack/react-query";
+import { fetchOrders, type OrdersResponse } from "@/services/account-orders";
+import { useDebounce } from "@/hooks/use-debounce";
+import { OrderStatus } from "@prisma/client";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-type OrderStatus = "pending" | "processing" | "completed" | "cancelled";
-type FulfillmentType = "FOR_DELIVERY" | "FOR_COLLECTION";
+import { useCallback, useMemo } from "react";
+import { OrderStatCard } from "./_components/order-stat-card";
+import { OrderListItem } from "./_components/order-list-item";
 
-interface Order {
-  id: string;
-  orderNumber: string;
-  date: string;
-  status: OrderStatus;
-  total: number;
-  fulfillmentType: FulfillmentType;
-  deliveryAddress?: string;
-  collectionPoint?: string;
-}
-
-// Dummy data with delivery and collection orders
-const dummyOrders: Order[] = [
-  {
-    id: "1",
-    orderNumber: "ORD-2024-001",
-    date: "2024-02-05T14:30:00Z",
-    status: "completed",
-    total: 299.99,
-    fulfillmentType: "FOR_DELIVERY",
-    deliveryAddress: "123 Main St, London, E1 6AN",
-  },
-  {
-    id: "2",
-    orderNumber: "ORD-2024-002",
-    date: "2024-02-03T09:15:00Z",
-    status: "processing",
-    total: 458.5,
-    fulfillmentType: "FOR_COLLECTION",
-    collectionPoint: "Manchester Store",
-  },
-  {
-    id: "3",
-    orderNumber: "ORD-2024-003",
-    date: "2024-02-01T11:45:00Z",
-    status: "pending",
-    total: 189.99,
-    fulfillmentType: "FOR_DELIVERY",
-    deliveryAddress: "45 Park Lane, Birmingham, B1 1AA",
-  },
-];
-
-const statusColorMap = {
-  pending: "bg-yellow-100 text-yellow-800 border border-yellow-200",
-  processing: "bg-blue-100 text-blue-800 border border-blue-200",
-  completed: "bg-green-100 text-green-800 border border-green-200",
-  cancelled: "bg-red-100 text-red-800 border border-red-200",
-};
-
-const statusLabels = {
-  pending: "Pending",
-  processing: "Processing",
-  completed: "Completed",
-  cancelled: "Cancelled",
+const statusLabels: Record<OrderStatus, string> = {
+  PENDING: "Pending",
+  PROCESSING: "Processing",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
+  DRAFT: "Draft",
+  SHIPPED: "Shipped",
+  DELIVERED: "Delivered",
+  RETURNED: "Returned",
+  RETURNED_REFUND: "Returned & Refunded",
+  AWAITING_PAYMENT: "Awaiting Payment",
 };
 
 export default function AccountOrdersPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  // Filter orders based on search query and status
-  const filteredOrders = dummyOrders.filter((order) => {
-    const matchesSearch = order.orderNumber
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
+  // Get current search params
+  const currentSearchQuery = searchParams.get("search") || "";
+  const currentStatus =
+    (searchParams.get("status") as OrderStatus | "all") || "all";
+  const currentPage = Number(searchParams.get("page")) || 1;
+
+  // Debounce search query
+  const debouncedSearch = useDebounce(currentSearchQuery, 300);
+
+  // Update URL with new search params
+  const updateSearchParams = useCallback(
+    (newParams: Record<string, string>) => {
+      const params = new URLSearchParams(searchParams);
+      Object.entries(newParams).forEach(([key, value]) => {
+        if (value) {
+          params.set(key, value);
+        } else {
+          params.delete(key);
+        }
+      });
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router, searchParams]
+  );
+
+  // Fetch orders
+  const { data, isLoading, isError } = useQuery<OrdersResponse>({
+    queryKey: ["orders", debouncedSearch, currentStatus, currentPage],
+    queryFn: () =>
+      fetchOrders({
+        search: debouncedSearch,
+        status: currentStatus === "all" ? undefined : currentStatus,
+        page: currentPage,
+        limit: 10,
+      }),
   });
 
-  const deliveryOrdersCount = dummyOrders.filter(
-    (order) => order.fulfillmentType === "FOR_DELIVERY"
-  ).length;
+  // Memoize stats calculations
+  const { deliveryOrdersCount, collectionOrdersCount, totalSpent } =
+    useMemo(() => {
+      if (!data?.data) {
+        return {
+          deliveryOrdersCount: 0,
+          collectionOrdersCount: 0,
+          totalSpent: 0,
+        };
+      }
 
-  const collectionOrdersCount = dummyOrders.filter(
-    (order) => order.fulfillmentType === "FOR_COLLECTION"
-  ).length;
+      const delivery = data.data.filter((order) =>
+        order.orderItems.some((item) => item.type === "FOR_DELIVERY")
+      ).length;
+
+      const collection = data.data.filter((order) =>
+        order.orderItems.some((item) => item.type === "FOR_COLLECTION")
+      ).length;
+
+      const total = data.data.reduce((acc, order) => acc + order.totalPrice, 0);
+
+      return {
+        deliveryOrdersCount: delivery,
+        collectionOrdersCount: collection,
+        totalSpent: total,
+      };
+    }, [data?.data]);
+
+  const handlePrevPage = useCallback(() => {
+    if (currentPage > 1) {
+      updateSearchParams({ page: String(currentPage - 1) });
+    }
+  }, [currentPage, updateSearchParams]);
+
+  const handleNextPage = useCallback(() => {
+    if (data?.pagination.hasMore) {
+      updateSearchParams({ page: String(currentPage + 1) });
+    }
+  }, [currentPage, data?.pagination.hasMore, updateSearchParams]);
 
   return (
     <div className="space-y-6">
@@ -126,54 +139,27 @@ export default function AccountOrdersPage() {
 
       {/* Quick Stats */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          {
-            label: "Total Orders",
-            value: dummyOrders.length,
-            isNumber: true,
-          },
-          {
-            label: "Delivery Orders",
-            value: deliveryOrdersCount,
-            isNumber: true,
-          },
-          {
-            label: "Collection Orders",
-            value: collectionOrdersCount,
-            isNumber: true,
-          },
-          {
-            label: "Total Spent",
-            value: dummyOrders.reduce((acc, order) => acc + order.total, 0),
-            isCurrency: true,
-          },
-        ].map((stat, index) => (
-          <Card key={index} className="bg-white">
-            <CardContent className="p-6">
-              <p className="text-sm font-medium text-muted-foreground">
-                {stat.label}
-              </p>
-              <p className="text-2xl font-bold mt-2">
-                {stat.isCurrency ? (
-                  <NumericFormat
-                    value={stat.value}
-                    displayType="text"
-                    prefix="£"
-                    thousandSeparator
-                    decimalScale={2}
-                    fixedDecimalScale
-                  />
-                ) : (
-                  <NumericFormat
-                    value={stat.value}
-                    displayType="text"
-                    thousandSeparator
-                  />
-                )}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        <OrderStatCard
+          label="Total Orders"
+          value={data?.pagination.totalCount || 0}
+          isLoading={isLoading}
+        />
+        <OrderStatCard
+          label="Delivery Orders"
+          value={deliveryOrdersCount}
+          isLoading={isLoading}
+        />
+        <OrderStatCard
+          label="Collection Orders"
+          value={collectionOrdersCount}
+          isLoading={isLoading}
+        />
+        <OrderStatCard
+          label="Total Spent"
+          value={totalSpent}
+          isCurrency
+          isLoading={isLoading}
+        />
       </div>
 
       {/* Filters and Search */}
@@ -184,15 +170,20 @@ export default function AccountOrdersPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Search by order number..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={currentSearchQuery}
+                onChange={(e) =>
+                  updateSearchParams({ search: e.target.value, page: "1" })
+                }
                 className="pl-9"
               />
             </div>
             <Select
-              value={statusFilter}
+              value={currentStatus}
               onValueChange={(value) =>
-                setStatusFilter(value as OrderStatus | "all")
+                updateSearchParams({
+                  status: value,
+                  page: "1",
+                })
               }
             >
               <SelectTrigger className="w-full sm:w-[180px]">
@@ -200,10 +191,11 @@ export default function AccountOrdersPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Orders</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="processing">Processing</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
+                {Object.entries(statusLabels).map(([status, label]) => (
+                  <SelectItem key={status} value={status}>
+                    {label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -216,7 +208,25 @@ export default function AccountOrdersPage() {
           <CardTitle>Order History</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          {filteredOrders.length === 0 ? (
+          {isLoading ? (
+            <div className="divide-y divide-gray-200">
+              {[...Array(3)].map((_, index) => (
+                <div key={index} className="p-6 animate-pulse">
+                  <div className="space-y-3">
+                    <div className="h-6 bg-gray-200 rounded w-1/4" />
+                    <div className="h-4 bg-gray-200 rounded w-1/2" />
+                    <div className="h-4 bg-gray-200 rounded w-3/4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : isError ? (
+            <div className="text-center py-12">
+              <p className="text-red-500">
+                Error loading orders. Please try again.
+              </p>
+            </div>
+          ) : data?.data.length === 0 ? (
             <div className="text-center py-12">
               <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-semibold text-gray-900">
@@ -228,82 +238,80 @@ export default function AccountOrdersPage() {
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {filteredOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className="p-6 hover:bg-gray-50/50 transition-colors"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                        <Link
-                          href={`/account/orders/${order.id}`}
-                          className="text-lg font-semibold hover:text-primary transition-colors"
-                        >
-                          {order.orderNumber}
-                        </Link>
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                            statusColorMap[order.status]
-                          }`}
-                        >
-                          {statusLabels[order.status]}
-                        </span>
-                      </div>
-
-                      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500 mt-2">
-                        <div className="flex items-center gap-2">
-                          <CalendarDays className="h-4 w-4" />
-                          <span>
-                            {new Date(order.date).toLocaleDateString("en-GB", {
-                              day: "numeric",
-                              month: "long",
-                              year: "numeric",
-                            })}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          <span>
-                            {new Date(order.date).toLocaleTimeString("en-GB", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {order.fulfillmentType === "FOR_DELIVERY" ? (
-                            <>
-                              <Truck className="h-4 w-4" />
-                              <span>{order.deliveryAddress}</span>
-                            </>
-                          ) : (
-                            <>
-                              <Store className="h-4 w-4" />
-                              <span>{order.collectionPoint}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <p className="text-sm text-gray-500">Total</p>
-                        <p className="text-lg font-bold">
-                          £{order.total.toFixed(2)}
-                        </p>
-                      </div>
-                      <Button size="sm" className="shrink-0" asChild>
-                        <Link href={`/account/orders/${order.id}`}>
-                          View Details
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+              {data?.data.map((order) => (
+                <OrderListItem key={order.id} order={order} />
               ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {data && data.pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t sm:px-6">
+              <div className="flex justify-between flex-1 sm:hidden">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage <= 1}
+                  onClick={handlePrevPage}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!data.pagination.hasMore}
+                  onClick={handleNextPage}
+                >
+                  Next
+                </Button>
+              </div>
+              <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Showing{" "}
+                    <span className="font-medium">
+                      {(currentPage - 1) * 10 + 1}
+                    </span>{" "}
+                    to{" "}
+                    <span className="font-medium">
+                      {Math.min(currentPage * 10, data.pagination.totalCount)}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-medium">
+                      {data.pagination.totalCount}
+                    </span>{" "}
+                    results
+                  </p>
+                </div>
+                <div>
+                  <nav
+                    className="inline-flex -space-x-px rounded-md shadow-sm"
+                    aria-label="Pagination"
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-l-md"
+                      disabled={currentPage <= 1}
+                      onClick={handlePrevPage}
+                    >
+                      Previous
+                    </Button>
+                    <div className="flex items-center px-4 text-sm font-semibold">
+                      Page {currentPage} of {data.pagination.totalPages}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-r-md"
+                      disabled={!data.pagination.hasMore}
+                      onClick={handleNextPage}
+                    >
+                      Next
+                    </Button>
+                  </nav>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>
