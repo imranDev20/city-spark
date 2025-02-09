@@ -72,22 +72,42 @@ export default function AccountLayout({
     isMobile?: boolean;
   }) => {
     const isActive = pathname === item.href;
+
     return (
       <Link
         href={item.href}
         className={cn(
-          "flex flex-col items-center rounded-lg transition-all duration-200",
+          "flex items-center rounded-lg group relative",
+          "transition-colors duration-200",
           isActive
-            ? "bg-primary text-primary-foreground shadow-sm"
-            : "text-gray-700 hover:bg-gray-100",
-          isMobile ? "p-3 gap-2" : "flex-row gap-3 px-4 py-2.5",
+            ? "bg-primary text-primary-foreground"
+            : "hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+          isMobile ? "flex-col p-3 gap-2" : "px-4 py-2.5 gap-3",
           className
         )}
       >
         <item.icon
-          className={cn("flex-shrink-0", isMobile ? "h-6 w-6" : "h-5 w-5")}
+          className={cn(
+            "flex-shrink-0",
+            isMobile ? "h-6 w-6" : "h-5 w-5",
+            !isActive &&
+              cn(
+                "text-muted-foreground transition-colors duration-200",
+                "group-hover:text-primary"
+              )
+          )}
         />
-        <span className={cn("font-medium", isMobile ? "text-xs" : "text-sm")}>
+        <span
+          className={cn(
+            isMobile ? "text-xs" : "text-sm",
+            "font-medium",
+            !isActive &&
+              cn(
+                "text-muted-foreground transition-colors duration-200",
+                "group-hover:text-primary"
+              )
+          )}
+        >
           {item.name}
         </span>
       </Link>
@@ -137,7 +157,6 @@ export default function AccountLayout({
                 {navigation.map((item) => (
                   <NavLink key={item.name} item={item} isMobile={false} />
                 ))}
-
                 <LogoutDialog />
               </nav>
             </Card>

@@ -102,7 +102,7 @@ const BasketList: React.FC<BasketListProps> = ({ items, type }) => {
             </h2>
           </div>
 
-          {type === FulFillmentType.FOR_DELIVERY && (
+          {/* {type === FulFillmentType.FOR_DELIVERY && (
             <div className="flex items-center bg-gray-50 rounded-lg px-4 py-2">
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
@@ -122,7 +122,7 @@ const BasketList: React.FC<BasketListProps> = ({ items, type }) => {
                 </Button>
               </div>
             </div>
-          )}
+          )} */}
         </div>
 
         <Card className={cn("p-5 bg-white", isPending && "opacity-50")}>
