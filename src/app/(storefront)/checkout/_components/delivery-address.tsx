@@ -3,22 +3,17 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Loader2, PencilIcon } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card } from "@/components/ui/card";
+import { FaPen, FaTruck } from "react-icons/fa";
+import { Command, CommandGroup, CommandItem } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
+import { fetchPostcodeDetails, fetchPostcodes } from "@/services/woosmap";
 
 interface Address {
   line1: string;
@@ -28,28 +23,15 @@ interface Address {
   postcode: string;
 }
 
-// Mock API response - replace with real API integration
-const mockAddressLookup = async (postcode: string): Promise<Address[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  return [
-    {
-      line1: "123 High Street",
-      line2: "Flat A",
-      city: "London",
-      county: "Greater London",
-      postcode: postcode.toUpperCase(),
-    },
-    {
-      line1: "456 High Street",
-      city: "London",
-      county: "Greater London",
-      postcode: postcode.toUpperCase(),
-    },
-  ];
-};
-
 export default function DeliveryAddress() {
-  // Mock existing address - replace with actual data from props or context
+  const [postcode, setPostcode] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+
+  // Default address - replace with actual data from props or context
   const defaultAddress: Address = {
     line1: "123 High Street",
     line2: "Flat A",
@@ -58,31 +40,55 @@ export default function DeliveryAddress() {
     postcode: "SW1A 1AA",
   };
 
-  const [postcode, setPostcode] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
-  const [manualEntry, setManualEntry] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const handlePostcodeSearch = async (value: string) => {
+    setPostcode(value);
 
-  const handlePostcodeLookup = async () => {
-    if (!postcode.trim()) return;
+    if (value.length < 3) {
+      setSuggestions([]);
+      return;
+    }
 
     setIsLoading(true);
     try {
-      const addresses = await mockAddressLookup(postcode);
-      setAddresses(addresses);
-      setSelectedAddress(null);
+      const response = await fetchPostcodes(value);
+      setSuggestions(response.localities);
     } catch (error) {
-      console.error("Failed to look up postcode:", error);
+      console.error("Failed to fetch postcodes:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleAddressSelect = (index: string) => {
-    const selected = addresses[parseInt(index)];
-    setSelectedAddress(selected);
+  const handleSelectPostcode = async (publicId: string) => {
+    setIsLoadingDetails(true);
+    try {
+      const details = await fetchPostcodeDetails(publicId);
+      const addressComponents = details.result.address_components;
+
+      // Extract address components
+      const postcode =
+        addressComponents.find((comp) => comp.types.includes("postal_code"))
+          ?.long_name || "";
+      const city =
+        addressComponents.find((comp) => comp.types.includes("postal_town"))
+          ?.long_name || "";
+      const county = addressComponents.find((comp) =>
+        comp.types.includes("administrative_area_level_2")
+      )?.long_name;
+
+      setSelectedAddress({
+        line1: "",
+        city,
+        county,
+        postcode,
+      });
+
+      setSuggestions([]); // Clear suggestions after selection
+    } catch (error) {
+      console.error("Failed to fetch postcode details:", error);
+    } finally {
+      setIsLoadingDetails(false);
+    }
   };
 
   const formatAddress = (address: Address) => {
@@ -98,114 +104,82 @@ export default function DeliveryAddress() {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Simple distinction with a light gray background */}
-      <div className="flex justify-between items-start bg-gray-50 rounded-lg border p-4">
-        <div>
-          <h3 className="font-medium text-gray-900 mb-1">Delivery Address</h3>
-          <p className="text-gray-600 text-sm">
-            {formatAddress(defaultAddress)}
-          </p>
+    <button
+      type="button"
+      onClick={() => setIsDialogOpen(true)}
+      className="flex justify-between items-center bg-gray-50 hover:bg-gray-100 rounded-lg border hover:border-gray-400 p-4 w-full transition-all duration-200 group"
+    >
+      <div>
+        <div className="flex items-center gap-3 mb-1">
+          <FaTruck className="h-5 w-5 text-gray-500" />
+          <h3 className="font-medium text-gray-900 text-lg">
+            Delivery Address
+          </h3>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <PencilIcon className="h-4 w-4" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Edit Delivery Address</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-4">
-              {!manualEntry && (
-                <div className="space-y-4">
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <Input
-                        placeholder="Enter Postcode"
-                        value={postcode}
-                        onChange={(e) => setPostcode(e.target.value)}
-                        className="w-full"
-                      />
-                    </div>
-                    <Button
-                      onClick={handlePostcodeLookup}
-                      disabled={isLoading || !postcode.trim()}
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Search className="h-4 w-4" />
-                      )}
-                      <span className="ml-2">Find</span>
-                    </Button>
-                  </div>
+        <p className="text-gray-600 text-sm pl-7">
+          {formatAddress(defaultAddress)}
+        </p>
+      </div>
 
-                  {addresses.length > 0 && (
-                    <Select onValueChange={handleAddressSelect}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your address" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {addresses.map((address, index) => (
-                          <SelectItem key={index} value={index.toString()}>
-                            {formatAddress(address)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <FaPen className="h-5 w-5" />
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Edit Delivery Address</DialogTitle>
+          </DialogHeader>
 
-                  <Button
-                    variant="link"
-                    className="px-0"
-                    onClick={() => setManualEntry(true)}
-                  >
-                    Enter address manually
-                  </Button>
-                </div>
+          <div className="space-y-4 pt-4">
+            <div className="relative">
+              <Input
+                placeholder="Enter Postcode"
+                value={postcode}
+                onChange={(e) => handlePostcodeSearch(e.target.value)}
+                className="w-full"
+              />
+
+              {isLoading && (
+                <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin" />
               )}
 
-              {(manualEntry || selectedAddress) && (
-                <div className="space-y-4">
-                  <Input
-                    placeholder="Address Line 1"
-                    defaultValue={selectedAddress?.line1}
-                  />
-                  <Input
-                    placeholder="Address Line 2 (Optional)"
-                    defaultValue={selectedAddress?.line2}
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input
-                      placeholder="City"
-                      defaultValue={selectedAddress?.city}
-                    />
-                    <Input
-                      placeholder="County (Optional)"
-                      defaultValue={selectedAddress?.county}
-                    />
-                  </div>
-                  <Input
-                    placeholder="Postcode"
-                    defaultValue={selectedAddress?.postcode || postcode}
-                  />
-                  {manualEntry && (
-                    <Button
-                      variant="link"
-                      className="px-0"
-                      onClick={() => setManualEntry(false)}
-                    >
-                      Use postcode lookup instead
-                    </Button>
-                  )}
-                </div>
+              {suggestions.length > 0 && (
+                <Command className="absolute top-full left-0 right-0 z-50 mt-1">
+                  <CommandGroup>
+                    {suggestions.map((suggestion) => (
+                      <CommandItem
+                        key={suggestion.public_id}
+                        onSelect={() =>
+                          handleSelectPostcode(suggestion.public_id)
+                        }
+                        className="cursor-pointer"
+                      >
+                        {suggestion.description}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
               )}
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </div>
+
+            {selectedAddress && !isLoadingDetails && (
+              <div className="space-y-4">
+                <Input placeholder="Address Line 1" />
+                <Input placeholder="Address Line 2 (Optional)" />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input placeholder="City" value={selectedAddress.city} />
+                  <Input
+                    placeholder="County (Optional)"
+                    value={selectedAddress.county || ""}
+                  />
+                </div>
+                <Input
+                  placeholder="Postcode"
+                  value={selectedAddress.postcode}
+                />
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </button>
   );
 }

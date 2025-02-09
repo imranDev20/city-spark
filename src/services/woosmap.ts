@@ -46,3 +46,70 @@ export async function fetchPostcodes(input: string): Promise<WoosmapResponse> {
     throw new Error("An unexpected error occurred");
   }
 }
+
+// API Response Types for Details
+interface AddressComponent {
+  long_name: string;
+  short_name: string;
+  types: string[];
+}
+
+interface Geometry {
+  location: {
+    lat: number;
+    lng: number;
+  };
+  viewport?: {
+    northeast: {
+      lat: number;
+      lng: number;
+    };
+    southwest: {
+      lat: number;
+      lng: number;
+    };
+  };
+}
+
+export interface WoosmapDetailsResponse {
+  result: {
+    address_components: AddressComponent[];
+    formatted_address: string;
+    geometry: Geometry;
+    types: string[];
+    postal_code?: string;
+    locality?: string;
+    country?: string;
+    public_id: string;
+  };
+}
+
+export async function fetchPostcodeDetails(
+  publicId: string
+): Promise<WoosmapDetailsResponse> {
+  if (!publicId) {
+    throw new Error("Public ID is required");
+  }
+
+  try {
+    const config = {
+      method: "get",
+      url: `https://api.woosmap.com/localities/details?public_id=${encodeURIComponent(
+        publicId
+      )}&key=woos-e77092fe-0b39-3f5a-85ce-33aaabbba621`,
+      headers: {
+        Referer: "http://localhost",
+      },
+    };
+
+    const { data } = await axios<WoosmapDetailsResponse>(config);
+    return data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch postcode details"
+      );
+    }
+    throw new Error("An unexpected error occurred");
+  }
+}

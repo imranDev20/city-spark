@@ -14,6 +14,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { createPreOrder } from "../actions";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { useSession } from "next-auth/react";
+import { FaStore } from "react-icons/fa";
 
 interface FulfillmentFormProps {
   onNext: () => void;
@@ -74,7 +75,7 @@ const ItemList = ({ items }: { items: CartItemProps[] }) => (
   </div>
 );
 
-const DeliverySection = ({ items }: { items: CartItemProps[] }) => (
+export const DeliverySection = ({ items }: { items: CartItemProps[] }) => (
   <div className="mb-8">
     <CardHeader className="pb-4">
       <div className="flex items-center gap-3 mb-1">
@@ -99,7 +100,7 @@ const DeliverySection = ({ items }: { items: CartItemProps[] }) => (
   </div>
 );
 
-const CollectionSection = ({ items }: { items: CartItemProps[] }) => (
+export const CollectionSection = ({ items }: { items: CartItemProps[] }) => (
   <div>
     <CardHeader className="pb-4">
       <div className="flex items-center gap-3 mb-1">
@@ -119,8 +120,10 @@ const CollectionSection = ({ items }: { items: CartItemProps[] }) => (
 
       <div className="bg-gray-50 rounded-lg border-border border p-4">
         <div className="flex items-center gap-3 mb-1">
-          <Store className="h-4 w-4 text-gray-500" />
-          <h3 className="font-medium text-gray-900">Collection Point</h3>
+          <FaStore className="h-5 w-5 text-gray-500" />
+          <h3 className="font-medium text-gray-900 text-lg">
+            Collection Point
+          </h3>
         </div>
         <p className="text-sm text-gray-600 pl-7">
           123 High Street, London, SW1A 1AA

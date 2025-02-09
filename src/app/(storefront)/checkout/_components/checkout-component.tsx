@@ -72,7 +72,7 @@ export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
 
       {/* Desktop Stepper */}
       <div className="hidden lg:block container max-w-screen-xl mx-auto px-4 py-8 lg:py-12">
-        <div className="max-w-4xl mx-auto mb-12">
+        <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-4 gap-6">
             {steps.map((step, index) => {
               const isCompleted =

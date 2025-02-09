@@ -7,8 +7,15 @@ import SearchInput from "./search-input";
 import CitySparkLogo from "./city-spark-logo";
 import BasketPopup from "./basket-popup";
 import DeliveryDialog from "./delivery-dialog";
+import { cn } from "@/lib/utils";
+import { FaTruck } from "react-icons/fa";
+import { useDeliveryStore } from "@/hooks/use-delivery-store";
+import { useState } from "react";
 
 export default function DesktopHeader() {
+  const { postcode } = useDeliveryStore();
+  const [openDeliveryDialog, setOpenDeliveryDialog] = useState<boolean>(false);
+
   return (
     <header className="w-full bg-primary py-2 hidden lg:block">
       <div className="container h-24 flex items-center justify-between mx-auto max-w-screen-xl gap-10">
@@ -26,7 +33,25 @@ export default function DesktopHeader() {
           <AccountDropdown />
           <Separator orientation="vertical" className="h-12 w-px bg-white" />
 
-          <DeliveryDialog />
+          <button
+            onClick={() => setOpenDeliveryDialog(true)}
+            className={cn(
+              "flex flex-col items-center gap-1 px-3 py-2 text-white rounded-md transition-colors duration-200",
+              "hover:bg-white/10",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
+            )}
+          >
+            <FaTruck className="h-8 w-8" />
+            <span className="text-base font-semibold">Delivery</span>
+            <span className="text-xs font-light -mt-1">
+              {postcode || "Postcode"}
+            </span>
+          </button>
+
+          <DeliveryDialog
+            open={openDeliveryDialog}
+            setOpen={setOpenDeliveryDialog}
+          />
 
           <Separator orientation="vertical" className="h-12 w-px bg-white" />
           <BasketPopup />

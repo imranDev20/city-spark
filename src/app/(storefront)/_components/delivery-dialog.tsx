@@ -1,7 +1,7 @@
 "use client";
 
 import React, { JSX, useState } from "react";
-import { FaTruck } from "react-icons/fa";
+import { FaMapMarkerAlt, FaTruck } from "react-icons/fa";
 import { Search, X } from "lucide-react";
 import axios from "axios";
 import {
@@ -20,9 +20,13 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useDeliveryStore } from "@/hooks/use-delivery-store";
 import { fetchPostcodes, WoosmapResponse } from "@/services/woosmap";
 
-export default function DeliveryDialog(): JSX.Element {
-  const { postcode, setPostcode } = useDeliveryStore();
-  const [open, setOpen] = useState<boolean>(false);
+interface DeliveryDialogProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
+
+export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
+  const { setPostcode } = useDeliveryStore();
   const [search, setSearch] = useState<string>("");
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [isFocused, setIsFocused] = useState<boolean>(false);
@@ -89,28 +93,19 @@ export default function DeliveryDialog(): JSX.Element {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <button
-          className={cn(
-            "flex flex-col items-center gap-1 px-3 py-2 text-white rounded-md transition-colors duration-200",
-            "hover:bg-white/10",
-            "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
-          )}
-        >
-          <FaTruck className="h-8 w-8" />
-          <span className="text-base font-semibold">Delivery</span>
-          <span className="text-xs font-light -mt-1">
-            {postcode || "Postcode"}
-          </span>
-        </button>
-      </DialogTrigger>
-
       <DialogContent className="sm:max-w-xl" style={{ zIndex: 100 }}>
         <DialogHeader>
-          <DialogTitle>Set Delivery Postcode</DialogTitle>
-          <DialogDescription>
-            Enter your postcode to check delivery availability in your area.
-          </DialogDescription>
+          <div className="flex items-center gap-3 mb-2.5">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <FaTruck className="h-5 w-5 text-primary" />
+            </div>
+            <div className="space-y-1.5">
+              <DialogTitle>Set Delivery Postcode</DialogTitle>
+              <DialogDescription>
+                Enter your postcode to check delivery availability in your area.
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
         <div className="mt-4 space-y-6">
