@@ -24,6 +24,7 @@ type MenuItemProps = {
   href?: string;
   onClick?: () => void | Promise<void>;
   loading?: boolean;
+  isLogout?: boolean;
 };
 
 const MenuItem = ({
@@ -32,32 +33,49 @@ const MenuItem = ({
   href,
   onClick,
   loading,
-}: MenuItemProps) => {
-  const className = cn(
-    "flex items-center w-full rounded-lg transition-all duration-200", // Added w-full here
-    "px-4 py-2.5 gap-3",
+  isLogout,
+}: MenuItemProps & { className?: string }) => {
+  // Add className to type
+  const baseClassName = cn(
+    "flex items-center w-full rounded-lg group relative",
+    "px-4 py-2.5 gap-3 transition-colors duration-200",
     loading
       ? "opacity-70 cursor-not-allowed"
-      : "text-gray-700 hover:bg-gray-100"
+      : "hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+    isLogout && "hover:bg-destructive/10"
   );
 
   const content = (
     <>
-      <Icon className="h-5 w-5 flex-shrink-0" />
-      <span className="text-sm font-medium">{label}</span>
+      <Icon
+        className={cn(
+          "h-5 w-5 flex-shrink-0 text-muted-foreground transition-colors duration-200",
+          "group-hover:text-primary",
+          isLogout && "group-hover:text-destructive"
+        )}
+      />
+      <span
+        className={cn(
+          "text-sm font-medium text-muted-foreground transition-colors duration-200",
+          "group-hover:text-primary",
+          isLogout && "group-hover:text-destructive"
+        )}
+      >
+        {label}
+      </span>
     </>
   );
 
   if (href) {
     return (
-      <Link href={href} className={className}>
+      <Link href={href} className={baseClassName}>
         {content}
       </Link>
     );
   }
 
   return (
-    <button onClick={onClick} disabled={loading} className={className}>
+    <button onClick={onClick} disabled={loading} className={baseClassName}>
       {content}
     </button>
   );
@@ -131,9 +149,13 @@ export default function AccountDropdown() {
 
   const menuItems = [
     { icon: FaUserCircle, label: "Profile", href: "/account" },
-    { icon: FaHeart, label: "Wishlist", href: "/wishlist" },
-    { icon: FaBox, label: "Orders", href: "/orders" },
-    { icon: FaMapMarkerAlt, label: "Notifications", href: "/notifications" },
+    { icon: FaHeart, label: "Wishlist", href: "/account/wishlist" },
+    { icon: FaBox, label: "Orders", href: "/account/orders" },
+    {
+      icon: FaMapMarkerAlt,
+      label: "Notifications",
+      href: "/account/notifications",
+    },
   ];
 
   const initials = `${session.user?.firstName?.[0] || ""}${
@@ -142,7 +164,8 @@ export default function AccountDropdown() {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button
+      <Link
+        href="/account"
         className={cn(
           "flex flex-col items-center gap-1 px-3 py-2 text-white rounded-md transition-colors duration-200",
           "hover:bg-white/10",
@@ -166,7 +189,7 @@ export default function AccountDropdown() {
         <span className="text-xs font-light -mt-1">
           {session.user?.firstName || "Account"}
         </span>
-      </button>
+      </Link>
 
       {isOpen && (
         <div
@@ -181,7 +204,11 @@ export default function AccountDropdown() {
           <div className="p-1">
             <Link
               href="/account"
-              className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-accent/60 transition-colors rounded-md hover:text-accent-foreground focus:outline-none focus:bg-accent/60"
+              className={cn(
+                "block w-full relative group",
+                "px-4 py-3 rounded-md transition-colors duration-200",
+                "hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              )}
             >
               <div className="flex items-center">
                 <Avatar className="h-10 w-10 border border-border mr-3 shrink-0">
@@ -190,13 +217,18 @@ export default function AccountDropdown() {
                     alt={session.user?.firstName || ""}
                     className="object-cover"
                   />
-                  <AvatarFallback className="bg-gray-700 text-white">
+                  <AvatarFallback className="bg-muted-foreground text-white">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
 
                 <div className="min-w-0">
-                  <p className="text-base font-medium truncate">
+                  <p
+                    className={cn(
+                      "text-base font-medium truncate text-muted-foreground transition-colors duration-200",
+                      "group-hover:text-primary"
+                    )}
+                  >
                     {`${session.user.firstName} ${session.user.lastName}`}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
@@ -223,6 +255,7 @@ export default function AccountDropdown() {
               label="Log out"
               onClick={handleSignOut}
               loading={isPending}
+              isLogout
             />
           </div>
         </div>

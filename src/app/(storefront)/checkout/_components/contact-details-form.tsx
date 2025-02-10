@@ -186,7 +186,7 @@ export function ContactDetailsForm({ onNext }: ContactDetailsFormProps) {
                     <FormControl>
                       <Input
                         placeholder="Enter first name"
-                        className="border-border"
+                        className="border-gray-300"
                         disabled={isLoading}
                         {...field}
                       />
@@ -208,7 +208,7 @@ export function ContactDetailsForm({ onNext }: ContactDetailsFormProps) {
                     <FormControl>
                       <Input
                         placeholder="Enter last name"
-                        className="border-border"
+                        className="border-gray-300"
                         disabled={isLoading}
                         {...field}
                       />
@@ -232,7 +232,7 @@ export function ContactDetailsForm({ onNext }: ContactDetailsFormProps) {
                     <Input
                       type="email"
                       placeholder="Enter email address"
-                      className="border-border"
+                      className="border-gray-300"
                       disabled={isLoading || !!session?.user}
                       {...field}
                     />
@@ -246,7 +246,10 @@ export function ContactDetailsForm({ onNext }: ContactDetailsFormProps) {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
+                  <FormLabel className="text-sm font-medium">
+                    Phone Number
+                    <RequiredIndicator />
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type="tel"
@@ -266,7 +269,7 @@ export function ContactDetailsForm({ onNext }: ContactDetailsFormProps) {
           </div>
         </CardContent>
 
-        <div className="px-6 py-4 bg-gray-50/50 border-t flex justify-end items-center">
+        <div className="px-6 py-4 border-t flex justify-end items-center">
           <Button type="submit" className="min-w-[100px]" disabled={isLoading}>
             {isLoading ? (
               <>

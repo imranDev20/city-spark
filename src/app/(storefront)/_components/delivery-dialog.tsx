@@ -3,14 +3,12 @@
 import React, { JSX, useState } from "react";
 import { FaTruck } from "react-icons/fa";
 import { Search, X } from "lucide-react";
-import axios from "axios";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,9 +18,14 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useDeliveryStore } from "@/hooks/use-delivery-store";
 import { fetchPostcodes, WoosmapResponse } from "@/services/woosmap";
 
-export default function DeliveryDialog(): JSX.Element {
-  const { postcode, setPostcode } = useDeliveryStore();
-  const [open, setOpen] = useState<boolean>(false);
+interface DeliveryDialogProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
+
+export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
+  const { setPostcode, setDeliveryDescription, deliveryDescription } =
+    useDeliveryStore();
   const [search, setSearch] = useState<string>("");
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [isFocused, setIsFocused] = useState<boolean>(false);
@@ -71,7 +74,8 @@ export default function DeliveryDialog(): JSX.Element {
   };
 
   const selectPostcode = (selectedPostcode: string) => {
-    setSearch(selectedPostcode);
+    setSearch(selectedPostcode.split(",")[0]);
+    setDeliveryDescription(selectedPostcode);
     setShowSuggestions(false);
     setSelectedIndex(-1);
   };
@@ -89,38 +93,29 @@ export default function DeliveryDialog(): JSX.Element {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <button
-          className={cn(
-            "flex flex-col items-center gap-1 px-3 py-2 text-white rounded-md transition-colors duration-200",
-            "hover:bg-white/10",
-            "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
-          )}
-        >
-          <FaTruck className="h-8 w-8" />
-          <span className="text-base font-semibold">Delivery</span>
-          <span className="text-xs font-light -mt-1">
-            {postcode || "Postcode"}
-          </span>
-        </button>
-      </DialogTrigger>
-
       <DialogContent className="sm:max-w-xl" style={{ zIndex: 100 }}>
         <DialogHeader>
-          <DialogTitle>Set Delivery Postcode</DialogTitle>
-          <DialogDescription>
-            Enter your postcode to check delivery availability in your area.
-          </DialogDescription>
+          <div className="flex items-center gap-3 mb-2.5">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <FaTruck className="h-5 w-5 text-primary" />
+            </div>
+            <div className="space-y-1.5">
+              <DialogTitle>Set Delivery Postcode</DialogTitle>
+              <DialogDescription>
+                Enter your postcode to check delivery availability in your area.
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
         <div className="mt-4 space-y-6">
           <div className="relative">
             <div
               className={cn(
-                "flex h-12 items-center bg-white rounded-md border shadow-sm transition-all duration-200",
-                "hover:border-secondary hover:shadow-md",
-                isFocused &&
-                  "border-secondary shadow-md ring-1 ring-secondary/20"
+                "flex h-12 items-center bg-muted rounded-sm border border-transparent",
+                "transition-colors duration-200",
+                "hover:border-border",
+                isFocused && "border-border"
               )}
             >
               <div className="px-4 text-muted-foreground">
@@ -172,9 +167,7 @@ export default function DeliveryDialog(): JSX.Element {
                         (item, index) => (
                           <div
                             key={item.public_id}
-                            onClick={() =>
-                              selectPostcode(item.description.split(",")[0])
-                            }
+                            onClick={() => selectPostcode(item.description)}
                             className={cn(
                               "px-4 py-3 transition-colors duration-150 cursor-pointer",
                               "hover:bg-secondary/10",

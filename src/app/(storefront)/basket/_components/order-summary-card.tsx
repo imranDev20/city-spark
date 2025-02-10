@@ -27,22 +27,27 @@ export default function OrderSummaryCard({
           <CardTitle className="text-2xl">Order Summary</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-3">
-            <h3 className="font-semibold text-base">Add Promo Code</h3>
-            <p className="text-sm text-gray-600">
-              Promotions and coupon codes can not be used in conjunction or with
-              any other offer.
-            </p>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Gift card or promo code"
-                className="border-border"
-              />
-              <Button className="bg-secondary hover:bg-secondary/90 transition-colors">
-                Apply
-              </Button>
-            </div>
-          </div>
+          {!isCheckout && (
+            <>
+              {" "}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-base">Add Promo Code</h3>
+                <p className="text-sm text-gray-600">
+                  Promotions and coupon codes can not be used in conjunction or
+                  with any other offer.
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Gift card or promo code"
+                    className="border-border"
+                  />
+                  <Button className="bg-secondary hover:bg-secondary/90 transition-colors">
+                    Apply
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
 
           <div className="space-y-4">
             <div className="flex items-center justify-between text-[15px]">

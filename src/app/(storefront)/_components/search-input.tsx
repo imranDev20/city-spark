@@ -220,7 +220,11 @@ export default function SearchInput() {
         className="flex-1 relative max-w-2xl mx-auto"
         style={{ zIndex: 50 }}
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="relative">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="relative"
+          autoComplete="off"
+        >
           <div
             className={cn(
               "flex h-12 items-center bg-white rounded-md border border-primary shadow-sm transition-all duration-200",
@@ -242,6 +246,10 @@ export default function SearchInput() {
                     className="h-full border-0 bg-transparent px-4 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 w-full py-2 outline-none"
                     placeholder={placeholder}
                     onFocus={handleFocus}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck="false"
                   />
                   {searchTerm && (
                     <button

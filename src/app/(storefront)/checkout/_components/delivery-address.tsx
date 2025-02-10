@@ -1,211 +1,373 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Loader2, PencilIcon } from "lucide-react";
+import { FaPen, FaTruck } from "react-icons/fa";
+import { Search, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useDeliveryStore } from "@/hooks/use-delivery-store";
+import { fetchPostcodes, fetchPostcodeDetails } from "@/services/woosmap";
+import { cn } from "@/lib/utils";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useQuery } from "@tanstack/react-query";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card } from "@/components/ui/card";
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
-interface Address {
-  line1: string;
-  line2?: string;
-  city: string;
-  county?: string;
-  postcode: string;
-}
+const formSchema = z.object({
+  address1: z.string().min(1, "Address line 1 is required"),
+  address2: z.string().optional(),
+  city: z.string().min(1, "City is required"),
+  county: z.string().optional(),
+  postcode: z.string().min(1, "Postcode is required"),
+});
 
-// Mock API response - replace with real API integration
-const mockAddressLookup = async (postcode: string): Promise<Address[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  return [
-    {
-      line1: "123 High Street",
-      line2: "Flat A",
-      city: "London",
-      county: "Greater London",
-      postcode: postcode.toUpperCase(),
-    },
-    {
-      line1: "456 High Street",
-      city: "London",
-      county: "Greater London",
-      postcode: postcode.toUpperCase(),
-    },
-  ];
-};
+type FormValues = z.infer<typeof formSchema>;
 
 export default function DeliveryAddress() {
-  // Mock existing address - replace with actual data from props or context
-  const defaultAddress: Address = {
-    line1: "123 High Street",
-    line2: "Flat A",
-    city: "London",
-    county: "Greater London",
-    postcode: "SW1A 1AA",
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const { postcode, setPostcode, deliveryDescription, setDeliveryDescription } =
+    useDeliveryStore();
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      address1: "",
+      address2: "",
+      city: "",
+      county: "",
+      postcode: "",
+    },
+  });
+
+  const debouncedSearch = useDebounce(search, 300);
+
+  const { data: postcodeResults } = useQuery({
+    queryKey: ["postcodes", debouncedSearch],
+    queryFn: () => fetchPostcodes(debouncedSearch),
+    enabled: debouncedSearch.length > 2,
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.toUpperCase();
+    setSearch(value);
+    setShowSuggestions(true);
+    setSelectedIndex(-1);
   };
 
-  const [postcode, setPostcode] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
-  const [manualEntry, setManualEntry] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const suggestions = postcodeResults?.localities ?? [];
 
-  const handlePostcodeLookup = async () => {
-    if (!postcode.trim()) return;
-
-    setIsLoading(true);
-    try {
-      const addresses = await mockAddressLookup(postcode);
-      setAddresses(addresses);
-      setSelectedAddress(null);
-    } catch (error) {
-      console.error("Failed to look up postcode:", error);
-    } finally {
-      setIsLoading(false);
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setSelectedIndex((prev) =>
+          prev < suggestions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+        break;
+      case "Enter":
+        e.preventDefault();
+        if (selectedIndex >= 0 && suggestions[selectedIndex]) {
+          handlePostcodeSelect(
+            suggestions[selectedIndex].public_id,
+            suggestions[selectedIndex].description
+          );
+        }
+        break;
+      case "Escape":
+        setShowSuggestions(false);
+        break;
     }
   };
 
-  const handleAddressSelect = (index: string) => {
-    const selected = addresses[parseInt(index)];
-    setSelectedAddress(selected);
+  const handlePostcodeSelect = async (
+    publicId: string,
+    description: string
+  ) => {
+    try {
+      const postcode = description.split(",")[0];
+      setSearch(postcode);
+      setPostcode(postcode);
+      setDeliveryDescription(description);
+      form.setValue("postcode", postcode);
+      setShowSuggestions(false);
+
+      const details = await fetchPostcodeDetails(publicId);
+      const addressComponents = details.result.address_components;
+
+      const cityOfLondon =
+        addressComponents.find((comp) =>
+          comp.types.includes("administrative_area_level_1")
+        )?.long_name || "";
+
+      const area =
+        addressComponents.find((comp) =>
+          comp.types.includes("division_level_3")
+        )?.long_name || "";
+
+      const county =
+        addressComponents.find((comp) =>
+          comp.types.includes("division_level_1")
+        )?.long_name || "";
+
+      form.setValue("address2", cityOfLondon);
+      form.setValue("city", area || "");
+      form.setValue("county", county);
+    } catch (error) {
+      console.error("Error fetching address details:", error);
+    }
   };
 
-  const formatAddress = (address: Address) => {
-    return [
-      address.line1,
-      address.line2,
-      address.city,
-      address.county,
-      address.postcode,
-    ]
-      .filter(Boolean)
-      .join(", ");
+  const handleClear = () => {
+    setSearch("");
+    form.setValue("postcode", "");
+    setShowSuggestions(false);
+    setSelectedIndex(-1);
+  };
+
+  const handleSave = () => {
+    const values = form.getValues();
+    console.log(values);
+    setIsDialogOpen(false);
   };
 
   return (
-    <div className="space-y-4">
-      {/* Simple distinction with a light gray background */}
-      <div className="flex justify-between items-start bg-gray-50 rounded-lg border p-4">
-        <div>
-          <h3 className="font-medium text-gray-900 mb-1">Delivery Address</h3>
-          <p className="text-gray-600 text-sm">
-            {formatAddress(defaultAddress)}
+    <>
+      <div
+        onClick={() => setIsDialogOpen(true)}
+        className="flex justify-between items-center bg-gray-50 hover:bg-gray-100 rounded-lg border hover:border-gray-400 p-4 w-full transition-all duration-200 group text-left cursor-pointer"
+      >
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-1">
+            <FaTruck className="h-5 w-5 text-gray-500" />
+            <h3 className="font-medium text-gray-900 text-lg">
+              Delivery Address
+            </h3>
+          </div>
+
+          <p className="text-sm text-gray-600 pl-7">
+            {deliveryDescription ? (
+              <>{deliveryDescription}</>
+            ) : (
+              <>Please enter your delivery address</>
+            )}
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <PencilIcon className="h-4 w-4" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Edit Delivery Address</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-4">
-              {!manualEntry && (
-                <div className="space-y-4">
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <Input
-                        placeholder="Enter Postcode"
-                        value={postcode}
-                        onChange={(e) => setPostcode(e.target.value)}
-                        className="w-full"
-                      />
-                    </div>
-                    <Button
-                      onClick={handlePostcodeLookup}
-                      disabled={isLoading || !postcode.trim()}
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Search className="h-4 w-4" />
-                      )}
-                      <span className="ml-2">Find</span>
-                    </Button>
-                  </div>
-
-                  {addresses.length > 0 && (
-                    <Select onValueChange={handleAddressSelect}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your address" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {addresses.map((address, index) => (
-                          <SelectItem key={index} value={index.toString()}>
-                            {formatAddress(address)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-
-                  <Button
-                    variant="link"
-                    className="px-0"
-                    onClick={() => setManualEntry(true)}
-                  >
-                    Enter address manually
-                  </Button>
-                </div>
-              )}
-
-              {(manualEntry || selectedAddress) && (
-                <div className="space-y-4">
-                  <Input
-                    placeholder="Address Line 1"
-                    defaultValue={selectedAddress?.line1}
-                  />
-                  <Input
-                    placeholder="Address Line 2 (Optional)"
-                    defaultValue={selectedAddress?.line2}
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input
-                      placeholder="City"
-                      defaultValue={selectedAddress?.city}
-                    />
-                    <Input
-                      placeholder="County (Optional)"
-                      defaultValue={selectedAddress?.county}
-                    />
-                  </div>
-                  <Input
-                    placeholder="Postcode"
-                    defaultValue={selectedAddress?.postcode || postcode}
-                  />
-                  {manualEntry && (
-                    <Button
-                      variant="link"
-                      className="px-0"
-                      onClick={() => setManualEntry(false)}
-                    >
-                      Use postcode lookup instead
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+        <FaPen className="h-5 w-5 text-gray-400 group-hover:text-gray-600 flex-shrink-0" />
       </div>
-    </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Edit Delivery Address</DialogTitle>
+          </DialogHeader>
+
+          <Form {...form}>
+            <div className="mt-2 space-y-6">
+              {/* Postcode Search */}
+              <div className="space-y-2">
+                <FormLabel>
+                  Find Address
+                  <span className="text-destructive ml-1">*</span>
+                </FormLabel>
+                <div className="relative">
+                  <div
+                    className={cn(
+                      "flex h-10 items-center bg-background rounded-md",
+                      "border border-input",
+                      "transition-colors",
+                      "hover:border-muted-foreground",
+                      isFocused && "ring-2 ring-ring ring-offset-2"
+                    )}
+                  >
+                    <div className="px-3 text-muted-foreground">
+                      <Search className="h-4 w-4" />
+                    </div>
+
+                    <input
+                      className="flex-1 h-full border-0 bg-transparent px-0 focus:outline-none focus:ring-0"
+                      placeholder="Enter your postcode..."
+                      value={search}
+                      onChange={handleInputChange}
+                      onKeyDown={handleKeyDown}
+                      onFocus={() => setIsFocused(true)}
+                      onBlur={() => setIsFocused(false)}
+                      autoComplete="postal-code"
+                      type="text"
+                      aria-label="Postcode search"
+                      aria-expanded={showSuggestions}
+                      role="combobox"
+                    />
+
+                    {search && (
+                      <button
+                        onClick={handleClear}
+                        className="px-3 text-muted-foreground hover:text-foreground"
+                        aria-label="Clear search"
+                        type="button"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  {showSuggestions &&
+                    search &&
+                    (postcodeResults?.localities ?? []).length > 0 && (
+                      <Card className="absolute w-full mt-1 shadow-lg overflow-hidden z-50">
+                        <CardContent className="p-0 max-h-[300px] overflow-y-auto">
+                          <div className="py-1" role="listbox">
+                            {(postcodeResults?.localities ?? []).map(
+                              (item, index) => (
+                                <div
+                                  key={item.public_id}
+                                  onClick={() =>
+                                    handlePostcodeSelect(
+                                      item.public_id,
+                                      item.description
+                                    )
+                                  }
+                                  className={cn(
+                                    "px-3 py-2 transition-colors cursor-pointer",
+                                    "hover:bg-accent hover:text-accent-foreground",
+                                    index === selectedIndex &&
+                                      "bg-accent text-accent-foreground"
+                                  )}
+                                  role="option"
+                                  aria-selected={index === selectedIndex}
+                                  tabIndex={0}
+                                >
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">
+                                      {item.description.split(",")[0]}
+                                    </span>
+                                    <span className="text-sm text-muted-foreground">
+                                      {item.description
+                                        .split(",")
+                                        .slice(1)
+                                        .join(",")
+                                        .trim()}
+                                    </span>
+                                  </div>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                </div>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="address1"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Address Line 1</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Building number and street"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="address2"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Address Line 2</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Apartment, suite, unit, etc. (optional)"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>City</FormLabel>
+                      <FormControl>
+                        <Input placeholder="City" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="county"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>County</FormLabel>
+                      <FormControl>
+                        <Input placeholder="County (optional)" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                  className="w-full sm:w-auto"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSave}
+                  className="w-full sm:w-auto"
+                >
+                  Save Address
+                </Button>
+              </DialogFooter>
+            </div>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

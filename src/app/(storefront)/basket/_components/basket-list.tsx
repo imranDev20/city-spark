@@ -10,15 +10,10 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { FaStore, FaTruck, FaMapMarkerAlt } from "react-icons/fa";
+import { FaStore, FaTruck, FaPen, FaPlus } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useDeliveryStore } from "@/hooks/use-delivery-store";
+import DeliveryDialog from "../../_components/delivery-dialog";
 
 type CartItemWithRelations = Prisma.CartItemGetPayload<{
   include: {
@@ -48,12 +43,15 @@ const BasketList: React.FC<BasketListProps> = ({ items, type }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [openDeliveryDialog, setOpenDeliveryDialog] = useState<boolean>(false);
+
   const [optimisticItems, addOptimisticItem] = useOptimistic(
     items,
     (state: CartItemWithRelations[], removedItemId: string) =>
       state.filter((item) => item.id !== removedItemId)
   );
+
+  const { postcode } = useDeliveryStore();
 
   const handleRemoveItem = async (itemId: string) => {
     startTransition(async () => {
@@ -84,7 +82,7 @@ const BasketList: React.FC<BasketListProps> = ({ items, type }) => {
   return (
     <>
       <section className="mb-16">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             {type === FulFillmentType.FOR_DELIVERY ? (
               <FaTruck className="h-5 w-5 text-secondary" />
@@ -103,24 +101,28 @@ const BasketList: React.FC<BasketListProps> = ({ items, type }) => {
           </div>
 
           {type === FulFillmentType.FOR_DELIVERY && (
-            <div className="flex items-center bg-gray-50 rounded-lg px-4 py-2">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <FaMapMarkerAlt className="h-4 w-4 text-primary" />
-                  <span className="text-gray-500">Delivery to:</span>
+            <div className="flex items-center justify-between rounded-lg py-4 transition-colors duration-200 gap-3">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  {postcode ? (
+                    <span className="text-sm text-gray-600">Delivery to:</span>
+                  ) : null}
+                  {postcode ? (
+                    <span className="text-lg font-semibold text-gray-900">
+                      {postcode}
+                    </span>
+                  ) : null}
                 </div>
-                <span className="text-lg font-semibold text-gray-900">
-                  IG11 7YA
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsDialogOpen(true)}
-                  className="text-primary hover:text-primary/90 font-medium ml-2"
-                >
-                  Change
-                </Button>
               </div>
+              <Button
+                variant="ghost"
+                size="default"
+                onClick={() => setOpenDeliveryDialog(true)}
+                className="hover:bg-blue-100/50"
+              >
+                {postcode ? <FaPen /> : <FaPlus />}
+                {postcode ? "Change" : "Add Delivery Address"}
+              </Button>
             </div>
           )}
         </div>
@@ -137,22 +139,10 @@ const BasketList: React.FC<BasketListProps> = ({ items, type }) => {
         </Card>
       </section>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Change Delivery Postcode</DialogTitle>
-            <DialogDescription>
-              Enter your postcode to check delivery availability and options.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-4">
-            {/* Postcode change functionality will go here */}
-            <p className="text-sm text-gray-500">
-              Postcode change functionality will be implemented here.
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <DeliveryDialog
+        open={openDeliveryDialog}
+        setOpen={setOpenDeliveryDialog}
+      />
     </>
   );
 };

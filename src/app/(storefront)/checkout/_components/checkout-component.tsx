@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Check, CreditCard, Package2, User } from "lucide-react";
+import { ArrowLeft, Check, CreditCard, Package2, User } from "lucide-react";
 import { CartWithItems } from "@/services/storefront-cart";
 import { ContactDetailsForm } from "./contact-details-form";
 import { FulfillmentForm } from "./fulfillment-form";
@@ -13,6 +13,7 @@ import { CheckoutStep } from "../page";
 import OrderSummaryCard from "../../basket/_components/order-summary-card";
 import MobileStepper from "./mobile-stepper";
 import CheckoutBottomBar from "./checkout-bottom-bar";
+import Link from "next/link";
 
 export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
   const router = useRouter();
@@ -72,7 +73,7 @@ export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
 
       {/* Desktop Stepper */}
       <div className="hidden lg:block container max-w-screen-xl mx-auto px-4 py-8 lg:py-12">
-        <div className="max-w-4xl mx-auto mb-12">
+        <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-4 gap-6">
             {steps.map((step, index) => {
               const isCompleted =
@@ -134,10 +135,10 @@ export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
         </div>
       </div>
 
-      <main className="container max-w-screen-xl mx-auto px-4 py-8 lg:py-12">
+      <main className="container max-w-screen-xl mx-auto px-4">
         <div className="grid lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
-          <div className="lg:col-span-8 space-y-6">
-            <Card className="shadow-none bg-white">
+          <div className="lg:col-span-8">
+            <Card className="bg-white">
               {currentStep === "contact" && (
                 <ContactDetailsForm onNext={() => goToStep("fulfillment")} />
               )}
@@ -161,7 +162,7 @@ export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
           </div>
 
           <div className="lg:col-span-4">
-            <div className="lg:sticky lg:top-28 space-y-6">
+            <div className="lg:sticky lg:top-28">
               <OrderSummaryCard isCheckout cart={cart} />
             </div>
           </div>
