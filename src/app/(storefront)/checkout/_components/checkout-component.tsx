@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Check, CreditCard, Package2, User } from "lucide-react";
+import { ArrowLeft, Check, CreditCard, Package2, User } from "lucide-react";
 import { CartWithItems } from "@/services/storefront-cart";
 import { ContactDetailsForm } from "./contact-details-form";
 import { FulfillmentForm } from "./fulfillment-form";
@@ -13,6 +13,7 @@ import { CheckoutStep } from "../page";
 import OrderSummaryCard from "../../basket/_components/order-summary-card";
 import MobileStepper from "./mobile-stepper";
 import CheckoutBottomBar from "./checkout-bottom-bar";
+import Link from "next/link";
 
 export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
   const router = useRouter();

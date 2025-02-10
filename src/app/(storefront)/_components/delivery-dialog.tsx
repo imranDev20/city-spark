@@ -9,7 +9,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,7 +24,8 @@ interface DeliveryDialogProps {
 }
 
 export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
-  const { setPostcode } = useDeliveryStore();
+  const { setPostcode, setDeliveryDescription, deliveryDescription } =
+    useDeliveryStore();
   const [search, setSearch] = useState<string>("");
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [isFocused, setIsFocused] = useState<boolean>(false);
@@ -74,7 +74,8 @@ export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
   };
 
   const selectPostcode = (selectedPostcode: string) => {
-    setSearch(selectedPostcode);
+    setSearch(selectedPostcode.split(",")[0]);
+    setDeliveryDescription(selectedPostcode);
     setShowSuggestions(false);
     setSelectedIndex(-1);
   };
@@ -166,9 +167,7 @@ export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
                         (item, index) => (
                           <div
                             key={item.public_id}
-                            onClick={() =>
-                              selectPostcode(item.description.split(",")[0])
-                            }
+                            onClick={() => selectPostcode(item.description)}
                             className={cn(
                               "px-4 py-3 transition-colors duration-150 cursor-pointer",
                               "hover:bg-secondary/10",

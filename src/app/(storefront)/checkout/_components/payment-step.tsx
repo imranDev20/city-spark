@@ -1,15 +1,29 @@
 "use client";
 
-import { Banknote, CreditCard } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import PaypalIcon from "@/components/icons/paypal";
-import { useState } from "react";
-import { updateOrderPayment } from "../actions"; // Create this action
 import { CartWithItems } from "@/services/storefront-cart";
+import { Separator } from "@/components/ui/separator";
+import Image from "next/image";
+
+import PayoneerImage from "@/images/payoneer.png";
+import VisaImage from "@/images/visa.png";
+import MasterCardImage from "@/images/mastercard.png";
+import KlarnaImage from "@/images/klarna.png";
+import { updateOrderPayment } from "../actions";
+
+const initialPayPalOptions = {
+  clientId:
+    "AXL51fanO-rNFcZfBwAvI9YztmDmGt6QNPeJrr2pxJrCqUFM-dQ0cXzmp9CxxjGI3lUDFldbG-CLEpuJ",
+  currency: "GBP",
+  intent: "capture",
+};
 
 interface PaymentStepProps {
   onNext: () => void;
@@ -22,15 +36,14 @@ export default function PaymentStep({
   onBack,
   cart,
 }: PaymentStepProps) {
-  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [paymentMethod, setPaymentMethod] = useState("paypal");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
+  const handlePaypalApprove = async (data: any, actions: any) => {
     try {
+      const order = await actions.order.capture();
+
       // Get the pre-order ID from session storage
       const orderId = sessionStorage.getItem("pre_order_id");
 
@@ -42,126 +55,167 @@ export default function PaymentStep({
       const result = await updateOrderPayment({
         orderId,
         cartId: cart.id,
-        paymentMethod,
-        paymentStatus: "PAID", // Or "PENDING" depending on the payment method
-        orderStatus: "PENDING", // Update from AWAITING_PAYMENT to PENDING
+        paymentMethod: "paypal",
+        paymentStatus: "PAID",
+        orderStatus: "PENDING",
       });
 
       if (!result.success) {
         throw new Error(result.message);
       }
 
-      // Proceed to next step if successful
       onNext();
     } catch (error) {
       toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Payment update failed",
+        title: "Payment Failed",
+        description: error instanceof Error ? error.message : "Payment failed",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
+  };
+  const createPaypalOrder = async (data: any, actions: any) => {
+    return actions.order.create({
+      purchase_units: [
+        {
+          amount: {
+            currency_code: "GBP",
+            value: cart.totalPriceWithVat.toString(),
+          },
+        },
+      ],
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="p-8 space-y-6">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary">
-            <CreditCard className="w-4 h-4" />
+    <PayPalScriptProvider options={initialPayPalOptions}>
+      <div>
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-3 mb-1">
+            <CardTitle className="text-2xl">Payment Details</CardTitle>
           </div>
-          <h2 className="text-lg font-semibold text-gray-900">
-            Payment Method
-          </h2>
-        </div>
+          <p className="text-sm text-gray-600 mt-2">
+            Choose your preferred payment method
+          </p>
+        </CardHeader>
 
-        <RadioGroup
-          defaultValue="card"
-          value={paymentMethod}
-          onValueChange={setPaymentMethod}
-          className="grid gap-4"
-        >
-          <Label
-            className={`flex items-center p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors ${
-              paymentMethod === "card"
-                ? "border-primary bg-primary/5"
-                : "border-border"
-            }`}
-          >
-            <RadioGroupItem value="card" className="mr-4" />
-            <CreditCard className="w-5 h-5 mr-3" />
-            <div>
-              <p className="font-medium">Credit/Debit Card</p>
-              <p className="text-sm text-gray-500">
-                Pay securely with your card
-              </p>
-            </div>
-          </Label>
+        <Separator className="mb-6" />
 
-          <Label
-            className={`flex items-center p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors ${
-              paymentMethod === "paypal"
-                ? "border-primary bg-primary/5"
-                : "border-border"
-            }`}
-          >
-            <RadioGroupItem value="paypal" className="mr-4" />
-            <div className="w-5 h-5 mr-3 text-[#00457C]">
-              <PaypalIcon width={30} height={30} />
-            </div>
-            <div>
-              <p className="font-medium">PayPal</p>
-              <p className="text-sm text-gray-500">
-                Pay with your PayPal account
-              </p>
-            </div>
-          </Label>
+        <CardContent>
+          <div className="space-y-6">
+            <RadioGroup
+              defaultValue="paypal"
+              value={paymentMethod}
+              onValueChange={setPaymentMethod}
+              className="grid gap-4"
+            >
+              <Label
+                className={`relative flex flex-col p-6 border rounded-lg cursor-pointer transition-all duration-200 ${
+                  paymentMethod === "paypal"
+                    ? "border-primary bg-primary/5 ring-2 ring-primary/10"
+                    : "border-border hover:border-primary/50 hover:bg-gray-50"
+                }`}
+              >
+                <div className="flex items-center gap-4">
+                  <RadioGroupItem value="paypal" />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full">
+                    <div className="flex-shrink-0">
+                      <PaypalIcon width={120} height={32} />
+                    </div>
 
-          <Label
-            className={`flex items-center p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors ${
-              paymentMethod === "cash"
-                ? "border-primary bg-primary/5"
-                : "border-border"
-            }`}
-          >
-            <RadioGroupItem value="cash" className="mr-4" />
-            <Banknote className="w-5 h-5 mr-3" />
-            <div>
-              <p className="font-medium">Cash on Delivery</p>
-              <p className="text-sm text-gray-500">
-                Pay when you receive your order
-              </p>
-            </div>
-          </Label>
-        </RadioGroup>
+                    <Separator
+                      orientation="vertical"
+                      className="hidden sm:block h-8"
+                    />
 
-        {paymentMethod === "card" && (
-          <Card className="p-4 mt-4 border-border">
-            <div className="grid gap-4">
-              <p className="text-sm text-gray-500">
-                Card payment form implementation needed
-              </p>
-            </div>
-          </Card>
-        )}
+                    <div className="flex flex-col gap-3">
+                      <p className="text-sm text-gray-600">
+                        Fast, secure checkout with
+                      </p>
+                      <div className="flex items-center gap-3">
+                        {[
+                          { image: VisaImage, alt: "Visa Card" },
+                          { image: MasterCardImage, alt: "MasterCard" },
+                          { image: PayoneerImage, alt: "Payoneer" },
+                          { image: KlarnaImage, alt: "Klarna" },
+                        ].map((payment) => (
+                          <div
+                            key={payment.alt}
+                            className="bg-white rounded-md p-1.5 border border-gray-100 shadow-sm"
+                          >
+                            <Image
+                              src={payment.image}
+                              alt={payment.alt}
+                              width={28}
+                              height={28}
+                              className="object-contain"
+                              loading="lazy"
+                              placeholder="blur"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Label>
+            </RadioGroup>
+
+            {paymentMethod === "paypal" && (
+              <div className="mt-6 flex justify-between">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onBack}
+                  disabled={isLoading}
+                  className="border-border"
+                >
+                  Back
+                </Button>
+                <PayPalButtons
+                  style={{
+                    layout: "horizontal",
+                    color: "blue",
+                    shape: "rect",
+                    label: "pay",
+                    tagline: false,
+                    height: 36,
+                  }}
+                  createOrder={createPaypalOrder}
+                  onApprove={handlePaypalApprove}
+                  onError={(err) => {
+                    toast({
+                      title: "Payment Error",
+                      description: "There was an error processing your payment",
+                      variant: "destructive",
+                    });
+                  }}
+                />
+              </div>
+            )}
+
+            {paymentMethod === "cash" && (
+              <div className="flex justify-between items-center mt-6 pt-4 border-t">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onBack}
+                  disabled={isLoading}
+                  className="border-border"
+                >
+                  Back
+                </Button>
+                <Button
+                  onClick={() => onNext()}
+                  className="min-w-[100px]"
+                  disabled={isLoading}
+                >
+                  Continue with Cash
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardContent>
       </div>
-
-      <div className="mt-6 px-6 py-4 border-t border-border flex justify-between items-center">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onBack}
-          disabled={isLoading}
-          className="border-border"
-        >
-          Back
-        </Button>
-        <Button type="submit" className="min-w-[100px]" disabled={isLoading}>
-          {isLoading ? "Processing..." : "Continue"}
-        </Button>
-      </div>
-    </form>
+    </PayPalScriptProvider>
   );
 }

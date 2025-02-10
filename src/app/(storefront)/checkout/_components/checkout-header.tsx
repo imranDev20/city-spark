@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, Shield, ChevronLeft, ArrowLeft } from "lucide-react";
+import { ShoppingCart, ChevronLeft } from "lucide-react";
+import { FaShield } from "react-icons/fa6";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCart } from "@/services/cart";
 import CitySparkLogo from "../../_components/city-spark-logo";
+import { FaArrowLeft } from "react-icons/fa";
 
 export default function CheckoutHeader() {
   const { data: cart } = useQuery({
@@ -60,15 +62,30 @@ export default function CheckoutHeader() {
           </div>
 
           {/* Desktop View */}
-          <div className="hidden lg:flex items-center justify-between w-full h-16">
-            <Link href="/" className="flex items-center">
-              <CitySparkLogo width={90} height={45} />
-              <span className="sr-only">City Spark</span>
-            </Link>
+          <div className="hidden lg:grid grid-cols-3 items-center w-full h-16">
+            {/* Left section - Back to Basket */}
+            <div className="flex items-center justify-start">
+              <Link
+                href="/basket"
+                className="text-white/70 flex items-center gap-2"
+              >
+                <FaArrowLeft />
+                Back to Basket
+              </Link>
+            </div>
 
-            <div className="flex items-center">
+            {/* Center section - Logo */}
+            <div className="flex items-center justify-center">
+              <Link href="/" className="flex items-center">
+                <CitySparkLogo width={90} height={45} />
+                <span className="sr-only">City Spark</span>
+              </Link>
+            </div>
+
+            {/* Right section - Secure Checkout and Cart */}
+            <div className="flex items-center justify-end">
               <div className="flex items-center gap-1.5 text-white/70 mr-12">
-                <Shield className="w-4 h-4" />
+                <FaShield />
                 <span className="text-sm font-medium">Secure Checkout</span>
               </div>
 
@@ -100,7 +117,7 @@ export default function CheckoutHeader() {
       <div className="lg:hidden bg-primary/5 border-b">
         <div className="container max-w-screen-xl mx-auto px-4">
           <div className="flex items-center justify-center gap-1.5 py-2">
-            <Shield className="w-3.5 h-3.5 text-primary" />
+            <FaShield className="text-primary" />
             <span className="text-xs font-medium text-gray-700">
               Secure Checkout
             </span>
