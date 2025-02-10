@@ -29,7 +29,9 @@ export async function fetchPostcodes(input: string): Promise<WoosmapResponse> {
       method: "get",
       url: `https://api.woosmap.com/localities/autocomplete/?input=${encodeURIComponent(
         input
-      )}&components=country%3Agb&no_deprecated_fields=true&key=woos-e77092fe-0b39-3f5a-85ce-33aaabbba621`,
+      )}&components=country%3Agb&no_deprecated_fields=true&key=${
+        process.env.NEXT_PUBLIC_WOOSMAP_PUBLIC_KEY
+      }`,
       headers: {
         Referer: "http://localhost",
       },
@@ -82,7 +84,7 @@ export async function fetchPostcodeDetails(
       method: "get",
       url: `https://api.woosmap.com/localities/details?public_id=${encodeURIComponent(
         publicId
-      )}&key=woos-e77092fe-0b39-3f5a-85ce-33aaabbba621`,
+      )}&key=${process.env.NEXT_PUBLIC_WOOSMAP_PUBLIC_KEY}`,
       headers: {
         Referer: "http://localhost",
       },
