@@ -10,6 +10,7 @@ import OrderSummaryCard from "./_components/order-summary-card";
 import BasketHeader from "./_components/basket-header";
 import MobileOrderSummary from "./_components/mobile-order-summary";
 import { Input } from "@/components/ui/input";
+import AuthenticationBanner from "./_components/authentication-banner";
 
 export const dynamic = "force-dynamic";
 
@@ -96,35 +97,7 @@ export default async function StorefrontBasketPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           <div className="lg:col-span-2">
-            <div className="bg-blue-50 p-5 rounded-lg mb-10">
-              <div className="flex items-center space-x-4">
-                <div className="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                  <CircleAlert className="h-5 w-5" />
-                </div>
-
-                <div>
-                  <h2 className="font-semibold text-lg mb-1">
-                    Sign in to your account
-                  </h2>
-                  <p className="text-sm text-gray-700">
-                    <Link
-                      href="/login"
-                      className="text-blue-600 hover:text-blue-700 underline"
-                    >
-                      Sign in
-                    </Link>{" "}
-                    or{" "}
-                    <Link
-                      href="/register"
-                      className="text-blue-600 hover:text-blue-700 underline"
-                    >
-                      create an account
-                    </Link>{" "}
-                    to access exclusive benefits and faster checkout.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <AuthenticationBanner />
 
             {collectionItems && collectionItems.length > 0 && (
               <BasketList
