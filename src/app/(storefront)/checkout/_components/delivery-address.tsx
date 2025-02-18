@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { FaPen, FaTruck } from "react-icons/fa";
-import { Search, X } from "lucide-react";
+import { Loader2, Search, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -62,7 +62,7 @@ export default function DeliveryAddress() {
 
   const debouncedSearch = useDebounce(search, 300);
 
-  const { data: postcodeResults } = useQuery({
+  const { data: postcodeResults, isFetching } = useQuery({
     queryKey: ["postcodes", debouncedSearch],
     queryFn: () => fetchPostcodes(debouncedSearch),
     enabled: debouncedSearch.length > 2,
@@ -194,6 +194,7 @@ export default function DeliveryAddress() {
                   Find Address
                   <span className="text-destructive ml-1">*</span>
                 </FormLabel>
+
                 <div className="relative">
                   <div
                     className={cn(
@@ -223,18 +224,21 @@ export default function DeliveryAddress() {
                       role="combobox"
                     />
 
-                    {search && (
-                      <button
-                        onClick={handleClear}
-                        className="px-3 text-muted-foreground hover:text-foreground"
-                        aria-label="Clear search"
-                        type="button"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    )}
+                    <div className="px-3 text-muted-foreground">
+                      {isFetching ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : search ? (
+                        <button
+                          onClick={handleClear}
+                          className="text-muted-foreground hover:text-foreground"
+                          aria-label="Clear search"
+                          type="button"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      ) : null}
+                    </div>
                   </div>
-
                   {showSuggestions &&
                     search &&
                     (postcodeResults?.localities ?? []).length > 0 && (
