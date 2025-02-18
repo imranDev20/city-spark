@@ -135,7 +135,7 @@ export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
         </div>
       </div>
 
-      <main className="container max-w-screen-xl mx-auto px-4">
+      <main className="container max-w-screen-xl mx-auto px-4 lg:px-8">
         <div className="grid lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
           <div className="lg:col-span-8">
             <Card className="bg-white">

@@ -115,7 +115,7 @@ export default function CheckoutHeader() {
 
       {/* Mobile Secure Checkout Banner */}
       <div className="lg:hidden bg-primary/5 border-b">
-        <div className="container max-w-screen-xl mx-auto px-4">
+        <div className="container max-w-screen-xl mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-center gap-1.5 py-2">
             <FaShield className="text-primary" />
             <span className="text-xs font-medium text-gray-700">

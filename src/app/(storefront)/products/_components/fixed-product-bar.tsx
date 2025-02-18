@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Prisma } from "@prisma/client";
 import { useToast } from "@/components/ui/use-toast";
 import { addToCart } from "../actions";
+import { useQueryClient } from "@tanstack/react-query";
 
 type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
   include: {
@@ -32,6 +33,7 @@ export default function FixedProductBar({
   const [quantity, setQuantity] = useState(1);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleQuantityChange = (newQuantity: number) => {
     setQuantity(Math.max(1, newQuantity));
@@ -41,6 +43,8 @@ export default function FixedProductBar({
     startTransition(async () => {
       const result = await addToCart(inventoryItem.id, quantity, type);
       if (result?.success) {
+        await queryClient.invalidateQueries({ queryKey: ["cart"] });
+
         toast({
           title: "Added to Cart",
           description: result.message,

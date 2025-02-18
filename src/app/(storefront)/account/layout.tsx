@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -61,7 +61,11 @@ const NavLink = ({
   isMobile?: boolean;
 }) => {
   const pathname = usePathname();
-  const isActive = pathname === item.href;
+  // Fix the active state logic
+  const isActive =
+    item.href === "/account"
+      ? pathname === "/account" // Exact match for dashboard
+      : pathname.startsWith(item.href); // Prefix match for other routes
 
   return (
     <Link
@@ -71,7 +75,7 @@ const NavLink = ({
         "transition-colors duration-200",
         isActive
           ? "bg-primary text-primary-foreground"
-          : "hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+          : "hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary bg-white border border-border",
         isMobile ? "flex-col p-3 gap-2" : "px-4 py-2.5 gap-3",
         className
       )}
@@ -110,10 +114,29 @@ export default function AccountLayout({
   children: React.ReactNode;
 }) {
   const { data: session, status } = useSession();
-  const [emblaRef] = useEmblaCarousel({
+  const pathname = usePathname();
+  const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
     dragFree: true,
   });
+
+  useEffect(() => {
+    if (emblaApi) {
+      // Find the active index with the same logic as NavLink
+      const activeIndex = navigation.findIndex((item) =>
+        item.href === "/account"
+          ? pathname === "/account"
+          : pathname.startsWith(item.href)
+      );
+
+      if (activeIndex !== -1) {
+        // Add a small delay to ensure carousel is ready
+        setTimeout(() => {
+          emblaApi.scrollTo(activeIndex, true); // Added immediate parameter
+        }, 100);
+      }
+    }
+  }, [emblaApi, pathname]);
 
   // Redirect to login if not authenticated
   if (status === "unauthenticated") {
