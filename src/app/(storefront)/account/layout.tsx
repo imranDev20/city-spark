@@ -75,7 +75,7 @@ const NavLink = ({
         "transition-colors duration-200",
         isActive
           ? "bg-primary text-primary-foreground"
-          : "hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary bg-white border border-border",
+          : "hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary bg-white border lg:border-0 border-border",
         isMobile ? "flex-col p-3 gap-2" : "px-4 py-2.5 gap-3",
         className
       )}

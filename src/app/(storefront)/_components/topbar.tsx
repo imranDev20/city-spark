@@ -1,6 +1,7 @@
 "use client";
 
 import { HelpCircle, MapPin, Phone, Truck } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
 
@@ -13,10 +14,13 @@ function DesktopTopbar() {
             <Phone size={16} className="mr-1.5" />
             <span>Sales & Support</span>
           </div>
-          <div className="flex items-center hover:text-secondary transition-colors">
+          <Link
+            href="/faq"
+            className="flex items-center hover:text-secondary transition-colors"
+          >
             <HelpCircle size={16} className="mr-1.5" />
             <span>FAQs</span>
-          </div>
+          </Link>
         </div>
         <div className="flex items-center space-x-6">
           <div className="flex items-center hover:text-secondary transition-colors">

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import PaypalIcon from "@/components/icons/paypal";
 import { CartWithItems } from "@/services/storefront-cart";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
+import { Loader2 } from "lucide-react";
 
 import PayoneerImage from "@/images/payoneer.png";
 import VisaImage from "@/images/visa.png";
@@ -38,6 +39,7 @@ export default function PaymentStep({
 }: PaymentStepProps) {
   const [paymentMethod, setPaymentMethod] = useState("paypal");
   const [isLoading, setIsLoading] = useState(false);
+  const [isPayPalReady, setIsPayPalReady] = useState(false);
   const { toast } = useToast();
 
   const handlePaypalApprove = async (data: any, actions: any) => {
@@ -73,6 +75,7 @@ export default function PaymentStep({
       });
     }
   };
+
   const createPaypalOrder = async (data: any, actions: any) => {
     return actions.order.create({
       purchase_units: [
@@ -88,7 +91,17 @@ export default function PaymentStep({
 
   return (
     <PayPalScriptProvider options={initialPayPalOptions}>
-      <div>
+      <div className="relative">
+        {/* Full-screen loading overlay */}
+        {!isPayPalReady && (
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-50 rounded-lg">
+            <Loader2 className="w-8 h-8 text-primary animate-spin mb-3" />
+            <p className="text-sm text-gray-600 font-medium">
+              Loading PayPal...
+            </p>
+          </div>
+        )}
+
         <CardHeader className="pb-4">
           <div className="flex items-center gap-3 mb-1">
             <CardTitle className="text-2xl">Payment Details</CardTitle>
@@ -161,35 +174,40 @@ export default function PaymentStep({
             </RadioGroup>
 
             {paymentMethod === "paypal" && (
-              <div className="mt-6 flex justify-between">
+              <div className="mt-6 flex justify-between items-center">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={onBack}
-                  disabled={isLoading}
+                  disabled={isLoading || !isPayPalReady}
                   className="border-border"
                 >
                   Back
                 </Button>
-                <PayPalButtons
-                  style={{
-                    layout: "horizontal",
-                    color: "blue",
-                    shape: "rect",
-                    label: "pay",
-                    tagline: false,
-                    height: 36,
-                  }}
-                  createOrder={createPaypalOrder}
-                  onApprove={handlePaypalApprove}
-                  onError={(err) => {
-                    toast({
-                      title: "Payment Error",
-                      description: "There was an error processing your payment",
-                      variant: "destructive",
-                    });
-                  }}
-                />
+
+                <div className="relative">
+                  <PayPalButtons
+                    style={{
+                      layout: "horizontal",
+                      color: "blue",
+                      shape: "rect",
+                      label: "pay",
+                      tagline: false,
+                      height: 36,
+                    }}
+                    createOrder={createPaypalOrder}
+                    onApprove={handlePaypalApprove}
+                    onInit={() => setIsPayPalReady(true)}
+                    onError={(err) => {
+                      toast({
+                        title: "Payment Error",
+                        description:
+                          "There was an error processing your payment",
+                        variant: "destructive",
+                      });
+                    }}
+                  />
+                </div>
               </div>
             )}
 

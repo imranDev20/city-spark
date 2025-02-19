@@ -115,10 +115,12 @@ export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
           <div className="relative">
             <div
               className={cn(
-                "flex h-12 items-center bg-muted rounded-sm border border-transparent",
-                "transition-colors duration-200",
-                "hover:border-border",
-                isFocused && "border-border"
+                "flex h-12 items-center bg-muted rounded-sm",
+                "border transition-all duration-200",
+                // Hover is now more subtle
+                "hover:border-gray-300",
+                // Focus is more prominent
+                isFocused ? "border-gray-300" : "border-transparent"
               )}
             >
               <div className="px-4 text-muted-foreground">
@@ -146,7 +148,6 @@ export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
                 role="combobox"
               />
 
-              {/* Show either loading spinner, clear button, or nothing */}
               <div className="px-4 text-muted-foreground">
                 {isFetching ? (
                   <Loader2 className="h-5 w-5 animate-spin" />

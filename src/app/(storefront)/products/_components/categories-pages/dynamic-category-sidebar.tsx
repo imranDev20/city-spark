@@ -240,7 +240,7 @@ export default async function DynamicCategorySidebar(
                     key={category.id}
                   >
                     <AccordionItem value={`category-${category.id}`}>
-                      <AccordionTrigger className="font-normal hover:no-underline text-sm lg:text-base">
+                      <AccordionTrigger className="font-normal hover:no-underline text-sm lg:text-base text-left">
                         {category.name}
                       </AccordionTrigger>
                       <AccordionContent className="py-0">
