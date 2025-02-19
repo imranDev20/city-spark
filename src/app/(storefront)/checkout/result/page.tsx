@@ -9,7 +9,7 @@ export default function CheckoutResultPage() {
     <div className="bg-gray-50/50">
       <CheckoutHeader />
 
-      <main className="container max-w-screen-xl mx-auto px-4 py-8 lg:py-12">
+      <main className="container max-w-screen-xl mx-auto px-4 lg:px-8 py-8 lg:py-12">
         <div className="p-8 text-center space-y-6">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
             <Check className="w-8 h-8 text-green-600" />

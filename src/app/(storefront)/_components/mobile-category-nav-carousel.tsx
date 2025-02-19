@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { CategoryType } from "@prisma/client";
 import { customSlugify } from "@/lib/functions";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import BoilerIcon from "@/components/icons/boiler";
 import RadiatorIcon from "@/components/icons/radiator";
 import HeatingIcon from "@/components/icons/heating";

@@ -2,7 +2,7 @@
 
 import React, { JSX, useState } from "react";
 import { FaTruck } from "react-icons/fa";
-import { Search, X } from "lucide-react";
+import { Loader2, Search, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +33,10 @@ export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
 
   const debouncedSearch = useDebounce(search, 300);
 
-  const { data: postcodeResults } = useQuery<WoosmapResponse, Error>({
+  const { data: postcodeResults, isFetching } = useQuery<
+    WoosmapResponse,
+    Error
+  >({
     queryKey: ["postcodes", debouncedSearch],
     queryFn: () => fetchPostcodes(debouncedSearch),
     enabled: debouncedSearch.length > 2,
@@ -127,8 +130,8 @@ export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
                   "flex-1 h-full border-0 bg-transparent px-0",
                   "focus-visible:ring-0 focus-visible:ring-offset-0",
                   "w-full py-2 outline-none",
-                  "placeholder:normal-case", // Make placeholder normal case
-                  "uppercase" // Only text typed will be uppercase
+                  "placeholder:normal-case",
+                  "uppercase"
                 )}
                 placeholder="Enter your postcode..."
                 value={search}
@@ -143,15 +146,20 @@ export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
                 role="combobox"
               />
 
-              {search && (
-                <button
-                  onClick={handleClear}
-                  className="px-4 text-muted-foreground hover:text-foreground"
-                  aria-label="Clear search"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              )}
+              {/* Show either loading spinner, clear button, or nothing */}
+              <div className="px-4 text-muted-foreground">
+                {isFetching ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : search ? (
+                  <button
+                    onClick={handleClear}
+                    className="text-muted-foreground hover:text-foreground"
+                    aria-label="Clear search"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                ) : null}
+              </div>
             </div>
 
             {showSuggestions &&
