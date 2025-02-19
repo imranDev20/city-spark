@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
+import { EyeIcon, EyeOffIcon, Loader2, Lock, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -20,6 +20,7 @@ import GoogleIcon from "@/components/icons/google";
 import { useToast } from "@/components/ui/use-toast";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -88,131 +89,144 @@ export default function LoginForm() {
   };
 
   return (
-    <main className="container max-w-md mx-auto py-20">
-      <h1 className="lg:text-4xl font-extrabold mb-2">Login</h1>
+    <main className="container max-w-lg mx-auto py-20">
+      <Card className="shadow bg-white p-10">
+        <h1 className="lg:text-4xl font-extrabold mb-2">Login</h1>
 
-      <div className="mb-10">
-        <p className="mb-5 text-sm">
-          Not registered yet?{" "}
-          <Link
-            href="/register"
-            className="text-secondary font-semibold hover:underline"
-          >
-            Create an account
-          </Link>
-        </p>
-
-        {searchParams.get("registered") === "true" && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-10">
-            <p className="text-green-800 text-sm">
-              Account successfully created! Please log in with your credentials.
-            </p>
-          </div>
-        )}
-      </div>
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your email" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      {...field}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-2 top-1/2 -translate-y-1/2"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOffIcon className="h-4 w-4" />
-                      ) : (
-                        <EyeIcon className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className="flex justify-end">
+        <div className="mb-10">
+          <p className="mb-5 text-sm">
+            Not registered yet?{" "}
             <Link
-              href="/forgot-password"
-              className="text-sm text-secondary hover:underline"
+              href="/register"
+              className="text-secondary font-semibold hover:underline"
             >
-              Forgot Password?
+              Create an account
             </Link>
-          </div>
+          </p>
 
-          <Button type="submit" className="w-full" disabled={isPending}>
+          {searchParams.get("registered") === "true" && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-10">
+              <p className="text-green-800 text-sm">
+                Account successfully created! Please log in with your
+                credentials.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Input
+                        placeholder="Enter your email"
+                        {...field}
+                        className="h-10 pl-10 bg-muted rounded-sm border border-transparent hover:border-gray-300 focus-visible:border-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-placeholder"
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        {...field}
+                        className="h-10 pl-10 bg-muted rounded-sm border border-transparent hover:border-gray-300 focus-visible:border-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-placeholder"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-1/2 -translate-y-1/2"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOffIcon className="h-4 w-4" />
+                        ) : (
+                          <EyeIcon className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="flex justify-end">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-secondary hover:underline"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+
+            <Button type="submit" className="w-full h-10" disabled={isPending}>
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Logging in...
+                </>
+              ) : (
+                "Log In"
+              )}
+            </Button>
+          </form>
+        </Form>
+
+        <div className="mt-6">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">
+                Or continue with
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <Button
+            variant="outline"
+            className="w-full h-10"
+            onClick={handleGoogleSignIn}
+            disabled={isPending}
+          >
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Logging in...
+                Signing in...
               </>
             ) : (
-              "Log In"
+              <>
+                <GoogleIcon height={24} width={24} className="mr-2" />
+                Sign in with Google
+              </>
             )}
           </Button>
-        </form>
-      </Form>
-
-      <div className="mt-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">
-              Or continue with
-            </span>
-          </div>
         </div>
-      </div>
-
-      <div className="mt-6">
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={handleGoogleSignIn}
-          disabled={isPending}
-        >
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Signing in...
-            </>
-          ) : (
-            <>
-              <GoogleIcon height={24} width={24} className="mr-2" />
-              Sign in with Google
-            </>
-          )}
-        </Button>
-      </div>
+      </Card>
     </main>
   );
 }

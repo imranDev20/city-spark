@@ -21,6 +21,7 @@ import { createUser } from "../actions";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { AsYouType } from "libphonenumber-js";
+import { Card } from "@/components/ui/card";
 
 export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -100,259 +101,283 @@ export default function RegisterForm() {
   };
 
   return (
-    <main className="container max-w-md mx-auto py-20">
-      <h1 className="lg:text-4xl font-extrabold mb-2">Register</h1>
-      <p className="mb-10 text-sm">
-        Already have an account?{" "}
-        <Link
-          href="/login"
-          className="text-secondary font-semibold hover:underline"
-        >
-          Sign In
-        </Link>
-      </p>
+    <main className="container max-w-lg mx-auto py-20">
+      <Card className="shadow bg-white p-10">
+        <h1 className="lg:text-4xl font-extrabold mb-2">Register</h1>
+        <p className="mb-10 text-sm">
+          Already have an account?{" "}
+          <Link
+            href="/login"
+            className="text-secondary font-semibold hover:underline"
+          >
+            Sign In
+          </Link>
+        </p>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="firstName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>First Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your First Name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter your First Name"
+                          {...field}
+                          className="h-10 bg-muted rounded-sm border border-transparent hover:border-gray-300 focus-visible:border-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-placeholder"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="surname"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Surname</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your Surname" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+                <FormField
+                  control={form.control}
+                  name="surname"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Surname</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="h-10 bg-muted rounded-sm border border-transparent hover:border-gray-300 focus-visible:border-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-placeholder"
+                          placeholder="Enter your Surname"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="Enter your Email"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="h-10 bg-muted rounded-sm border border-transparent hover:border-gray-300 focus-visible:border-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-placeholder"
+                        type="email"
+                        placeholder="Enter your Email"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Phone Number</FormLabel>
-                <FormControl>
-                  <Input
-                    type="tel"
-                    placeholder="+44 XXXX XXX XXX"
-                    {...field}
-                    onChange={(e) => {
-                      const formatter = new AsYouType("GB");
-                      const formatted = formatter.input(e.target.value);
-                      field.onChange(formatted);
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="h-10 bg-muted rounded-sm border border-transparent hover:border-gray-300 focus-visible:border-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-placeholder"
+                        type="tel"
+                        placeholder="+44 XXXX XXX XXX"
+                        {...field}
+                        onChange={(e) => {
+                          const formatter = new AsYouType("GB");
+                          const formatted = formatter.input(e.target.value);
+                          field.onChange(formatted);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem className="relative">
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your Password"
-                      onFocus={() => setIsFocused(true)}
-                      {...field}
-                      onBlur={() => setIsFocused(false)}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-2 top-1/2 -translate-y-1/2"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOffIcon className="h-4 w-4" />
-                      ) : (
-                        <EyeIcon className="h-4 w-4" />
-                      )}
-                    </Button>
-                    {isFocused && (
-                      <div className="absolute left-[calc(100%+12px)] top-0 bg-white p-4 rounded-lg shadow-lg border space-y-2 text-sm w-80 z-10">
-                        {/* Arrow */}
-                        <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-0 h-0 border-8 border-transparent border-r-white z-10" />
-                        <div className="absolute left-0 top-1/2 -translate-x-[calc(50%+1px)] -translate-y-1/2 w-0 h-0 border-8 border-transparent border-r-gray-200" />
-
-                        {/* Criteria list */}
-                        <div
-                          className={`flex items-center gap-2 ${
-                            passwordCriteria.length
-                              ? "text-green-600"
-                              : "text-gray-500"
-                          }`}
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem className="relative">
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          className="h-10 bg-muted rounded-sm border border-transparent hover:border-gray-300 focus-visible:border-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-placeholder"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter your Password"
+                          onFocus={() => setIsFocused(true)}
+                          {...field}
+                          onBlur={() => setIsFocused(false)}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-1/2 -translate-y-1/2"
+                          onClick={() => setShowPassword(!showPassword)}
                         >
-                          {passwordCriteria.length ? "✓" : "○"} At least 8
-                          characters
-                        </div>
-                        <div
-                          className={`flex items-center gap-2 ${
-                            passwordCriteria.lowercase
-                              ? "text-green-600"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          {passwordCriteria.lowercase ? "✓" : "○"} One lowercase
-                          letter
-                        </div>
-                        <div
-                          className={`flex items-center gap-2 ${
-                            passwordCriteria.uppercase
-                              ? "text-green-600"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          {passwordCriteria.uppercase ? "✓" : "○"} One uppercase
-                          letter
-                        </div>
-                        <div
-                          className={`flex items-center gap-2 ${
-                            passwordCriteria.number
-                              ? "text-green-600"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          {passwordCriteria.number ? "✓" : "○"} One number
-                        </div>
-                        <div
-                          className={`flex items-center gap-2 ${
-                            passwordCriteria.special
-                              ? "text-green-600"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          {passwordCriteria.special ? "✓" : "○"} One special
-                          character (@$!%*?&)
-                        </div>
+                          {showPassword ? (
+                            <EyeOffIcon className="h-4 w-4" />
+                          ) : (
+                            <EyeIcon className="h-4 w-4" />
+                          )}
+                        </Button>
+                        {isFocused && (
+                          <div className="absolute left-[calc(100%+12px)] top-0 bg-white p-4 rounded-lg shadow-lg border space-y-2 text-sm w-80 z-10">
+                            {/* Arrow */}
+                            <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-0 h-0 border-8 border-transparent border-r-white z-10" />
+                            <div className="absolute left-0 top-1/2 -translate-x-[calc(50%+1px)] -translate-y-1/2 w-0 h-0 border-8 border-transparent border-r-gray-200" />
+
+                            {/* Criteria list */}
+                            <div
+                              className={`flex items-center gap-2 ${
+                                passwordCriteria.length
+                                  ? "text-green-600"
+                                  : "text-gray-500"
+                              }`}
+                            >
+                              {passwordCriteria.length ? "✓" : "○"} At least 8
+                              characters
+                            </div>
+                            <div
+                              className={`flex items-center gap-2 ${
+                                passwordCriteria.lowercase
+                                  ? "text-green-600"
+                                  : "text-gray-500"
+                              }`}
+                            >
+                              {passwordCriteria.lowercase ? "✓" : "○"} One
+                              lowercase letter
+                            </div>
+                            <div
+                              className={`flex items-center gap-2 ${
+                                passwordCriteria.uppercase
+                                  ? "text-green-600"
+                                  : "text-gray-500"
+                              }`}
+                            >
+                              {passwordCriteria.uppercase ? "✓" : "○"} One
+                              uppercase letter
+                            </div>
+                            <div
+                              className={`flex items-center gap-2 ${
+                                passwordCriteria.number
+                                  ? "text-green-600"
+                                  : "text-gray-500"
+                              }`}
+                            >
+                              {passwordCriteria.number ? "✓" : "○"} One number
+                            </div>
+                            <div
+                              className={`flex items-center gap-2 ${
+                                passwordCriteria.special
+                                  ? "text-green-600"
+                                  : "text-gray-500"
+                              }`}
+                            >
+                              {passwordCriteria.special ? "✓" : "○"} One special
+                              character (@$!%*?&)
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm your Password"
-                      {...field}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-2 top-1/2 -translate-y-1/2"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOffIcon className="h-4 w-4" />
-                      ) : (
-                        <EyeIcon className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          className="h-10 bg-muted rounded-sm border border-transparent hover:border-gray-300 focus-visible:border-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-placeholder"
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Confirm your Password"
+                          {...field}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-1/2 -translate-y-1/2"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOffIcon className="h-4 w-4" />
+                          ) : (
+                            <EyeIcon className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-          <Button type="submit" className="w-full" disabled={isPending}>
+            <Button
+              type="submit"
+              className="w-full h-10 mt-10"
+              disabled={isPending}
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Registering...
+                </>
+              ) : (
+                "Register"
+              )}
+            </Button>
+          </form>
+        </Form>
+
+        <div className="mt-6">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">
+                Or continue with
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <Button
+            variant="outline"
+            className="w-full h-10"
+            disabled={isPending}
+          >
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Registering...
+                Signing up...
               </>
             ) : (
-              "Register"
+              <>
+                <GoogleIcon height={24} width={24} className="mr-2" />
+                Sign up with Google
+              </>
             )}
           </Button>
-        </form>
-      </Form>
-
-      <div className="mt-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">
-              Or continue with
-            </span>
-          </div>
         </div>
-      </div>
-
-      <div className="mt-6">
-        <Button variant="outline" className="w-full" disabled={isPending}>
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Signing up...
-            </>
-          ) : (
-            <>
-              <GoogleIcon height={24} width={24} className="mr-2" />
-              Sign up with Google
-            </>
-          )}
-        </Button>
-      </div>
+      </Card>
     </main>
   );
 }

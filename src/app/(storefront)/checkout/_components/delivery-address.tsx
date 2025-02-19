@@ -198,19 +198,24 @@ export default function DeliveryAddress() {
                 <div className="relative">
                   <div
                     className={cn(
-                      "flex h-10 items-center bg-background rounded-md",
-                      "border border-input",
-                      "transition-colors",
-                      "hover:border-muted-foreground",
-                      isFocused && "ring-2 ring-ring ring-offset-2"
+                      "flex h-12 items-center bg-muted rounded-sm", // Changed height and background
+                      "border transition-all duration-200",
+                      "hover:border-gray-300",
+                      isFocused ? "border-gray-300" : "border-transparent"
                     )}
                   >
-                    <div className="px-3 text-muted-foreground">
-                      <Search className="h-4 w-4" />
+                    <div className="px-4 text-muted-foreground">
+                      <Search className="h-5 w-5" />
                     </div>
 
                     <input
-                      className="flex-1 h-full border-0 bg-transparent px-0 focus:outline-none focus:ring-0"
+                      className={cn(
+                        "flex-1 h-full border-0 bg-transparent px-0",
+                        "focus-visible:ring-0 focus-visible:ring-offset-0",
+                        "w-full py-2 outline-none",
+                        "placeholder:normal-case placeholder:text-placeholder",
+                        "uppercase"
+                      )}
                       placeholder="Enter your postcode..."
                       value={search}
                       onChange={handleInputChange}
@@ -224,9 +229,9 @@ export default function DeliveryAddress() {
                       role="combobox"
                     />
 
-                    <div className="px-3 text-muted-foreground">
+                    <div className="px-4 text-muted-foreground">
                       {isFetching ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className="h-5 w-5 animate-spin" />
                       ) : search ? (
                         <button
                           onClick={handleClear}
@@ -234,11 +239,12 @@ export default function DeliveryAddress() {
                           aria-label="Clear search"
                           type="button"
                         >
-                          <X className="h-4 w-4" />
+                          <X className="h-5 w-5" />
                         </button>
                       ) : null}
                     </div>
                   </div>
+
                   {showSuggestions &&
                     search &&
                     (postcodeResults?.localities ?? []).length > 0 && (
@@ -297,6 +303,7 @@ export default function DeliveryAddress() {
                       <Input
                         placeholder="Building number and street"
                         {...field}
+                        className="bg-muted rounded-sm border border-transparent hover:border-gray-300 focus-visible:border-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-placeholder"
                       />
                     </FormControl>
                     <FormMessage />
@@ -314,6 +321,7 @@ export default function DeliveryAddress() {
                       <Input
                         placeholder="Apartment, suite, unit, etc. (optional)"
                         {...field}
+                        className="bg-muted rounded-sm border border-transparent hover:border-gray-300 focus-visible:border-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-placeholder"
                       />
                     </FormControl>
                     <FormMessage />
@@ -329,7 +337,11 @@ export default function DeliveryAddress() {
                     <FormItem>
                       <FormLabel>City</FormLabel>
                       <FormControl>
-                        <Input placeholder="City" {...field} />
+                        <Input
+                          placeholder="City"
+                          {...field}
+                          className="bg-muted rounded-sm border border-transparent hover:border-gray-300 focus-visible:border-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-placeholder"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -343,7 +355,11 @@ export default function DeliveryAddress() {
                     <FormItem>
                       <FormLabel>County</FormLabel>
                       <FormControl>
-                        <Input placeholder="County (optional)" {...field} />
+                        <Input
+                          placeholder="County (optional)"
+                          {...field}
+                          className="bg-muted rounded-sm border border-transparent hover:border-gray-300 focus-visible:border-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-placeholder"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
