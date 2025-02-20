@@ -15,7 +15,7 @@ function DesktopTopbar() {
             <span>Sales & Support</span>
           </div>
           <Link
-            href="/faq"
+            href="/faqs"
             className="flex items-center hover:text-secondary transition-colors"
           >
             <HelpCircle size={16} className="mr-1.5" />
@@ -23,10 +23,13 @@ function DesktopTopbar() {
           </Link>
         </div>
         <div className="flex items-center space-x-6">
-          <div className="flex items-center hover:text-secondary transition-colors">
+          <Link
+            href="/track-order"
+            className="flex items-center hover:text-secondary transition-colors"
+          >
             <Truck size={16} className="mr-1.5" />
             <span>Track Your Order</span>
-          </div>
+          </Link>
           <div className="flex items-center hover:text-secondary transition-colors">
             <MapPin size={16} className="mr-1.5" />
             <span>Store Location</span>

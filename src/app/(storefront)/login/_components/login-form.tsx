@@ -4,7 +4,14 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { EyeIcon, EyeOffIcon, Loader2, Lock, Mail } from "lucide-react";
+import {
+  AlertCircle,
+  EyeIcon,
+  EyeOffIcon,
+  Loader2,
+  Lock,
+  Mail,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -28,6 +35,14 @@ export default function LoginForm() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const callbackUrl = searchParams.get("callbackUrl");
+  const decodedUrl = callbackUrl
+    ? decodeURIComponent(decodeURIComponent(callbackUrl))
+    : null;
+  const isAdminRedirect = decodedUrl?.includes("/admin");
+
+  console.log(decodedUrl);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -110,6 +125,18 @@ export default function LoginForm() {
                 Account successfully created! Please log in with your
                 credentials.
               </p>
+            </div>
+          )}
+
+          {isAdminRedirect && (
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 my-10">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                <p className="text-destructive text-sm">
+                  Administrator privileges are required to access this area.
+                  Please log in with an admin account.
+                </p>
+              </div>
             </div>
           )}
         </div>

@@ -233,14 +233,14 @@ export default function ProductDetailsSidebar({
             </div>
           </div>
 
-          <div className="flex gap-2 items-center mb-6">
+          <div className="flex gap-3 items-center mb-6">
             <div className="flex items-center bg-gray-100 rounded-md">
               <button
                 onClick={() =>
                   handleQuantityChange(Math.max(1, parseInt(inputValue) - 1))
                 }
                 disabled={isPending || parseInt(inputValue) <= 1}
-                className="w-12 h-12 flex items-center justify-center hover:bg-gray-200 rounded-l-md transition-colors"
+                className="w-10 h-12 flex items-center justify-center hover:bg-gray-200 rounded-l-md transition-colors"
                 aria-label="Decrease quantity"
               >
                 <span className="text-gray-600 font-medium">-</span>
@@ -250,37 +250,40 @@ export default function ProductDetailsSidebar({
                 value={inputValue}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className="w-20 text-center bg-transparent focus:outline-none py-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-16 text-center bg-transparent focus:outline-none py-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 disabled={isPending}
                 aria-label="Quantity"
               />
               <button
                 onClick={() => handleQuantityChange(parseInt(inputValue) + 1)}
                 disabled={isPending}
-                className="w-12 h-12 flex items-center justify-center hover:bg-gray-200 rounded-r-md transition-colors"
+                className="w-10 h-12 flex items-center justify-center hover:bg-gray-200 rounded-r-md transition-colors"
                 aria-label="Increase quantity"
               >
                 <span className="text-gray-600 font-medium">+</span>
               </button>
             </div>
 
-            <Button
-              variant="outline"
-              onClick={(e) => handleAddToCart(e, "FOR_COLLECTION")}
-              disabled={isPending || !inventoryItem.collectionEligibility}
-              className="flex-1 h-12 text-base"
-            >
-              <FaStore className="w-4 h-4 mr-2" />
-              Collection
-            </Button>
-            <Button
-              onClick={(e) => handleAddToCart(e, "FOR_DELIVERY")}
-              disabled={isPending || !inventoryItem.deliveryEligibility}
-              className="flex-1 h-12 text-base"
-            >
-              <FaTruckMoving className="w-4 h-4 mr-2" />
-              Delivery
-            </Button>
+            <div className="grid grid-cols-2 flex-1 gap-3">
+              <Button
+                variant="outline"
+                onClick={(e) => handleAddToCart(e, "FOR_COLLECTION")}
+                disabled={isPending || !inventoryItem.collectionEligibility}
+                className="h-12 text-base shadow"
+              >
+                <FaStore className="w-4 h-4 mr-2" />
+                Collection
+              </Button>
+
+              <Button
+                onClick={(e) => handleAddToCart(e, "FOR_DELIVERY")}
+                disabled={isPending || !inventoryItem.deliveryEligibility}
+                className="h-12 text-base shadow"
+              >
+                <FaTruckMoving className="w-4 h-4 mr-2" />
+                Delivery
+              </Button>
+            </div>
           </div>
 
           <Separator className="mb-6" />

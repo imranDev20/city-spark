@@ -1,11 +1,43 @@
 import { OrderStatus, Prisma } from "@prisma/client";
 import axios from "axios";
 
-type OrderWithItems = Prisma.OrderGetPayload<{
+// Type for list view of orders
+export type OrderWithItems = Prisma.OrderGetPayload<{
   include: {
     orderItems: {
       include: {
         product: true;
+      };
+    };
+  };
+}>;
+
+// Type for detailed view of a single order
+export type OrderWithDetails = Prisma.OrderGetPayload<{
+  include: {
+    cart: {
+      select: {
+        subTotalWithVat: true;
+        subTotalWithoutVat: true;
+        vat: true;
+        deliveryCharge: true;
+        totalPriceWithVat: true;
+        totalPriceWithoutVat: true;
+      };
+    };
+    orderItems: {
+      include: {
+        product: {
+          select: {
+            name: true;
+            images: true;
+          };
+        };
+      };
+    };
+    timeline: {
+      orderBy: {
+        createdAt: "desc";
       };
     };
   };
@@ -20,6 +52,11 @@ export interface OrdersResponse {
     totalCount: number;
     hasMore: boolean;
   };
+}
+
+export interface OrderDetailsResponse {
+  success: boolean;
+  data: OrderWithDetails;
 }
 
 export interface FetchOrdersParams {
@@ -47,10 +84,16 @@ export async function fetchOrders({
   return data;
 }
 
-export async function fetchOrderById(orderId: string): Promise<OrderWithItems> {
-  const { data } = await axios.get<{ success: boolean; data: OrderWithItems }>(
+export async function fetchOrderById(
+  orderId: string
+): Promise<OrderWithDetails> {
+  const { data } = await axios.get<OrderDetailsResponse>(
     `/api/account/orders/${orderId}`
   );
+
+  if (!data.success) {
+    throw new Error("Failed to fetch order details");
+  }
 
   return data.data;
 }

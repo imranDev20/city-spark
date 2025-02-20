@@ -169,11 +169,6 @@ const FAQPage = () => {
       <div className="container max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="flex justify-center mb-6">
-            <div className="bg-primary/10 p-4 rounded-full">
-              <MessageCircleQuestion className="h-8 w-8 text-primary" />
-            </div>
-          </div>
           <h1 className="text-4xl font-bold mb-4">How can we help?</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Find answers to common questions about our products, services, and
