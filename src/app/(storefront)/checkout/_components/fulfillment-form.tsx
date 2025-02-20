@@ -14,7 +14,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { createPreOrder } from "../actions";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { useSession } from "next-auth/react";
-import { FaStore } from "react-icons/fa";
+import { FaPen, FaStore, FaTruck } from "react-icons/fa";
+import { useDeliveryStore } from "@/hooks/use-delivery-store";
 
 interface FulfillmentFormProps {
   onNext: () => void;
@@ -75,30 +76,59 @@ const ItemList = ({ items }: { items: CartItemProps[] }) => (
   </div>
 );
 
-export const DeliverySection = ({ items }: { items: CartItemProps[] }) => (
-  <div className="mb-8">
-    <CardHeader className="pb-4">
-      <div className="flex items-center gap-3 mb-1">
-        <CardTitle className="text-2xl">Delivery Items</CardTitle>
-      </div>
-      <p className="text-sm text-gray-600 mt-2">
-        Estimated delivery:{" "}
-        <span className="font-medium text-primary">
-          Wednesday, 27th December 2024
-        </span>
-      </p>
-    </CardHeader>
+export const DeliverySection = ({ items }: { items: CartItemProps[] }) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { deliveryDescription } = useDeliveryStore();
 
-    <Separator className="mb-6" />
+  return (
+    <div className="mb-8">
+      <CardHeader className="pb-4">
+        <div className="flex items-center gap-3 mb-1">
+          <CardTitle className="text-2xl">Delivery Items</CardTitle>
+        </div>
+        <p className="text-sm text-gray-600 mt-2">
+          Estimated delivery:{" "}
+          <span className="font-medium text-primary">
+            Wednesday, 27th December 2024
+          </span>
+        </p>
+      </CardHeader>
 
-    <CardContent className="space-y-6">
-      <div className="bg-gray-50/50 rounded-lg p-4">
-        <ItemList items={items} />
-      </div>
-      <DeliveryAddress />
-    </CardContent>
-  </div>
-);
+      <Separator className="mb-6" />
+
+      <CardContent className="space-y-6">
+        <div className="bg-gray-50/50 rounded-lg p-4">
+          <ItemList items={items} />
+        </div>
+
+        <div
+          onClick={() => setIsDialogOpen(true)}
+          className="flex justify-between items-center bg-gray-50 hover:bg-gray-100 rounded-lg border hover:border-gray-400 p-4 w-full transition-all duration-200 group text-left cursor-pointer"
+        >
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-1">
+              <FaTruck className="h-5 w-5 text-gray-500" />
+              <h3 className="font-medium text-gray-900 text-lg">
+                Delivery Address
+              </h3>
+            </div>
+
+            <p className="text-sm text-gray-600 pl-7">
+              {deliveryDescription ? (
+                <>{deliveryDescription}</>
+              ) : (
+                <>Please enter your delivery address</>
+              )}
+            </p>
+          </div>
+          <FaPen className="h-5 w-5 text-gray-400 group-hover:text-gray-600 flex-shrink-0" />
+        </div>
+
+        <DeliveryAddress open={isDialogOpen} setOpen={setIsDialogOpen} />
+      </CardContent>
+    </div>
+  );
+};
 
 export const CollectionSection = ({ items }: { items: CartItemProps[] }) => (
   <div>

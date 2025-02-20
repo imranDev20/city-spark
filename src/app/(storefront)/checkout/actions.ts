@@ -385,3 +385,50 @@ export async function updateOrderPayment({
     };
   }
 }
+
+export async function saveDeliveryAddress(data: {
+  address1: string;
+  address2?: string;
+  city: string;
+  county?: string;
+  postcode: string;
+}) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    // If no authenticated user, return success without saving
+    if (!session?.user?.id) {
+      return {
+        success: true,
+        message: "Address saved to session",
+      };
+    }
+
+    // For authenticated users, save to database
+    const address = await prisma.address.create({
+      data: {
+        userId: session.user.id,
+        addressLine1: data.address1,
+        addressLine2: data.address2 || null,
+        city: data.city,
+        county: data.county || null,
+        postcode: data.postcode,
+        isShipping: true, // Since this is for delivery
+      },
+    });
+
+    revalidatePath("/checkout");
+
+    return {
+      success: true,
+      message: "Address saved successfully",
+      data: address,
+    };
+  } catch (error) {
+    console.error("Error saving address:", error);
+    return {
+      success: false,
+      message: "Failed to save address",
+    };
+  }
+}

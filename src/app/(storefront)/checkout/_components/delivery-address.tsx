@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Input } from "@/components/ui/input";
-import { FaPen, FaTruck } from "react-icons/fa";
 import { Loader2, Search, X } from "lucide-react";
 import {
   Dialog,
@@ -17,7 +16,7 @@ import { useDeliveryStore } from "@/hooks/use-delivery-store";
 import { fetchPostcodes, fetchPostcodeDetails } from "@/services/woosmap";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -29,6 +28,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { saveDeliveryAddress } from "../actions";
+import { useToast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
   address1: z.string().min(1, "Address line 1 is required"),
@@ -40,14 +41,29 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function DeliveryAddress() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [search, setSearch] = useState("");
+type DeliveryAddressProps = {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+export default function DeliveryAddress({
+  open,
+  setOpen,
+}: DeliveryAddressProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const { postcode, setPostcode, deliveryDescription, setDeliveryDescription } =
+  const { postcode, setPostcode, setDeliveryDescription, deliveryDescription } =
     useDeliveryStore();
+  const [search, setSearch] = useState(postcode || "");
+  const [selectedDescription, setSelectedDescription] = useState(
+    deliveryDescription || ""
+  );
+
+  const queryClient = useQueryClient();
+
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -61,6 +77,23 @@ export default function DeliveryAddress() {
   });
 
   const debouncedSearch = useDebounce(search, 300);
+
+  useEffect(() => {
+    if (open && postcode) {
+      setSearch(postcode);
+      form.setValue("postcode", postcode);
+      if (deliveryDescription) {
+        setSelectedDescription(deliveryDescription);
+        const parts = deliveryDescription.split(",").map((part) => part.trim());
+        if (parts.length > 1) {
+          form.setValue("city", parts[1] || "");
+        }
+        if (parts.length > 2) {
+          form.setValue("county", parts[2] || "");
+        }
+      }
+    }
+  }, [open, postcode, deliveryDescription, form]);
 
   const { data: postcodeResults, isFetching } = useQuery({
     queryKey: ["postcodes", debouncedSearch],
@@ -109,34 +142,31 @@ export default function DeliveryAddress() {
     description: string
   ) => {
     try {
-      const postcode = description.split(",")[0];
+      // Set the initial postcode from description
+      const postcode = description.split(",")[0].trim();
       setSearch(postcode);
-      setPostcode(postcode);
-      setDeliveryDescription(description);
-      form.setValue("postcode", postcode);
+      setSelectedDescription(description);
       setShowSuggestions(false);
 
+      // Fetch detailed address info
       const details = await fetchPostcodeDetails(publicId);
       const addressComponents = details.result.address_components;
 
-      const cityOfLondon =
-        addressComponents.find((comp) =>
-          comp.types.includes("administrative_area_level_1")
-        )?.long_name || "";
-
-      const area =
+      // Extract address components
+      const district =
         addressComponents.find((comp) =>
           comp.types.includes("division_level_3")
         )?.long_name || "";
 
       const county =
         addressComponents.find((comp) =>
-          comp.types.includes("division_level_1")
+          comp.types.includes("administrative_area_level_1")
         )?.long_name || "";
 
-      form.setValue("address2", cityOfLondon);
-      form.setValue("city", area || "");
-      form.setValue("county", county);
+      // Update form with the detailed address info
+      form.setValue("postcode", postcode);
+      form.setValue("city", district); // Barking and Dagenham
+      form.setValue("county", county); // City of London
     } catch (error) {
       console.error("Error fetching address details:", error);
     }
@@ -144,43 +174,66 @@ export default function DeliveryAddress() {
 
   const handleClear = () => {
     setSearch("");
+    setSelectedDescription("");
     form.setValue("postcode", "");
     setShowSuggestions(false);
     setSelectedIndex(-1);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // First validate the form
     const values = form.getValues();
-    console.log(values);
-    setIsDialogOpen(false);
+    const isValid = await form.trigger();
+
+    if (!isValid) {
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        // Update the delivery store (session) with postcode and description
+        setPostcode(values.postcode);
+        setDeliveryDescription(selectedDescription);
+
+        // Save the complete address to database via server action
+        const result = await saveDeliveryAddress({
+          address1: values.address1,
+          address2: values.address2,
+          city: values.city, // Will be the district (e.g. "Barking and Dagenham")
+          county: values.county, // Will be "City of London"
+          postcode: values.postcode, // The selected postcode
+        });
+
+        if (result.success) {
+          // Invalidate addresses cache to trigger refetch
+          await queryClient.invalidateQueries({ queryKey: ["addresses"] });
+
+          toast({
+            title: "Success",
+            description: result.message,
+            variant: "success",
+          });
+          setOpen(false);
+        } else {
+          toast({
+            title: "Error",
+            description: result.message,
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to save address",
+          variant: "destructive",
+        });
+      }
+    });
   };
 
   return (
     <>
-      <div
-        onClick={() => setIsDialogOpen(true)}
-        className="flex justify-between items-center bg-gray-50 hover:bg-gray-100 rounded-lg border hover:border-gray-400 p-4 w-full transition-all duration-200 group text-left cursor-pointer"
-      >
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-1">
-            <FaTruck className="h-5 w-5 text-gray-500" />
-            <h3 className="font-medium text-gray-900 text-lg">
-              Delivery Address
-            </h3>
-          </div>
-
-          <p className="text-sm text-gray-600 pl-7">
-            {deliveryDescription ? (
-              <>{deliveryDescription}</>
-            ) : (
-              <>Please enter your delivery address</>
-            )}
-          </p>
-        </div>
-        <FaPen className="h-5 w-5 text-gray-400 group-hover:text-gray-600 flex-shrink-0" />
-      </div>
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Edit Delivery Address</DialogTitle>
@@ -371,7 +424,7 @@ export default function DeliveryAddress() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsDialogOpen(false)}
+                  onClick={() => setOpen(false)}
                   className="w-full sm:w-auto"
                 >
                   Cancel
@@ -380,8 +433,16 @@ export default function DeliveryAddress() {
                   type="button"
                   onClick={handleSave}
                   className="w-full sm:w-auto"
+                  disabled={isPending}
                 >
-                  Save Address
+                  {isPending ? (
+                    <>
+                      <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Address"
+                  )}
                 </Button>
               </DialogFooter>
             </div>
