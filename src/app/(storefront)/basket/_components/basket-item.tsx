@@ -2,14 +2,12 @@
 
 import React, { useState, useEffect, useRef, useTransition } from "react";
 import Image from "next/image";
-import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   updateCartItemQuantity,
   updateCartItemType,
 } from "../../products/actions";
 import { useToast } from "@/components/ui/use-toast";
-import { cn } from "@/lib/utils";
 import { FulFillmentType, Prisma } from "@prisma/client";
 import PlaceholderImage from "@/images/placeholder-image.png";
 import { BLUR_DATA_URL } from "@/lib/constants";

@@ -1,81 +1,57 @@
 "use client";
 
-import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
-import useEmblaCarousel from "embla-carousel-react";
-import type { EmblaOptionsType } from "embla-carousel";
 import { useCallback, useEffect, useState } from "react";
-import ProductCard from "./product-card";
-import { Prisma } from "@prisma/client";
+import useEmblaCarousel from "embla-carousel-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-type InventoryWithRelations = Prisma.InventoryGetPayload<{
-  include: {
-    product: {
-      include: {
-        brand: true;
-        primaryCategory: true;
-        secondaryCategory: true;
-        tertiaryCategory: true;
-        quaternaryCategory: true;
-      };
-    };
-  };
-}>;
+import ProductCard from "./product-card";
+import type { InventoryItemWithRelations } from "@/services/inventory";
 
 interface ProductCarouselProps {
-  inventoryItems: InventoryWithRelations[];
+  inventoryItems: InventoryItemWithRelations[];
   title: string;
 }
-
-const OPTIONS: EmblaOptionsType = {
-  align: "start",
-  containScroll: "trimSnaps",
-  dragFree: false,
-  loop: false,
-  // Updated breakpoints for single item on mobile
-  breakpoints: {
-    "(min-width: 1024px)": { slidesToScroll: 4 },
-    "(min-width: 768px)": { slidesToScroll: 3 },
-    "(min-width: 640px)": { slidesToScroll: 2 },
-    "(max-width: 639px)": { slidesToScroll: 1 },
-  },
-};
 
 export default function ProductCarousel({
   inventoryItems,
   title,
 }: ProductCarouselProps) {
-  const [emblaRef, emblaApi] = useEmblaCarousel(OPTIONS);
-  const [prevBtnDisabled, setPrevBtnDisabled] = useState(true);
-  const [nextBtnDisabled, setNextBtnDisabled] = useState(true);
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    align: "start",
+    slidesToScroll: 1,
+    dragFree: true,
+    containScroll: "keepSnaps",
+    breakpoints: {
+      "(min-width: 1024px)": { slidesToScroll: 4 },
+      "(min-width: 768px)": { slidesToScroll: 3 },
+      "(min-width: 640px)": { slidesToScroll: 2 },
+    },
+  });
+
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const scrollPrev = useCallback(() => {
-    if (emblaApi) emblaApi.scrollPrev();
-  }, [emblaApi]);
-
-  const scrollNext = useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext();
-  }, [emblaApi]);
+  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
+  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
-    setSelectedIndex(emblaApi.selectedScrollSnap());
-    setPrevBtnDisabled(!emblaApi.canScrollPrev());
-    setNextBtnDisabled(!emblaApi.canScrollNext());
+    setCurrentIndex(emblaApi.selectedScrollSnap());
+    setCanScrollPrev(emblaApi.canScrollPrev());
+    setCanScrollNext(emblaApi.canScrollNext());
   }, [emblaApi]);
 
   useEffect(() => {
     if (!emblaApi) return;
 
-    onSelect();
     setScrollSnaps(emblaApi.scrollSnapList());
+    onSelect();
+
     emblaApi.on("select", onSelect);
     emblaApi.on("reInit", onSelect);
-
-    emblaApi.reInit({ ...OPTIONS });
 
     return () => {
       emblaApi.off("select", onSelect);
@@ -84,69 +60,72 @@ export default function ProductCarousel({
   }, [emblaApi, onSelect]);
 
   return (
-    <section className="container max-w-screen-xl mx-auto my-10 px-4 md:px-6 lg:px-8">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="font-semibold text-xl sm:text-2xl">{title}</h2>
+    <div className="container max-w-screen-xl mx-auto py-8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold sm:text-2xl">{title}</h2>
         <div className="flex gap-2">
           <Button
-            onClick={scrollPrev}
-            disabled={prevBtnDisabled}
             variant="outline"
             size="icon"
-            className="h-9 w-9 rounded-full transition-all hover:scale-105"
-            aria-label="Previous slide"
+            className="h-8 w-8 rounded-full"
+            disabled={!canScrollPrev}
+            onClick={scrollPrev}
           >
-            <ArrowLeftIcon className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4" />
+            <span className="sr-only">Previous products</span>
           </Button>
           <Button
-            onClick={scrollNext}
-            disabled={nextBtnDisabled}
             variant="outline"
             size="icon"
-            className="h-9 w-9 rounded-full transition-all hover:scale-105"
-            aria-label="Next slide"
+            className="h-8 w-8 rounded-full"
+            disabled={!canScrollNext}
+            onClick={scrollNext}
           >
-            <ArrowRightIcon className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4" />
+            <span className="sr-only">Next products</span>
           </Button>
         </div>
       </div>
 
-      <div className="relative">
-        <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex -ml-4">
-            {inventoryItems.map((inventoryItem) => (
-              <div
-                key={inventoryItem.id}
-                className={cn(
-                  "pl-4", // Consistent left padding for spacing
-                  "min-w-0",
-                  "flex-[0_0_100%]", // 1 column on mobile (up to 639px)
-                  "sm:flex-[0_0_50%]", // 2 columns on small devices (640px+)
-                  "md:flex-[0_0_33.333333%]", // 3 columns on tablet (768px+)
-                  "lg:flex-[0_0_25%]" // 4 columns on desktop (1024px+)
-                )}
-              >
-                <div className="h-full">
-                  <ProductCard inventoryItem={inventoryItem} />
+      {/* Carousel */}
+      <div className="overflow-hidden -mx-4">
+        <div className="px-4">
+          <div className="overflow-hidden" ref={emblaRef}>
+            <div className="flex -ml-4">
+              {inventoryItems.map((item) => (
+                <div
+                  key={item.id}
+                  className={cn(
+                    "flex-none pl-4",
+                    "w-full",
+                    "sm:w-1/2",
+                    "md:w-1/3",
+                    "lg:w-1/4"
+                  )}
+                >
+                  <div className="py-2 px-0.5">
+                    <ProductCard inventoryItem={item} />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
-
-        {/* Progress indicators */}
-        <div className="flex justify-center gap-1 mt-4 lg:hidden">
-          {scrollSnaps.map((_, index) => (
-            <div
-              key={index}
-              className={cn(
-                "h-1.5 rounded-full transition-all",
-                index === selectedIndex ? "w-6 bg-primary" : "w-1.5 bg-gray-200"
-              )}
-            />
-          ))}
-        </div>
       </div>
-    </section>
+
+      {/* Mobile Indicators */}
+      <div className="flex justify-center gap-1 mt-4 lg:hidden">
+        {scrollSnaps.map((_, idx) => (
+          <div
+            key={idx}
+            className={cn(
+              "h-1.5 rounded-full transition-all duration-300",
+              idx === currentIndex ? "w-6 bg-primary" : "w-1.5 bg-gray-200"
+            )}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
