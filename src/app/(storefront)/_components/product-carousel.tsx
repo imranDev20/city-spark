@@ -104,7 +104,7 @@ export default function ProductCarousel({
                     "lg:w-1/4"
                   )}
                 >
-                  <div className="py-2 px-0.5">
+                  <div className="py-6 px-0.5">
                     <ProductCard inventoryItem={item} />
                   </div>
                 </div>

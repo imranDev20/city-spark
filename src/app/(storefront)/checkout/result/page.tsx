@@ -1,54 +1,44 @@
-import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
-import Link from "next/link";
-import React from "react";
+import { Suspense } from "react";
 import CheckoutHeader from "../_components/checkout-header";
+import DesktopStepper from "../_components/desktop-stepper";
+import OrderDetailsContent from "./_components/order-details-content";
+import OrderDetailsSkeleton from "./_components/order-details-skeleton";
 
-export default function CheckoutResultPage() {
-  return (
-    <div className="bg-gray-50/50">
-      <CheckoutHeader />
+export default async function CheckoutResultPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ order_id?: string }>;
+}) {
+  const resolvedParams = await searchParams;
+  const orderId = resolvedParams.order_id;
 
-      <main className="container max-w-screen-xl mx-auto px-4 lg:px-8 py-8 lg:py-12">
-        <div className="p-8 text-center space-y-6">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-            <Check className="w-8 h-8 text-green-600" />
-          </div>
+  if (!orderId) {
+    return (
+      <div className="min-h-screen">
+        <CheckoutHeader />
+        <main className="max-w-4xl mx-auto px-4 py-10 lg:py-16">
+          <DesktopStepper currentStep={4} steps={4} />
 
-          <div className="space-y-2">
-            <h2 className="text-2xl font-semibold text-gray-900">
-              Order Confirmed
-            </h2>
-            <p className="text-gray-600 max-w-md mx-auto">
-              Thank you for your order! We&apos;ve sent a confirmation email to
-              your inbox with all the details.
+          <div className="text-center mb-14">
+            <h1 className="text-3xl font-bold mb-4">Order Not Found</h1>
+            <p className="text-gray-600 max-w-xl mx-auto text-lg">
+              We couldn't find your order. Please check your order confirmation
+              email or contact customer support.
             </p>
           </div>
+        </main>
+      </div>
+    );
+  }
 
-          <div className="bg-gray-50 rounded-lg p-4 max-w-sm mx-auto">
-            <div className="text-sm space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Order Number:</span>
-                <span className="font-medium">SPR-12345</span>
-              </div>
-              {/* <div className="flex justify-between">
-            <span className="text-gray-600">Amount Paid:</span>
-            <span className="font-medium">£{total.toFixed(2)}</span>
-          </div> */}
-            </div>
-          </div>
-
-          <div className="flex justify-center gap-4">
-            <Link href="/account/orders">
-              <Button variant="outline" className="border-border">
-                View Order
-              </Button>
-            </Link>
-            <Link href="/">
-              <Button>Continue Shopping</Button>
-            </Link>
-          </div>
-        </div>
+  return (
+    <div className="min-h-screen">
+      <CheckoutHeader />
+      <main className="max-w-4xl mx-auto px-4 py-10 lg:py-16">
+        <DesktopStepper currentStep={4} steps={4} />
+        <Suspense fallback={<OrderDetailsSkeleton />}>
+          <OrderDetailsContent orderId={orderId} />
+        </Suspense>
       </main>
     </div>
   );

@@ -53,8 +53,13 @@ export default function DeliveryAddress({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const { postcode, setPostcode, setDeliveryDescription, deliveryDescription } =
-    useDeliveryStore();
+  const {
+    postcode,
+    setPostcode,
+    setDeliveryDescription,
+    deliveryDescription,
+    setAddressComponents,
+  } = useDeliveryStore();
   const [search, setSearch] = useState(postcode || "");
   const [selectedDescription, setSelectedDescription] = useState(
     deliveryDescription || ""
@@ -80,17 +85,22 @@ export default function DeliveryAddress({
 
   useEffect(() => {
     if (open && postcode) {
+      // Get address components from store
+      const { addressComponents } = useDeliveryStore.getState();
+
+      // Set postcode in search and form
       setSearch(postcode);
       form.setValue("postcode", postcode);
+
+      // Set selected description if available
       if (deliveryDescription) {
         setSelectedDescription(deliveryDescription);
-        const parts = deliveryDescription.split(",").map((part) => part.trim());
-        if (parts.length > 1) {
-          form.setValue("city", parts[1] || "");
-        }
-        if (parts.length > 2) {
-          form.setValue("county", parts[2] || "");
-        }
+      }
+
+      // Use stored address components to populate form
+      if (addressComponents) {
+        form.setValue("city", addressComponents.district);
+        form.setValue("county", addressComponents.county);
       }
     }
   }, [open, postcode, deliveryDescription, form]);
@@ -163,6 +173,12 @@ export default function DeliveryAddress({
           comp.types.includes("administrative_area_level_1")
         )?.long_name || "";
 
+      // Save address components to store
+      setAddressComponents({
+        district,
+        county,
+      });
+
       // Update form with the detailed address info
       form.setValue("postcode", postcode);
       form.setValue("city", district); // Barking and Dagenham
@@ -207,6 +223,7 @@ export default function DeliveryAddress({
         if (result.success) {
           // Invalidate addresses cache to trigger refetch
           await queryClient.invalidateQueries({ queryKey: ["addresses"] });
+          form.reset();
 
           toast({
             title: "Success",

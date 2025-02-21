@@ -186,9 +186,9 @@ export function ContactDetailsForm({ onNext }: ContactDetailsFormProps) {
                     <FormControl>
                       <Input
                         placeholder="Enter first name"
-                        className="border-gray-300"
                         disabled={isLoading}
                         {...field}
+                        className="bg-muted rounded-sm border border-transparent hover:border-gray-300 focus-visible:border-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-placeholder"
                       />
                     </FormControl>
                     <FormMessage />
@@ -208,7 +208,7 @@ export function ContactDetailsForm({ onNext }: ContactDetailsFormProps) {
                     <FormControl>
                       <Input
                         placeholder="Enter last name"
-                        className="border-gray-300"
+                        className="bg-muted rounded-sm border border-transparent hover:border-gray-300 focus-visible:border-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-placeholder"
                         disabled={isLoading}
                         {...field}
                       />
@@ -232,7 +232,7 @@ export function ContactDetailsForm({ onNext }: ContactDetailsFormProps) {
                     <Input
                       type="email"
                       placeholder="Enter email address"
-                      className="border-gray-300"
+                      className="bg-muted rounded-sm border border-transparent hover:border-gray-300 focus-visible:border-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-placeholder"
                       disabled={isLoading || !!session?.user}
                       {...field}
                     />
@@ -255,6 +255,7 @@ export function ContactDetailsForm({ onNext }: ContactDetailsFormProps) {
                       type="tel"
                       placeholder="+44 XXXX XXX XXX"
                       {...field}
+                      className="bg-muted rounded-sm border border-transparent hover:border-gray-300 focus-visible:border-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-placeholder"
                       onChange={(e) => {
                         const formatter = new AsYouType("GB");
                         const formatted = formatter.input(e.target.value);

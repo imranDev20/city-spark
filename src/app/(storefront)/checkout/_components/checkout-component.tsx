@@ -14,6 +14,7 @@ import OrderSummaryCard from "../../basket/_components/order-summary-card";
 import MobileStepper from "./mobile-stepper";
 import CheckoutBottomBar from "./checkout-bottom-bar";
 import Link from "next/link";
+import DesktopStepper from "./desktop-stepper";
 
 export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
   const router = useRouter();
@@ -72,68 +73,7 @@ export default function CheckoutComponent({ cart }: { cart: CartWithItems }) {
       />
 
       {/* Desktop Stepper */}
-      <div className="hidden lg:block container max-w-screen-xl mx-auto px-4 py-8 lg:py-12">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-4 gap-6">
-            {steps.map((step, index) => {
-              const isCompleted =
-                index < steps.findIndex((s) => s.id === currentStep);
-              const isCurrent = currentStep === step.id;
-
-              return (
-                <div
-                  key={step.id}
-                  className={`relative ${
-                    isCompleted
-                      ? "text-emerald-600"
-                      : isCurrent
-                      ? "text-primary"
-                      : "text-gray-400"
-                  }`}
-                >
-                  <div className="flex items-center mb-3">
-                    <div
-                      className={`
-                      flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors
-                      ${
-                        isCompleted
-                          ? "border-emerald-600 bg-emerald-600 text-white"
-                          : isCurrent
-                          ? "border-primary bg-primary text-white"
-                          : "border-border bg-white"
-                      }
-                    `}
-                    >
-                      {isCompleted ? (
-                        <Check className="w-5 h-5" />
-                      ) : (
-                        <step.icon className="w-5 h-5" />
-                      )}
-                    </div>
-                    {index < steps.length - 1 && (
-                      <div
-                        className={`h-0.5 flex-1 transition-colors ${
-                          isCompleted ? "bg-emerald-600" : "bg-gray-200"
-                        }`}
-                      />
-                    )}
-                  </div>
-                  <h3
-                    className={`text-sm font-semibold ${
-                      isCurrent ? "text-gray-900" : ""
-                    }`}
-                  >
-                    {step.label}
-                  </h3>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {step.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <DesktopStepper currentStep={currentStepIndex} steps={steps.length} />
 
       <main className="container max-w-screen-xl mx-auto px-4 lg:px-8">
         <div className="grid lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
