@@ -16,7 +16,7 @@ export default async function CheckoutResultPage({
     return (
       <div className="min-h-screen">
         <CheckoutHeader />
-        <main className="max-w-4xl mx-auto px-4 py-10 lg:py-16">
+        <main className="max-w-4xl mx-auto px-4">
           <DesktopStepper currentStep={4} steps={4} />
 
           <div className="text-center mb-14">
@@ -34,7 +34,7 @@ export default async function CheckoutResultPage({
   return (
     <div className="min-h-screen">
       <CheckoutHeader />
-      <main className="max-w-4xl mx-auto px-4 py-10 lg:py-16">
+      <main className="max-w-4xl mx-auto px-4">
         <DesktopStepper currentStep={4} steps={4} />
         <Suspense fallback={<OrderDetailsSkeleton />}>
           <OrderDetailsContent orderId={orderId} />

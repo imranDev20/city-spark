@@ -2,7 +2,6 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { NumericFormat } from "react-number-format";
 import {
   FaTruck,
   FaStore,
@@ -12,6 +11,7 @@ import {
 } from "react-icons/fa";
 import prisma from "@/lib/prisma";
 import { format } from "date-fns";
+import PriceFormatter from "./price-formatter";
 
 async function getOrderById(orderId: string) {
   try {
@@ -182,14 +182,7 @@ export default async function OrderDetailsContent({
                   <dd className="font-medium sm:text-base">
                     <div className="flex flex-col">
                       <div className="flex items-baseline gap-1">
-                        <NumericFormat
-                          value={orderData.total}
-                          displayType="text"
-                          prefix="£"
-                          thousandSeparator
-                          decimalScale={2}
-                          fixedDecimalScale
-                        />
+                        <PriceFormatter value={orderData.total} />
                         <span className="text-xs text-gray-500">inc. VAT</span>
                       </div>
                     </div>
@@ -230,24 +223,10 @@ export default async function OrderDetailsContent({
 
                         <div className="text-right">
                           <div className="font-medium text-lg">
-                            <NumericFormat
-                              value={item.totalPrice}
-                              displayType="text"
-                              prefix="£"
-                              thousandSeparator
-                              decimalScale={2}
-                              fixedDecimalScale
-                            />
+                            <PriceFormatter value={item.totalPrice} />
                           </div>
                           <div className="text-xs text-gray-500">
-                            <NumericFormat
-                              value={item.totalPriceExVat}
-                              displayType="text"
-                              prefix="£"
-                              thousandSeparator
-                              decimalScale={2}
-                              fixedDecimalScale
-                            />
+                            <PriceFormatter value={item.totalPriceExVat} />
                             <span className="ml-1">exc. VAT</span>
                           </div>
                         </div>
@@ -263,14 +242,7 @@ export default async function OrderDetailsContent({
                       </p>
                       <div className="text-right flex items-baseline">
                         <div className="font-medium text-xl leading-none">
-                          <NumericFormat
-                            value={orderData.deliveryTotal}
-                            displayType="text"
-                            prefix="£"
-                            thousandSeparator
-                            decimalScale={2}
-                            fixedDecimalScale
-                          />
+                          <PriceFormatter value={orderData.deliveryTotal} />
                         </div>
                         <span className="text-xs text-gray-500 ml-1 leading-none">
                           inc. VAT
@@ -279,14 +251,7 @@ export default async function OrderDetailsContent({
                     </div>
 
                     <div className="text-xs text-gray-500">
-                      <NumericFormat
-                        value={orderData.deliveryTotalExVat}
-                        displayType="text"
-                        prefix="£"
-                        thousandSeparator
-                        decimalScale={2}
-                        fixedDecimalScale
-                      />
+                      <PriceFormatter value={orderData.deliveryTotalExVat} />
                       <span className="ml-1">exc. VAT</span>
                     </div>
                   </div>
@@ -348,24 +313,10 @@ export default async function OrderDetailsContent({
                           </div>
                           <div className="text-right">
                             <div className="font-medium text-lg">
-                              <NumericFormat
-                                value={item.totalPrice}
-                                displayType="text"
-                                prefix="£"
-                                thousandSeparator
-                                decimalScale={2}
-                                fixedDecimalScale
-                              />
+                              <PriceFormatter value={item.totalPrice} />
                             </div>
                             <div className="text-xs text-gray-500">
-                              <NumericFormat
-                                value={item.totalPriceExVat}
-                                displayType="text"
-                                prefix="£"
-                                thousandSeparator
-                                decimalScale={2}
-                                fixedDecimalScale
-                              />
+                              <PriceFormatter value={item.totalPriceExVat} />
                               <span className="ml-1">exc. VAT</span>
                             </div>
                           </div>
@@ -382,14 +333,7 @@ export default async function OrderDetailsContent({
                       </p>
                       <div className="text-right flex items-baseline">
                         <div className="font-medium text-xl leading-none">
-                          <NumericFormat
-                            value={orderData.collectionTotal}
-                            displayType="text"
-                            prefix="£"
-                            thousandSeparator
-                            decimalScale={2}
-                            fixedDecimalScale
-                          />
+                          <PriceFormatter value={orderData.collectionTotal} />
                         </div>
                         <span className="text-xs text-gray-500 ml-1 leading-none">
                           inc. VAT
@@ -398,14 +342,7 @@ export default async function OrderDetailsContent({
                     </div>
 
                     <div className="text-xs text-gray-500">
-                      <NumericFormat
-                        value={orderData.collectionTotalExVat}
-                        displayType="text"
-                        prefix="£"
-                        thousandSeparator
-                        decimalScale={2}
-                        fixedDecimalScale
-                      />
+                      <PriceFormatter value={orderData.collectionTotalExVat} />
                       <span className="ml-1">exc. VAT</span>
                     </div>
                   </div>
@@ -426,39 +363,18 @@ export default async function OrderDetailsContent({
                     <span>Subtotal</span>
                     <span className="text-xs">(exc. VAT)</span>
                   </div>
-                  <NumericFormat
-                    value={orderData.totalExVat}
-                    displayType="text"
-                    prefix="£"
-                    thousandSeparator
-                    decimalScale={2}
-                    fixedDecimalScale
-                  />
+                  <PriceFormatter value={orderData.totalExVat} />
                 </div>
 
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">VAT</span>
-                  <NumericFormat
-                    value={orderData.vatAmount}
-                    displayType="text"
-                    prefix="£"
-                    thousandSeparator
-                    decimalScale={2}
-                    fixedDecimalScale
-                  />
+                  <PriceFormatter value={orderData.vatAmount} />
                 </div>
 
                 {hasDeliveryItems && (
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Delivery</span>
-                    <NumericFormat
-                      value={orderData.shippingCost}
-                      displayType="text"
-                      prefix="£"
-                      thousandSeparator
-                      decimalScale={2}
-                      fixedDecimalScale
-                    />
+                    <PriceFormatter value={orderData.shippingCost} />
                   </div>
                 )}
 
@@ -468,24 +384,10 @@ export default async function OrderDetailsContent({
                   <span>Total</span>
                   <div className="text-right">
                     <div>
-                      <NumericFormat
-                        value={orderData.total}
-                        displayType="text"
-                        prefix="£"
-                        thousandSeparator
-                        decimalScale={2}
-                        fixedDecimalScale
-                      />
+                      <PriceFormatter value={orderData.total} />
                     </div>
                     <div className="text-sm font-normal text-gray-500">
-                      <NumericFormat
-                        value={orderData.totalExVat}
-                        displayType="text"
-                        prefix="£"
-                        thousandSeparator
-                        decimalScale={2}
-                        fixedDecimalScale
-                      />
+                      <PriceFormatter value={orderData.totalExVat} />
                       <span className="ml-1 text-xs">exc. VAT</span>
                     </div>
                   </div>
