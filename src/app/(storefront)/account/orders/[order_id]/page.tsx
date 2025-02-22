@@ -6,13 +6,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { FaBox } from "react-icons/fa";
-import { ArrowDownToLine, ClipboardCopy } from "lucide-react";
+import {
+  ArrowDownToLine,
+  ClipboardCopy,
+  Clock,
+  Package,
+  Check,
+  AlertTriangle,
+  Ban,
+} from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { OrderStatus, PaymentStatus, Prisma } from "@prisma/client";
 import { fetchOrderById } from "@/services/account-orders";
 import { useParams } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
+import OrderStatusTracker from "./_components/order-status-tracker";
 
 const statusStyles: Record<OrderStatus, string> = {
   DRAFT: "bg-gray-100 text-gray-800",
@@ -35,14 +45,60 @@ const paymentStatusStyles: Record<PaymentStatus, string> = {
   CANCELLED: "bg-red-100 text-red-800",
 };
 
+// Order status tracking steps with icons and descriptions
+const orderStatusSteps = [
+  {
+    key: "PENDING",
+    label: "Order Placed",
+    icon: Clock,
+    description: "We've received your order and are processing it.",
+  },
+  {
+    key: "PROCESSING",
+    label: "Processing",
+    icon: Package,
+    description: "Your order is being prepared for shipping.",
+  },
+  {
+    key: "SHIPPED",
+    label: "Shipped",
+    icon: Package,
+    description: "Your order is on its way to you.",
+  },
+  {
+    key: "DELIVERED",
+    label: "Delivered",
+    icon: Check,
+    description: "Your order has been delivered.",
+  },
+  {
+    key: "CANCELLED",
+    label: "Cancelled",
+    icon: Ban,
+    description: "This order has been cancelled.",
+  },
+];
+
+// Component for the order status tracker
+
 export default function AccountOrderDetailsPage() {
   const params = useParams<{ order_id: string }>();
   const orderId = params.order_id;
+  const { toast } = useToast();
 
   const { data: order, isLoading } = useQuery({
     queryKey: ["order", orderId],
     queryFn: () => fetchOrderById(orderId),
   });
+
+  const handleCopyOrderNumber = () => {
+    if (order?.orderNumber) {
+      navigator.clipboard.writeText(order.orderNumber);
+      toast({
+        description: "Order number copied to clipboard",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -58,6 +114,8 @@ export default function AccountOrderDetailsPage() {
             </div>
           </CardContent>
         </Card>
+
+        <div className="animate-pulse bg-white rounded-lg h-20 w-full" />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
@@ -92,8 +150,8 @@ export default function AccountOrderDetailsPage() {
         <div className="text-center">
           <h2 className="text-xl font-semibold">Order not found</h2>
           <p className="text-gray-600 mt-2">
-            The order you're looking for doesn't exist or you don't have
-            permission to view it.
+            The order you&apos;re looking for doesn&apos;t exist or you
+            don&apos;t have permission to view it.
           </p>
         </div>
       </Card>
@@ -106,10 +164,6 @@ export default function AccountOrderDetailsPage() {
   const collectionItems = order.orderItems.filter(
     (item) => item.type === "FOR_COLLECTION"
   );
-
-  const handleCopyOrderNumber = () => {
-    navigator.clipboard.writeText(order.orderNumber);
-  };
 
   return (
     <div className="space-y-6">
@@ -130,6 +184,9 @@ export default function AccountOrderDetailsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Order Status Tracker */}
+      <OrderStatusTracker currentStatus={order.orderStatus} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
@@ -314,6 +371,12 @@ export default function AccountOrderDetailsPage() {
                   <span className="text-gray-600">Delivery</span>
                   <span>£{order.cart.deliveryCharge.toFixed(2)}</span>
                 </div>
+                {/* {order.cart.promoDiscount > 0 && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Discount</span>
+                    <span>-£{order.cart.promoDiscount.toFixed(2)}</span>
+                  </div>
+                )} */}
                 <Separator className="my-3" />
                 <div className="flex justify-between font-medium">
                   <span>Total</span>
@@ -346,8 +409,45 @@ export default function AccountOrderDetailsPage() {
                   Download Invoice
                 </Button>
               )}
+              {order.orderStatus === "PROCESSING" && (
+                <Button className="w-full" variant="outline">
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  Request Support
+                </Button>
+              )}
             </CardContent>
           </Card>
+
+          {/* Estimated Delivery Card */}
+          {order.orderStatus !== "CANCELLED" &&
+            order.orderStatus !== "DELIVERED" &&
+            order.orderStatus !== "COMPLETED" && (
+              <Card className="bg-white">
+                <CardHeader>
+                  <CardTitle>Estimated Delivery</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    {order.shippingDate ? (
+                      <div>
+                        <p className="text-2xl font-bold text-gray-900">
+                          {format(new Date(order.shippingDate), "dd MMM")}
+                        </p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {order.orderStatus === "SHIPPED"
+                            ? "Your order is on its way!"
+                            : "Expected delivery date"}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500">
+                        Delivery date will be provided once your order ships.
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
         </div>
       </div>
     </div>

@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/form";
 import { saveDeliveryAddress } from "../actions";
 import { useToast } from "@/components/ui/use-toast";
+import { useSession } from "next-auth/react";
 
 const formSchema = z.object({
   address1: z.string().min(1, "Address line 1 is required"),
@@ -69,6 +70,7 @@ export default function DeliveryAddress({
 
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const { status } = useSession();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -210,6 +212,11 @@ export default function DeliveryAddress({
         // Update the delivery store (session) with postcode and description
         setPostcode(values.postcode);
         setDeliveryDescription(selectedDescription);
+
+        if (status === "unauthenticated" || status === "loading") {
+          setOpen(false);
+          return;
+        }
 
         // Save the complete address to database via server action
         const result = await saveDeliveryAddress({

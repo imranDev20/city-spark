@@ -119,7 +119,7 @@ export default function ForgotPasswordPage() {
         </Form>
 
         <p className="mt-4 text-sm text-gray-500 text-center">
-          We'll send you an email with a link to reset your password.
+          We&apos;ll send you an email with a link to reset your password.
         </p>
       </Card>
     </main>

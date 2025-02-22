@@ -133,7 +133,7 @@ export default async function OrderDetailsContent({
       <div className="text-center mb-14">
         <h1 className="text-3xl font-bold mb-4">Order Not Found</h1>
         <p className="text-gray-600 max-w-xl mx-auto text-lg">
-          We couldn't find your order. Please check your order confirmation
+          We couldn&apos;t find your order. Please check your order confirmation
           email or contact customer support.
         </p>
       </div>
@@ -148,8 +148,8 @@ export default async function OrderDetailsContent({
       <div className="text-center mb-14">
         <h1 className="text-3xl font-bold mb-4">Your Order Is Confirmed!</h1>
         <p className="text-gray-600 max-w-xl mx-auto text-lg">
-          Thank you for your purchase. We'll send order updates to your email at{" "}
-          <span className="font-medium">{orderData.email}</span>.
+          Thank you for your purchase. We&apos;ll send order updates to your
+          email at <span className="font-medium">{orderData.email}</span>.
         </p>
       </div>
 
