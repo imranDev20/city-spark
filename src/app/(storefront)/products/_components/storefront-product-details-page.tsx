@@ -9,6 +9,7 @@ import TechnicalSpecs from "./product-technical-specs";
 import ProductImageGallery from "./product-image-gallery";
 import FixedProductBar from "./fixed-product-bar";
 import MobileProductHeader from "./product-list/mobile-product-header";
+import RecentlyViewedProducts from "./recently-viewed-products";
 
 type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
   include: {
@@ -178,6 +179,8 @@ export default async function StorefrontProductDetailsPage({
           </aside>
         </div>
       </div>
+
+      <RecentlyViewedProducts currentInventoryId={inventoryItem.id} />
 
       <FixedProductBar inventoryItem={inventoryItem} />
     </main>

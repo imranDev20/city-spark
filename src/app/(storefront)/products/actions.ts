@@ -730,6 +730,182 @@ export async function updateCartItemQuantity(id: string, quantity: number) {
   }
 }
 
+export async function updateCartItemType(id: string, newType: FulFillmentType) {
+  try {
+    const session = await getServerAuthSession();
+    const userId = session?.user?.id;
+    const sessionId = userId ? undefined : await getOrCreateSessionId();
+
+    if (!id || !newType) {
+      throw new Error("Invalid input");
+    }
+
+    const result = await prisma.$transaction(async (prisma) => {
+      // Get settings for delivery charge
+      const settings = await prisma.settings.findFirst();
+      if (!settings) {
+        throw new Error("System settings not found");
+      }
+
+      // Get the current cart item to update
+      const currentCartItem = await prisma.cartItem.findUnique({
+        where: { id },
+        include: {
+          cart: true,
+          inventory: {
+            include: { product: true },
+          },
+        },
+      });
+
+      if (!currentCartItem) {
+        throw new Error("Cart item not found");
+      }
+
+      // Check eligibility
+      if (
+        newType === FulFillmentType.FOR_DELIVERY &&
+        !currentCartItem.inventory.deliveryEligibility
+      ) {
+        throw new Error("This item is not eligible for delivery");
+      }
+      if (
+        newType === FulFillmentType.FOR_COLLECTION &&
+        !currentCartItem.inventory.collectionEligibility
+      ) {
+        throw new Error("This item is not eligible for collection");
+      }
+
+      // Check if an item with the same product and new fulfillment type already exists
+      const existingCartItem = await prisma.cartItem.findFirst({
+        where: {
+          cartId: currentCartItem.cartId,
+          inventoryId: currentCartItem.inventoryId,
+          type: newType,
+          id: { not: currentCartItem.id }, // Exclude current item
+        },
+      });
+
+      if (existingCartItem) {
+        // Update existing item's quantity and delete the current item
+        await prisma.cartItem.update({
+          where: { id: existingCartItem.id },
+          data: {
+            quantity: existingCartItem.quantity + currentCartItem.quantity,
+            totalPrice:
+              (existingCartItem.quantity + currentCartItem.quantity) *
+              currentCartItem.price,
+          },
+        });
+
+        await prisma.cartItem.delete({
+          where: { id: currentCartItem.id },
+        });
+      } else {
+        // Just update the type if no existing item found
+        await prisma.cartItem.update({
+          where: { id },
+          data: { type: newType },
+        });
+      }
+
+      // Get updated cart to recalculate totals
+      const cartWhereInput = getCartWhereInput(userId, sessionId);
+      const updatedCart = await prisma.cart.findFirst({
+        where: cartWhereInput,
+        include: {
+          cartItems: {
+            include: {
+              inventory: {
+                include: {
+                  product: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!updatedCart) {
+        throw new Error("Cart not found");
+      }
+
+      // Calculate totals
+      let deliveryTotalWithVat = 0;
+      let collectionTotalWithVat = 0;
+      let hasDeliveryItems = false;
+
+      updatedCart.cartItems.forEach((item) => {
+        if (item.type === FulFillmentType.FOR_DELIVERY) {
+          deliveryTotalWithVat += item.totalPrice;
+          hasDeliveryItems = true;
+        } else {
+          collectionTotalWithVat += item.totalPrice;
+        }
+      });
+
+      // Rest of the calculations remain the same...
+      const deliveryCharge =
+        hasDeliveryItems &&
+        (!settings.freeDeliveryThreshold ||
+          deliveryTotalWithVat < settings.freeDeliveryThreshold)
+          ? settings.defaultDeliveryCharge
+          : 0;
+      const deliveryVat = deliveryCharge * 0.2;
+
+      const deliveryTotalWithoutVat = deliveryTotalWithVat / 1.2;
+      const collectionTotalWithoutVat = collectionTotalWithVat / 1.2;
+      const subTotalWithVat = deliveryTotalWithVat + collectionTotalWithVat;
+      const subTotalWithoutVat =
+        deliveryTotalWithoutVat + collectionTotalWithoutVat;
+      const vat = subTotalWithVat - subTotalWithoutVat + deliveryVat;
+      const totalPriceWithVat = subTotalWithVat + deliveryCharge + deliveryVat;
+      const totalPriceWithoutVat = subTotalWithoutVat + deliveryCharge;
+
+      // Update cart with all calculated values
+      const finalCart = await prisma.cart.update({
+        where: { id: updatedCart.id },
+        data: {
+          deliveryTotalWithVat,
+          deliveryTotalWithoutVat,
+          collectionTotalWithVat,
+          collectionTotalWithoutVat,
+          subTotalWithVat,
+          subTotalWithoutVat,
+          deliveryCharge,
+          vat,
+          totalPriceWithVat,
+          totalPriceWithoutVat,
+        },
+        include: { cartItems: true },
+      });
+
+      return finalCart;
+    });
+
+    revalidatePath("/");
+    revalidatePath("/products");
+    revalidatePath("/basket");
+    revalidatePath("/checkout");
+
+    return {
+      message: `Successfully moved item to ${newType.toLowerCase()}`,
+      data: result,
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error updating cart item type:", error);
+    return {
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to update cart item type",
+      error: error instanceof Error ? error.message : String(error),
+      success: false,
+    };
+  }
+}
+
 export async function searchProducts(searchTerm: string) {
   try {
     const products = await prisma.inventory.findMany({

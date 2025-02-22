@@ -3,8 +3,6 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import {
   FaUser,
   FaEnvelope,
@@ -15,7 +13,11 @@ import {
   FaCheckCircle,
   FaExclamationCircle,
   FaUserCircle,
+  FaTimes,
+  FaSave,
 } from "react-icons/fa";
+import { Form } from "@/components/ui/form";
+import PersonalInformation from "./_components/personal-information";
 
 interface UserProfile {
   firstName: string;
@@ -62,79 +64,8 @@ export default function AccountProfilePage() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Personal Information */}
-        <Card className="bg-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-lg font-semibold">Personal Information</h2>
-                <p className="text-sm text-gray-500">
-                  Your account and order details
-                </p>
-              </div>
-              <Button variant="outline" size="sm">
-                <FaPencilAlt className="h-3.5 w-3.5 mr-2" />
-                Edit
-              </Button>
-            </div>
 
-            <div className="space-y-6">
-              {/* Profile Picture */}
-              <div className="relative w-fit">
-                <div className="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
-                  {dummyProfile.avatar ? (
-                    <img
-                      src={dummyProfile.avatar}
-                      alt="Profile"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <FaUser className="h-10 w-10 text-gray-400" />
-                  )}
-                </div>
-                <button className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-white text-primary flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors">
-                  <FaCamera className="h-4 w-4" />
-                </button>
-              </div>
-
-              {/* Form Fields */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-500">
-                    First Name (Order Name)
-                  </label>
-                  <Input
-                    value={dummyProfile.firstName}
-                    readOnly
-                    className="bg-gray-50/50"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-500">
-                    Last Name
-                  </label>
-                  <Input
-                    value={dummyProfile.lastName}
-                    readOnly
-                    className="bg-gray-50/50"
-                  />
-                </div>
-                <div className="space-y-2 sm:col-span-2">
-                  <label className="text-sm font-medium text-gray-500">
-                    Display Name
-                  </label>
-                  <Input
-                    value={`${dummyProfile.firstName} ${dummyProfile.lastName}`}
-                    readOnly
-                    className="bg-gray-50/50"
-                  />
-                  <p className="text-xs text-gray-500">
-                    This is how you&apos;ll appear on invoices and order details
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <PersonalInformation profile={dummyProfile} />
 
         {/* Contact Information */}
         <Card className="bg-white">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { JSX, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaTruck } from "react-icons/fa";
 import { Loader2, Search, X } from "lucide-react";
 import {
@@ -24,14 +24,23 @@ interface DeliveryDialogProps {
 }
 
 export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
-  const { setPostcode, setDeliveryDescription, deliveryDescription } =
+  const { postcode, setPostcode, setDeliveryDescription, deliveryDescription } =
     useDeliveryStore();
-  const [search, setSearch] = useState<string>("");
+  const [search, setSearch] = useState<string>(postcode || "");
+  const [shouldSearch, setShouldSearch] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
   const debouncedSearch = useDebounce(search, 300);
+
+  // Update search when dialog opens with current postcode
+  useEffect(() => {
+    if (open && postcode) {
+      setSearch(postcode);
+      setShouldSearch(false); // Reset search flag when dialog opens
+    }
+  }, [open, postcode]);
 
   const { data: postcodeResults, isFetching } = useQuery<
     WoosmapResponse,
@@ -39,13 +48,13 @@ export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
   >({
     queryKey: ["postcodes", debouncedSearch],
     queryFn: () => fetchPostcodes(debouncedSearch),
-    enabled: debouncedSearch.length > 2,
+    enabled: shouldSearch && debouncedSearch.length > 2, // Only enable when shouldSearch is true
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Remove the trim() to allow spaces while typing
     const value = e.target.value.toUpperCase();
     setSearch(value);
+    setShouldSearch(true); // Enable searching when user types
     setShowSuggestions(true);
     setSelectedIndex(-1);
   };
@@ -90,6 +99,7 @@ export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
 
   const handleClear = (): void => {
     setSearch("");
+    setShouldSearch(false); // Disable searching when cleared
     setShowSuggestions(false);
     setSelectedIndex(-1);
   };
@@ -115,10 +125,12 @@ export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
           <div className="relative">
             <div
               className={cn(
-                "flex h-12 items-center bg-muted rounded-sm border border-transparent",
-                "transition-colors duration-200",
-                "hover:border-border",
-                isFocused && "border-border"
+                "flex h-12 items-center bg-muted rounded-sm",
+                "border transition-all duration-200",
+                // Hover is now more subtle
+                "hover:border-gray-300",
+                // Focus is more prominent
+                isFocused ? "border-gray-300" : "border-transparent"
               )}
             >
               <div className="px-4 text-muted-foreground">
@@ -137,7 +149,10 @@ export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
                 value={search}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                onFocus={() => setIsFocused(true)}
+                onFocus={() => {
+                  setIsFocused(true);
+                  setShowSuggestions(true);
+                }}
                 onBlur={() => setIsFocused(false)}
                 autoComplete="postal-code"
                 type="text"
@@ -146,7 +161,6 @@ export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
                 role="combobox"
               />
 
-              {/* Show either loading spinner, clear button, or nothing */}
               <div className="px-4 text-muted-foreground">
                 {isFetching ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
@@ -163,6 +177,7 @@ export default function DeliveryDialog({ open, setOpen }: DeliveryDialogProps) {
             </div>
 
             {showSuggestions &&
+              shouldSearch &&
               search &&
               (postcodeResults?.localities ?? []).length > 0 && (
                 <Card

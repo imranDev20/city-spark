@@ -116,6 +116,27 @@ export default function CategoryNav({
     "/checkout/result",
   ];
 
+  // Get the active category from the URL
+  const getActiveCategory = () => {
+    if (!pathname.startsWith("/products/c/")) return null;
+
+    // Split the path to get category segments
+    const segments = pathname.split("/");
+    const mainCategory = segments[3]; // First category after /products/c/
+
+    // Special handling for heating/boilers and heating/radiators
+    if (mainCategory === "heating") {
+      const subCategory = segments[4];
+      if (subCategory === "boilers" || subCategory === "radiators") {
+        return subCategory.toLowerCase();
+      }
+    }
+
+    return mainCategory.toLowerCase();
+  };
+
+  const activeCategory = getActiveCategory();
+
   useEffect(() => {
     setHoveredCategory(null);
   }, [pathname]);
@@ -242,54 +263,60 @@ export default function CategoryNav({
     >
       <div className="container mx-auto max-w-screen-xl px-0">
         <ul className="flex w-full" role="menubar">
-          {mergedCategories.map((item) => (
-            <li
-              key={item.id}
-              className={cn(
-                "flex-1 relative group border-r last:border-r-0 border-border",
-                hoveredCategory === item.id && "bg-muted"
-              )}
-              onMouseEnter={() => handleMouseEnter(item.id)}
-              onMouseLeave={handleMouseLeave}
-              onKeyDown={(e) => handleKeyDown(e, item.id)}
-              role="menuitem"
-              aria-haspopup="true"
-              aria-expanded={hoveredCategory === item.id}
-              tabIndex={0}
-            >
-              <Link
-                href={item.route}
-                onClick={() => setHoveredCategory(null)}
+          {mergedCategories.map((item) => {
+            const isActive = item.name.toLowerCase() === activeCategory;
+
+            return (
+              <li
+                key={item.id}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 p-3 w-full",
-                  "relative overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm",
-                  "hover:bg-muted transition-colors duration-200"
+                  "flex-1 relative group border-r last:border-r-0 border-border",
+                  (hoveredCategory === item.id || isActive) && "bg-muted"
                 )}
-                aria-label={item.ariaLabel}
+                onMouseEnter={() => handleMouseEnter(item.id)}
+                onMouseLeave={handleMouseLeave}
+                onKeyDown={(e) => handleKeyDown(e, item.id)}
+                role="menuitem"
+                aria-haspopup="true"
+                aria-expanded={hoveredCategory === item.id}
+                tabIndex={0}
               >
-                <item.Icon
+                <Link
+                  href={item.route}
+                  onClick={() => setHoveredCategory(null)}
                   className={cn(
-                    "fill-muted-foreground transition-colors duration-200",
-                    "group-hover:fill-primary",
-                    hoveredCategory === item.id && "fill-primary"
+                    "flex flex-col items-center justify-center gap-1 p-3 w-full",
+                    "relative overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm",
+                    "hover:bg-muted transition-colors duration-200"
                   )}
-                  height={32}
-                  width={32}
-                  aria-hidden="true"
-                  focusable="false"
-                />
-                <h5
-                  className={cn(
-                    "text-xs font-semibold text-muted-foreground uppercase tracking-wide transition-colors duration-200",
-                    "group-hover:text-primary",
-                    hoveredCategory === item.id && "text-primary"
-                  )}
+                  aria-label={item.ariaLabel}
                 >
-                  {item.name}
-                </h5>
-              </Link>
-            </li>
-          ))}
+                  <item.Icon
+                    className={cn(
+                      "fill-muted-foreground transition-colors duration-200",
+                      "group-hover:fill-primary",
+                      (hoveredCategory === item.id || isActive) &&
+                        "fill-primary"
+                    )}
+                    height={32}
+                    width={32}
+                    aria-hidden="true"
+                    focusable="false"
+                  />
+                  <h5
+                    className={cn(
+                      "text-xs font-semibold text-muted-foreground uppercase tracking-wide transition-colors duration-200",
+                      "group-hover:text-primary",
+                      (hoveredCategory === item.id || isActive) &&
+                        "text-primary"
+                    )}
+                  >
+                    {item.name}
+                  </h5>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </div>
 

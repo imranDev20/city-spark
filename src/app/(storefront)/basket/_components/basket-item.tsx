@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect, useRef, useTransition } from "react";
 import Image from "next/image";
-import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { updateCartItemQuantity } from "../../products/actions";
+import {
+  updateCartItemQuantity,
+  updateCartItemType,
+} from "../../products/actions";
 import { useToast } from "@/components/ui/use-toast";
-import { cn } from "@/lib/utils";
-import { Prisma } from "@prisma/client";
+import { FulFillmentType, Prisma } from "@prisma/client";
 import PlaceholderImage from "@/images/placeholder-image.png";
 import { BLUR_DATA_URL } from "@/lib/constants";
 import { NumericFormat } from "react-number-format";
@@ -95,6 +96,29 @@ const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
+  };
+
+  const handleMoveItem = async () => {
+    const newType =
+      cartItem.type === FulFillmentType.FOR_DELIVERY
+        ? FulFillmentType.FOR_COLLECTION
+        : FulFillmentType.FOR_DELIVERY;
+
+    startTransition(async () => {
+      try {
+        const result = await updateCartItemType(cartItem.id, newType);
+        if (!result.success) {
+          throw new Error(result.message);
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description:
+            error instanceof Error ? error.message : "An error occurred",
+          variant: "destructive",
+        });
+      }
+    });
   };
 
   const handleBlur = () => {
@@ -192,6 +216,8 @@ const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
               <Button
                 variant="ghost"
                 size="default"
+                onClick={handleMoveItem}
+                disabled={isPending}
                 className="flex items-center gap-2 h-10 md:h-9 hover:bg-transparent justify-start md:justify-center"
               >
                 {cartItem.type === "FOR_DELIVERY" ? (

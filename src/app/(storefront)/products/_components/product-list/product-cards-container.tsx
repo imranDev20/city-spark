@@ -5,7 +5,7 @@ import BannerImage from "@/images/category-banner.png";
 import Image from "next/image";
 import ProductCardsLoadMore from "./product-cards-load-more";
 import SortProducts from "./sort-products";
-import DeliveryLocation from "./delivery-location";
+import FulFillmentOptions from "./fulfillment-options";
 
 type ProductCardsContainerProps = {
   primaryCategoryId?: string;
@@ -96,7 +96,7 @@ export default async function ProductCardsContainer(
         </div>
       </div>
 
-      <DeliveryLocation />
+      <FulFillmentOptions />
 
       <ProductCardsLoadMore
         initialData={inventoryItems}
