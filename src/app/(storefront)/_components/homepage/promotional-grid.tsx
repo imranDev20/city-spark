@@ -1,15 +1,20 @@
 import Image from "next/image";
-import AristonPro1Eco from "@/images/advertisements/ariston-pro1-eco.jpg";
-import AdeyMagnaClean from "@/images/advertisements/adey-magna-clean.jpg";
-import AristonVelisEvo from "@/images/advertisements/ariston-velis-evo.jpg";
-import AristonVelisEvoWifi from "@/images/advertisements/ariston-velis-evo-wifi.jpg";
-import HoneywellLyric from "@/images/advertisements/honeywell-lyric.jpg";
-import HoneywellT3R from "@/images/advertisements/honeywell-t3r.jpg";
-import AdeyMcProtector from "@/images/advertisements/adey-mc-protector.jpg";
-import AdeyMc1Cleaner from "@/images/advertisements/adey-mc1-cleaner.jpg";
-import SentinelEliminatorVortex700 from "@/images/advertisements/sentinel-eliminator-vortex-700.jpg";
-import SentinelEliminatorVortex from "@/images/advertisements/sentinel-eliminator-vortex.jpg";
-import SentinelLeakSealer from "@/images/advertisements/sentinel-leak-sealer.jpg";
+import AristonPro1Eco from "@/images/advertisements-new/ariston-pro1-eco.jpg";
+import AdeyMagnaClean from "@/images/advertisements-new/adey-magna-clean.jpg";
+import AristonVelisEvo from "@/images/advertisements-new/ariston-velis-evo.jpg";
+import AristonVelisEvoWifi from "@/images/advertisements-new/ariston-velis-evo-wifi.jpg";
+import HoneywellLyric from "@/images/advertisements-new/honeywell-lyric.jpg";
+import HoneywellT3R from "@/images/advertisements-new/honeywell-t3r.jpg";
+import HoneywellT6R from "@/images/advertisements-new/honeywell-t6r.jpg";
+import AdeyMc3Cleaner from "@/images/advertisements-new/adey-mc3-cleaner.jpg";
+import AdeyMc1Protector from "@/images/advertisements-new/adey-mc1-protector.jpg";
+import SentinelEliminatorVortex700 from "@/images/advertisements-new/sentinel-eliminator-vortex-700.jpg";
+import SentinelEliminatorVortex from "@/images/advertisements-new/sentinel-eliminator-vortex.jpg";
+import SentinelLeakSealer from "@/images/advertisements-new/sentinel-leak-sealer.jpg";
+
+import ZoneValveGreatPrices from "@/images/advertisements-new/zone-valve-great-prices.jpg";
+import WorldLeadingGrundfos from "@/images/advertisements-new/world-leading-grundfos.jpg";
+import ActuatorHeads from "@/images/advertisements-new/actuator-heads.jpg";
 
 export default function PromotionalGrid() {
   const firstRowImages = [
@@ -19,11 +24,17 @@ export default function PromotionalGrid() {
     { src: AristonVelisEvoWifi, alt: "Ariston Velis Evo Wifi Water Heater" },
   ];
 
+  const secondRowImages = [
+    { src: WorldLeadingGrundfos, alt: "Ariston Pro1 Eco Boiler" },
+    { src: ZoneValveGreatPrices, alt: "Adey MagnaClean Magnetic Filter" },
+    { src: ActuatorHeads, alt: "Ariston Velis Evo Water Heater" },
+  ];
+
   const fifthRowImages = [
     { src: HoneywellLyric, alt: "Honeywell Lyric Smart Thermostat" },
     { src: HoneywellT3R, alt: "Honeywell T3R Wireless Thermostat" },
-    { src: AdeyMcProtector, alt: "Adey MC Protector Chemical Treatment" },
-    { src: AdeyMc1Cleaner, alt: "Adey MC1 Central Heating Cleaner" },
+    { src: AdeyMc3Cleaner, alt: "Adey MC Protector Chemical Treatment" },
+    { src: AdeyMc1Protector, alt: "Adey MC1 Central Heating Cleaner" },
   ];
 
   const seventhRowImages = [
@@ -33,7 +44,7 @@ export default function PromotionalGrid() {
     },
     { src: SentinelEliminatorVortex, alt: "Sentinel Eliminator Vortex Filter" },
     { src: SentinelLeakSealer, alt: "Sentinel Leak Sealer Solution" },
-    { src: AdeyMc1Cleaner, alt: "Adey MC1 Central Heating Cleaner" },
+    { src: HoneywellT6R, alt: "Honeywell T6R" },
   ];
 
   return (
@@ -45,8 +56,8 @@ export default function PromotionalGrid() {
             <Image
               src={image.src}
               alt={image.alt}
-              width={700}
-              height={420}
+              width={420}
+              height={700}
               className="object-contain h-full rounded-lg overflow-hidden"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
             />
@@ -56,9 +67,18 @@ export default function PromotionalGrid() {
 
       {/* Second row - 2 images */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
-        <div className="aspect-[4/3] bg-gray-100 rounded-lg"></div>
-        <div className="aspect-[4/3] bg-gray-100 rounded-lg"></div>
-        <div className="aspect-[4/3] bg-gray-100 rounded-lg"></div>
+        {secondRowImages.map((image, index) => (
+          <div key={index} className="">
+            <Image
+              src={image.src}
+              alt={image.alt}
+              width={700}
+              height={400}
+              className="object-contain h-full rounded-lg overflow-hidden"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            />
+          </div>
+        ))}
       </div>
 
       {/* Third row - 3 images */}

@@ -17,6 +17,9 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAccountData } from "@/services/account";
 import { Loader2 } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
 
 type DashboardCardProps = {
   title: string;
@@ -24,33 +27,6 @@ type DashboardCardProps = {
   description?: string;
   icon: React.ElementType;
   href: string;
-};
-
-// Dummy data
-const userData = {
-  firstName: "John",
-  lastName: "Doe",
-  email: "john.doe@example.com",
-  phone: "+44 7700 900077",
-  stats: {
-    orders: 12,
-    wishlist: 5,
-    addresses: 2,
-  },
-  recentOrders: [
-    {
-      id: "ORD-123",
-      date: "2024-02-01",
-      status: "In Transit",
-      total: 299.99,
-    },
-    {
-      id: "ORD-122",
-      date: "2024-01-28",
-      status: "Delivered",
-      total: 149.5,
-    },
-  ],
 };
 
 const DashboardCard = ({
@@ -115,6 +91,17 @@ const QuickActionCard = ({
   </Link>
 );
 
+// Helper function for getting initials
+function getInitials(
+  firstName: string | null | undefined,
+  lastName: string | null | undefined
+): string {
+  if (!firstName && !lastName) return "U";
+  return `${(firstName?.[0] || "").toUpperCase()}${(
+    lastName?.[0] || ""
+  ).toUpperCase()}`;
+}
+
 export default function AccountPage() {
   const {
     data: userData,
@@ -125,9 +112,11 @@ export default function AccountPage() {
     queryFn: fetchAccountData,
   });
 
+  const { data: session, status } = useSession();
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="flex items-center justify-center min-h-[60vh] animate-spin">
         <Loader2 className="w-8 h-8" />
       </div>
     );
@@ -158,12 +147,27 @@ export default function AccountPage() {
       <Card className="bg-gradient-to-r from-primary to-primary/90 text-white border-0">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-white/10 flex items-center justify-center">
-              <FaUser className="h-8 w-8" />
-            </div>
+            <Avatar className="h-16 w-16">
+              {session?.user?.image ? (
+                <Image
+                  src={session.user.image}
+                  alt={`${session.user.firstName} ${session.user.lastName}`}
+                  width={64}
+                  height={64}
+                  className="object-cover"
+                />
+              ) : (
+                <AvatarFallback className="bg-white/10 text-white text-xl">
+                  {getInitials(
+                    session?.user?.firstName,
+                    session?.user?.lastName
+                  )}
+                </AvatarFallback>
+              )}
+            </Avatar>
             <div>
               <h1 className="text-2xl font-bold">
-                Welcome back, {userData.firstName || "User"}!
+                Welcome back, {session?.user?.firstName || "User"}!
               </h1>
               <p className="text-primary-foreground/90 mt-1">
                 Manage your account and view your orders
@@ -218,34 +222,53 @@ export default function AccountPage() {
             <CardTitle className="text-lg font-semibold">
               Recent Orders
             </CardTitle>
-            <Link
-              href="/account/orders"
-              className="text-sm text-primary hover:underline"
-            >
-              View all
-            </Link>
+            {userData.recentOrders && userData.recentOrders.length > 0 && (
+              <Link
+                href="/account/orders"
+                className="text-sm text-primary hover:underline"
+              >
+                View all
+              </Link>
+            )}
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {userData.recentOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className="flex items-center justify-between p-4 rounded-lg"
-                >
-                  <div className="space-y-1">
-                    <p className="font-medium">{order.id}</p>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <FaClock className="h-4 w-4" />
-                      <span>{new Date(order.date).toLocaleDateString()}</span>
+            {userData.recentOrders && userData.recentOrders.length > 0 ? (
+              <div className="space-y-4">
+                {userData.recentOrders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="flex items-center justify-between p-4 rounded-lg"
+                  >
+                    <div className="space-y-1">
+                      <p className="font-medium">{order.id}</p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <FaClock className="h-4 w-4" />
+                        <span>{new Date(order.date).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">£{order.total.toFixed(2)}</p>
+                      <p className="text-sm text-emerald-600">{order.status}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-medium">£{order.total.toFixed(2)}</p>
-                    <p className="text-sm text-emerald-600">{order.status}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <FaBox className="h-12 w-12 text-gray-300 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-1">
+                  No orders yet
+                </h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  When you place an order, it will appear here
+                </p>
+                <Link href="/products">
+                  <Button variant="outline" size="sm">
+                    Start Shopping
+                  </Button>
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
 

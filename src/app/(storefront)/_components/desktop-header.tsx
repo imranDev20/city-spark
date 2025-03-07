@@ -17,13 +17,13 @@ export default function DesktopHeader() {
   const [openDeliveryDialog, setOpenDeliveryDialog] = useState<boolean>(false);
 
   return (
-    <header className="w-full bg-primary py-2 hidden lg:block">
+    <header className="w-full bg-white py-2 hidden lg:block border-b">
       <div className="container h-24 flex items-center justify-between mx-auto max-w-screen-xl gap-10">
         <Link
           href="/"
-          className="flex items-center transition-colors duration-200 group"
+          className="flex items-center transition-colors duration-200 group lg:min-w-56"
         >
-          <CitySparkLogo width={180} height={90} />
+          <CitySparkLogo width={130} />
           <span className="sr-only">City Spark</span>
         </Link>
 
@@ -31,13 +31,13 @@ export default function DesktopHeader() {
 
         <div className="flex items-center space-x-5 text-white">
           <AccountDropdown />
-          <Separator orientation="vertical" className="h-12 w-px bg-white" />
+          <Separator orientation="vertical" className="h-12 w-px bg-border" />
 
           <button
             onClick={() => setOpenDeliveryDialog(true)}
             className={cn(
-              "flex flex-col items-center gap-1 px-3 py-2 text-white rounded-md transition-colors duration-200",
-              "hover:bg-white/10",
+              "flex flex-col items-center gap-1 px-3 py-2 text-primary rounded-md transition-colors duration-200",
+              "hover:bg-primary/10",
               "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
             )}
           >
@@ -53,7 +53,7 @@ export default function DesktopHeader() {
             setOpen={setOpenDeliveryDialog}
           />
 
-          <Separator orientation="vertical" className="h-12 w-px bg-white" />
+          <Separator orientation="vertical" className="h-12 w-px bg-border" />
           <BasketPopup />
         </div>
       </div>

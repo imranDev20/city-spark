@@ -7,7 +7,7 @@ import React from "react";
 
 function DesktopTopbar() {
   return (
-    <div className="bg-black text-white/90 py-1.5 px-4 text-sm hidden lg:block">
+    <div className="bg-primary text-white/90 py-1.5 px-4 text-sm hidden lg:block">
       <div className="container mx-auto flex justify-between items-center max-w-screen-xl">
         <div className="flex items-center space-x-6">
           <div className="flex items-center hover:text-secondary transition-colors">
