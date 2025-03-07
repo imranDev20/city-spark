@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import VaillantEcoFitPlus832Combi from "@/images/advertisements/vaillant-ecofit-plus-832-combi.jpg";
 import IdealAtlantic30CombiFlue from "@/images/advertisements/ideal-atlantic-30-combi-flue.jpg";
-import FebruarySale from "@/images/hero/hero-banner-new.jpg";
+import FebruarySale from "@/images/advertisements-new/hero-banner-new.jpg";
 
 const CarouselContent = ({
   content,

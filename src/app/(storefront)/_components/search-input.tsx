@@ -227,7 +227,7 @@ export default function SearchInput() {
         >
           <div
             className={cn(
-              "flex h-12 items-center bg-white rounded-md border border-primary shadow-sm transition-all duration-200",
+              "flex h-12 items-center bg-gray-100 rounded-md border shadow-sm transition-all duration-200",
               "hover:border-secondary hover:shadow-md",
               isFocused && "border-secondary shadow-md ring-1 ring-secondary/20"
             )}

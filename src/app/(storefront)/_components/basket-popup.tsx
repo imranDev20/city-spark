@@ -137,8 +137,8 @@ export default function BasketPopup() {
       <Link href="/basket">
         <button
           className={cn(
-            "flex flex-col items-center gap-1 px-3 py-2 text-white rounded-md transition-colors duration-200",
-            "hover:bg-white/10",
+            "flex flex-col items-center gap-1 px-3 py-2 text-primary rounded-md transition-colors duration-200",
+            "hover:bg-primary/10",
             "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
           )}
         >

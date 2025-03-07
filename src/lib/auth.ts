@@ -19,18 +19,26 @@ export const authOptions: NextAuthOptions = {
   adapter: {
     ...PrismaAdapter(prisma),
     createUser: async (data: AdapterUser) => {
-      const user = await prisma.user.create({
-        data: {
-          email: data.email,
-          firstName: data.name?.split(" ")[0] || null,
-          lastName: data.name?.split(" ").slice(1).join(" ") || null,
-          avatar: data.image,
-          emailVerified: data.emailVerified,
-          role: "USER",
-          phone: (data as any).phone || null, // Added phone
-        },
-      });
-      return user;
+      console.log(data);
+
+      try {
+        const user = await prisma.user.create({
+          data: {
+            email: data.email,
+            firstName: data.name?.split(" ")[0] || null,
+            lastName: data.name?.split(" ").slice(1).join(" ") || null,
+            avatar: data.image || null,
+            image: data.image || null,
+            emailVerified: data.emailVerified,
+            role: "USER",
+            phone: (data as any).phone || null,
+          },
+        });
+        return user;
+      } catch (error) {
+        console.error("Error creating user:", error);
+        throw error;
+      }
     },
   },
   providers: [
@@ -90,10 +98,12 @@ export const authOptions: NextAuthOptions = {
         token.role = (user as User).role;
         token.firstName = (user as User).firstName;
         token.lastName = (user as User).lastName;
-        token.phone = (user as User).phone; // Added phone
+        token.phone = (user as User).phone;
+        token.image = (user as User).avatar || (user as User).image; // Add this line
       }
       return token;
     },
+
     async session({ session, token }) {
       return {
         ...session,
@@ -104,7 +114,8 @@ export const authOptions: NextAuthOptions = {
           role: token.role as string,
           firstName: token.firstName as string | null | undefined,
           lastName: token.lastName as string | null | undefined,
-          phone: token.phone as string | null | undefined, // Added phone
+          phone: token.phone as string | null | undefined,
+          image: token.image as string | null | undefined, // Add this line
         },
       };
     },

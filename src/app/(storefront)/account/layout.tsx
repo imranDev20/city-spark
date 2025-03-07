@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -13,6 +14,7 @@ import {
   FaShoppingCart,
 } from "react-icons/fa";
 import { Card } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import useEmblaCarousel from "embla-carousel-react";
 import LogoutDialog from "./_components/logout-dialog";
 import { useSession } from "next-auth/react";
@@ -50,6 +52,12 @@ const navigation = [
     icon: FaCog,
   },
 ];
+
+const getInitials = (firstName?: string | null, lastName?: string | null) => {
+  const first = firstName?.charAt(0) || "";
+  const last = lastName?.charAt(0) || "";
+  return (first + last).toUpperCase();
+};
 
 const NavLink = ({
   item,
@@ -132,7 +140,7 @@ export default function AccountLayout({
       if (activeIndex !== -1) {
         // Add a small delay to ensure carousel is ready
         setTimeout(() => {
-          emblaApi.scrollTo(activeIndex, true); // Added immediate parameter
+          emblaApi.scrollTo(activeIndex, true);
         }, 100);
       }
     }
@@ -176,9 +184,23 @@ export default function AccountLayout({
           <aside className="hidden lg:block lg:col-span-3">
             <Card className="sticky top-8 p-4 bg-white">
               <div className="flex items-center gap-3 px-2 mb-6">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <FaUser className="h-6 w-6 text-primary" />
-                </div>
+                <Avatar className="h-10 w-10">
+                  {session?.user?.image ? (
+                    <Image
+                      src={session.user.image}
+                      alt={`${session.user.firstName} ${session.user.lastName}`}
+                      width={40}
+                      height={40}
+                    />
+                  ) : (
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      {getInitials(
+                        session?.user?.firstName,
+                        session?.user?.lastName
+                      )}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">
                     {session?.user.firstName} {session?.user.lastName}

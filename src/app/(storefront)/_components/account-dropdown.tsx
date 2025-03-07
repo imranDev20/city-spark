@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { usePathname } from "next/navigation";
 
 type MenuItemProps = {
   icon: React.ElementType;
@@ -88,6 +89,9 @@ export default function AccountDropdown() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const pathname = usePathname();
+  const isAccountPage = pathname === "/account";
+
   const handleOpen = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setIsOpen(true);
@@ -135,8 +139,8 @@ export default function AccountDropdown() {
       <Link
         href="/login"
         className={cn(
-          "flex flex-col items-center gap-1 px-3 py-2 text-white rounded-md transition-colors duration-200",
-          "hover:bg-white/10",
+          "flex flex-col items-center gap-1 px-3 py-2 text-primary rounded-md transition-colors duration-200",
+          "hover:bg-primary/10",
           "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
         )}
       >
@@ -167,9 +171,10 @@ export default function AccountDropdown() {
       <Link
         href="/account"
         className={cn(
-          "flex flex-col items-center gap-1 px-3 py-2 text-white rounded-md transition-colors duration-200",
-          "hover:bg-white/10",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
+          "flex flex-col items-center gap-1 px-3 py-2 text-primary rounded-md transition-colors duration-200",
+          "hover:bg-primary/10",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20",
+          isAccountPage && "bg-white/10" // Add this line to highlight when active
         )}
         onMouseEnter={handleOpen}
         onMouseLeave={handleClose}
