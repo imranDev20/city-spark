@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { StarIcon } from "lucide-react";
+import { Heart, Loader2, StarIcon } from "lucide-react";
 import {
   FaMapMarkerAlt,
   FaPencilAlt,
@@ -14,11 +14,14 @@ import {
 import { Prisma } from "@prisma/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useTransition } from "react";
-import { addToCart } from "@/app/(storefront)/products/actions";
+import {
+  addToCart,
+  toggleWishlistItem,
+  checkWishlistStatus,
+} from "@/app/(storefront)/products/actions";
 import Image from "next/image";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
@@ -97,6 +100,11 @@ export default function ProductDetailsSidebar({
   const { postcode, setPostcode } = useDeliveryStore();
   const { product } = inventoryItem;
   const queryClient = useQueryClient();
+  const [loadingType, setLoadingType] = useState<
+    "FOR_DELIVERY" | "FOR_COLLECTION" | null
+  >(null);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -106,6 +114,20 @@ export default function ProductDetailsSidebar({
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  // Check if product is in user's wishlist on component mount
+  useEffect(() => {
+    const fetchWishlistStatus = async () => {
+      try {
+        const result = await checkWishlistStatus(inventoryItem.product.id);
+        setIsWishlisted(result.isWishlisted);
+      } catch (error) {
+        console.error("Error checking wishlist status:", error);
+      }
+    };
+
+    fetchWishlistStatus();
+  }, [inventoryItem.product.id]);
 
   const handleQuantityChange = (newValue: number) => {
     setInputValue(Math.max(1, newValue).toString());
@@ -135,34 +157,80 @@ export default function ProductDetailsSidebar({
     e.preventDefault();
     const quantity = parseInt(inputValue);
 
+    // Set loading type
+    setLoadingType(type);
+
     startTransition(async () => {
-      const result = await addToCart(inventoryItem.id, quantity, type);
+      try {
+        const result = await addToCart(inventoryItem.id, quantity, type);
 
-      await queryClient.invalidateQueries({ queryKey: ["cart"] });
+        await queryClient.invalidateQueries({ queryKey: ["cart"] });
 
-      if (result?.success) {
+        if (result?.success) {
+          toast({
+            title: "Added to Cart",
+            description: result.message,
+            variant: "success",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: result?.message,
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
         toast({
-          title: "Added to Cart",
+          title: "Error",
+          description: "An unexpected error occurred",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingType(null);
+        setInputValue("1");
+      }
+    });
+  };
+
+  const handleWishlistToggle = async () => {
+    setIsWishlistLoading(true);
+    try {
+      const result = await toggleWishlistItem(inventoryItem.product.id);
+
+      if (result.success) {
+        setIsWishlisted(!!result.isWishlisted);
+
+        toast({
+          title: result.isWishlisted
+            ? "Added to Wishlist"
+            : "Removed from Wishlist",
           description: result.message,
           variant: "success",
         });
       } else {
         toast({
           title: "Error",
-          description: result?.message,
+          description: result.message,
           variant: "destructive",
         });
       }
-    });
-    setInputValue("1");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update wishlist",
+        variant: "destructive",
+      });
+    } finally {
+      setIsWishlistLoading(false);
+    }
   };
 
   return (
     <>
-      <Card className="sticky top-10 hidden lg:block bg-white">
+      <Card className="hidden lg:block bg-white">
         <CardContent className="p-6">
           {product.brand?.image ? (
-            <div className="flex items-center mb-4">
+            <div className="mb-4">
               <div className="relative w-16 h-8">
                 <Image
                   src={product.brand.image}
@@ -195,32 +263,34 @@ export default function ProductDetailsSidebar({
           </div>
 
           <div className="flex flex-col gap-1 mb-7">
-            <div className="flex items-baseline gap-2">
-              {product.promotionalPrice ? (
-                <>
-                  <span className="text-4xl font-semibold tracking-tight">
-                    £{product.promotionalPrice.toFixed(2)}
-                  </span>
-                  <div className="text-sm text-gray-500 font-medium">
-                    inc. VAT
-                  </div>
-                  {product.retailPrice &&
-                    product.retailPrice > product.promotionalPrice && (
-                      <span className="text-xl text-gray-500 line-through">
-                        £{product.retailPrice.toFixed(2)}
-                      </span>
-                    )}
-                </>
-              ) : (
-                <>
-                  <span className="text-4xl font-semibold tracking-tight">
-                    £{(product.retailPrice || 0).toFixed(2)}
-                  </span>
-                  <div className="text-sm text-gray-500 font-medium">
-                    inc. VAT
-                  </div>
-                </>
-              )}
+            <div className="flex items-baseline justify-between">
+              <div className="flex items-baseline gap-2">
+                {product.promotionalPrice ? (
+                  <>
+                    <span className="text-4xl font-semibold tracking-tight">
+                      £{product.promotionalPrice.toFixed(2)}
+                    </span>
+                    <div className="text-sm text-gray-500 font-medium">
+                      inc. VAT
+                    </div>
+                    {product.retailPrice &&
+                      product.retailPrice > product.promotionalPrice && (
+                        <span className="text-xl text-gray-500 line-through">
+                          £{product.retailPrice.toFixed(2)}
+                        </span>
+                      )}
+                  </>
+                ) : (
+                  <>
+                    <span className="text-4xl font-semibold tracking-tight">
+                      £{(product.retailPrice || 0).toFixed(2)}
+                    </span>
+                    <div className="text-sm text-gray-500 font-medium">
+                      inc. VAT
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
             <div className="flex items-baseline gap-2">
               <span className="text-xl font-medium text-gray-700">
@@ -271,8 +341,12 @@ export default function ProductDetailsSidebar({
                 disabled={isPending || !inventoryItem.collectionEligibility}
                 className="h-12 text-base shadow"
               >
-                <FaStore className="w-4 h-4 mr-2" />
-                Collection
+                {loadingType === "FOR_COLLECTION" ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <FaStore className="w-4 h-4 mr-2" />
+                )}
+                {loadingType === "FOR_COLLECTION" ? "Adding..." : "Collection"}
               </Button>
 
               <Button
@@ -280,8 +354,12 @@ export default function ProductDetailsSidebar({
                 disabled={isPending || !inventoryItem.deliveryEligibility}
                 className="h-12 text-base shadow"
               >
-                <FaTruckMoving className="w-4 h-4 mr-2" />
-                Delivery
+                {loadingType === "FOR_DELIVERY" ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <FaTruckMoving className="w-4 h-4 mr-2" />
+                )}
+                {loadingType === "FOR_DELIVERY" ? "Adding..." : "Delivery"}
               </Button>
             </div>
           </div>
@@ -331,6 +409,32 @@ export default function ProductDetailsSidebar({
                 </div>
               </div>
             </div>
+          </div>
+
+          <Separator className="my-6" />
+
+          <div>
+            <h3 className="font-semibold text-sm mb-3">Add to saved list...</h3>
+            <Button
+              variant="outline"
+              className={`w-full h-12 text-base ${
+                isWishlisted ? "bg-gray-100" : ""
+              }`}
+              onClick={handleWishlistToggle}
+              disabled={isWishlistLoading}
+            >
+              {isWishlistLoading ? (
+                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+              ) : (
+                <Heart
+                  className={`h-5 w-5 mr-2 ${
+                    isWishlisted ? "fill-current text-primary" : ""
+                  }`}
+                />
+              )}
+
+              {isWishlisted ? "Saved" : "Save"}
+            </Button>
           </div>
         </CardContent>
       </Card>

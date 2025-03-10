@@ -15,6 +15,8 @@ import {
 } from "react-icons/fa";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { Loader2 } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import LogoutDialog from "./_components/logout-dialog";
 import { useSession } from "next-auth/react";
@@ -151,9 +153,13 @@ export default function AccountLayout({
     redirect("/login");
   }
 
-  // Show loading state while checking authentication
+  // Show centered loading state while checking authentication
   if (status === "loading") {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-[calc(100vh-260px)] flex items-center justify-center">
+        <Loader2 className="h-10 w-10 text-primary animate-spin" />
+      </div>
+    );
   }
 
   return (
@@ -186,7 +192,7 @@ export default function AccountLayout({
               <div className="flex items-center gap-3 px-2 mb-6">
                 <Avatar className="h-10 w-10">
                   {session?.user?.image ? (
-                    <Image
+                    <AvatarImage
                       src={session.user.image}
                       alt={`${session.user.firstName} ${session.user.lastName}`}
                       width={40}
@@ -210,6 +216,8 @@ export default function AccountLayout({
                   </p>
                 </div>
               </div>
+
+              <Separator className="mb-4" />
 
               <nav className="space-y-1">
                 {navigation.map((item) => (

@@ -1,10 +1,11 @@
 "use server";
 
-import { getServerAuthSession } from "@/lib/auth";
+import { authOptions, getServerAuthSession } from "@/lib/auth";
 import { getCartWhereInput } from "@/lib/cart-utils";
 import prisma from "@/lib/prisma";
 import { getOrCreateSessionId } from "@/lib/session-id";
 import { CategoryType, FulFillmentType, Prisma } from "@prisma/client";
+import { getServerSession } from "next-auth";
 import { revalidatePath, unstable_cache as cache } from "next/cache";
 
 export async function getCategoriesByType(
@@ -1014,5 +1015,125 @@ export async function getTopBrands(): Promise<BrandsByCategory> {
   } catch (error) {
     console.error("Error fetching top brands:", error);
     return {};
+  }
+}
+
+export type WishlistActionResponse = {
+  success: boolean;
+  message: string;
+  isWishlisted?: boolean;
+};
+
+export async function toggleWishlistItem(
+  productId: string
+): Promise<WishlistActionResponse> {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return {
+        success: false,
+        message: "You must be logged in to save items to your wishlist",
+      };
+    }
+
+    // Get user by email
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: {
+        wishlist: {
+          where: { id: productId },
+        },
+      },
+    });
+
+    if (!user) {
+      return {
+        success: false,
+        message: "User not found",
+      };
+    }
+
+    const isInWishlist = user.wishlist.length > 0;
+
+    if (isInWishlist) {
+      // Remove from wishlist
+      await prisma.user.update({
+        where: { email: session.user.email },
+        data: {
+          wishlist: {
+            disconnect: {
+              id: productId,
+            },
+          },
+        },
+      });
+
+      revalidatePath("/products");
+      revalidatePath(`/products/p/[...slug]`);
+
+      return {
+        success: true,
+        message: "Item removed from your wishlist",
+        isWishlisted: false,
+      };
+    } else {
+      // Add to wishlist
+      await prisma.user.update({
+        where: { email: session.user.email },
+        data: {
+          wishlist: {
+            connect: {
+              id: productId,
+            },
+          },
+        },
+      });
+
+      revalidatePath("/products");
+      revalidatePath(`/products/p/[...slug]`);
+
+      return {
+        success: true,
+        message: "Item added to your wishlist",
+        isWishlisted: true,
+      };
+    }
+  } catch (error) {
+    console.error("Error toggling wishlist item:", error);
+    return {
+      success: false,
+      message: "An error occurred while updating your wishlist",
+    };
+  }
+}
+
+export async function checkWishlistStatus(
+  productId: string
+): Promise<{ isWishlisted: boolean }> {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return { isWishlisted: false };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email: session.user.email,
+      },
+      include: {
+        wishlist: {
+          where: { id: productId },
+        },
+      },
+    });
+
+    return {
+      isWishlisted: user?.wishlist.length ? true : false,
+    };
+  } catch (error) {
+    console.error("Error checking wishlist status:", error);
+    return { isWishlisted: false };
   }
 }
