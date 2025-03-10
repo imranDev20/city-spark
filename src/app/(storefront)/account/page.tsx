@@ -1,95 +1,25 @@
 "use client";
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
-  FaBox,
-  FaShoppingCart,
+  FaShoppingBag,
   FaMapMarkerAlt,
   FaUser,
   FaHeart,
-  FaCog,
   FaClock,
-  FaCreditCard,
+  FaLock,
+  FaFileAlt,
+  FaHome,
+  FaCog,
 } from "react-icons/fa";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAccountData } from "@/services/account";
-import { Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-
-type DashboardCardProps = {
-  title: string;
-  value: number | string;
-  description?: string;
-  icon: React.ElementType;
-  href: string;
-};
-
-const DashboardCard = ({
-  title,
-  value,
-  description,
-  icon: Icon,
-  href,
-}: DashboardCardProps) => (
-  <Link href={href} className="block group">
-    <Card className="relative h-full overflow-hidden transition-all duration-200 hover:border-primary hover:shadow-md bg-white">
-      <CardContent className="p-8 flex flex-col items-center text-center">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-
-        <div className="relative mb-6 transition-transform duration-200 group-hover:-translate-y-1">
-          <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors duration-200">
-            <Icon className="h-7 w-7 text-primary" />
-          </div>
-        </div>
-
-        <div className="relative space-y-2">
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-            {title}
-          </h3>
-          <p className="text-3xl font-bold text-gray-900">{value}</p>
-          {description && (
-            <p className="text-sm text-muted-foreground mt-1.5">
-              {description}
-            </p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  </Link>
-);
-
-const QuickActionCard = ({
-  title,
-  description,
-  icon: Icon,
-  href,
-}: {
-  title: string;
-  description: string;
-  icon: React.ElementType;
-  href: string;
-}) => (
-  <Link href={href}>
-    <Card className="transition-all duration-200 hover:border-primary/50 hover:shadow-md bg-white">
-      <CardContent className="p-6">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <Icon className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <p className="font-medium">{title}</p>
-            <p className="text-sm text-muted-foreground">{description}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  </Link>
-);
 
 // Helper function for getting initials
 function getInitials(
@@ -102,7 +32,39 @@ function getInitials(
   ).toUpperCase()}`;
 }
 
-export default function AccountPage() {
+// Dashboard stats card component
+
+// Action card component
+const ActionCard = ({
+  title,
+  description,
+  icon: Icon,
+  href,
+}: {
+  title: string;
+  description: string;
+  icon: React.ElementType;
+  href: string;
+}) => (
+  <Link href={href} className="block group">
+    <Card className="h-full transition-all duration-200 hover:border-primary hover:shadow-md bg-white">
+      <CardContent className="p-6 flex items-start gap-4">
+        <div className="h-12 w-12 bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors duration-200 rounded-xl">
+          <Icon className="h-6 w-6 text-primary" />
+        </div>
+
+        <div className="flex-1">
+          <h3 className="font-medium group-hover:text-primary transition-colors">
+            {title}
+          </h3>
+          <p className="text-sm text-muted-foreground mt-1">{description}</p>
+        </div>
+      </CardContent>
+    </Card>
+  </Link>
+);
+
+export default function AccountDashboard() {
   const {
     data: userData,
     isLoading,
@@ -116,8 +78,8 @@ export default function AccountPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh] animate-spin">
-        <Loader2 className="w-8 h-8" />
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-8 h-8 animate-spin text-primary border-4 border-current border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -177,152 +139,64 @@ export default function AccountPage() {
         </CardContent>
       </Card>
 
-      {/* Dashboard Stats */}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <DashboardCard
-          title="Total Orders"
-          value={userData.stats.orders}
-          description="All time orders"
-          icon={FaShoppingCart}
-          href="/account/orders"
-        />
-        <DashboardCard
-          title="Active Orders"
-          value={
-            userData.recentOrders.filter(
-              (order) =>
-                order.status === "PENDING" || order.status === "PROCESSING"
-            ).length
-          }
-          description="Currently in progress"
-          icon={FaBox}
-          href="/account/orders"
-        />
-        <DashboardCard
-          title="Wishlist"
-          value={userData.stats.wishlist}
-          description="Saved items"
-          icon={FaHeart}
-          href="/account/wishlist"
-        />
-        <DashboardCard
-          title="Addresses"
-          value={userData.stats.addresses}
-          description="Saved addresses"
-          icon={FaMapMarkerAlt}
-          href="/account/addresses"
-        />
-      </div>
-
-      {/* Recent Orders and Personal Info Grid */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Recent Orders */}
-        <Card className="bg-white">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-lg font-semibold">
-              Recent Orders
-            </CardTitle>
-            {userData.recentOrders && userData.recentOrders.length > 0 && (
-              <Link
-                href="/account/orders"
-                className="text-sm text-primary hover:underline"
-              >
-                View all
-              </Link>
-            )}
-          </CardHeader>
-          <CardContent>
-            {userData.recentOrders && userData.recentOrders.length > 0 ? (
-              <div className="space-y-4">
-                {userData.recentOrders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="flex items-center justify-between p-4 rounded-lg"
-                  >
-                    <div className="space-y-1">
-                      <p className="font-medium">{order.id}</p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <FaClock className="h-4 w-4" />
-                        <span>{new Date(order.date).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">£{order.total.toFixed(2)}</p>
-                      <p className="text-sm text-emerald-600">{order.status}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <FaBox className="h-12 w-12 text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-1">
-                  No orders yet
-                </h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  When you place an order, it will appear here
-                </p>
-                <Link href="/products">
-                  <Button variant="outline" size="sm">
-                    Start Shopping
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Personal Information */}
-        <Card className="bg-white">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-lg font-semibold">
-              Personal Information
-            </CardTitle>
-            <Button variant="ghost" size="sm" className="text-primary">
-              <FaCog className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Full Name</p>
-                  <p className="font-medium">
-                    {`${userData.firstName || ""} ${
-                      userData.lastName || ""
-                    }`.trim() || "Not set"}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium">{userData.email}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Phone</p>
-                  <p className="font-medium">{userData.phone || "Not set"}</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Actions section remains the same */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold px-1">Quick Actions</h2>
+      {/* Account Management Actions */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4">Manage Your Account</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <QuickActionCard
-            href="/account/profile"
-            icon={FaCog}
-            title="Edit Profile"
-            description="Update your information"
+          <ActionCard
+            title="Order History"
+            description="View and track all your previous orders"
+            icon={FaShoppingBag}
+            href="/account/orders"
           />
-          <QuickActionCard
-            href="/account/payment"
-            icon={FaCreditCard}
-            title="Payment Methods"
-            description="Manage your cards"
+          <ActionCard
+            title="Personal Details"
+            description="Update your name, email and contact information"
+            icon={FaUser}
+            href="/account/profile"
+          />
+          <ActionCard
+            title="Address Book"
+            description="Manage your delivery and billing addresses"
+            icon={FaMapMarkerAlt}
+            href="/account/addresses"
+          />
+          <ActionCard
+            title="Wishlist"
+            description="View and manage your saved items"
+            icon={FaHeart}
+            href="/account/wishlist"
+          />
+          <ActionCard
+            title="Change Password"
+            description="Update your account password"
+            icon={FaLock}
+            href="/account/password"
+          />
+        </div>
+      </div>
+
+      {/* Additional Resources */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4">Additional Resources</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ActionCard
+            title="Help Center"
+            description="Get support and find answers to questions"
+            icon={FaFileAlt}
+            href="/help"
+          />
+          <ActionCard
+            title="Account Settings"
+            description="Manage your preferences and notifications"
+            icon={FaCog}
+            href="/account/settings"
+          />
+          <ActionCard
+            title="Return to Store"
+            description="Continue shopping for great products"
+            icon={FaHome}
+            href="/products"
           />
         </div>
       </div>
