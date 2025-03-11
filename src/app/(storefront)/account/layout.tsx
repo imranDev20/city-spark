@@ -48,11 +48,6 @@ const navigation = [
     href: "/account/profile",
     icon: FaUser,
   },
-  {
-    name: "Settings",
-    href: "/account/settings",
-    icon: FaCog,
-  },
 ];
 
 const getInitials = (firstName?: string | null, lastName?: string | null) => {

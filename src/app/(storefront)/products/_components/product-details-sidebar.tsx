@@ -119,7 +119,7 @@ export default function ProductDetailsSidebar({
   useEffect(() => {
     const fetchWishlistStatus = async () => {
       try {
-        const result = await checkWishlistStatus(inventoryItem.product.id);
+        const result = await checkWishlistStatus(inventoryItem.id);
         setIsWishlisted(result.isWishlisted);
       } catch (error) {
         console.error("Error checking wishlist status:", error);
@@ -127,7 +127,7 @@ export default function ProductDetailsSidebar({
     };
 
     fetchWishlistStatus();
-  }, [inventoryItem.product.id]);
+  }, [inventoryItem.id]);
 
   const handleQuantityChange = (newValue: number) => {
     setInputValue(Math.max(1, newValue).toString());
@@ -195,7 +195,7 @@ export default function ProductDetailsSidebar({
   const handleWishlistToggle = async () => {
     setIsWishlistLoading(true);
     try {
-      const result = await toggleWishlistItem(inventoryItem.product.id);
+      const result = await toggleWishlistItem(inventoryItem.id);
 
       if (result.success) {
         setIsWishlisted(!!result.isWishlisted);
@@ -414,7 +414,7 @@ export default function ProductDetailsSidebar({
           <Separator className="my-6" />
 
           <div>
-            <h3 className="font-semibold text-sm mb-3">Add to saved list...</h3>
+            <h3 className="font-semibold text-sm mb-3">Add to wish list...</h3>
             <Button
               variant="outline"
               className={`w-full h-12 text-base ${

@@ -1025,7 +1025,7 @@ export type WishlistActionResponse = {
 };
 
 export async function toggleWishlistItem(
-  productId: string
+  inventoryId: string
 ): Promise<WishlistActionResponse> {
   try {
     const session = await getServerSession(authOptions);
@@ -1037,12 +1037,12 @@ export async function toggleWishlistItem(
       };
     }
 
-    // Get user by email
+    // Get user by email with wishlistInventory check
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       include: {
-        wishlist: {
-          where: { id: productId },
+        wishlistInventory: {
+          where: { id: inventoryId },
         },
       },
     });
@@ -1054,16 +1054,16 @@ export async function toggleWishlistItem(
       };
     }
 
-    const isInWishlist = user.wishlist.length > 0;
+    const isInWishlist = user.wishlistInventory.length > 0;
 
     if (isInWishlist) {
       // Remove from wishlist
       await prisma.user.update({
         where: { email: session.user.email },
         data: {
-          wishlist: {
+          wishlistInventory: {
             disconnect: {
-              id: productId,
+              id: inventoryId,
             },
           },
         },
@@ -1082,9 +1082,9 @@ export async function toggleWishlistItem(
       await prisma.user.update({
         where: { email: session.user.email },
         data: {
-          wishlist: {
+          wishlistInventory: {
             connect: {
-              id: productId,
+              id: inventoryId,
             },
           },
         },
@@ -1109,7 +1109,7 @@ export async function toggleWishlistItem(
 }
 
 export async function checkWishlistStatus(
-  productId: string
+  inventoryId: string
 ): Promise<{ isWishlisted: boolean }> {
   try {
     const session = await getServerSession(authOptions);
@@ -1123,14 +1123,14 @@ export async function checkWishlistStatus(
         email: session.user.email,
       },
       include: {
-        wishlist: {
-          where: { id: productId },
+        wishlistInventory: {
+          where: { id: inventoryId },
         },
       },
     });
 
     return {
-      isWishlisted: user?.wishlist.length ? true : false,
+      isWishlisted: user?.wishlistInventory.length ? true : false,
     };
   } catch (error) {
     console.error("Error checking wishlist status:", error);

@@ -7,32 +7,18 @@ import {
   FaMapMarkerAlt,
   FaUser,
   FaHeart,
-  FaClock,
   FaLock,
   FaFileAlt,
   FaHome,
   FaCog,
+  FaTachometerAlt,
 } from "react-icons/fa";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAccountData } from "@/services/account";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "next-auth/react";
-import Image from "next/image";
-
-// Helper function for getting initials
-function getInitials(
-  firstName: string | null | undefined,
-  lastName: string | null | undefined
-): string {
-  if (!firstName && !lastName) return "U";
-  return `${(firstName?.[0] || "").toUpperCase()}${(
-    lastName?.[0] || ""
-  ).toUpperCase()}`;
-}
-
-// Dashboard stats card component
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Action card component
 const ActionCard = ({
@@ -64,6 +50,34 @@ const ActionCard = ({
   </Link>
 );
 
+// Skeleton loader for action cards
+const ActionCardSkeleton = () => (
+  <Card className="h-full bg-white">
+    <CardContent className="p-6 flex items-start gap-4">
+      <Skeleton className="h-12 w-12 rounded-xl" />
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-5 w-3/4" />
+        <Skeleton className="h-4 w-full" />
+      </div>
+    </CardContent>
+  </Card>
+);
+
+// Skeleton loader for the welcome banner
+const WelcomeBannerSkeleton = () => (
+  <Card className="bg-gradient-to-r from-primary to-primary/90 text-white border-0">
+    <CardContent className="p-6">
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-16 w-16 rounded-full bg-white/20" />
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48 bg-white/20" />
+          <Skeleton className="h-4 w-64 bg-white/20" />
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+);
+
 export default function AccountDashboard() {
   const {
     data: userData,
@@ -78,8 +92,30 @@ export default function AccountDashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 animate-spin text-primary border-4 border-current border-t-transparent rounded-full" />
+      <div className="space-y-8">
+        <WelcomeBannerSkeleton />
+
+        <div>
+          <h2 className="text-lg font-semibold mb-4">Manage Your Account</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array(5)
+              .fill(0)
+              .map((_, index) => (
+                <ActionCardSkeleton key={`account-skeleton-${index}`} />
+              ))}
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-lg font-semibold mb-4">Additional Resources</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array(3)
+              .fill(0)
+              .map((_, index) => (
+                <ActionCardSkeleton key={`resources-skeleton-${index}`} />
+              ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -109,24 +145,9 @@ export default function AccountDashboard() {
       <Card className="bg-gradient-to-r from-primary to-primary/90 text-white border-0">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
-              {session?.user?.image ? (
-                <Image
-                  src={session.user.image}
-                  alt={`${session.user.firstName} ${session.user.lastName}`}
-                  width={64}
-                  height={64}
-                  className="object-cover"
-                />
-              ) : (
-                <AvatarFallback className="bg-white/10 text-white text-xl">
-                  {getInitials(
-                    session?.user?.firstName,
-                    session?.user?.lastName
-                  )}
-                </AvatarFallback>
-              )}
-            </Avatar>
+            <div className="h-16 w-16 rounded-full bg-white/10 flex items-center justify-center">
+              <FaTachometerAlt className="h-8 w-8" />
+            </div>
             <div>
               <h1 className="text-2xl font-bold">
                 Welcome back, {session?.user?.firstName || "User"}!

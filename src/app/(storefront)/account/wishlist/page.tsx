@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FaHeart } from "react-icons/fa";
+import React, { useState, useMemo } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -11,57 +11,149 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Heart } from "lucide-react";
+import { Search, Heart, ShoppingBag } from "lucide-react";
 import { NumericFormat } from "react-number-format";
-import { Prisma } from "@prisma/client";
 import ProductCard from "../../_components/product-card";
+import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
+import { FaHeart } from "react-icons/fa";
+import {
+  fetchWishlist,
+  WishlistInventoryItem,
+  getProductPrice,
+  isInventoryAvailable,
+} from "@/services/account-wishlist";
+import { useToast } from "@/components/ui/use-toast";
 
-// Using the same type as your ProductCard
-type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
-  include: {
-    product: {
-      include: {
-        brand: true;
-        primaryCategory: true;
-        secondaryCategory: true;
-        tertiaryCategory: true;
-        quaternaryCategory: true;
-      };
-    };
-  };
-}>;
+// Skeleton loader for the wishlist items
+const WishlistItemSkeleton = () => (
+  <div className="space-y-3">
+    <Skeleton className="h-48 w-full rounded-lg" />
+    <Skeleton className="h-4 w-3/4" />
+    <Skeleton className="h-4 w-1/2" />
+    <div className="flex justify-between">
+      <Skeleton className="h-6 w-20" />
+      <Skeleton className="h-8 w-20" />
+    </div>
+  </div>
+);
 
-// Dummy data matching the required type
-const dummyWishlistItems: InventoryItemWithRelation[] = [];
+// Skeleton loader for the stats cards
+const StatsCardSkeleton = () => (
+  <Card className="bg-white">
+    <CardContent className="p-6">
+      <Skeleton className="h-4 w-24 mb-2" />
+      <Skeleton className="h-8 w-12" />
+    </CardContent>
+  </Card>
+);
 
 export default function AccountWishlistPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const { toast } = useToast();
 
-  // Filter logic remains the same
-  const filteredItems = dummyWishlistItems.filter((item) => {
-    const matchesSearch = item.product.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      categoryFilter === "all" ||
-      item.product.primaryCategory?.name === categoryFilter;
-    return matchesSearch && matchesCategory;
+  const {
+    data: wishlistItems,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["wishlist"],
+    queryFn: fetchWishlist,
   });
 
-  const totalValue = dummyWishlistItems.reduce(
-    (acc, item) =>
-      acc + (item.product.promotionalPrice || item.product.retailPrice || 0),
-    0
-  );
+  // Get unique categories from wishlist inventory items for filter dropdown
+  const categories = useMemo(() => {
+    if (!wishlistItems) return [];
+
+    const categorySet = new Set<string>();
+    wishlistItems.forEach((item) => {
+      if (item.product.primaryCategory?.name) {
+        categorySet.add(item.product.primaryCategory.name);
+      }
+    });
+
+    return Array.from(categorySet);
+  }, [wishlistItems]);
+
+  // Filter logic
+  const filteredItems = useMemo(() => {
+    if (!wishlistItems) return [];
+
+    return wishlistItems.filter((item) => {
+      const matchesSearch = item.product.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        categoryFilter === "all" ||
+        item.product.primaryCategory?.name === categoryFilter;
+      return matchesSearch && matchesCategory;
+    });
+  }, [wishlistItems, searchQuery, categoryFilter]);
+
+  // Calculate total value
+  const totalValue = useMemo(() => {
+    if (!wishlistItems) return 0;
+
+    return wishlistItems.reduce((acc, item) => {
+      const price = getProductPrice(item) || 0;
+      return acc + price;
+    }, 0);
+  }, [wishlistItems]);
+
+  // Count in-stock items
+  const inStockCount = useMemo(() => {
+    if (!wishlistItems) return 0;
+
+    return wishlistItems.filter((item) => isInventoryAvailable(item)).length;
+  }, [wishlistItems]);
+
+  if (error) {
+    return (
+      <div className="space-y-8">
+        {/* Welcome Banner */}
+        <Card className="bg-gradient-to-r from-primary to-primary/90 text-white border-0">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="h-16 w-16 bg-white/10 flex items-center justify-center rounded-full">
+                <FaHeart className="h-8 w-8" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">My Wishlist</h1>
+                <p className="text-primary-foreground/90 mt-1">
+                  View and manage your saved items
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="p-6 text-center">
+          <p className="text-red-500">
+            {error instanceof Error
+              ? error.message
+              : "Failed to load wishlist data"}
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => window.location.reload()}
+            className="mt-4"
+          >
+            Try Again
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
-      {/* Header Card */}
+      {/* Welcome Banner - Consistent with other account pages */}
       <Card className="bg-gradient-to-r from-primary to-primary/90 text-white border-0">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-white/10 flex items-center justify-center">
+            <div className="h-16 w-16 bg-white/10 flex items-center justify-center rounded-full">
               <FaHeart className="h-8 w-8" />
             </div>
             <div>
@@ -76,43 +168,51 @@ export default function AccountWishlistPage() {
 
       {/* Quick Stats */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-        <Card className="bg-white">
-          <CardContent className="p-6">
-            <p className="text-sm font-medium text-muted-foreground">
-              Total Items
-            </p>
-            <p className="text-2xl font-bold mt-2">
-              {dummyWishlistItems.length}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="p-6">
-            <p className="text-sm font-medium text-muted-foreground">
-              In Stock Items
-            </p>
-            <p className="text-2xl font-bold mt-2">
-              {dummyWishlistItems.filter((item) => item.stockCount > 0).length}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="p-6">
-            <p className="text-sm font-medium text-muted-foreground">
-              Total Value
-            </p>
-            <p className="text-2xl font-bold mt-2">
-              <NumericFormat
-                value={totalValue}
-                displayType="text"
-                prefix="£"
-                thousandSeparator
-                decimalScale={2}
-                fixedDecimalScale
-              />
-            </p>
-          </CardContent>
-        </Card>
+        {isLoading ? (
+          <>
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+          </>
+        ) : (
+          <>
+            <Card className="bg-white">
+              <CardContent className="p-6">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Total Items
+                </p>
+                <p className="text-2xl font-bold mt-2">
+                  {wishlistItems?.length || 0}
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="bg-white">
+              <CardContent className="p-6">
+                <p className="text-sm font-medium text-muted-foreground">
+                  In Stock Items
+                </p>
+                <p className="text-2xl font-bold mt-2">{inStockCount}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-white">
+              <CardContent className="p-6">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Total Value
+                </p>
+                <p className="text-2xl font-bold mt-2">
+                  <NumericFormat
+                    value={totalValue}
+                    displayType="text"
+                    prefix="£"
+                    thousandSeparator
+                    decimalScale={2}
+                    fixedDecimalScale
+                  />
+                </p>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
       {/* Filters and Search */}
@@ -135,9 +235,11 @@ export default function AccountWishlistPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="Boilers">Boilers</SelectItem>
-            <SelectItem value="Radiators">Radiators</SelectItem>
-            <SelectItem value="Controls">Controls</SelectItem>
+            {categories.map((category) => (
+              <SelectItem key={category} value={category}>
+                {category}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -145,22 +247,39 @@ export default function AccountWishlistPage() {
       {/* Products Section */}
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-semibold">Saved Items</h2>
+          <h2 className="text-lg font-semibold">Saved Items</h2>
           <p className="text-sm text-muted-foreground">
-            {filteredItems.length} items
+            {isLoading
+              ? "Loading..."
+              : `${filteredItems.length} item${
+                  filteredItems.length !== 1 ? "s" : ""
+                }`}
           </p>
         </div>
 
-        {filteredItems.length === 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array(3)
+              .fill(0)
+              .map((_, index) => (
+                <WishlistItemSkeleton key={`skeleton-${index}`} />
+              ))}
+          </div>
+        ) : filteredItems.length === 0 ? (
           <div className="text-center py-12 bg-gray-50 rounded-lg">
             <Heart className="h-12 w-12 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold text-gray-900">
-              No items found
+              Your wishlist is empty
             </h3>
             <p className="text-gray-500 mt-1 max-w-sm mx-auto">
-              Try adjusting your search or filter to find what you&apos;re
-              looking for
+              Browse our products and save your favorites for later
             </p>
+            <Link href="/products">
+              <Button className="mt-6">
+                <ShoppingBag className="h-4 w-4 mr-2" />
+                Browse Products
+              </Button>
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

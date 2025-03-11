@@ -60,11 +60,15 @@ export async function GET(req: NextRequest) {
               createdAt: true,
             },
           },
-          wishlist: {
-            select: {
-              id: true,
-              name: true,
-              images: true,
+          wishlistInventory: {
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  images: true,
+                },
+              },
             },
           },
         },

@@ -56,14 +56,18 @@ export async function GET(req: Request, { params }: { params: RouteParams }) {
             createdAt: "desc",
           },
         },
-        wishlist: {
+        wishlistInventory: {
           include: {
-            brand: true,
-            inventory: true,
-            primaryCategory: true,
-            secondaryCategory: true,
-            tertiaryCategory: true,
-            quaternaryCategory: true,
+            product: {
+              include: {
+                brand: true,
+                inventory: true,
+                primaryCategory: true,
+                secondaryCategory: true,
+                tertiaryCategory: true,
+                quaternaryCategory: true,
+              },
+            },
           },
         },
         addresses: true,
