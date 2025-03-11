@@ -15,6 +15,9 @@ export const getInventoryItemsForStorefront = cache(
     isQuaternaryRequired = false,
     limit = 12,
     search,
+    minPrice = 0,
+    maxPrice = 999999999,
+    brandIds,
   }: {
     primaryCategoryId?: string;
     secondaryCategoryId?: string;
@@ -26,9 +29,28 @@ export const getInventoryItemsForStorefront = cache(
     isQuaternaryRequired?: boolean;
     limit?: number;
     search?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    brandIds?: string[];
   }) => {
     try {
-      // Check if any required category is missing (only if not searching)
+      console.log("Server-side fetch with params:", {
+        primaryCategoryId,
+        secondaryCategoryId,
+        tertiaryCategoryId,
+        quaternaryCategoryId,
+        isPrimaryRequired,
+        isSecondaryRequired,
+        isTertiaryRequired,
+        isQuaternaryRequired,
+        limit,
+        search,
+        minPrice,
+        maxPrice,
+        brandIds,
+      });
+
+      // Check if any required category is missing
       if (
         !search &&
         ((isPrimaryRequired && !primaryCategoryId) ||
@@ -39,75 +61,84 @@ export const getInventoryItemsForStorefront = cache(
         return { inventoryItems: [], totalCount: 0 };
       }
 
-      const whereClause: {
-        product?: {
-          AND?: any[];
-          primaryCategoryId?: string;
-          secondaryCategoryId?: string;
-          tertiaryCategoryId?: string;
-          quaternaryCategoryId?: string;
-        };
-      } = {};
+      // Base where clause consistent with the API route
+      const whereClause: any = {
+        product: {
+          AND: [],
+        },
+      };
+
+      // Add price filter with OR for null values
+      whereClause.product.AND.push({
+        OR: [
+          {
+            retailPrice: {
+              gte: minPrice,
+              lte: maxPrice === Infinity ? 999999999 : maxPrice,
+            },
+          },
+          {
+            retailPrice: null,
+          },
+        ],
+      });
+
+      // Add brand filter if provided
+      if (brandIds && brandIds.length > 0) {
+        whereClause.product.AND.push({
+          brandId: {
+            in: brandIds,
+          },
+        });
+      }
 
       // Build the where clause for categories
       if (
-        !search &&
-        (primaryCategoryId ||
-          secondaryCategoryId ||
-          tertiaryCategoryId ||
-          quaternaryCategoryId)
+        primaryCategoryId ||
+        secondaryCategoryId ||
+        tertiaryCategoryId ||
+        quaternaryCategoryId
       ) {
-        whereClause.product = {};
-        if (primaryCategoryId)
-          whereClause.product.primaryCategoryId = primaryCategoryId;
-        if (secondaryCategoryId)
-          whereClause.product.secondaryCategoryId = secondaryCategoryId;
-        if (tertiaryCategoryId)
-          whereClause.product.tertiaryCategoryId = tertiaryCategoryId;
-        if (quaternaryCategoryId)
-          whereClause.product.quaternaryCategoryId = quaternaryCategoryId;
+        const categoryConditions: any = {};
+        if (primaryCategoryId) {
+          categoryConditions.primaryCategoryId = primaryCategoryId;
+        }
+        if (secondaryCategoryId) {
+          categoryConditions.secondaryCategoryId = secondaryCategoryId;
+        }
+        if (tertiaryCategoryId) {
+          categoryConditions.tertiaryCategoryId = tertiaryCategoryId;
+        }
+        if (quaternaryCategoryId) {
+          categoryConditions.quaternaryCategoryId = quaternaryCategoryId;
+        }
+
+        if (Object.keys(categoryConditions).length > 0) {
+          whereClause.product.AND.push(categoryConditions);
+        }
       }
 
       // Add search condition
       if (search) {
-        whereClause.product = {
-          ...whereClause.product,
-          AND: [
-            {
-              OR: [
-                { name: { contains: search, mode: "insensitive" } },
-                { description: { contains: search, mode: "insensitive" } },
-                { model: { contains: search, mode: "insensitive" } },
-                { brand: { name: { contains: search, mode: "insensitive" } } },
-              ],
-            },
+        whereClause.product.AND.push({
+          OR: [
+            { name: { contains: search, mode: "insensitive" } },
+            { description: { contains: search, mode: "insensitive" } },
+            { model: { contains: search, mode: "insensitive" } },
+            { brand: { name: { contains: search, mode: "insensitive" } } },
           ],
-        };
-      }
-
-      // Check if any of the provided category IDs exist (only if not searching)
-      if (
-        !search &&
-        (primaryCategoryId ||
-          secondaryCategoryId ||
-          tertiaryCategoryId ||
-          quaternaryCategoryId)
-      ) {
-        const categoryExists = await prisma.category.findFirst({
-          where: {
-            OR: [
-              { id: primaryCategoryId },
-              { id: secondaryCategoryId },
-              { id: tertiaryCategoryId },
-              { id: quaternaryCategoryId },
-            ].filter(Boolean),
-          },
         });
-
-        if (!categoryExists) {
-          return { inventoryItems: [], totalCount: 0 };
-        }
       }
+
+      // Clean up empty AND arrays
+      if (whereClause.product.AND.length === 0) {
+        delete whereClause.product.AND;
+      }
+
+      console.log(
+        "Server-side where clause:",
+        JSON.stringify(whereClause, null, 2)
+      );
 
       const [inventoryItems, totalCount] = await Promise.all([
         prisma.inventory.findMany({
@@ -131,6 +162,10 @@ export const getInventoryItemsForStorefront = cache(
         prisma.inventory.count({ where: whereClause }),
       ]);
 
+      console.log(
+        `Server-side fetch found ${inventoryItems.length} items out of ${totalCount} total`
+      );
+
       return {
         inventoryItems,
         totalCount,
@@ -142,7 +177,7 @@ export const getInventoryItemsForStorefront = cache(
   },
   ["inventory-items"],
   {
-    revalidate: 3600, // Cache for 60 seconds
+    revalidate: 3600, // Cache for 60 minutes
     tags: ["inventory-items"],
   }
 );
