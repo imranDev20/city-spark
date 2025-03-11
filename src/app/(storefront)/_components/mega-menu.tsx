@@ -160,7 +160,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
 
   return (
     <div
-      className="absolute top-full left-0 w-full bg-muted border-b border-border shadow-lg z-10 border-t"
+      className="absolute top-full left-0 w-full bg-muted border-b border-gray-300 shadow-lg z-10 border-t"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
@@ -177,34 +177,33 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
           {/* Fixed Brands Section */}
           {categoryBrands?.length > 0 && (
             <div className="mt-2">
-              <h3 className="text-sm font-semibold text-gray-900 mb-5">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">
                 Top Brands
               </h3>
               <div className="flex justify-start gap-10">
-                {categoryBrands.slice(0, 7).map((brand) => (
-                  <Link
-                    key={brand.id}
-                    href={`/brands/${customSlugify(brand.name)}`}
-                    onClick={onCloseMenu}
-                    className="relative h-16 rounded-lg hover:opacity-80 transition-opacity"
-                  >
-                    {brand?.image && (
-                      <Image
-                        src={brand.image}
-                        alt={brand.name}
-                        width={200}
-                        height={100}
-                        sizes="120px"
-                        className="rounded-md"
-                        style={{
-                          objectFit: "contain",
-                          height: "100%",
-                          width: "100%",
-                        }}
-                      />
-                    )}
-                  </Link>
-                ))}
+                {categoryBrands.slice(0, 7).map((brand) => {
+                  if (brand.image) {
+                    return (
+                      <Link
+                        key={brand.id}
+                        href={`/brands/${customSlugify(brand.name)}`}
+                        onClick={onCloseMenu}
+                        className="flex items-center justify-center transition-opacity hover:opacity-80"
+                      >
+                        <div className="relative h-16 w-auto">
+                          <Image
+                            src={brand.image}
+                            alt={brand.name}
+                            width={120}
+                            height={64}
+                            className="object-contain h-16"
+                            sizes="120px"
+                          />
+                        </div>
+                      </Link>
+                    );
+                  }
+                })}
               </div>
             </div>
           )}

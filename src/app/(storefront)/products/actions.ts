@@ -961,6 +961,21 @@ export async function getTopBrands(): Promise<BrandsByCategory> {
       },
     });
 
+    // Get the specific secondary categories (Boilers and Radiators)
+    const secondaryCategories = await prisma.category.findMany({
+      where: {
+        type: "SECONDARY",
+        OR: [
+          { name: { equals: "Boilers", mode: "insensitive" } },
+          { name: { equals: "Radiators", mode: "insensitive" } },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
     // Create a map to store results
     const brandsByCategory: BrandsByCategory = {};
 
@@ -985,6 +1000,53 @@ export async function getTopBrands(): Promise<BrandsByCategory> {
                 products: {
                   where: {
                     primaryCategoryId: category.id,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            products: {
+              _count: "desc",
+            },
+          },
+          take: 10,
+        });
+
+        if (brands.length > 0) {
+          // Only add categories that have brands
+          brandsByCategory[category.name.toLowerCase()] = brands.map(
+            (brand) => ({
+              id: brand.id,
+              name: brand.name,
+              image: brand.image,
+            })
+          );
+        }
+      })
+    );
+
+    // For each secondary category (Boilers and Radiators), get top 10 brands
+    await Promise.all(
+      secondaryCategories.map(async (category) => {
+        const brands = await prisma.brand.findMany({
+          where: {
+            status: "ACTIVE",
+            products: {
+              some: {
+                secondaryCategoryId: category.id,
+              },
+            },
+          },
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            _count: {
+              select: {
+                products: {
+                  where: {
+                    secondaryCategoryId: category.id,
                   },
                 },
               },
