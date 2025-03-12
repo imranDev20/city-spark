@@ -169,10 +169,13 @@ export const getProductFilterOptions = cache(
     primaryCategoryId?: string,
     secondaryCategoryId?: string,
     tertiaryCategoryId?: string,
-    quaternaryCategoryId?: string
+    quaternaryCategoryId?: string,
+    search?: string
   ): Promise<FilterOption[]> => {
     // Build where conditions array
     const conditions: Prisma.ProductWhereInput[] = [];
+
+    console.log(search, "SEARCH");
 
     if (primaryCategoryId) {
       conditions.push({ primaryCategoryId });
@@ -187,11 +190,23 @@ export const getProductFilterOptions = cache(
       conditions.push({ quaternaryCategoryId });
     }
 
+    // Add search condition if provided
+    if (search && search.trim() !== "") {
+      conditions.push({
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { description: { contains: search, mode: "insensitive" } },
+          { model: { contains: search, mode: "insensitive" } },
+          { brand: { name: { contains: search, mode: "insensitive" } } },
+        ],
+      });
+    }
+
     // Create the where clause with properly typed AND condition
     const whereClause: Prisma.ProductWhereInput =
       conditions.length > 0 ? { AND: conditions } : {};
 
-    // Fetch only products that match the category hierarchy
+    // Fetch only products that match the category hierarchy or search
     const products = await prisma.product.findMany({
       where: whereClause,
       include: {

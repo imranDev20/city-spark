@@ -7,6 +7,7 @@ type ProductCardsContainerProps = {
   secondaryCategoryId?: string;
   tertiaryCategoryId?: string;
   quaternaryCategoryId?: string;
+  search?: string;
 };
 
 export default async function FilterSidebarContainer(
@@ -17,13 +18,15 @@ export default async function FilterSidebarContainer(
     secondaryCategoryId,
     tertiaryCategoryId,
     quaternaryCategoryId,
+    search,
   } = props;
 
   const filterOptions = await getProductFilterOptions(
     primaryCategoryId,
     secondaryCategoryId,
     tertiaryCategoryId,
-    quaternaryCategoryId
+    quaternaryCategoryId,
+    search
   );
 
   return <FilterSidebar filterOptions={filterOptions} />;
