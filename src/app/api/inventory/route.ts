@@ -155,18 +155,6 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Add search conditions
-    if (search) {
-      whereClause.product.AND.push({
-        OR: [
-          { name: { contains: search, mode: "insensitive" } },
-          { description: { contains: search, mode: "insensitive" } },
-          { model: { contains: search, mode: "insensitive" } },
-          { brand: { name: { contains: search, mode: "insensitive" } } },
-        ],
-      });
-    }
-
     // Get all non-standard parameters for template field filtering
     const excludedParams = [
       "search",
@@ -193,8 +181,6 @@ export async function GET(req: NextRequest) {
     const filterParams = Array.from(searchParams.entries()).filter(
       ([key]) => !excludedParams.includes(key)
     );
-
-    console.log("Filter params:", filterParams);
 
     // Handle template fields
     for (const [fieldName, value] of filterParams) {
@@ -228,74 +214,141 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // Add search conditions
+    if (search) {
+      whereClause.product.AND.push({
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { description: { contains: search, mode: "insensitive" } },
+          { model: { contains: search, mode: "insensitive" } },
+          { brand: { name: { contains: search, mode: "insensitive" } } },
+        ],
+      });
+    }
+
     // Clean up empty AND arrays
     if (whereClause.product.AND.length === 0) {
       delete whereClause.product.AND;
     }
 
-    console.log("Final where clause:", JSON.stringify(whereClause, null, 2));
-
-    // Execute queries
-    const [items, total] = await prisma.$transaction([
-      prisma.inventory.findMany({
-        where: whereClause,
+    const includeOptions = {
+      product: {
         include: {
-          product: {
+          brand: true,
+          primaryCategory: true,
+          secondaryCategory: true,
+          tertiaryCategory: true,
+          quaternaryCategory: true,
+          productTemplate: {
             include: {
-              brand: true,
-              primaryCategory: true,
-              secondaryCategory: true,
-              tertiaryCategory: true,
-              quaternaryCategory: true,
-              productTemplate: {
+              fields: {
                 include: {
-                  fields: {
-                    include: {
-                      templateField: true,
-                    },
-                  },
+                  templateField: true,
                 },
               },
             },
           },
         },
-        orderBy,
-        skip,
-        take: limit,
-      }),
-      prisma.inventory.count({ where: whereClause }),
-    ]);
-
-    // Log the number of items found for debugging
-    console.log(`Found ${items.length} items out of ${total} total`);
-
-    // Check for duplicate IDs in the result
-    const itemIds = items.map((item) => item.id);
-    const uniqueIds = new Set(itemIds);
-    if (itemIds.length !== uniqueIds.size) {
-      console.warn(
-        `Warning: Found ${
-          itemIds.length - uniqueIds.size
-        } duplicate item IDs in the API response`
-      );
-    }
-
-    // Calculate pagination
-    const totalPages = Math.ceil(total / limit);
-    const hasMore = page * limit < total;
-
-    return NextResponse.json({
-      success: true,
-      message: "Inventory items fetched successfully",
-      data: items,
-      pagination: {
-        page,
-        limit,
-        totalCount: total,
-        totalPages,
-        hasMore,
       },
-    });
+    };
+
+    // For search with relevance ordering, apply custom ranking
+    if (search && sortBy === "relevance") {
+      // Get all matching items first
+      const [items, total] = await prisma.$transaction([
+        prisma.inventory.findMany({
+          where: whereClause,
+          include: includeOptions,
+          take: Math.min(limit * 5, 300), // Get enough to rank but not too many
+        }),
+        prisma.inventory.count({ where: whereClause }),
+      ]);
+
+      // Apply search ranking logic (same as search suggestions)
+      const group1 = []; // Products where brand name AND product name match search term
+      const group2 = []; // Products where only brand name matches search term
+      const group3 = []; // Products where only product name matches search term
+      const group4 = []; // All other matches
+
+      const searchLower = search.toLowerCase();
+
+      for (const item of items) {
+        const productName = item.product.name.toLowerCase();
+        const brandName = item.product.brand?.name.toLowerCase() || "";
+
+        // Group 1: Brand name matches AND product name matches
+        if (
+          brandName.includes(searchLower) &&
+          productName.includes(searchLower)
+        ) {
+          group1.push(item);
+        }
+        // Group 2: Only brand name matches
+        else if (brandName.includes(searchLower)) {
+          group2.push(item);
+        }
+        // Group 3: Only product name matches
+        else if (productName.includes(searchLower)) {
+          group3.push(item);
+        }
+        // Group 4: Other matches (description, model, etc.)
+        else {
+          group4.push(item);
+        }
+      }
+
+      // Combine groups in priority order
+      const rankedItems = [...group1, ...group2, ...group3, ...group4];
+
+      // Apply pagination to ranked results
+      const paginatedItems = rankedItems.slice(skip, skip + limit);
+
+      // Calculate pagination
+      const totalPages = Math.ceil(total / limit);
+      const hasMore = page * limit < total;
+
+      return NextResponse.json({
+        success: true,
+        message: "Inventory items fetched successfully with search ranking",
+        data: paginatedItems,
+        pagination: {
+          page,
+          limit,
+          totalCount: total,
+          totalPages,
+          hasMore,
+        },
+      });
+    } else {
+      // For non-search queries or other sort methods, use standard sorting
+      const [items, total] = await prisma.$transaction([
+        prisma.inventory.findMany({
+          where: whereClause,
+          include: includeOptions,
+          orderBy,
+          skip,
+          take: limit,
+        }),
+        prisma.inventory.count({ where: whereClause }),
+      ]);
+
+      // Calculate pagination
+      const totalPages = Math.ceil(total / limit);
+      const hasMore = page * limit < total;
+
+      return NextResponse.json({
+        success: true,
+        message: "Inventory items fetched successfully",
+        data: items,
+        pagination: {
+          page,
+          limit,
+          totalCount: total,
+          totalPages,
+          hasMore,
+        },
+      });
+    }
   } catch (error) {
     console.error("Error fetching inventory items:", error);
     return NextResponse.json(

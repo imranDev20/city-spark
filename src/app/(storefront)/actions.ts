@@ -34,22 +34,6 @@ export const getInventoryItemsForStorefront = cache(
     brandIds?: string[];
   }) => {
     try {
-      console.log("Server-side fetch with params:", {
-        primaryCategoryId,
-        secondaryCategoryId,
-        tertiaryCategoryId,
-        quaternaryCategoryId,
-        isPrimaryRequired,
-        isSecondaryRequired,
-        isTertiaryRequired,
-        isQuaternaryRequired,
-        limit,
-        search,
-        minPrice,
-        maxPrice,
-        brandIds,
-      });
-
       // Check if any required category is missing
       if (
         !search &&
@@ -135,41 +119,91 @@ export const getInventoryItemsForStorefront = cache(
         delete whereClause.product.AND;
       }
 
-      console.log(
-        "Server-side where clause:",
-        JSON.stringify(whereClause, null, 2)
-      );
-
-      const [inventoryItems, totalCount] = await Promise.all([
-        prisma.inventory.findMany({
-          where: whereClause,
+      const includeOptions = {
+        product: {
           include: {
-            product: {
-              include: {
-                primaryCategory: true,
-                secondaryCategory: true,
-                tertiaryCategory: true,
-                quaternaryCategory: true,
-                brand: true,
-              },
-            },
+            primaryCategory: true,
+            secondaryCategory: true,
+            tertiaryCategory: true,
+            quaternaryCategory: true,
+            brand: true,
           },
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: limit,
-        }),
-        prisma.inventory.count({ where: whereClause }),
-      ]);
-
-      console.log(
-        `Server-side fetch found ${inventoryItems.length} items out of ${totalCount} total`
-      );
-
-      return {
-        inventoryItems,
-        totalCount,
+        },
       };
+
+      // If there's a search, apply the same ranking logic as search suggestions
+      if (search) {
+        const [items, totalCount] = await Promise.all([
+          prisma.inventory.findMany({
+            where: whereClause,
+            include: includeOptions,
+            take: Math.min(limit * 5, 300), // Get enough to rank but not too many
+          }),
+          prisma.inventory.count({ where: whereClause }),
+        ]);
+
+        // Apply search ranking logic (same as search suggestions)
+        const group1 = []; // Products where brand name AND product name match search term
+        const group2 = []; // Products where only brand name matches search term
+        const group3 = []; // Products where only product name matches search term
+        const group4 = []; // All other matches
+
+        const searchLower = search.toLowerCase();
+
+        for (const item of items) {
+          const productName = item.product.name.toLowerCase();
+          const brandName = item.product.brand?.name.toLowerCase() || "";
+
+          // Group 1: Brand name matches AND product name matches
+          if (
+            brandName.includes(searchLower) &&
+            productName.includes(searchLower)
+          ) {
+            group1.push(item);
+          }
+          // Group 2: Only brand name matches
+          else if (brandName.includes(searchLower)) {
+            group2.push(item);
+          }
+          // Group 3: Only product name matches
+          else if (productName.includes(searchLower)) {
+            group3.push(item);
+          }
+          // Group 4: Other matches (description, model, etc.)
+          else {
+            group4.push(item);
+          }
+        }
+
+        // Combine groups in priority order
+        const rankedItems = [...group1, ...group2, ...group3, ...group4];
+
+        // Apply limit to get only what we need
+        const limitedItems = rankedItems.slice(0, limit);
+
+        return {
+          inventoryItems: limitedItems,
+          totalCount,
+        };
+      } else {
+        // For non-search, use standard sorting
+        const [inventoryItems, totalCount] = await Promise.all([
+          prisma.inventory.findMany({
+            where: whereClause,
+            include: includeOptions,
+            orderBy: {
+              createdAt: "desc",
+            },
+            take: limit,
+          }),
+          prisma.inventory.count({ where: whereClause }),
+        ]);
+
+        return {
+          inventoryItems,
+          totalCount,
+        };
+      }
     } catch (error) {
       console.error("Error fetching inventory items:", error);
       throw new Error("Failed to fetch inventory items");
