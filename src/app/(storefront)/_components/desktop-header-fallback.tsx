@@ -1,11 +1,20 @@
+"use client";
+
 import Link from "next/link";
 import { FaTruck } from "react-icons/fa";
 import CitySparkLogo from "./city-spark-logo";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import DeliveryDialog from "./delivery-dialog";
+import { useDeliveryStore } from "@/hooks/use-delivery-store";
+import { useState } from "react";
+import AccountDropdown from "./account-dropdown";
+import BasketPopup from "./basket-popup";
 
 export default function DesktopHeaderFallback() {
+  const { postcode } = useDeliveryStore();
+  const [openDeliveryDialog, setOpenDeliveryDialog] = useState<boolean>(false);
+
   return (
     <header className="w-full bg-white py-2 hidden lg:block border-b">
       <div className="container h-24 flex items-center justify-between mx-auto max-w-screen-xl gap-10">
@@ -44,28 +53,25 @@ export default function DesktopHeaderFallback() {
         </div>
 
         <div className="flex items-center space-x-7 text-white">
-          {/* Account placeholder */}
-          <div className="flex flex-col items-center gap-1 px-3 py-2 text-primary">
-            <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
-            <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
-          </div>
+          <AccountDropdown />
 
-          {/* Delivery placeholder */}
-          <div
-            className={cn(
-              "flex flex-col items-center gap-1 px-3 py-2 text-primary rounded-md"
-            )}
+          <button
+            onClick={() => setOpenDeliveryDialog(true)}
+            className="flex flex-col items-center gap-1 px-3 py-2 text-primary rounded-md transition-colors duration-200 hover:bg-primary/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
           >
             <FaTruck className="h-8 w-8" />
             <span className="text-base font-semibold">Delivery</span>
-            <span className="text-xs font-light -mt-1">Postcode</span>
-          </div>
+            <span className="text-xs font-light -mt-1">
+              {postcode || "Postcode"}
+            </span>
+          </button>
 
-          {/* Basket placeholder */}
-          <div className="flex flex-col items-center gap-1 px-3 py-2 text-primary">
-            <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
-            <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
-          </div>
+          <DeliveryDialog
+            open={openDeliveryDialog}
+            setOpen={setOpenDeliveryDialog}
+          />
+
+          <BasketPopup />
         </div>
       </div>
     </header>
