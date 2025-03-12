@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import SearchSuggestions from "./search-suggestions";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useQuery } from "@tanstack/react-query";
@@ -37,13 +37,15 @@ export default function SearchInput() {
   const [index, setIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [messageIndex, setMessageIndex] = useState(0);
+  const [isTypingEffect, setIsTypingEffect] = useState(true);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showBackdrop, setShowBackdrop] = useState(false);
-  const [isTypingEffect, setIsTypingEffect] = useState(true);
   const [isFocused, setIsFocused] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
 
   const { control, handleSubmit, watch, setValue, resetField } =
@@ -55,6 +57,7 @@ export default function SearchInput() {
 
   const searchTerm = watch("searchTerm");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const prevSearchTermLength = useRef<number>(0);
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -65,10 +68,42 @@ export default function SearchInput() {
       }
     } catch (error) {
       console.error("Error loading recent searches:", error);
-      // If there's an error parsing, reset the storage
       localStorage.removeItem("recentSearches");
     }
   }, []);
+
+  // Initialize search term from URL query parameter
+  useEffect(() => {
+    const searchQuery = searchParams.get("search");
+    if (searchQuery) {
+      setValue("searchTerm", searchQuery);
+      prevSearchTermLength.current = searchQuery.length;
+    }
+  }, [searchParams, setValue]);
+
+  // Simple effect to handle typing activity
+  useEffect(() => {
+    if (isFocused && !isNavigating) {
+      const currentLength = searchTerm.length;
+      const prevLength = prevSearchTermLength.current;
+
+      // If the user is typing (length changes)
+      if (currentLength !== prevLength) {
+        // When user types something, show the backdrop immediately
+        if (currentLength > 0) {
+          setShowBackdrop(true);
+        } else if (currentLength === 0 && recentSearches.length > 0) {
+          // Show backdrop for recent searches when input is empty
+          setShowBackdrop(true);
+        } else {
+          // Hide backdrop when empty and no recent searches
+          setShowBackdrop(false);
+        }
+      }
+
+      prevSearchTermLength.current = currentLength;
+    }
+  }, [searchTerm, isFocused, isNavigating, recentSearches.length]);
 
   // Reset typing effect on page change
   useEffect(() => {
@@ -80,6 +115,7 @@ export default function SearchInput() {
     }
   }, [pathname]);
 
+  // Fetch suggestions
   const {
     data: searchResults,
     isLoading,
@@ -90,6 +126,29 @@ export default function SearchInput() {
     enabled: debouncedSearchTerm.trim().length > 0,
     refetchOnWindowFocus: false,
   });
+
+  // Update suggestions visibility based on search results
+  useEffect(() => {
+    if (
+      debouncedSearchTerm.trim() &&
+      isFocused &&
+      !isLoading &&
+      !isError &&
+      searchResults
+    ) {
+      if (
+        searchResults.brands?.length ||
+        searchResults.categories?.length ||
+        searchResults.products?.length
+      ) {
+        setShowSuggestions(true);
+      } else {
+        setShowSuggestions(false);
+      }
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [debouncedSearchTerm, isFocused, searchResults, isLoading, isError]);
 
   // Typing effect
   useEffect(() => {
@@ -120,35 +179,6 @@ export default function SearchInput() {
     const timeoutId = setTimeout(handleTyping, typingSpeed);
     return () => clearTimeout(timeoutId);
   }, [index, isDeleting, messageIndex, isTypingEffect]);
-
-  // Update backdrop based on input state and focus
-  useEffect(() => {
-    // Only show backdrop when input is focused AND
-    // either has search term OR has recent searches
-    if (
-      isFocused &&
-      (searchTerm || (!searchTerm && recentSearches.length > 0))
-    ) {
-      setShowBackdrop(true);
-    } else {
-      setShowBackdrop(false);
-    }
-  }, [searchTerm, recentSearches.length, isFocused]);
-
-  // Update suggestions based on search results
-  useEffect(() => {
-    setShowSuggestions(
-      !!debouncedSearchTerm.trim() &&
-        isFocused &&
-        !isLoading &&
-        !isError &&
-        !!(
-          searchResults?.brands?.length ||
-          searchResults?.categories?.length ||
-          searchResults?.products?.length
-        )
-    );
-  }, [debouncedSearchTerm, isLoading, isError, searchResults, isFocused]);
 
   // Click outside handler
   useEffect(() => {
@@ -192,16 +222,25 @@ export default function SearchInput() {
 
   const onSubmit = (data: FormData) => {
     if (data.searchTerm.trim()) {
-      // Clear UI state
+      // Add to recent searches
+      addRecentSearch(data.searchTerm.trim());
+
+      // Set navigating flag to prevent UI from showing during navigation
+      setIsNavigating(true);
+
+      // Clear UI state before navigation
       setShowSuggestions(false);
       setShowBackdrop(false);
-      setIsFocused(false);
 
-      // Add to recent searches and navigate
-      addRecentSearch(data.searchTerm.trim());
+      // Navigate to search results
       router.push(
         `/products?search=${encodeURIComponent(data.searchTerm.trim())}`
       );
+
+      // Reset navigation flag after navigation (important for typing after navigation)
+      setTimeout(() => {
+        setIsNavigating(false);
+      }, 100);
     }
   };
 
@@ -209,11 +248,22 @@ export default function SearchInput() {
     setIsFocused(true);
     setIsTypingEffect(false);
     setPlaceholder("Search for products");
-  };
 
-  const handleBlur = () => {
-    // Don't reset focus here - we'll handle it in the click outside handler
-    // This allows clicks on suggestions to work
+    // Show backdrop if we have a search term or recent searches
+    if (searchTerm || (!searchTerm && recentSearches.length > 0)) {
+      setShowBackdrop(true);
+    }
+
+    // Show suggestions if we have a search term and valid results
+    if (
+      searchTerm &&
+      searchResults &&
+      (searchResults.brands?.length ||
+        searchResults.categories?.length ||
+        searchResults.products?.length)
+    ) {
+      setShowSuggestions(true);
+    }
   };
 
   const handleClear = () => {
@@ -266,7 +316,6 @@ export default function SearchInput() {
                     className="h-full border-0 bg-transparent px-4 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 w-full py-2 outline-none"
                     placeholder={placeholder}
                     onFocus={handleFocus}
-                    onBlur={handleBlur}
                     autoComplete="off"
                     autoCorrect="off"
                     autoCapitalize="off"
@@ -326,6 +375,9 @@ export default function SearchInput() {
                         key={search.timestamp}
                         onClick={() => {
                           setValue("searchTerm", search.term);
+                          // Set navigating flag to prevent UI from showing during navigation
+                          setIsNavigating(true);
+                          // Reset UI state before navigation
                           setShowSuggestions(false);
                           setShowBackdrop(false);
                           setIsFocused(false);
@@ -334,6 +386,10 @@ export default function SearchInput() {
                               search.term
                             )}`
                           );
+                          // Reset navigation flag after navigation
+                          setTimeout(() => {
+                            setIsNavigating(false);
+                          }, 100);
                         }}
                         className="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 ease-in-out cursor-pointer"
                       >
