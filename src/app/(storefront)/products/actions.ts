@@ -1,10 +1,11 @@
 "use server";
 
-import { getServerAuthSession } from "@/lib/auth";
+import { authOptions, getServerAuthSession } from "@/lib/auth";
 import { getCartWhereInput } from "@/lib/cart-utils";
 import prisma from "@/lib/prisma";
 import { getOrCreateSessionId } from "@/lib/session-id";
 import { CategoryType, FulFillmentType, Prisma } from "@prisma/client";
+import { getServerSession } from "next-auth";
 import { revalidatePath, unstable_cache as cache } from "next/cache";
 
 export async function getCategoriesByType(
@@ -168,10 +169,13 @@ export const getProductFilterOptions = cache(
     primaryCategoryId?: string,
     secondaryCategoryId?: string,
     tertiaryCategoryId?: string,
-    quaternaryCategoryId?: string
+    quaternaryCategoryId?: string,
+    search?: string
   ): Promise<FilterOption[]> => {
     // Build where conditions array
     const conditions: Prisma.ProductWhereInput[] = [];
+
+    console.log(search, "SEARCH");
 
     if (primaryCategoryId) {
       conditions.push({ primaryCategoryId });
@@ -186,11 +190,23 @@ export const getProductFilterOptions = cache(
       conditions.push({ quaternaryCategoryId });
     }
 
+    // Add search condition if provided
+    if (search && search.trim() !== "") {
+      conditions.push({
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { description: { contains: search, mode: "insensitive" } },
+          { model: { contains: search, mode: "insensitive" } },
+          { brand: { name: { contains: search, mode: "insensitive" } } },
+        ],
+      });
+    }
+
     // Create the where clause with properly typed AND condition
     const whereClause: Prisma.ProductWhereInput =
       conditions.length > 0 ? { AND: conditions } : {};
 
-    // Fetch only products that match the category hierarchy
+    // Fetch only products that match the category hierarchy or search
     const products = await prisma.product.findMany({
       where: whereClause,
       include: {
@@ -960,6 +976,21 @@ export async function getTopBrands(): Promise<BrandsByCategory> {
       },
     });
 
+    // Get the specific secondary categories (Boilers and Radiators)
+    const secondaryCategories = await prisma.category.findMany({
+      where: {
+        type: "SECONDARY",
+        OR: [
+          { name: { equals: "Boilers", mode: "insensitive" } },
+          { name: { equals: "Radiators", mode: "insensitive" } },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
     // Create a map to store results
     const brandsByCategory: BrandsByCategory = {};
 
@@ -1010,9 +1041,176 @@ export async function getTopBrands(): Promise<BrandsByCategory> {
       })
     );
 
+    // For each secondary category (Boilers and Radiators), get top 10 brands
+    await Promise.all(
+      secondaryCategories.map(async (category) => {
+        const brands = await prisma.brand.findMany({
+          where: {
+            status: "ACTIVE",
+            products: {
+              some: {
+                secondaryCategoryId: category.id,
+              },
+            },
+          },
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            _count: {
+              select: {
+                products: {
+                  where: {
+                    secondaryCategoryId: category.id,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            products: {
+              _count: "desc",
+            },
+          },
+          take: 10,
+        });
+
+        if (brands.length > 0) {
+          // Only add categories that have brands
+          brandsByCategory[category.name.toLowerCase()] = brands.map(
+            (brand) => ({
+              id: brand.id,
+              name: brand.name,
+              image: brand.image,
+            })
+          );
+        }
+      })
+    );
+
     return brandsByCategory;
   } catch (error) {
     console.error("Error fetching top brands:", error);
     return {};
+  }
+}
+
+export type WishlistActionResponse = {
+  success: boolean;
+  message: string;
+  isWishlisted?: boolean;
+};
+
+export async function toggleWishlistItem(
+  inventoryId: string
+): Promise<WishlistActionResponse> {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return {
+        success: false,
+        message: "You must be logged in to save items to your wishlist",
+      };
+    }
+
+    // Get user by email with wishlistInventory check
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: {
+        wishlistInventory: {
+          where: { id: inventoryId },
+        },
+      },
+    });
+
+    if (!user) {
+      return {
+        success: false,
+        message: "User not found",
+      };
+    }
+
+    const isInWishlist = user.wishlistInventory.length > 0;
+
+    if (isInWishlist) {
+      // Remove from wishlist
+      await prisma.user.update({
+        where: { email: session.user.email },
+        data: {
+          wishlistInventory: {
+            disconnect: {
+              id: inventoryId,
+            },
+          },
+        },
+      });
+
+      revalidatePath("/products");
+      revalidatePath(`/products/p/[...slug]`);
+
+      return {
+        success: true,
+        message: "Item removed from your wishlist",
+        isWishlisted: false,
+      };
+    } else {
+      // Add to wishlist
+      await prisma.user.update({
+        where: { email: session.user.email },
+        data: {
+          wishlistInventory: {
+            connect: {
+              id: inventoryId,
+            },
+          },
+        },
+      });
+
+      revalidatePath("/products");
+      revalidatePath(`/products/p/[...slug]`);
+
+      return {
+        success: true,
+        message: "Item added to your wishlist",
+        isWishlisted: true,
+      };
+    }
+  } catch (error) {
+    console.error("Error toggling wishlist item:", error);
+    return {
+      success: false,
+      message: "An error occurred while updating your wishlist",
+    };
+  }
+}
+
+export async function checkWishlistStatus(
+  inventoryId: string
+): Promise<{ isWishlisted: boolean }> {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return { isWishlisted: false };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email: session.user.email,
+      },
+      include: {
+        wishlistInventory: {
+          where: { id: inventoryId },
+        },
+      },
+    });
+
+    return {
+      isWishlisted: user?.wishlistInventory.length ? true : false,
+    };
+  } catch (error) {
+    console.error("Error checking wishlist status:", error);
+    return { isWishlisted: false };
   }
 }

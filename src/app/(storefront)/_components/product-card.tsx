@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, Truck, Store } from "lucide-react";
+import { Star } from "lucide-react";
 import Image from "next/image";
 import PlaceholderImage from "@/images/placeholder-image.png";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { BLUR_DATA_URL } from "@/lib/constants";
 import QuantitySelector from "../quantity-selector";
 import { FaStore, FaTruck } from "react-icons/fa";
+import { Loader2 } from "lucide-react";
 
 type InventoryItemWithRelation = Prisma.InventoryGetPayload<{
   include: {
@@ -39,6 +40,9 @@ export default function ProductCard({
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [quantity, setQuantity] = useState(1);
+  const [loadingType, setLoadingType] = useState<
+    "FOR_DELIVERY" | "FOR_COLLECTION" | null
+  >(null);
   const rating = 4.5;
   const queryClient = useQueryClient();
 
@@ -49,26 +53,39 @@ export default function ProductCard({
     e.preventDefault();
     e.stopPropagation();
 
+    // Set loading state
+    setLoadingType(type);
+
+    // Execute server action
     startTransition(async () => {
-      const result = await addToCart(id, quantity, type);
+      try {
+        const result = await addToCart(id, quantity, type);
 
-      if (result?.success) {
-        await queryClient.invalidateQueries({ queryKey: ["cart"] });
-
-        toast({
-          title: "Added to Cart",
-          description: result.message,
-          variant: "success",
-        });
-      } else {
+        if (result?.success) {
+          await queryClient.invalidateQueries({ queryKey: ["cart"] });
+          toast({
+            title: "Added to Cart",
+            description: result.message || `${product.name} added to your cart`,
+            variant: "success",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: result?.message || "Failed to add item to cart",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
         toast({
           title: "Error",
-          description: result?.message,
+          description: "An unexpected error occurred",
           variant: "destructive",
         });
+      } finally {
+        setLoadingType(null);
+        setQuantity(1);
       }
     });
-    setQuantity(1);
   };
 
   const productUrl = `/products/p/${customSlugify(product.name)}/p/${id}`;
@@ -81,12 +98,12 @@ export default function ProductCard({
           <div className="sm:hidden relative h-52 p-6">
             <Image
               src={product.images[0] || PlaceholderImage}
-              alt="Product Image"
+              alt={product.name}
+              fill
               className="object-contain"
-              sizes="100vw"
+              sizes="(max-width: 640px) 120px"
               loading="lazy"
               placeholder="blur"
-              fill
               blurDataURL={BLUR_DATA_URL}
             />
           </div>
@@ -95,13 +112,13 @@ export default function ProductCard({
           <div className="hidden sm:block relative h-56 lg:h-64 p-6">
             <Image
               src={product.images[0] || PlaceholderImage}
+              alt={product.name}
               fill
-              alt="Product Image"
               className="object-contain transition-all duration-300 group-hover:scale-105"
-              sizes="(min-width: 1024px) 33vw, 50vw"
+              sizes="(min-width: 640px) 160px"
+              loading="lazy"
               placeholder="blur"
               blurDataURL={BLUR_DATA_URL}
-              loading="lazy"
             />
           </div>
         </div>
@@ -200,8 +217,12 @@ export default function ProductCard({
                 onClick={(e) => handleAddToCart(e, "FOR_COLLECTION")}
                 disabled={isPending || !inventoryItem.collectionEligibility}
               >
-                <FaStore className="mr-2 text-lg" />
-                Collect
+                {loadingType === "FOR_COLLECTION" ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <FaStore className="mr-2 text-lg" />
+                )}
+                {loadingType === "FOR_COLLECTION" ? "Adding..." : "Collect"}
               </Button>
               <Button
                 size="lg"
@@ -209,8 +230,12 @@ export default function ProductCard({
                 onClick={(e) => handleAddToCart(e, "FOR_DELIVERY")}
                 disabled={isPending || !inventoryItem.deliveryEligibility}
               >
-                <FaTruck className="mr-2 text-lg" />
-                Deliver
+                {loadingType === "FOR_DELIVERY" ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <FaTruck className="mr-2 text-lg" />
+                )}
+                {loadingType === "FOR_DELIVERY" ? "Adding..." : "Deliver"}
               </Button>
             </div>
           </div>

@@ -32,7 +32,6 @@ export async function GET(req: NextRequest) {
           },
         },
         addresses: true,
-        wishlist: true,
       },
     });
 
@@ -51,7 +50,6 @@ export async function GET(req: NextRequest) {
       phone: user.phone,
       stats: {
         orders: user.orders.length,
-        wishlist: user.wishlist.length,
         addresses: user.addresses.length,
       },
       recentOrders: user.orders.map((order) => ({

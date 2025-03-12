@@ -45,6 +45,7 @@ export interface FetchBrandsParams {
   secondary_category_id?: string;
   tertiary_category_id?: string;
   quaternary_category_id?: string;
+  product_search?: string; // Added for main search term
 }
 
 export async function fetchBrands(

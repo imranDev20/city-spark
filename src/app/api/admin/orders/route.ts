@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
-    console.log("Received search params:", Object.fromEntries(searchParams));
+    // console.log("Received search params:", Object.fromEntries(searchParams));
 
     // Parse query parameters
     const search = searchParams.get("search");

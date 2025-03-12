@@ -3,19 +3,14 @@
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import SearchSuggestions from "./search-suggestions";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useQuery } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  BrandWithCount,
-  CategoryWithCount,
-  fetchSuggestions,
-  InventoryWithProduct,
-} from "@/services/suggestions";
+import { fetchSuggestions } from "@/services/suggestions";
 
 type FormData = {
   searchTerm: string;
@@ -42,11 +37,15 @@ export default function SearchInput() {
   const [index, setIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [messageIndex, setMessageIndex] = useState(0);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
   const [isTypingEffect, setIsTypingEffect] = useState(true);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showBackdrop, setShowBackdrop] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
 
   const { control, handleSubmit, watch, setValue, resetField } =
@@ -58,15 +57,65 @@ export default function SearchInput() {
 
   const searchTerm = watch("searchTerm");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const prevSearchTermLength = useRef<number>(0);
 
-  const pathname = usePathname();
-
-  // Add this effect
+  // Load recent searches from localStorage
   useEffect(() => {
-    setShowSuggestions(false);
-    setIsFocused(false);
+    try {
+      const searches = localStorage.getItem("recentSearches");
+      if (searches) {
+        setRecentSearches(JSON.parse(searches));
+      }
+    } catch (error) {
+      console.error("Error loading recent searches:", error);
+      localStorage.removeItem("recentSearches");
+    }
+  }, []);
+
+  // Initialize search term from URL query parameter
+  useEffect(() => {
+    const searchQuery = searchParams.get("search");
+    if (searchQuery) {
+      setValue("searchTerm", searchQuery);
+      prevSearchTermLength.current = searchQuery.length;
+    }
+  }, [searchParams, setValue]);
+
+  // Simple effect to handle typing activity
+  useEffect(() => {
+    if (isFocused && !isNavigating) {
+      const currentLength = searchTerm.length;
+      const prevLength = prevSearchTermLength.current;
+
+      // If the user is typing (length changes)
+      if (currentLength !== prevLength) {
+        // When user types something, show the backdrop immediately
+        if (currentLength > 0) {
+          setShowBackdrop(true);
+        } else if (currentLength === 0 && recentSearches.length > 0) {
+          // Show backdrop for recent searches when input is empty
+          setShowBackdrop(true);
+        } else {
+          // Hide backdrop when empty and no recent searches
+          setShowBackdrop(false);
+        }
+      }
+
+      prevSearchTermLength.current = currentLength;
+    }
+  }, [searchTerm, isFocused, isNavigating, recentSearches.length]);
+
+  // Reset typing effect on page change
+  useEffect(() => {
+    if (pathname === "/") {
+      setIsTypingEffect(true);
+    } else {
+      setIsTypingEffect(false);
+      setPlaceholder("Search for products");
+    }
   }, [pathname]);
 
+  // Fetch suggestions
   const {
     data: searchResults,
     isLoading,
@@ -78,6 +127,30 @@ export default function SearchInput() {
     refetchOnWindowFocus: false,
   });
 
+  // Update suggestions visibility based on search results
+  useEffect(() => {
+    if (
+      debouncedSearchTerm.trim() &&
+      isFocused &&
+      !isLoading &&
+      !isError &&
+      searchResults
+    ) {
+      if (
+        searchResults.brands?.length ||
+        searchResults.categories?.length ||
+        searchResults.products?.length
+      ) {
+        setShowSuggestions(true);
+      } else {
+        setShowSuggestions(false);
+      }
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [debouncedSearchTerm, isFocused, searchResults, isLoading, isError]);
+
+  // Typing effect
   useEffect(() => {
     if (!isTypingEffect) return;
 
@@ -107,35 +180,16 @@ export default function SearchInput() {
     return () => clearTimeout(timeoutId);
   }, [index, isDeleting, messageIndex, isTypingEffect]);
 
-  useEffect(() => {
-    const searches = localStorage.getItem("recentSearches");
-    if (searches) {
-      setRecentSearches(JSON.parse(searches));
-    }
-  }, []);
-
-  useEffect(() => {
-    setShowSuggestions(
-      isFocused &&
-        !!debouncedSearchTerm.trim() &&
-        !isLoading &&
-        !isError &&
-        !!(
-          searchResults?.brands.length ||
-          searchResults?.categories.length ||
-          searchResults?.products.length
-        )
-    );
-  }, [debouncedSearchTerm, isLoading, isError, isFocused, searchResults]);
-
+  // Click outside handler
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         searchContainerRef.current &&
         !searchContainerRef.current.contains(event.target as Node)
       ) {
-        setShowSuggestions(false);
         setIsFocused(false);
+        setShowBackdrop(false);
+        setShowSuggestions(false);
       }
     };
 
@@ -143,9 +197,9 @@ export default function SearchInput() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Body scroll lock
   useEffect(() => {
-    // Add/remove body scroll lock when overlay is shown
-    if (isFocused) {
+    if (showBackdrop) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -153,7 +207,7 @@ export default function SearchInput() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isFocused]);
+  }, [showBackdrop]);
 
   const addRecentSearch = (term: string) => {
     const newSearch = { term, timestamp: Date.now() };
@@ -168,36 +222,48 @@ export default function SearchInput() {
 
   const onSubmit = (data: FormData) => {
     if (data.searchTerm.trim()) {
+      // Add to recent searches
       addRecentSearch(data.searchTerm.trim());
+
+      // Set navigating flag to prevent UI from showing during navigation
+      setIsNavigating(true);
+
+      // Clear UI state before navigation
+      setShowSuggestions(false);
+      setShowBackdrop(false);
+
+      // Navigate to search results
       router.push(
         `/products?search=${encodeURIComponent(data.searchTerm.trim())}`
       );
-      setShowSuggestions(false);
+
+      // Reset navigation flag after navigation (important for typing after navigation)
+      setTimeout(() => {
+        setIsNavigating(false);
+      }, 100);
     }
-  };
-
-  const handleBrandSelect = (brand: BrandWithCount) => {
-    setShowSuggestions(false);
-    router.push(`/brands/${encodeURIComponent(brand.name.toLowerCase())}`);
-  };
-
-  const handleCategorySelect = (category: CategoryWithCount) => {
-    setShowSuggestions(false);
-    router.push(
-      `/categories/${encodeURIComponent(category.name.toLowerCase())}`
-    );
-  };
-
-  const handleProductSelect = (product: InventoryWithProduct) => {
-    setValue("searchTerm", product.product.name);
-    setShowSuggestions(false);
-    router.push(`/products/p/${product.product.name}/p/${product.id}`);
   };
 
   const handleFocus = () => {
     setIsFocused(true);
     setIsTypingEffect(false);
     setPlaceholder("Search for products");
+
+    // Show backdrop if we have a search term or recent searches
+    if (searchTerm || (!searchTerm && recentSearches.length > 0)) {
+      setShowBackdrop(true);
+    }
+
+    // Show suggestions if we have a search term and valid results
+    if (
+      searchTerm &&
+      searchResults &&
+      (searchResults.brands?.length ||
+        searchResults.categories?.length ||
+        searchResults.products?.length)
+    ) {
+      setShowSuggestions(true);
+    }
   };
 
   const handleClear = () => {
@@ -207,10 +273,14 @@ export default function SearchInput() {
 
   return (
     <>
-      {isFocused && (
+      {showBackdrop && (
         <div
           className="fixed inset-0 bg-black/40 transition-opacity duration-200"
-          onClick={() => setIsFocused(false)}
+          onClick={() => {
+            setIsFocused(false);
+            setShowBackdrop(false);
+            setShowSuggestions(false);
+          }}
           style={{ zIndex: 40 }}
         />
       )}
@@ -277,10 +347,10 @@ export default function SearchInput() {
           </div>
         </form>
 
-        {((!searchTerm && recentSearches.length > 0) ||
-          (showSuggestions && searchResults)) && (
+        {((!searchTerm && showBackdrop && recentSearches.length > 0) ||
+          (showBackdrop && searchTerm && isFocused)) && (
           <div className="absolute top-14 left-0 right-0 z-50">
-            {isFocused && !searchTerm && recentSearches.length > 0 && (
+            {showBackdrop && !searchTerm && recentSearches.length > 0 && (
               <Card className="absolute z-20 w-full mt-1 shadow-lg overflow-hidden rounded-md">
                 <CardContent className="p-0 max-h-[600px] overflow-y-auto">
                   <div className="py-2">
@@ -305,7 +375,21 @@ export default function SearchInput() {
                         key={search.timestamp}
                         onClick={() => {
                           setValue("searchTerm", search.term);
-                          onSubmit({ searchTerm: search.term });
+                          // Set navigating flag to prevent UI from showing during navigation
+                          setIsNavigating(true);
+                          // Reset UI state before navigation
+                          setShowSuggestions(false);
+                          setShowBackdrop(false);
+                          setIsFocused(false);
+                          router.push(
+                            `/products?search=${encodeURIComponent(
+                              search.term
+                            )}`
+                          );
+                          // Reset navigation flag after navigation
+                          setTimeout(() => {
+                            setIsNavigating(false);
+                          }, 100);
                         }}
                         className="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 ease-in-out cursor-pointer"
                       >
@@ -323,20 +407,57 @@ export default function SearchInput() {
               </Card>
             )}
 
+            {/* Show search results */}
             {showSuggestions && searchResults && (
               <Card className="absolute z-20 w-full mt-1 shadow-lg overflow-hidden rounded-md">
                 <CardContent className="p-0 max-h-[600px] overflow-y-auto divide-y divide-gray-100">
                   <SearchSuggestions
-                    brands={searchResults.brands}
-                    categories={searchResults.categories}
-                    products={searchResults.products}
-                    onSelectBrand={handleBrandSelect}
-                    onSelectCategory={handleCategorySelect}
-                    onSelectProduct={handleProductSelect}
+                    brands={searchResults.brands || []}
+                    categories={searchResults.categories || []}
+                    products={searchResults.products || []}
+                    onClose={() => {
+                      setShowSuggestions(false);
+                      setShowBackdrop(false);
+                      setIsFocused(false);
+                    }}
                   />
                 </CardContent>
               </Card>
             )}
+
+            {/* Show loading state */}
+            {searchTerm && isFocused && isLoading && !showSuggestions && (
+              <Card className="absolute z-20 w-full mt-1 shadow-lg overflow-hidden rounded-md">
+                <CardContent className="p-4 text-center">
+                  <div className="py-8">
+                    <div className="inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mb-2"></div>
+                    <p className="text-sm text-gray-600">Searching...</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Show no results state */}
+            {searchTerm &&
+              isFocused &&
+              !isLoading &&
+              !isError &&
+              !showSuggestions &&
+              debouncedSearchTerm.trim().length > 0 &&
+              searchResults && (
+                <Card className="absolute z-20 w-full mt-1 shadow-lg overflow-hidden rounded-md">
+                  <CardContent className="p-4 text-center">
+                    <div className="py-8">
+                      <p className="text-base font-medium text-gray-900 mb-1">
+                        No results found
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Try different keywords or check your spelling
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
           </div>
         )}
       </div>

@@ -5,7 +5,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import SidebarFilterBrandSection from "./sidebar-filter-brand-section";
 import SidebarFilterOptionsSection from "./sidebar-filter-options-section";
-import useQueryString from "@/hooks/use-query-string";
 
 type FilterOption = {
   id: string;
@@ -21,22 +20,22 @@ export default function FilterSidebar({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { removeQueryString } = useQueryString();
 
   const resetFilters = () => {
-    let currentParams = new URLSearchParams(searchParams.toString());
+    const currentParams = new URLSearchParams(searchParams.toString());
+    const newParams = new URLSearchParams();
 
     // Keep only these parameters
     const preserveParams = new Set(["p_id", "s_id", "t_id", "q_id", "search"]);
 
-    // Remove all parameters except those in preserveParams
-    let queryString = searchParams.toString();
-    for (const param of currentParams.keys()) {
-      if (!preserveParams.has(param)) {
-        queryString = removeQueryString(param);
+    // Copy only the parameters we want to preserve
+    for (const [key, value] of currentParams.entries()) {
+      if (preserveParams.has(key)) {
+        newParams.set(key, value);
       }
     }
 
+    const queryString = newParams.toString();
     const newPath = queryString ? `${pathname}?${queryString}` : pathname;
     router.push(newPath, { scroll: false });
   };

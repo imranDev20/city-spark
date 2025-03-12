@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
-    console.log("Received search params:", Object.fromEntries(searchParams));
+    // console.log("Received search params:", Object.fromEntries(searchParams));
 
     // Extract and validate query parameters
     const search = searchParams.get("search");
@@ -60,11 +60,15 @@ export async function GET(req: NextRequest) {
               createdAt: true,
             },
           },
-          wishlist: {
-            select: {
-              id: true,
-              name: true,
-              images: true,
+          wishlistInventory: {
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  images: true,
+                },
+              },
             },
           },
         },

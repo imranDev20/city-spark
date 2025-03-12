@@ -1,218 +1,310 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  FaUser,
-  FaEnvelope,
-  FaPhone,
-  FaLock,
-  FaPencilAlt,
-  FaCamera,
-  FaCheckCircle,
-  FaExclamationCircle,
-  FaUserCircle,
-  FaTimes,
-  FaSave,
-} from "react-icons/fa";
-import { Form } from "@/components/ui/form";
-import PersonalInformation from "./_components/personal-information";
-
-interface UserProfile {
-  firstName: string;
-  lastName: string;
-  email: string;
-  emailVerified: boolean;
-  phone?: string;
-  phoneVerified?: boolean;
-  contactEmail?: string;
-  avatar?: string;
-}
-
-// Dummy data
-const dummyProfile: UserProfile = {
-  firstName: "John",
-  lastName: "Doe",
-  email: "john.doe@example.com",
-  emailVerified: true,
-  phone: "+44 7700 900123",
-  phoneVerified: false,
-  contactEmail: "john.business@example.com",
-  avatar: "/images/placeholder-avatar.png",
-};
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FaLock, FaUser } from "react-icons/fa";
+import { useSession } from "next-auth/react";
+import { useToast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getUserProfile } from "@/services/account-profile";
+import { ProfileFormValues, profileSchema } from "./schema";
+import { updateProfile } from "./actions";
 
 export default function AccountProfilePage() {
+  const [editMode, setEditMode] = useState(false);
+  const { data: session } = useSession();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isPending, startTransition] = useTransition();
+
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      phone: "",
+      email: "",
+    },
+  });
+
+  // Query for user profile data
+  const {
+    data: profile,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["user-profile"],
+    queryFn: getUserProfile,
+    enabled: !!session?.user,
+  });
+
+  // Populate form with profile data when available
+  useEffect(() => {
+    if (profile) {
+      form.reset({
+        firstName: profile.firstName || "",
+        lastName: profile.lastName || "",
+        phone: profile.phone || "",
+        email: profile.email || "",
+      });
+    }
+  }, [profile, form]);
+
+  // Submit handler using server action with transition
+  const onSubmit = (data: ProfileFormValues) => {
+    startTransition(async () => {
+      try {
+        const result = await updateProfile(data);
+
+        if (result.success) {
+          await queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+
+          toast({
+            title: "Success",
+            description: "Your profile has been updated successfully.",
+            variant: "success",
+          });
+          setEditMode(false);
+        } else {
+          toast({
+            title: "Error",
+            description: result.error || "Failed to update profile",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error updating profile:", error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 gap-4">
+        <p className="text-red-500">
+          {error instanceof Error ? error.message : "Failed to load profile"}
+        </p>
+        <Button onClick={() => window.location.reload()}>Try Again</Button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
-      {/* Header Card */}
+      {/* Welcome Banner - Consistent with other account pages */}
       <Card className="bg-gradient-to-r from-primary to-primary/90 text-white border-0">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-white/10 flex items-center justify-center">
-              <FaUserCircle className="h-8 w-8" />
+            <div className="h-16 w-16 bg-white/10 flex items-center justify-center rounded-full">
+              <FaUser className="h-8 w-8" />
             </div>
             <div>
               <h1 className="text-2xl font-bold">My Profile</h1>
               <p className="text-primary-foreground/90 mt-1">
-                Manage your account details and contact information
+                Update your personal information and account security
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Personal Information */}
-
-        <PersonalInformation profile={dummyProfile} />
-
-        {/* Contact Information */}
-        <Card className="bg-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-lg font-semibold">Contact Details</h2>
-                <p className="text-sm text-gray-500">
-                  Your contact information for orders and notifications
-                </p>
-              </div>
-              <Button variant="outline" size="sm">
-                <FaPencilAlt className="h-3.5 w-3.5 mr-2" />
+      {/* Personal Information */}
+      <Card className="bg-white">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-lg font-semibold">Personal Information</h2>
+              <p className="text-sm text-muted-foreground">
+                Your name and contact details
+              </p>
+            </div>
+            {!editMode && (
+              <Button variant="outline" onClick={() => setEditMode(true)}>
                 Edit
               </Button>
-            </div>
-            <div className="space-y-4">
-              {/* Email */}
-              <div className="p-4 rounded-lg bg-gray-50/50 space-y-1">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
-                    <FaEnvelope className="h-4 w-4" />
-                    Primary Email
-                  </div>
-                  {dummyProfile.emailVerified ? (
-                    <span className="inline-flex items-center gap-1 text-green-600 text-sm">
-                      <FaCheckCircle className="h-4 w-4" />
-                      Verified
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-amber-600 text-sm">
-                      <FaExclamationCircle className="h-4 w-4" />
-                      Unverified
-                    </span>
+            )}
+          </div>
+
+          {editMode ? (
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Name</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last Name</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </div>
-                <p className="text-gray-900 font-medium">
-                  {dummyProfile.email}
-                </p>
-              </div>
+                />
 
-              {/* Phone */}
-              <div className="p-4 rounded-lg bg-gray-50/50 space-y-1">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
-                    <FaPhone className="h-4 w-4" />
-                    Phone Number
-                  </div>
-                  {dummyProfile.phoneVerified ? (
-                    <span className="inline-flex items-center gap-1 text-green-600 text-sm">
-                      <FaCheckCircle className="h-4 w-4" />
-                      Verified
-                    </span>
-                  ) : (
-                    <Button variant="outline" size="sm">
-                      Verify Phone
-                    </Button>
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="tel"
+                          placeholder="+44 7700 900000"
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </div>
-                <p className="text-gray-900 font-medium">
-                  {dummyProfile.phone}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                />
 
-        {/* Security Information */}
-        <Card className="bg-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-6">
+                <div className="flex justify-end gap-3 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setEditMode(false)}
+                    disabled={isPending}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isPending || !form.formState.isDirty}
+                  >
+                    {isPending && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Save Changes
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          ) : (
+            <div className="space-y-6">
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div>
+                  <p className="text-sm text-muted-foreground">First Name</p>
+                  <p className="text-lg font-medium">
+                    {profile?.firstName || "Not provided"}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-muted-foreground">Last Name</p>
+                  <p className="text-lg font-medium">
+                    {profile?.lastName || "Not provided"}
+                  </p>
+                </div>
+              </div>
+
               <div>
-                <h2 className="text-lg font-semibold">Security</h2>
-                <p className="text-sm text-gray-500">
-                  Secure your account and shopping experience
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-gray-50/50">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/5 flex items-center justify-center text-primary">
-                    <FaLock className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium">Password</h3>
-                    <p className="text-sm text-gray-500">
-                      Last changed 3 months ago
-                    </p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm" className="w-full">
-                  Change Password
-                </Button>
+                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="text-lg font-medium">{profile?.email}</p>
               </div>
 
-              <div className="p-4 rounded-lg bg-gray-50/50">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/5 flex items-center justify-center text-primary">
-                    <FaUserCircle className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium">Two-Factor Authentication</h3>
-                    <p className="text-sm text-gray-500">
-                      Add extra account security
-                    </p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm" className="w-full">
-                  Enable 2FA
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Marketing Preferences */}
-        <Card className="bg-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-lg font-semibold">Communication</h2>
-                <p className="text-sm text-gray-500">
-                  Manage your marketing preferences
+                <p className="text-sm text-muted-foreground">Phone Number</p>
+                <p className="text-lg font-medium">
+                  {profile?.phone || "Not provided"}
                 </p>
               </div>
             </div>
+          )}
+        </CardContent>
+      </Card>
 
-            <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-gray-50/50">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/5 flex items-center justify-center text-primary">
-                    <FaEnvelope className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium">Promotional Emails</h3>
-                    <p className="text-sm text-gray-500">
-                      Receive special offers and promotions
-                    </p>
-                  </div>
-                </div>
-              </div>
+      {/* Security Settings */}
+      <Card className="bg-white">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-lg font-semibold">Security</h2>
+              <p className="text-sm text-muted-foreground">
+                Manage your account security
+              </p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+
+          <div className="flex items-start gap-4">
+            <div className="h-12 w-12 bg-primary/10 flex items-center justify-center rounded-xl">
+              <FaLock className="h-6 w-6 text-primary" />
+            </div>
+
+            <div className="flex-1 flex items-center justify-between">
+              <div>
+                <h3 className="font-medium">Password</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Change your password to keep your account secure
+                </p>
+              </div>
+              <Button variant="outline">Change Password</Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

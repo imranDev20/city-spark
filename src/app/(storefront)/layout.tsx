@@ -6,8 +6,6 @@ import MobileBottomBar from "./_components/mobile-bottom-bar";
 import CategoryNavContainer from "./_components/category-nav-container";
 import { Suspense } from "react";
 import CategoryNavSkeleton from "./_components/category-nav-skeleton";
-import { cn } from "@/lib/utils";
-import { FaTruck, FaClock, FaStore } from "react-icons/fa";
 import PromotionalFeatures from "./_components/promotional-features";
 
 export default function StorefrontLayout({
@@ -19,7 +17,10 @@ export default function StorefrontLayout({
     <>
       <StoreTopLoader />
       <TopBar />
-      <Header />
+
+      <Suspense fallback="Loading...">
+        <Header />
+      </Suspense>
 
       <Suspense fallback={<CategoryNavSkeleton />}>
         <CategoryNavContainer />

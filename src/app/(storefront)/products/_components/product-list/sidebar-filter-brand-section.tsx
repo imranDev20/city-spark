@@ -30,11 +30,15 @@ export default function SidebarFilterBrandSection() {
   const { createQueryString, removeQueryString } = useQueryString();
   const router = useRouter();
 
+  // Get the main search term from URL
+  const mainSearchTerm = params.get("search") || "";
+
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =
     useInfiniteQuery({
       queryKey: [
         "brands",
         debouncedBrandSearch,
+        mainSearchTerm, // Add main search term to query key
         params.get("p_id"),
         params.get("s_id"),
         params.get("t_id"),
@@ -45,6 +49,7 @@ export default function SidebarFilterBrandSection() {
           search: debouncedBrandSearch,
           page: pageParam,
           page_size: 5,
+          product_search: mainSearchTerm, // Include the main search term
           primary_category_id: params.get("p_id") ?? undefined,
           secondary_category_id: params.get("s_id") ?? undefined,
           tertiary_category_id: params.get("t_id") ?? undefined,
@@ -108,13 +113,11 @@ export default function SidebarFilterBrandSection() {
       </button>
 
       <div
-        className={`grid transition-all duration-200 ${
-          isBrandsExpanded
-            ? "grid-rows-[1fr] opacity-100"
-            : "grid-rows-[0fr] opacity-0"
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          isBrandsExpanded ? "max-h-[400px] mt-5" : "max-h-0 mt-0"
         }`}
       >
-        <div className="space-y-4 mt-5">
+        <div className="space-y-4">
           <div className="relative">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary"

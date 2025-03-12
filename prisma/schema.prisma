@@ -147,7 +147,6 @@ model Product {
     images               String[]
     inventory            Inventory?
     orderItems           OrderItem[]
-    wishlistedBy         User[]           @relation("UserWishlist")
     createdAt            DateTime         @default(now())
     updatedAt            DateTime         @updatedAt
 }
@@ -235,6 +234,7 @@ model Inventory {
     product                         Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
     productId                       String     @unique
     cartItems                       CartItem[]
+    wishlistedBy                    User[]     @relation("UserInventoryWishlist") // New relation
     createdAt                       DateTime   @default(now())
     updatedAt                       DateTime   @updatedAt
 }
@@ -252,7 +252,7 @@ model User {
     carts               Cart[]
     orders              Order[]
     addresses           Address[]
-    wishlist            Product[]            @relation("UserWishlist")
+    wishlistInventory   Inventory[]          @relation("UserInventoryWishlist") // New relation
     emailVerified       DateTime?
     image               String?
     accounts            Account[]
