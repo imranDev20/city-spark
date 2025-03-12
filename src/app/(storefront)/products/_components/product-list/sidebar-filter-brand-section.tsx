@@ -108,13 +108,11 @@ export default function SidebarFilterBrandSection() {
       </button>
 
       <div
-        className={`grid transition-all duration-200 ${
-          isBrandsExpanded
-            ? "grid-rows-[1fr] opacity-100"
-            : "grid-rows-[0fr] opacity-0"
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          isBrandsExpanded ? "max-h-[400px] mt-5" : "max-h-0 mt-0"
         }`}
       >
-        <div className="space-y-4 mt-5">
+        <div className="space-y-4">
           <div className="relative">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary"

@@ -270,7 +270,6 @@ export default function ProductCardsLoadMore({
 
       <div className="flex justify-between items-center mb-6 flex-wrap gap-4 lg:mt-6">
         <p className="text-base text-gray-600 hidden lg:block">
-          Showing{" "}
           <span className="font-semibold text-gray-900">{totalCount}</span>{" "}
           {totalCount === 1 ? "product" : "products"}
         </p>
@@ -312,7 +311,17 @@ export default function ProductCardsLoadMore({
           </div>
 
           {shouldShowLoadMore && (
-            <div className="flex justify-center mt-8">
+            <div className="flex flex-col items-center justify-center mt-8 mb-4">
+              <p className="text-sm text-gray-600 mb-3">
+                Showing{" "}
+                <span className="font-medium text-gray-900">
+                  {allItems.length}
+                </span>{" "}
+                of{" "}
+                <span className="font-medium text-gray-900">{totalCount}</span>{" "}
+                products
+              </p>
+
               <Button
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
