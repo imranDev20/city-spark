@@ -348,7 +348,7 @@ export default function SearchInput() {
         </form>
 
         {((!searchTerm && showBackdrop && recentSearches.length > 0) ||
-          (showSuggestions && searchResults)) && (
+          (showBackdrop && searchTerm && isFocused)) && (
           <div className="absolute top-14 left-0 right-0 z-50">
             {showBackdrop && !searchTerm && recentSearches.length > 0 && (
               <Card className="absolute z-20 w-full mt-1 shadow-lg overflow-hidden rounded-md">
@@ -407,6 +407,7 @@ export default function SearchInput() {
               </Card>
             )}
 
+            {/* Show search results */}
             {showSuggestions && searchResults && (
               <Card className="absolute z-20 w-full mt-1 shadow-lg overflow-hidden rounded-md">
                 <CardContent className="p-0 max-h-[600px] overflow-y-auto divide-y divide-gray-100">
@@ -423,6 +424,40 @@ export default function SearchInput() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Show loading state */}
+            {searchTerm && isFocused && isLoading && !showSuggestions && (
+              <Card className="absolute z-20 w-full mt-1 shadow-lg overflow-hidden rounded-md">
+                <CardContent className="p-4 text-center">
+                  <div className="py-8">
+                    <div className="inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mb-2"></div>
+                    <p className="text-sm text-gray-600">Searching...</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Show no results state */}
+            {searchTerm &&
+              isFocused &&
+              !isLoading &&
+              !isError &&
+              !showSuggestions &&
+              debouncedSearchTerm.trim().length > 0 &&
+              searchResults && (
+                <Card className="absolute z-20 w-full mt-1 shadow-lg overflow-hidden rounded-md">
+                  <CardContent className="p-4 text-center">
+                    <div className="py-8">
+                      <p className="text-base font-medium text-gray-900 mb-1">
+                        No results found
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Try different keywords or check your spelling
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
           </div>
         )}
       </div>
