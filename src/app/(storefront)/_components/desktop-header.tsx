@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Separator } from "@/components/ui/separator";
 import AccountDropdown from "./account-dropdown";
 import SearchInput from "./search-input";
 import CitySparkLogo from "./city-spark-logo";
@@ -29,9 +28,9 @@ export default function DesktopHeader() {
 
         <SearchInput />
 
-        <div className="flex items-center space-x-5 text-white">
+        <div className="flex items-center space-x-7 text-white">
           <AccountDropdown />
-          <Separator orientation="vertical" className="h-12 w-px bg-border" />
+          {/* <Separator orientation="vertical" className="h-12 w-px bg-border" /> */}
 
           <button
             onClick={() => setOpenDeliveryDialog(true)}
@@ -53,7 +52,7 @@ export default function DesktopHeader() {
             setOpen={setOpenDeliveryDialog}
           />
 
-          <Separator orientation="vertical" className="h-12 w-px bg-border" />
+          {/* <Separator orientation="vertical" className="h-12 w-px bg-border" /> */}
           <BasketPopup />
         </div>
       </div>

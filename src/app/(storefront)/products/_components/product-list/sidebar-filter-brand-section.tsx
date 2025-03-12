@@ -30,11 +30,15 @@ export default function SidebarFilterBrandSection() {
   const { createQueryString, removeQueryString } = useQueryString();
   const router = useRouter();
 
+  // Get the main search term from URL
+  const mainSearchTerm = params.get("search") || "";
+
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =
     useInfiniteQuery({
       queryKey: [
         "brands",
         debouncedBrandSearch,
+        mainSearchTerm, // Add main search term to query key
         params.get("p_id"),
         params.get("s_id"),
         params.get("t_id"),
@@ -45,6 +49,7 @@ export default function SidebarFilterBrandSection() {
           search: debouncedBrandSearch,
           page: pageParam,
           page_size: 5,
+          product_search: mainSearchTerm, // Include the main search term
           primary_category_id: params.get("p_id") ?? undefined,
           secondary_category_id: params.get("s_id") ?? undefined,
           tertiary_category_id: params.get("t_id") ?? undefined,

@@ -5,7 +5,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import SidebarFilterBrandSection from "./sidebar-filter-brand-section";
 import SidebarFilterOptionsSection from "./sidebar-filter-options-section";
-import useQueryString from "@/hooks/use-query-string";
 
 type FilterOption = {
   id: string;
@@ -21,7 +20,6 @@ export default function FilterSidebar({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { removeQueryString } = useQueryString();
 
   const resetFilters = () => {
     const currentParams = new URLSearchParams(searchParams.toString());

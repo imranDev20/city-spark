@@ -13,18 +13,38 @@ export async function GET(request: Request) {
       "desc") as Prisma.SortOrder;
     const filterStatus = searchParams.get("filter_status") as Status | null;
 
+    // Category filters
     const primaryCategoryId = searchParams.get("primary_category_id");
     const secondaryCategoryId = searchParams.get("secondary_category_id");
     const tertiaryCategoryId = searchParams.get("tertiary_category_id");
     const quaternaryCategoryId = searchParams.get("quaternary_category_id");
 
-    const productWhereClause = {
+    // Get the main product search term
+    const productSearch = searchParams.get("product_search") || "";
+
+    // Build product where clause for filtering
+    const productWhereClause: Prisma.ProductWhereInput = {
       ...(primaryCategoryId ? { primaryCategoryId } : {}),
       ...(secondaryCategoryId ? { secondaryCategoryId } : {}),
       ...(tertiaryCategoryId ? { tertiaryCategoryId } : {}),
       ...(quaternaryCategoryId ? { quaternaryCategoryId } : {}),
+      // Add product search filter
+      ...(productSearch
+        ? {
+            OR: [
+              { name: { contains: productSearch, mode: "insensitive" } },
+              { description: { contains: productSearch, mode: "insensitive" } },
+              {
+                brand: {
+                  name: { contains: productSearch, mode: "insensitive" },
+                },
+              },
+            ],
+          }
+        : {}),
     };
 
+    // Build brand where clause
     const where: Prisma.BrandWhereInput = {
       ...(search ? { name: { contains: search, mode: "insensitive" } } : {}),
       ...(filterStatus ? { status: filterStatus } : {}),
@@ -33,6 +53,7 @@ export async function GET(request: Request) {
         : {}),
     };
 
+    // Execute queries
     const [totalCount, brands] = await Promise.all([
       prisma.brand.count({ where }),
       prisma.brand.findMany({
