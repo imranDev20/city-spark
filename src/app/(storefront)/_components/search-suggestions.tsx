@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   BrandWithCount,
   CategoryWithCount,
@@ -15,9 +16,7 @@ type SearchSuggestionsProps = {
   brands: BrandWithCount[];
   categories: CategoryWithCount[];
   products: InventoryWithProduct[];
-  onSelectBrand: (brand: BrandWithCount) => void;
-  onSelectCategory: (category: CategoryWithCount) => void;
-  onSelectProduct: (product: InventoryWithProduct) => void;
+  onClose: () => void;
 };
 
 const Section: React.FC<{
@@ -41,10 +40,10 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
   brands,
   categories,
   products,
-  onSelectBrand,
-  onSelectCategory,
-  onSelectProduct,
+  onClose,
 }) => {
+  const router = useRouter();
+
   if (brands.length === 0 && categories.length === 0 && products.length === 0) {
     return null;
   }
@@ -53,6 +52,38 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
   const hasBrands = brands.length > 0;
   const hasCategories = categories.length > 0;
   const hasProducts = products.length > 0;
+
+  // Handlers moved inside the component
+  const handleBrandSelect = (e: React.MouseEvent, brand: BrandWithCount) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onClose();
+    router.push(`/brands/${encodeURIComponent(brand.name.toLowerCase())}`);
+  };
+
+  const handleCategorySelect = (
+    e: React.MouseEvent,
+    category: CategoryWithCount
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onClose();
+    router.push(
+      `/categories/${encodeURIComponent(category.name.toLowerCase())}`
+    );
+  };
+
+  const handleProductSelect = (
+    e: React.MouseEvent,
+    product: InventoryWithProduct
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onClose();
+    router.push(
+      `/products/p/${encodeURIComponent(product.product.name)}/p/${product.id}`
+    );
+  };
 
   return (
     <div className="overflow-y-auto overscroll-contain lg:max-h-[60vh] max-h-[calc(100vh-127px)]">
@@ -64,7 +95,7 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
                 <div
                   key={brand.name}
                   className="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 ease-in-out cursor-pointer"
-                  onClick={() => onSelectBrand(brand)}
+                  onClick={(e) => handleBrandSelect(e, brand)}
                 >
                   <div className="flex items-center space-x-4">
                     {brand.image && (
@@ -108,7 +139,7 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
                 <div
                   key={category.name}
                   className="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 ease-in-out cursor-pointer"
-                  onClick={() => onSelectCategory(category)}
+                  onClick={(e) => handleCategorySelect(e, category)}
                 >
                   <div className="flex items-center space-x-4">
                     {category.image && (
@@ -151,64 +182,34 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
         <Section title="Products" show={true}>
           <div className="space-y-5">
             {products.map((suggestion) => (
-              <React.Fragment key={suggestion.id}>
-                <div
-                  key={suggestion.id}
-                  className="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 ease-in-out cursor-pointer"
-                  onClick={() => onSelectProduct(suggestion)}
-                >
-                  <div className="flex lg:items-center lg:space-x-4">
-                    <div className="flex-shrink-0 w-16 h-16 relative">
-                      <Image
-                        src={suggestion.product.images[0] || PlaceholderImage}
-                        alt={suggestion.product.name}
-                        fill
-                        sizes="64px"
-                        className="rounded-md object-cover"
-                      />
+              <div
+                key={suggestion.id}
+                className="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 ease-in-out cursor-pointer"
+                onClick={(e) => handleProductSelect(e, suggestion)}
+              >
+                <div className="flex lg:items-center lg:space-x-4">
+                  <div className="flex-shrink-0 w-16 h-16 relative">
+                    <Image
+                      src={suggestion.product.images[0] || PlaceholderImage}
+                      alt={suggestion.product.name}
+                      fill
+                      sizes="64px"
+                      className="rounded-md object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-col lg:flex-row lg:items-center flex-1 min-w-0 ml-4 lg:ml-0">
+                    <div className="flex-grow min-w-0">
+                      <h3 className="text-sm font-medium text-gray-900 break-words">
+                        {suggestion.product.name}
+                      </h3>
                     </div>
-                    <div className="flex flex-col lg:flex-row lg:items-center flex-1 min-w-0 ml-4 lg:ml-0">
-                      <div className="flex-grow min-w-0">
-                        <h3 className="text-sm font-medium text-gray-900 break-words">
-                          {suggestion.product.name}
-                        </h3>
-                      </div>
-                      <div className="mt-3 lg:mt-0 lg:flex-shrink-0 lg:text-right">
-                        {suggestion.product.promotionalPrice ? (
-                          <div className="flex flex-col lg:items-end">
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-normal font-semibold text-primary">
-                                <NumericFormat
-                                  value={suggestion.product.promotionalPrice}
-                                  displayType="text"
-                                  prefix="£"
-                                  decimalScale={2}
-                                  fixedDecimalScale
-                                  thousandSeparator
-                                />
-                              </span>
-                              <span className="text-[10px] text-gray-500 leading-none font-semibold">
-                                inc. VAT
-                              </span>
-                            </div>
-                            {suggestion.product.retailPrice && (
-                              <span className="text-normal text-gray-400 line-through">
-                                <NumericFormat
-                                  value={suggestion.product.retailPrice}
-                                  displayType="text"
-                                  prefix="£"
-                                  decimalScale={2}
-                                  fixedDecimalScale
-                                  thousandSeparator
-                                />
-                              </span>
-                            )}
-                          </div>
-                        ) : (
+                    <div className="mt-3 lg:mt-0 lg:flex-shrink-0 lg:text-right">
+                      {suggestion.product.promotionalPrice ? (
+                        <div className="flex flex-col lg:items-end">
                           <div className="flex items-baseline gap-1">
-                            <span className="text-sm font-semibold text-primary">
+                            <span className="text-normal font-semibold text-primary">
                               <NumericFormat
-                                value={suggestion.product.retailPrice || 0}
+                                value={suggestion.product.promotionalPrice}
                                 displayType="text"
                                 prefix="£"
                                 decimalScale={2}
@@ -220,12 +221,40 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
                               inc. VAT
                             </span>
                           </div>
-                        )}
-                      </div>
+                          {suggestion.product.retailPrice ? (
+                            <span className="text-normal text-gray-400 line-through">
+                              <NumericFormat
+                                value={suggestion.product.retailPrice}
+                                displayType="text"
+                                prefix="£"
+                                decimalScale={2}
+                                fixedDecimalScale
+                                thousandSeparator
+                              />
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-sm font-semibold text-primary">
+                            <NumericFormat
+                              value={suggestion.product.retailPrice || 0}
+                              displayType="text"
+                              prefix="£"
+                              decimalScale={2}
+                              fixedDecimalScale
+                              thousandSeparator
+                            />
+                          </span>
+                          <span className="text-[10px] text-gray-500 leading-none font-semibold">
+                            inc. VAT
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
-              </React.Fragment>
+              </div>
             ))}
           </div>
         </Section>

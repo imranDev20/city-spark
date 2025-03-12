@@ -88,30 +88,28 @@ export default function SidebarFilterOptionsSection({
     <>
       {/* Filter Options */}
       {filterOptions.map((option) => (
-        <div key={option.id} className="p-5">
+        <div
+          key={option.id}
+          className="p-5 border-b border-gray-100 last:border-0"
+        >
           <button
             className="w-full flex justify-between items-center group"
             onClick={() => toggleFilter(option.id)}
           >
-            <span className="font-semibold text-gray-900 capitalize">
+            <span className="font-semibold text-gray-900 capitalize text-left flex-grow">
               {option.name}
             </span>
             <ChevronDown
-              className={`w-5 h-5 text-gray-500 transition-all duration-200 ${
+              className={`w-5 h-5 text-gray-500 transition-transform duration-200 flex-shrink-0 ${
                 expandedFilters[option.id] ? "rotate-180" : ""
               } group-hover:text-primary`}
             />
           </button>
 
-          <div
-            className={`grid transition-all duration-200 ${
-              expandedFilters[option.id]
-                ? "grid-rows-[1fr] opacity-100"
-                : "grid-rows-[0fr] opacity-0"
-            }`}
-          >
-            <div className="overflow-hidden">
-              <div className="space-y-1.5 mt-5">
+          {/* Using display instead of max-height for better performance */}
+          {expandedFilters[option.id] && (
+            <div className="mt-5 animate-in fade-in slide-in-from-top-1 duration-150">
+              <div className="space-y-1.5">
                 {option.options.map((value) => (
                   <div
                     key={value}
@@ -123,12 +121,12 @@ export default function SidebarFilterOptionsSection({
                       onCheckedChange={(checked) =>
                         updateFilter(option.id, value, checked as boolean)
                       }
-                      className="h-4 w-4 rounded border-border text-secondary 
+                      className="h-4 w-4 flex-shrink-0 rounded border-border text-secondary 
                         focus:ring-secondary/20 data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
                     />
                     <label
                       htmlFor={`${option.id}_${value}`}
-                      className="ml-3 text-sm text-gray-700 hover:text-gray-900 cursor-pointer"
+                      className="ml-3 text-sm text-gray-700 hover:text-gray-900 cursor-pointer text-left w-full"
                     >
                       {value}
                     </label>
@@ -136,7 +134,7 @@ export default function SidebarFilterOptionsSection({
                 ))}
               </div>
             </div>
-          </div>
+          )}
         </div>
       ))}
 
@@ -148,21 +146,16 @@ export default function SidebarFilterOptionsSection({
         >
           <span className="font-semibold text-gray-900">Price Range</span>
           <ChevronDown
-            className={`w-5 h-5 text-gray-500 transition-all duration-200 ${
+            className={`w-5 h-5 text-gray-500 transition-transform duration-200 flex-shrink-0 ${
               isPriceExpanded ? "rotate-180" : ""
             } group-hover:text-primary`}
           />
         </button>
 
-        <div
-          className={`grid transition-all duration-200 ${
-            isPriceExpanded
-              ? "grid-rows-[1fr] opacity-100"
-              : "grid-rows-[0fr] opacity-0"
-          }`}
-        >
-          <div className="overflow-hidden">
-            <div className="space-y-4 mt-5">
+        {/* Using display instead of max-height for better performance */}
+        {isPriceExpanded && (
+          <div className="mt-5 animate-in fade-in slide-in-from-top-1 duration-150">
+            <div className="space-y-4">
               <DualRangeSlider
                 min={0}
                 max={50000}
@@ -193,7 +186,7 @@ export default function SidebarFilterOptionsSection({
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );

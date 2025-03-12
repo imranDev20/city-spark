@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
-    console.log("Received search params:", Object.fromEntries(searchParams));
+    // console.log("Received search params:", Object.fromEntries(searchParams));
 
     // Extract and validate query parameters
     const search = searchParams.get("search");

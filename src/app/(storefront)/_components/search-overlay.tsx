@@ -182,9 +182,7 @@ export default function SearchOverlay({
                     brands={searchResults.brands}
                     categories={searchResults.categories}
                     products={searchResults.products}
-                    onSelectBrand={handleBrandSelect}
-                    onSelectCategory={handleCategorySelect}
-                    onSelectProduct={handleProductSelect}
+                    onClose={() => {}}
                   />
                 )
               ) : recentSearches.length > 0 ? (

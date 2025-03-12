@@ -10,12 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  BrandWithCount,
-  CategoryWithCount,
-  fetchSuggestions,
-  InventoryWithProduct,
-} from "@/services/suggestions";
+import { fetchSuggestions } from "@/services/suggestions";
 
 type FormData = {
   searchTerm: string;
@@ -43,10 +38,12 @@ export default function SearchInput() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [messageIndex, setMessageIndex] = useState(0);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
+  const [showBackdrop, setShowBackdrop] = useState(false);
   const [isTypingEffect, setIsTypingEffect] = useState(true);
+  const [isFocused, setIsFocused] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const pathname = usePathname();
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
 
   const { control, handleSubmit, watch, setValue, resetField } =
@@ -59,12 +56,28 @@ export default function SearchInput() {
   const searchTerm = watch("searchTerm");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  const pathname = usePathname();
-
-  // Add this effect
+  // Load recent searches from localStorage
   useEffect(() => {
-    setShowSuggestions(false);
-    setIsFocused(false);
+    try {
+      const searches = localStorage.getItem("recentSearches");
+      if (searches) {
+        setRecentSearches(JSON.parse(searches));
+      }
+    } catch (error) {
+      console.error("Error loading recent searches:", error);
+      // If there's an error parsing, reset the storage
+      localStorage.removeItem("recentSearches");
+    }
+  }, []);
+
+  // Reset typing effect on page change
+  useEffect(() => {
+    if (pathname === "/") {
+      setIsTypingEffect(true);
+    } else {
+      setIsTypingEffect(false);
+      setPlaceholder("Search for products");
+    }
   }, [pathname]);
 
   const {
@@ -78,6 +91,7 @@ export default function SearchInput() {
     refetchOnWindowFocus: false,
   });
 
+  // Typing effect
   useEffect(() => {
     if (!isTypingEffect) return;
 
@@ -107,35 +121,45 @@ export default function SearchInput() {
     return () => clearTimeout(timeoutId);
   }, [index, isDeleting, messageIndex, isTypingEffect]);
 
+  // Update backdrop based on input state and focus
   useEffect(() => {
-    const searches = localStorage.getItem("recentSearches");
-    if (searches) {
-      setRecentSearches(JSON.parse(searches));
+    // Only show backdrop when input is focused AND
+    // either has search term OR has recent searches
+    if (
+      isFocused &&
+      (searchTerm || (!searchTerm && recentSearches.length > 0))
+    ) {
+      setShowBackdrop(true);
+    } else {
+      setShowBackdrop(false);
     }
-  }, []);
+  }, [searchTerm, recentSearches.length, isFocused]);
 
+  // Update suggestions based on search results
   useEffect(() => {
     setShowSuggestions(
-      isFocused &&
-        !!debouncedSearchTerm.trim() &&
+      !!debouncedSearchTerm.trim() &&
+        isFocused &&
         !isLoading &&
         !isError &&
         !!(
-          searchResults?.brands.length ||
-          searchResults?.categories.length ||
-          searchResults?.products.length
+          searchResults?.brands?.length ||
+          searchResults?.categories?.length ||
+          searchResults?.products?.length
         )
     );
-  }, [debouncedSearchTerm, isLoading, isError, isFocused, searchResults]);
+  }, [debouncedSearchTerm, isLoading, isError, searchResults, isFocused]);
 
+  // Click outside handler
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         searchContainerRef.current &&
         !searchContainerRef.current.contains(event.target as Node)
       ) {
-        setShowSuggestions(false);
         setIsFocused(false);
+        setShowBackdrop(false);
+        setShowSuggestions(false);
       }
     };
 
@@ -143,9 +167,9 @@ export default function SearchInput() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Body scroll lock
   useEffect(() => {
-    // Add/remove body scroll lock when overlay is shown
-    if (isFocused) {
+    if (showBackdrop) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -153,7 +177,7 @@ export default function SearchInput() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isFocused]);
+  }, [showBackdrop]);
 
   const addRecentSearch = (term: string) => {
     const newSearch = { term, timestamp: Date.now() };
@@ -168,36 +192,28 @@ export default function SearchInput() {
 
   const onSubmit = (data: FormData) => {
     if (data.searchTerm.trim()) {
+      // Clear UI state
+      setShowSuggestions(false);
+      setShowBackdrop(false);
+      setIsFocused(false);
+
+      // Add to recent searches and navigate
       addRecentSearch(data.searchTerm.trim());
       router.push(
         `/products?search=${encodeURIComponent(data.searchTerm.trim())}`
       );
-      setShowSuggestions(false);
     }
-  };
-
-  const handleBrandSelect = (brand: BrandWithCount) => {
-    setShowSuggestions(false);
-    router.push(`/brands/${encodeURIComponent(brand.name.toLowerCase())}`);
-  };
-
-  const handleCategorySelect = (category: CategoryWithCount) => {
-    setShowSuggestions(false);
-    router.push(
-      `/categories/${encodeURIComponent(category.name.toLowerCase())}`
-    );
-  };
-
-  const handleProductSelect = (product: InventoryWithProduct) => {
-    setValue("searchTerm", product.product.name);
-    setShowSuggestions(false);
-    router.push(`/products/p/${product.product.name}/p/${product.id}`);
   };
 
   const handleFocus = () => {
     setIsFocused(true);
     setIsTypingEffect(false);
     setPlaceholder("Search for products");
+  };
+
+  const handleBlur = () => {
+    // Don't reset focus here - we'll handle it in the click outside handler
+    // This allows clicks on suggestions to work
   };
 
   const handleClear = () => {
@@ -207,10 +223,14 @@ export default function SearchInput() {
 
   return (
     <>
-      {isFocused && (
+      {showBackdrop && (
         <div
           className="fixed inset-0 bg-black/40 transition-opacity duration-200"
-          onClick={() => setIsFocused(false)}
+          onClick={() => {
+            setIsFocused(false);
+            setShowBackdrop(false);
+            setShowSuggestions(false);
+          }}
           style={{ zIndex: 40 }}
         />
       )}
@@ -246,6 +266,7 @@ export default function SearchInput() {
                     className="h-full border-0 bg-transparent px-4 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 w-full py-2 outline-none"
                     placeholder={placeholder}
                     onFocus={handleFocus}
+                    onBlur={handleBlur}
                     autoComplete="off"
                     autoCorrect="off"
                     autoCapitalize="off"
@@ -277,10 +298,10 @@ export default function SearchInput() {
           </div>
         </form>
 
-        {((!searchTerm && recentSearches.length > 0) ||
+        {((!searchTerm && showBackdrop && recentSearches.length > 0) ||
           (showSuggestions && searchResults)) && (
           <div className="absolute top-14 left-0 right-0 z-50">
-            {isFocused && !searchTerm && recentSearches.length > 0 && (
+            {showBackdrop && !searchTerm && recentSearches.length > 0 && (
               <Card className="absolute z-20 w-full mt-1 shadow-lg overflow-hidden rounded-md">
                 <CardContent className="p-0 max-h-[600px] overflow-y-auto">
                   <div className="py-2">
@@ -305,7 +326,14 @@ export default function SearchInput() {
                         key={search.timestamp}
                         onClick={() => {
                           setValue("searchTerm", search.term);
-                          onSubmit({ searchTerm: search.term });
+                          setShowSuggestions(false);
+                          setShowBackdrop(false);
+                          setIsFocused(false);
+                          router.push(
+                            `/products?search=${encodeURIComponent(
+                              search.term
+                            )}`
+                          );
                         }}
                         className="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 ease-in-out cursor-pointer"
                       >
@@ -327,12 +355,14 @@ export default function SearchInput() {
               <Card className="absolute z-20 w-full mt-1 shadow-lg overflow-hidden rounded-md">
                 <CardContent className="p-0 max-h-[600px] overflow-y-auto divide-y divide-gray-100">
                   <SearchSuggestions
-                    brands={searchResults.brands}
-                    categories={searchResults.categories}
-                    products={searchResults.products}
-                    onSelectBrand={handleBrandSelect}
-                    onSelectCategory={handleCategorySelect}
-                    onSelectProduct={handleProductSelect}
+                    brands={searchResults.brands || []}
+                    categories={searchResults.categories || []}
+                    products={searchResults.products || []}
+                    onClose={() => {
+                      setShowSuggestions(false);
+                      setShowBackdrop(false);
+                      setIsFocused(false);
+                    }}
                   />
                 </CardContent>
               </Card>
