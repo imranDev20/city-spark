@@ -16,12 +16,6 @@ const searchSchema = z.object({
   term: z.string().trim().min(1).max(100).nullable(),
 });
 
-// Define types for our search results
-type BrandBasic = {
-  id: string;
-  name: string;
-};
-
 // Type for inventory items with product details
 type InventoryWithProduct = Prisma.InventoryGetPayload<{
   select: {

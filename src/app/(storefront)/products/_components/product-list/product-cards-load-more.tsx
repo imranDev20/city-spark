@@ -1,6 +1,5 @@
 "use client";
 
-import { Prisma } from "@prisma/client";
 import React from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import ProductCard from "@/app/(storefront)/_components/product-card";
@@ -17,6 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  fetchInventoryProducts,
+  InventoryItemWithRelations,
+  InventoryQueryParams,
+} from "@/services/inventory";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -33,114 +37,9 @@ type ProductCardsContainerProps = {
   search?: string;
 };
 
-export type InventoryItemWithRelations = Prisma.InventoryGetPayload<{
-  include: {
-    product: {
-      include: {
-        primaryCategory: true;
-        secondaryCategory: true;
-        tertiaryCategory: true;
-        quaternaryCategory: true;
-        brand: true;
-      };
-    };
-  };
-}>;
-
 interface ProductCardsLoadMoreProps extends ProductCardsContainerProps {
   initialData: InventoryItemWithRelations[];
   initialTotalCount: number;
-}
-
-async function fetchInventoryProducts(
-  page: number,
-  queryParams: ProductCardsContainerProps & Record<string, any>
-) {
-  // Create base URLSearchParams
-  const params = new URLSearchParams();
-
-  // Add pagination
-  params.set("page", page.toString());
-  params.set("limit", ITEMS_PER_PAGE.toString());
-
-  // Add category params - use consistent parameter names with the API
-  if (queryParams.primaryCategoryId) {
-    params.set("p_id", queryParams.primaryCategoryId);
-  }
-  if (queryParams.secondaryCategoryId) {
-    params.set("s_id", queryParams.secondaryCategoryId);
-  }
-  if (queryParams.tertiaryCategoryId) {
-    params.set("t_id", queryParams.tertiaryCategoryId);
-  }
-  if (queryParams.quaternaryCategoryId) {
-    params.set("q_id", queryParams.quaternaryCategoryId);
-  }
-
-  // Add required flags
-  if (queryParams.isPrimaryRequired) {
-    params.set("isPrimaryRequired", "true");
-  }
-  if (queryParams.isSecondaryRequired) {
-    params.set("isSecondaryRequired", "true");
-  }
-  if (queryParams.isTertiaryRequired) {
-    params.set("isTertiaryRequired", "true");
-  }
-  if (queryParams.isQuaternaryRequired) {
-    params.set("isQuaternaryRequired", "true");
-  }
-
-  // Add search
-  if (queryParams.search) {
-    params.set("search", queryParams.search);
-  }
-
-  // Add any additional filter params
-  Object.entries(queryParams).forEach(([key, value]) => {
-    if (
-      ![
-        "primaryCategoryId",
-        "secondaryCategoryId",
-        "tertiaryCategoryId",
-        "quaternaryCategoryId",
-        "isPrimaryRequired",
-        "isSecondaryRequired",
-        "isTertiaryRequired",
-        "isQuaternaryRequired",
-        "isSearch",
-        "search",
-        "p_id",
-        "s_id",
-        "t_id",
-        "q_id",
-      ].includes(key) &&
-      value !== undefined &&
-      value !== null &&
-      value !== ""
-    ) {
-      params.set(key, value.toString());
-    }
-  });
-
-  const queryString = params.toString();
-  console.log(`Fetching inventory items: page=${page}, params=${queryString}`);
-
-  const response = await fetch(`/api/inventory?${queryString}`);
-  if (!response.ok) {
-    throw new Error(`API request failed with status ${response.status}`);
-  }
-
-  const data = await response.json();
-
-  if (!data.success) {
-    throw new Error(data.message || "Failed to fetch inventory items");
-  }
-
-  return {
-    items: data.data,
-    pagination: data.pagination,
-  };
 }
 
 export default function ProductCardsLoadMore({
@@ -150,8 +49,7 @@ export default function ProductCardsLoadMore({
 }: ProductCardsLoadMoreProps) {
   const searchParams = useSearchParams();
 
-  // Check if we have any filter params that would require a fresh data fetch
-  // This function extracts the filter-specific search params
+  // Extract filter-specific search params
   const getFilterParams = () => {
     const filterParams: Record<string, string> = {};
     for (const [key, value] of searchParams.entries()) {
@@ -180,12 +78,13 @@ export default function ProductCardsLoadMore({
   const hasFilters = Object.keys(filterParams).length > 0;
 
   // Convert queryParams to a format matching the API
-  const apiQueryParams = {
+  const apiQueryParams: InventoryQueryParams = {
     ...queryParams,
     p_id: queryParams.primaryCategoryId,
     s_id: queryParams.secondaryCategoryId,
     t_id: queryParams.tertiaryCategoryId,
     q_id: queryParams.quaternaryCategoryId,
+    limit: ITEMS_PER_PAGE.toString(),
     ...filterParams,
   };
 

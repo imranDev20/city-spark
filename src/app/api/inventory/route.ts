@@ -43,8 +43,8 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "12", 10);
     const page = parseInt(searchParams.get("page") || "1", 10);
     const sortBy = searchParams.get("sort_by") || "relevance";
-    const minPrice = parseFloat(searchParams.get("minPrice") || "0");
-    const maxPrice = parseFloat(searchParams.get("maxPrice") || "999999999");
+    const minPrice = parseFloat(searchParams.get("min_price") || "0");
+    const maxPrice = parseFloat(searchParams.get("max_price") || "999999999");
     const brandIds = searchParams.get("brand_id")?.split(",");
 
     // Category parameters - support both naming conventions for compatibility
