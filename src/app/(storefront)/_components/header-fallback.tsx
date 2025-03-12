@@ -11,7 +11,7 @@ export default function HeaderFallback() {
   return (
     <>
       {!isCheckoutPage && <DesktopHeaderFallback />}
-      <MobileHeader />
+      {/* <MobileHeader /> */}
     </>
   );
 }
