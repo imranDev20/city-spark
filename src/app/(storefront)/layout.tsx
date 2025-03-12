@@ -7,6 +7,7 @@ import CategoryNavContainer from "./_components/category-nav-container";
 import { Suspense } from "react";
 import CategoryNavSkeleton from "./_components/category-nav-skeleton";
 import PromotionalFeatures from "./_components/promotional-features";
+import HeaderFallback from "./_components/header-fallback";
 
 export default function StorefrontLayout({
   children,
@@ -18,7 +19,7 @@ export default function StorefrontLayout({
       <StoreTopLoader />
       <TopBar />
 
-      <Suspense fallback="Loading...">
+      <Suspense fallback={<HeaderFallback />}>
         <Header />
       </Suspense>
 
