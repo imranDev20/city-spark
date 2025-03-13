@@ -1,9 +1,10 @@
+// app/api/account/profile/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
-// GET: Fetch the current user's profile
+// GET: Fetch the current user's profile with auth provider info
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -24,6 +25,12 @@ export async function GET() {
         email: true,
         phone: true,
         avatar: true,
+        password: true,
+        accounts: {
+          select: {
+            provider: true,
+          },
+        },
       },
     });
 
@@ -34,7 +41,27 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({ success: true, data: user });
+    // Add auth info to the response
+    const { password, accounts, ...userData } = user;
+
+    // Create providers array, adding 'credentials' if password exists
+    const providers = accounts.map((account) => account.provider);
+    if (!!password) {
+      providers.push("credentials");
+    }
+
+    const authInfo = {
+      hasPassword: !!password,
+      providers: providers,
+    };
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...userData,
+        authInfo,
+      },
+    });
   } catch (error) {
     console.error("Error fetching user profile:", error);
     return NextResponse.json(

@@ -2,7 +2,6 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -66,11 +65,18 @@ const NavLink = ({
   isMobile?: boolean;
 }) => {
   const pathname = usePathname();
-  // Fix the active state logic
+
+  // Fixed active state logic
+  const normalizedPathname = pathname.endsWith("/")
+    ? pathname.slice(0, -1)
+    : pathname;
+
   const isActive =
-    item.href === "/account"
-      ? pathname === "/account" // Exact match for dashboard
-      : pathname.startsWith(item.href); // Prefix match for other routes
+    // For dashboard, it should be active when the path is /account with or without trailing slash
+    (item.href === "/account" && normalizedPathname === "/account") ||
+    // For other items, check if the pathname starts with the item's href
+    // but make sure it's not the dashboard catching /account/something
+    (item.href !== "/account" && normalizedPathname.startsWith(item.href));
 
   return (
     <Link
@@ -127,11 +133,15 @@ export default function AccountLayout({
 
   useEffect(() => {
     if (emblaApi) {
-      // Find the active index with the same logic as NavLink
-      const activeIndex = navigation.findIndex((item) =>
-        item.href === "/account"
-          ? pathname === "/account"
-          : pathname.startsWith(item.href)
+      const normalizedPathname = pathname.endsWith("/")
+        ? pathname.slice(0, -1)
+        : pathname;
+
+      // Use the same fixed logic for finding active index
+      const activeIndex = navigation.findIndex(
+        (item) =>
+          (item.href === "/account" && normalizedPathname === "/account") ||
+          (item.href !== "/account" && normalizedPathname.startsWith(item.href))
       );
 
       if (activeIndex !== -1) {
