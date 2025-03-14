@@ -45,6 +45,7 @@ const BasketList: React.FC<BasketListProps> = ({ items, type }) => {
   const [isPending, startTransition] = useTransition();
   const [openDeliveryDialog, setOpenDeliveryDialog] = useState<boolean>(false);
 
+  // Optimistic state for item removal
   const [optimisticItems, addOptimisticItem] = useOptimistic(
     items,
     (state: CartItemWithRelations[], removedItemId: string) =>
@@ -72,6 +73,14 @@ const BasketList: React.FC<BasketListProps> = ({ items, type }) => {
           variant: "destructive",
         });
       }
+    });
+  };
+
+  // Handler for optimistic move - now wrapped in startTransition
+  const handleMoveItem = (itemId: string) => {
+    startTransition(() => {
+      // Optimistically remove the item from this list
+      addOptimisticItem(itemId);
     });
   };
 
@@ -130,7 +139,11 @@ const BasketList: React.FC<BasketListProps> = ({ items, type }) => {
         <Card className={cn("p-5 bg-white", isPending && "opacity-50")}>
           {optimisticItems.map((item, index) => (
             <React.Fragment key={item.id}>
-              <BasketItem cartItem={item} onRemove={handleRemoveItem} />
+              <BasketItem
+                cartItem={item}
+                onRemove={handleRemoveItem}
+                onMove={handleMoveItem}
+              />
               {index < optimisticItems.length - 1 && (
                 <Separator className="my-4 bg-gray-300" />
               )}
