@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchCart } from "@/services/cart";
 import CitySparkLogo from "../../_components/city-spark-logo";
 import { FaArrowLeft } from "react-icons/fa";
+import CitySparkLogoBlack from "../../_components/city-spark-logo-black";
 
 export default function CheckoutHeader() {
   const { data: cart } = useQuery({
@@ -36,7 +37,7 @@ export default function CheckoutHeader() {
 
             <div className="flex items-center justify-center">
               <Link href="/">
-                <CitySparkLogo width={70} height={35} />
+                <CitySparkLogoBlack width={70} height={35} />
               </Link>
             </div>
 
@@ -77,7 +78,7 @@ export default function CheckoutHeader() {
             {/* Center section - Logo */}
             <div className="flex items-center justify-center">
               <Link href="/" className="flex items-center">
-                <CitySparkLogo width={90} height={45} />
+                <CitySparkLogoBlack width={90} height={45} />
                 <span className="sr-only">City Spark</span>
               </Link>
             </div>

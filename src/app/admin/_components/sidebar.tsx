@@ -27,7 +27,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import CitySparkLogoBlack from "@/app/(storefront)/_components/city-spark-logo-black";
+import CitySparkLogo from "@/app/(storefront)/_components/city-spark-logo";
+import { Separator } from "@/components/ui/separator";
 
 function UserInfoSkeleton() {
   return (
@@ -63,11 +64,12 @@ export function Sidebar() {
       <SidebarToggle isOpen={sidebar?.isOpen} setIsOpen={sidebar?.setIsOpen} />
       <div className="flex flex-col h-full shadow-md dark:shadow-zinc-800">
         <div className="flex justify-center py-4">
-          <CitySparkLogoBlack
+          <CitySparkLogo
             width={sidebar.isOpen ? 100 : 50}
             height={sidebar.isOpen ? 70 : 30}
           />
         </div>
+        <Separator />
         <div className="flex-1 overflow-y-auto">
           <Menu isOpen={sidebar?.isOpen} />
         </div>

@@ -108,12 +108,12 @@ export default function CategoryNav({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
   const excludedRoutes = [
-    "/login",
-    "/register",
-    "/cart",
-    "/checkout",
-    "/basket",
-    "/checkout/result",
+    "/login/",
+    "/register/",
+    "/cart/",
+    "/checkout/",
+    "/basket/",
+    "/checkout/result/",
   ];
 
   // Get the active category from the URL

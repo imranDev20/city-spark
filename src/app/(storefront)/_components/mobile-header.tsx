@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import CitySparkLogoBlack from "./city-spark-logo-black";
 import MobileMenu from "./mobile-menu";
 import BasketDrawer from "./basket-drawer";
 import SearchOverlay from "./search-overlay";
+import CitySparkLogo from "./city-spark-logo";
 
 interface MobileHeaderProps {
   isCategoriesPage?: boolean;
@@ -29,13 +29,13 @@ export default function MobileHeader({
   }, []);
 
   const excludedRoutes = [
-    "/login",
-    "/register",
-    "/cart",
-    "/checkout",
-    "/basket",
-    "/products/p",
-    ...(isCategoriesPage ? [] : ["/products/c", "/products"]),
+    "/login/",
+    "/register/",
+    "/cart/",
+    "/checkout/",
+    "/basket/",
+    "/products/p/",
+    ...(isCategoriesPage ? [] : ["/products/c/", "/products/"]),
   ];
 
   const isExcluded = excludedRoutes.some((route) => pathname.startsWith(route));
@@ -58,7 +58,7 @@ export default function MobileHeader({
               <MobileMenu />
 
               <Link href="/" className="flex items-center">
-                <CitySparkLogoBlack height={55} width={95} />
+                <CitySparkLogo height={55} width={95} />
                 <span className="sr-only">City Spark</span>
               </Link>
 
