@@ -14,7 +14,6 @@ interface AdapterUser {
   image?: string | null;
   emailVerified?: Date | null;
 }
-
 export const authOptions: NextAuthOptions = {
   adapter: {
     ...PrismaAdapter(prisma),
@@ -91,6 +90,66 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
+    // Add this callback to link accounts with same email
+    async signIn({ user, account, profile }) {
+      if (!account) return true;
+
+      if (account.provider !== "credentials") {
+        // Only proceed if we have an email
+        if (!user.email) return true;
+
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email },
+          include: {
+            accounts: {
+              where: {
+                provider: account.provider,
+              },
+            },
+          },
+        });
+
+        // If user exists but doesn't have this provider linked
+        if (existingUser && existingUser.accounts.length === 0) {
+          try {
+            // Check if this account already exists (to prevent unique constraint errors)
+            const existingAccount = await prisma.account.findUnique({
+              where: {
+                provider_providerAccountId: {
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                },
+              },
+            });
+
+            // Only create if it doesn't exist
+            if (!existingAccount) {
+              await prisma.account.create({
+                data: {
+                  userId: existingUser.id,
+                  type: account.type,
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  refresh_token: account.refresh_token,
+                  access_token: account.access_token,
+                  expires_at: account.expires_at,
+                  token_type: account.token_type,
+                  scope: account.scope,
+                  id_token: account.id_token,
+                  session_state: account.session_state,
+                },
+              });
+            }
+          } catch (error) {
+            console.error("Error linking account:", error);
+            // Continue the sign-in process even if linking fails
+          }
+        }
+      }
+
+      return true;
+    },
+
     async jwt({ token, user }) {
       if (user) {
         token.userId = user.id;
@@ -99,7 +158,7 @@ export const authOptions: NextAuthOptions = {
         token.firstName = (user as User).firstName;
         token.lastName = (user as User).lastName;
         token.phone = (user as User).phone;
-        token.image = (user as User).avatar || (user as User).image; // Add this line
+        token.image = (user as User).avatar || (user as User).image;
       }
       return token;
     },
@@ -115,7 +174,7 @@ export const authOptions: NextAuthOptions = {
           firstName: token.firstName as string | null | undefined,
           lastName: token.lastName as string | null | undefined,
           phone: token.phone as string | null | undefined,
-          image: token.image as string | null | undefined, // Add this line
+          image: token.image as string | null | undefined,
         },
       };
     },

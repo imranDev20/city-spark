@@ -32,12 +32,12 @@ export default function PromotionalFeatures() {
 
   // Skip rendering on certain pages
   const excludedRoutes = [
-    "/login",
-    "/register",
-    "/cart",
-    "/checkout",
-    "/basket",
-    "/products/p",
+    "/login/",
+    "/register/",
+    "/cart/",
+    "/checkout/",
+    "/basket/",
+    "/products/p/",
   ];
   if (excludedRoutes.some((route) => pathname.startsWith(route))) {
     return null;

@@ -747,21 +747,30 @@ export async function updateCartItemQuantity(id: string, quantity: number) {
 }
 
 export async function updateCartItemType(id: string, newType: FulFillmentType) {
+  console.log(`==== START: updateCartItemType ====`);
+  console.log(`Input - Item ID: ${id}, New Type: ${newType}`);
+
   try {
     const session = await getServerAuthSession();
     const userId = session?.user?.id;
     const sessionId = userId ? undefined : await getOrCreateSessionId();
+    console.log(
+      `Auth - User ID: ${userId || "None"}, Session ID: ${sessionId || "None"}`
+    );
 
     if (!id || !newType) {
       throw new Error("Invalid input");
     }
 
     const result = await prisma.$transaction(async (prisma) => {
+      console.log(`Starting database transaction`);
+
       // Get settings for delivery charge
       const settings = await prisma.settings.findFirst();
       if (!settings) {
         throw new Error("System settings not found");
       }
+      console.log(`Retrieved settings successfully`);
 
       // Get the current cart item to update
       const currentCartItem = await prisma.cartItem.findUnique({
@@ -778,6 +787,17 @@ export async function updateCartItemType(id: string, newType: FulFillmentType) {
         throw new Error("Cart item not found");
       }
 
+      console.log(`Current cart item details:`, {
+        id: currentCartItem.id,
+        cartId: currentCartItem.cartId,
+        inventoryId: currentCartItem.inventoryId,
+        quantity: currentCartItem.quantity,
+        price: currentCartItem.price,
+        totalPrice: currentCartItem.totalPrice,
+        currentType: currentCartItem.type,
+        productName: currentCartItem.inventory.product.name,
+      });
+
       // Check eligibility
       if (
         newType === FulFillmentType.FOR_DELIVERY &&
@@ -791,6 +811,7 @@ export async function updateCartItemType(id: string, newType: FulFillmentType) {
       ) {
         throw new Error("This item is not eligible for collection");
       }
+      console.log(`Eligibility check passed for new type: ${newType}`);
 
       // Check if an item with the same product and new fulfillment type already exists
       const existingCartItem = await prisma.cartItem.findFirst({
@@ -802,31 +823,89 @@ export async function updateCartItemType(id: string, newType: FulFillmentType) {
         },
       });
 
+      console.log(
+        `Checking for existing cart item with same product and new type:`,
+        existingCartItem
+          ? {
+              exists: true,
+              id: existingCartItem.id,
+              quantity: existingCartItem.quantity,
+              price: existingCartItem.price,
+              totalPrice: existingCartItem.totalPrice,
+            }
+          : { exists: false }
+      );
+
+      let finalItem;
+
       if (existingCartItem) {
-        // Update existing item's quantity and delete the current item
-        await prisma.cartItem.update({
-          where: { id: existingCartItem.id },
+        // Keep current item and merge quantities, then delete the existing item
+        const newQuantity =
+          currentCartItem.quantity + existingCartItem.quantity;
+        const newTotalPrice = newQuantity * currentCartItem.price;
+
+        console.log(
+          `Merging items (keeping current) - New quantity will be: ${newQuantity}, New total price: ${newTotalPrice}`
+        );
+
+        // Update the current item with the new type and combined quantity
+        const updatedCurrentItem = await prisma.cartItem.update({
+          where: { id: currentCartItem.id },
           data: {
-            quantity: existingCartItem.quantity + currentCartItem.quantity,
-            totalPrice:
-              (existingCartItem.quantity + currentCartItem.quantity) *
-              currentCartItem.price,
+            type: newType,
+            quantity: newQuantity,
+            totalPrice: newTotalPrice,
+          },
+          include: {
+            inventory: {
+              include: {
+                product: true,
+              },
+            },
           },
         });
 
-        await prisma.cartItem.delete({
-          where: { id: currentCartItem.id },
+        console.log(`Updated current item:`, {
+          id: updatedCurrentItem.id,
+          newType: updatedCurrentItem.type,
+          newQuantity: updatedCurrentItem.quantity,
+          newTotalPrice: updatedCurrentItem.totalPrice,
         });
+
+        finalItem = updatedCurrentItem;
+
+        // Delete the existing item
+        const deletedItem = await prisma.cartItem.delete({
+          where: { id: existingCartItem.id },
+        });
+
+        console.log(`Deleted existing item with ID: ${deletedItem.id}`);
       } else {
         // Just update the type if no existing item found
-        await prisma.cartItem.update({
+        const updatedItem = await prisma.cartItem.update({
           where: { id },
           data: { type: newType },
+          include: {
+            inventory: {
+              include: {
+                product: true,
+              },
+            },
+          },
+        });
+
+        finalItem = updatedItem;
+
+        console.log(`Updated item type only:`, {
+          id: updatedItem.id,
+          newType: updatedItem.type,
         });
       }
 
       // Get updated cart to recalculate totals
       const cartWhereInput = getCartWhereInput(userId, sessionId);
+      console.log(`Cart where input:`, cartWhereInput);
+
       const updatedCart = await prisma.cart.findFirst({
         where: cartWhereInput,
         include: {
@@ -846,18 +925,37 @@ export async function updateCartItemType(id: string, newType: FulFillmentType) {
         throw new Error("Cart not found");
       }
 
+      console.log(
+        `Retrieved updated cart with ID: ${updatedCart.id}, Items count: ${updatedCart.cartItems.length}`
+      );
+
       // Calculate totals
       let deliveryTotalWithVat = 0;
       let collectionTotalWithVat = 0;
       let hasDeliveryItems = false;
 
-      updatedCart.cartItems.forEach((item) => {
+      updatedCart.cartItems.forEach((item, index) => {
+        console.log(`Cart item ${index + 1}:`, {
+          id: item.id,
+          type: item.type,
+          price: item.price,
+          quantity: item.quantity,
+          totalPrice: item.totalPrice,
+          product: item.inventory.product.name,
+        });
+
         if (item.type === FulFillmentType.FOR_DELIVERY) {
           deliveryTotalWithVat += item.totalPrice;
           hasDeliveryItems = true;
         } else {
           collectionTotalWithVat += item.totalPrice;
         }
+      });
+
+      console.log(`Cart totals:`, {
+        deliveryTotalWithVat,
+        collectionTotalWithVat,
+        hasDeliveryItems,
       });
 
       // Rest of the calculations remain the same...
@@ -878,8 +976,20 @@ export async function updateCartItemType(id: string, newType: FulFillmentType) {
       const totalPriceWithVat = subTotalWithVat + deliveryCharge + deliveryVat;
       const totalPriceWithoutVat = subTotalWithoutVat + deliveryCharge;
 
+      console.log(`Calculated final cart values:`, {
+        deliveryCharge,
+        deliveryVat,
+        deliveryTotalWithoutVat,
+        collectionTotalWithoutVat,
+        subTotalWithVat,
+        subTotalWithoutVat,
+        vat,
+        totalPriceWithVat,
+        totalPriceWithoutVat,
+      });
+
       // Update cart with all calculated values
-      const finalCart = await prisma.cart.update({
+      await prisma.cart.update({
         where: { id: updatedCart.id },
         data: {
           deliveryTotalWithVat,
@@ -893,24 +1003,33 @@ export async function updateCartItemType(id: string, newType: FulFillmentType) {
           totalPriceWithVat,
           totalPriceWithoutVat,
         },
-        include: { cartItems: true },
       });
 
-      return finalCart;
+      console.log(`Updated final cart with ID: ${updatedCart.id}`);
+
+      // Return only the final updated item instead of the whole cart
+      return finalItem;
     });
 
+    console.log(`Transaction completed successfully`);
+    console.log(`Revalidating paths`);
+
+    // Use the layout option for more thorough revalidation
     revalidatePath("/");
     revalidatePath("/products");
     revalidatePath("/basket");
     revalidatePath("/checkout");
 
+    console.log(`==== END: updateCartItemType - SUCCESS ====`);
     return {
       message: `Successfully moved item to ${newType.toLowerCase()}`,
-      data: result,
+      data: result, // This now contains just the updated cart item
       success: true,
     };
   } catch (error) {
-    console.error("Error updating cart item type:", error);
+    console.error(`==== ERROR in updateCartItemType ====`);
+    console.error(error);
+
     return {
       message:
         error instanceof Error

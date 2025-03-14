@@ -13,6 +13,7 @@ import PlaceholderImage from "@/images/placeholder-image.png";
 import { BLUR_DATA_URL } from "@/lib/constants";
 import { NumericFormat } from "react-number-format";
 import { FaStore, FaTrash, FaTruck } from "react-icons/fa";
+import { useQueryClient } from "@tanstack/react-query";
 
 type CartItemWithRelations = Prisma.CartItemGetPayload<{
   include: {
@@ -36,10 +37,17 @@ type CartItemWithRelations = Prisma.CartItemGetPayload<{
 interface BasketItemProps {
   cartItem: CartItemWithRelations;
   onRemove: (id: string) => Promise<void>;
+  // Add a callback for optimistic move handling
+  onMove?: (id: string) => void;
 }
 
-const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
+const BasketItem: React.FC<BasketItemProps> = ({
+  cartItem,
+  onRemove,
+  onMove,
+}) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [inputValue, setInputValue] = useState(
     (cartItem.quantity ?? 1).toString()
   );
@@ -98,19 +106,32 @@ const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
     setInputValue(e.target.value);
   };
 
-  const handleMoveItem = async () => {
+  const handleMoveItem = () => {
     const newType =
       cartItem.type === FulFillmentType.FOR_DELIVERY
         ? FulFillmentType.FOR_COLLECTION
         : FulFillmentType.FOR_DELIVERY;
 
+    // First call the optimistic update function from parent component
+    if (onMove) {
+      onMove(cartItem.id);
+    }
+
+    // Then handle the actual API call
     startTransition(async () => {
       try {
         const result = await updateCartItemType(cartItem.id, newType);
+
+        // Ensure we refresh the cart data
+        await queryClient.invalidateQueries({ queryKey: ["cart"] });
+
         if (!result.success) {
           throw new Error(result.message);
         }
       } catch (error) {
+        // Refresh the cart data to restore the correct state
+        await queryClient.invalidateQueries({ queryKey: ["cart"] });
+
         toast({
           title: "Error",
           description:
@@ -193,6 +214,7 @@ const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
             <div className="col-span-3 flex justify-between bg-gray-100 rounded-md text-lg relative overflow-hidden w-full md:w-32 h-10 md:h-9">
               <button
                 onClick={() => handleButtonClick(false)}
+                disabled={isPending}
                 className="absolute top-0 left-0 h-full w-12 md:w-10 flex items-center justify-center transition-colors duration-200 ease-in-out hover:bg-gray-200 active:bg-gray-400"
               >
                 <span className="text-gray-600 font-medium select-none">-</span>
@@ -203,9 +225,11 @@ const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
                 value={inputValue}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
+                disabled={isPending}
               />
               <button
                 onClick={() => handleButtonClick(true)}
+                disabled={isPending}
                 className="absolute top-0 right-0 h-full w-12 md:w-10 flex items-center justify-center transition-colors duration-200 ease-in-out hover:bg-gray-200 active:bg-gray-400"
               >
                 <span className="text-gray-600 font-medium select-none">+</span>
@@ -239,6 +263,7 @@ const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
                 variant="ghost"
                 size="icon"
                 onClick={() => onRemove(cartItem.id)}
+                disabled={isPending}
                 className="text-red-500 hover:text-red-600 hover:bg-red-50 h-10 w-10 md:h-10 md:w-10"
               >
                 <FaTrash className="size-4" />
@@ -287,6 +312,7 @@ const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
           <div className="col-span-6 flex justify-between bg-gray-100 rounded-md text-lg relative overflow-hidden w-full md:w-32 h-10 md:h-9">
             <button
               onClick={() => handleButtonClick(false)}
+              disabled={isPending}
               className="absolute top-0 left-0 h-full w-12 md:w-10 flex items-center justify-center transition-colors duration-200 ease-in-out hover:bg-gray-200 active:bg-gray-400"
             >
               <span className="text-gray-600 font-medium select-none">-</span>
@@ -297,9 +323,11 @@ const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
               value={inputValue}
               onChange={handleInputChange}
               onBlur={handleBlur}
+              disabled={isPending}
             />
             <button
               onClick={() => handleButtonClick(true)}
+              disabled={isPending}
               className="absolute top-0 right-0 h-full w-12 md:w-10 flex items-center justify-center transition-colors duration-200 ease-in-out hover:bg-gray-200 active:bg-gray-400"
             >
               <span className="text-gray-600 font-medium select-none">+</span>
@@ -312,6 +340,8 @@ const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
           <Button
             variant="ghost"
             size="default"
+            onClick={handleMoveItem}
+            disabled={isPending}
             className="flex items-center gap-2 h-10 md:h-9 hover:bg-transparent justify-start md:justify-center"
           >
             {cartItem.type === "FOR_DELIVERY" ? (
@@ -330,6 +360,7 @@ const BasketItem: React.FC<BasketItemProps> = ({ cartItem, onRemove }) => {
             variant="ghost"
             size="icon"
             onClick={() => onRemove(cartItem.id)}
+            disabled={isPending}
             className="text-red-500 hover:text-red-600 hover:bg-red-50 h-10 w-10"
           >
             <FaTrash className="!size-5" />

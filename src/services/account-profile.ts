@@ -1,6 +1,11 @@
 import axios from "axios";
 import { User } from "@prisma/client";
 
+export interface AuthInfo {
+  hasPassword: boolean;
+  providers: string[];
+}
+
 // Type for the API response
 interface ApiResponse<T> {
   success: boolean;
@@ -12,7 +17,9 @@ interface ApiResponse<T> {
 export type UserProfile = Pick<
   User,
   "id" | "firstName" | "lastName" | "email" | "phone" | "avatar"
->;
+> & {
+  authInfo?: AuthInfo;
+};
 
 // Function to fetch the user profile
 export async function getUserProfile(): Promise<UserProfile> {

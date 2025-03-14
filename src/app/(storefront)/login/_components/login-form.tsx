@@ -118,28 +118,27 @@ export default function LoginForm() {
               Create an account
             </Link>
           </p>
+        </div>
 
-          {searchParams.get("registered") === "true" && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-10">
-              <p className="text-green-800 text-sm">
-                Account successfully created! Please log in with your
-                credentials.
+        {searchParams.get("registered") === "true" && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-10">
+            <p className="text-green-800 text-sm">
+              Account successfully created! Please log in with your credentials.
+            </p>
+          </div>
+        )}
+
+        {isAdminRedirect && (
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 my-10">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+              <p className="text-destructive text-sm">
+                Administrator privileges are required to access this area.
+                Please log in with an admin account.
               </p>
             </div>
-          )}
-
-          {isAdminRedirect && (
-            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 my-10">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-                <p className="text-destructive text-sm">
-                  Administrator privileges are required to access this area.
-                  Please log in with an admin account.
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

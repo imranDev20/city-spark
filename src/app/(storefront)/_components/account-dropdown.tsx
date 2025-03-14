@@ -186,7 +186,7 @@ export default function AccountDropdown() {
             alt={session.user?.firstName || ""}
             className="object-cover"
           />
-          <AvatarFallback className="bg-white/10 text-primary">
+          <AvatarFallback className="bg-primary/10 text-primary">
             {initials}
           </AvatarFallback>
         </Avatar>

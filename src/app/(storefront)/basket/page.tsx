@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import { FulFillmentType } from "@prisma/client";
-import { ArrowLeft, CircleAlert, ShoppingCart } from "lucide-react";
+import { ArrowLeft, ShoppingCart } from "lucide-react";
 import BasketList from "./_components/basket-list";
 import { getCart } from "@/services/storefront-cart";
 import OrderSummaryCard from "./_components/order-summary-card";
