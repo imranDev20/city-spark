@@ -9,6 +9,7 @@ import "./globals.css";
 import NextAuthSessionProvider from "@/providers/session-provider";
 import QueryProvider from "@/providers/query-provider";
 import ScrollToTop from "@/providers/scroll-to-top";
+import WhatsAppChat from "./(storefront)/_components/whatsapp-chat";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -56,6 +57,8 @@ export default function RootLayout({
           <NextAuthSessionProvider>
             <EdgeStoreProvider>
               <ThemeProvider attribute="class" defaultTheme="light">
+                <WhatsAppChat />
+
                 {children}
                 <Toaster />
               </ThemeProvider>
